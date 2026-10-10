@@ -223,7 +223,9 @@ export const CitizenFamilySystem: React.FC<Props> = ({
   const [splitSelectedIds, setSplitSelectedIds] = useState<string[]>([]);
   const [splitMarriageCertNo, setSplitMarriageCertNo] = useState('MC-2026-BAG-09921');
   const [splitMarriageCertUploaded, setSplitMarriageCertUploaded] = useState(true);
+  const [splitOtherDocNo, setSplitOtherDocNo] = useState('ADD-DOC-2026-7810');
   const [splitOtherDocUploaded, setSplitOtherDocUploaded] = useState(false);
+  const [splitJudgeResult, setSplitJudgeResult] = useState<{ passed: boolean; reason: string } | null>(null);
   const [splitResultNotice, setSplitResultNotice] = useState<string | null>(null);
 
   // ----------------------------------------------------
@@ -602,9 +604,38 @@ export const CitizenFamilySystem: React.FC<Props> = ({
       `【系统自动判别通过】新家庭被成功识别为合法夫妻，系统已自动批准分户并签发新配给卡号：${newCardNo}！`
     );
     setSplitSelectedIds([]);
+    setSplitJudgeResult(null);
   };
 
-  // 5b. Submit Household Splitting - Electronic Review Path (when auto judgment fails or requires manual check)
+  // 5b. Automated Priority Judge Handler
+  const handleSystemAutoJudgeSplit = () => {
+    if (!currentFamily || splitSelectedIds.length === 0) {
+      alert('请先勾选需要移入新户的家庭成员！');
+      return;
+    }
+    if (!splitMarriageCertUploaded) {
+      alert('结婚证明或同等效力文件为必需材料，请上传后重试！');
+      return;
+    }
+
+    const selectedMembers = currentFamily.members.filter(m => splitSelectedIds.includes(m.id));
+    const hasMale = selectedMembers.some(m => m.gender === '男');
+    const hasFemale = selectedMembers.some(m => m.gender === '女');
+    const isCoupleStructure = selectedMembers.length >= 2 && hasMale && hasFemale;
+
+    if (isCoupleStructure) {
+      // Automatic judgment passed!
+      handleExecuteAutoSplit();
+    } else {
+      // Automatic judgment failed!
+      const failReason = selectedMembers.length === 1
+        ? '拟分立成员仅为单独一人，不满足“夫妻标准组合”自动识别规则，系统自动判别未通过。'
+        : '拟分立成员组合非标准夫妻结构，系统自动判别未通过。';
+      setSplitJudgeResult({ passed: false, reason: failReason });
+    }
+  };
+
+  // 5c. Submit Household Splitting - Electronic Review Path (when auto judgment fails, click to submit for manual review)
   const handleSubmitSplitForElectronicReview = () => {
     if (!currentFamily || splitSelectedIds.length === 0) return;
     if (!splitMarriageCertUploaded) {
@@ -616,8 +647,8 @@ export const CitizenFamilySystem: React.FC<Props> = ({
     const isSinglePerson = selectedMembers.length === 1;
     const ticketId = `REV-SPL-${Date.now().toString().slice(-4)}`;
     const reasonDesc = isSinglePerson
-      ? '拟分立成员仅为单独一人，不满足“夫妻标准组合”自动识别规则，需提交分部人员手动复核'
-      : '拟分立成员非标准丈夫＋妻子组合，系统自动判别未通过，转交分部门人员手动审核';
+      ? '拟分立成员仅为单独一人，系统自动判别未通过，转交分部门人员手动审核'
+      : '拟分立成员非标准夫妻组合，系统自动判别未通过，转交分部门人员手动审核';
 
     const newTicket: ReviewTicket = {
       id: ticketId,
@@ -639,9 +670,10 @@ export const CitizenFamilySystem: React.FC<Props> = ({
 
     setReviewTickets(prev => [newTicket, ...prev]);
     setSplitResultNotice(
-      `【已提交电子审核】记录已提交至配给分部门（工单号 ${ticketId}），等待分部门人员手动审核！`
+      `【已提交电子审核】记录已提交至配给分部门（工单号 ${ticketId}），已进入【电子审核工作台】，等待分部门人员手动审核！`
     );
     setSplitSelectedIds([]);
+    setSplitJudgeResult(null);
     setActiveTab('branch_review');
     setSelectedTicketId(ticketId);
   };
@@ -907,7 +939,7 @@ export const CitizenFamilySystem: React.FC<Props> = ({
             }`}
           >
             <FileCheck2 className="w-4 h-4" />
-            <span>分部两级电子审核工作台</span>
+            <span>电子审核工作台</span>
             {reviewTickets.filter(t => t.status === '待分部初审' || t.status === '待经理终审').length > 0 && (
               <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold">
                 {reviewTickets.filter(t => t.status === '待分部初审' || t.status === '待经理终审').length}
@@ -915,12 +947,6 @@ export const CitizenFamilySystem: React.FC<Props> = ({
             )}
           </button>
         </div>
-      </div>
-
-      {/* Notice Banner: Immutable Freeze Warning */}
-      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 flex items-center gap-3 text-xs text-amber-700 dark:text-amber-300">
-        <ShieldAlert className="w-4 h-4 shrink-0 text-amber-500" />
-        <p className="flex-1">{t.freezeNoticeImmutable}</p>
       </div>
 
       {/* Success Notices */}
@@ -1255,8 +1281,13 @@ export const CitizenFamilySystem: React.FC<Props> = ({
                   defaultFileName="卫生部法医总局_户主死亡医学鉴定书及民政注销公函_DTH-BAG-2026-90182.pdf"
                   defaultRefNo={deathProofNo}
                   ocrSummary="已识别原户主身份销籍备案条码，法定死亡鉴定印章与全国户籍底册销户记录比对属实"
-                  sampleApplicantName={currentFamily?.headName}
-                  onStatusChange={(uploaded) => setDeathProofFileUploaded(uploaded)}
+                  isRequired={true}
+                  onStatusChange={(uploaded, file) => {
+                    setDeathProofFileUploaded(uploaded);
+                    if (file) {
+                      setDeathProofNo(file.referenceNo);
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -1383,12 +1414,14 @@ export const CitizenFamilySystem: React.FC<Props> = ({
                   defaultFileName={UNFREEZE_DOC_CONFIGS[unfreezeType]?.fileName || unfreezeDocName}
                   defaultRefNo={UNFREEZE_DOC_CONFIGS[unfreezeType]?.refNo || 'UNF-2026-DOC'}
                   ocrSummary={UNFREEZE_DOC_CONFIGS[unfreezeType]?.ocrSummary || '已自动核验公章与文号存根一致'}
-                  sampleApplicantName={
-                    currentFamily?.members.find(m => m.id === unfreezeTargetMemberId)?.name ||
-                    currentFamily?.headName
-                  }
-                  onStatusChange={(_, file) => {
-                    if (file) setUnfreezeDocName(file.fileName);
+                  isRequired={true}
+                  onStatusChange={(isUploaded, file) => {
+                    setUnfreezeFileUploaded(isUploaded);
+                    if (file) {
+                      setUnfreezeDocName(file.fileName);
+                    } else {
+                      setUnfreezeDocName('');
+                    }
                   }}
                 />
               </div>
@@ -1435,27 +1468,15 @@ export const CitizenFamilySystem: React.FC<Props> = ({
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.splitModalSubtitle}</p>
           </div>
 
-          {/* Dual Pathways Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{t.splitPathAutoTitle}</span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                {t.splitPathAutoDesc}
-              </p>
+          {/* Instructions Banner: Priority Automatic Judgment */}
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-500 shrink-0" />
+              <span>办理说明：无需手动选择路径。提交后系统将<strong>优先智能自动判别</strong>，若未满足全自动标准，可一键<strong>转入分部电子审核</strong>。</span>
             </div>
-
-            <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
-              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs">
-                <Clock className="w-4 h-4" />
-                <span>{t.splitPathElectronicTitle}</span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                {t.splitPathElectronicDesc}
-              </p>
-            </div>
+            <span className="text-[11px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold shrink-0">
+              智能分流
+            </span>
           </div>
 
           {splitResultNotice && (
@@ -1464,100 +1485,144 @@ export const CitizenFamilySystem: React.FC<Props> = ({
             </div>
           )}
 
-          <div className="space-y-4">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {t.selectSplitMembersTitle} (从当前配给卡勾选移入新卡的人员)
-            </label>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                {t.selectSplitMembersTitle} (从当前配给卡勾选移入新卡的人员)
+              </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {currentFamily?.members.map(m => {
-                const isSelected = splitSelectedIds.includes(m.id);
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSplitSelectedIds(prev => prev.filter(id => id !== m.id));
-                      } else {
-                        setSplitSelectedIds(prev => [...prev, m.id]);
-                      }
-                    }}
-                    className={`p-3 rounded-xl border cursor-pointer text-xs flex items-center justify-between transition-colors ${
-                      isSelected
-                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200'
-                        : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-semibold">{m.name}</div>
-                      <div className="text-[10px] text-slate-400">
-                        {m.gender} · {m.relation} · {m.nationalId}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {currentFamily?.members.map(m => {
+                  const isSelected = splitSelectedIds.includes(m.id);
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => {
+                        setSplitJudgeResult(null);
+                        if (isSelected) {
+                          setSplitSelectedIds(prev => prev.filter(id => id !== m.id));
+                        } else {
+                          setSplitSelectedIds(prev => [...prev, m.id]);
+                        }
+                      }}
+                      className={`p-3 rounded-xl border cursor-pointer text-xs flex items-center justify-between transition-colors ${
+                        isSelected
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30 text-purple-900 dark:text-purple-200'
+                          : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-semibold">{m.name}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {m.gender} · {m.relation} · {m.nationalId}
+                        </div>
                       </div>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="rounded text-purple-600 focus:ring-0"
+                      />
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      className="rounded text-purple-600 focus:ring-0"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Real-time Pathway Detector */}
-            {splitSelectedIds.length > 0 && (
-              <div className="p-3 bg-slate-100 dark:bg-slate-900/70 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-                <div className="font-semibold text-slate-700 dark:text-slate-200">
-                  当前勾选组合识别结果：
-                </div>
-                {splitSelectedIds.length === 1 ? (
-                  <div className="text-amber-500 mt-1">
-                    拟分立成员为单独一人，不满足“丈夫＋妻子”组合，将转入【路径B：分部电子审核】。
-                  </div>
-                ) : currentFamily.members
-                    .filter(m => splitSelectedIds.includes(m.id))
-                    .some(m => m.gender === '男') &&
-                  currentFamily.members
-                    .filter(m => splitSelectedIds.includes(m.id))
-                    .some(m => m.gender === '女') ? (
-                  <div className="text-emerald-500 mt-1">
-                    系统已自动识别为【丈夫＋妻子组合（有或无子女）】，符合统一卡家庭编号自动识别条件，将走【路径A：系统自动批准分户】！
-                  </div>
-                ) : (
-                  <div className="text-amber-500 mt-1">
-                    当前组合非标准丈夫＋妻子结构，将转交【路径B：分部员工审核后报经理终审】。
-                  </div>
-                )}
+                  );
+                })}
               </div>
-            )}
-
-            {/* Document upload proof for household split */}
-            <div className="pt-2">
-              <MockDocumentUploader
-                documentKey="split_marriage_cert"
-                title="分户证明文件 (结婚证 / 法院家庭分立判决书)"
-                subtitle="根据婚姻或家庭分立法律文书，校验移入新户成员的合法关系"
-                categoryBadge="民政婚姻登记与分户批件"
-                categoryColor="purple"
-                issuer="伊拉克最高司法委员会 · 巴格达卡尔赫民事法庭"
-                defaultFileName="最高司法委员会_民事结婚证书与分立公函_MC-2026-BAG-09921.pdf"
-                defaultRefNo={splitMarriageCertNo}
-                ocrSummary="已识别民政婚姻公证印鉴，配偶身份比对真实，符合家庭分立立卡规定"
-                sampleApplicantName={currentFamily?.headName}
-              />
             </div>
 
-            <div className="pt-2">
-              {/* Confirmation button with NO ICON */}
-              <button
-                type="button"
-                disabled={splitSelectedIds.length === 0}
-                onClick={handleConfirmSplitHousehold}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow transition-colors"
-              >
-                {t.confirmSplitSubmit}
-              </button>
+            {/* Document Uploads: Two Independent Documents */}
+            <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-700/80">
+              <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-purple-500" />
+                <span>分户证明材料上传 (支持两份各自独立上传)</span>
+              </div>
+
+              {/* Document 1: Marriage Certificate or Equivalent - REQUIRED */}
+              <div className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 space-y-2">
+                <MockDocumentUploader
+                  documentKey="split_marriage_cert"
+                  title="1. 结婚证明或同等效力公文"
+                  subtitle="民政婚姻登记证书或最高司法委员会法院判决文书（系统自动判别夫妻合法关系的核心依据）"
+                  categoryBadge="民政结婚证书 / 司法判决书"
+                  categoryColor="purple"
+                  issuer="伊拉克最高司法委员会 · 卡尔赫民事法庭"
+                  defaultFileName="最高司法委员会_民事结婚证书与分立公函_MC-2026-BAG-09921.pdf"
+                  defaultRefNo={splitMarriageCertNo}
+                  ocrSummary="已识别民政婚姻公证印鉴，配偶身份核验属实，符合婚姻分户立卡规定"
+                  sampleApplicantName={currentFamily?.headName}
+                  isRequired={true}
+                  initialUploaded={splitMarriageCertUploaded}
+                  onStatusChange={(uploaded, file) => {
+                    setSplitMarriageCertUploaded(uploaded);
+                    if (file) setSplitMarriageCertNo(file.referenceNo);
+                  }}
+                />
+              </div>
+
+              {/* Document 2: Other Supporting Documents - OPTIONAL */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 space-y-2">
+                <MockDocumentUploader
+                  documentKey="split_other_doc"
+                  title="2. 其他辅助证明文件"
+                  subtitle="如独立常住住宅产权证/房屋租赁合同、独立水电气户头单据或社区常住网格证明（可选提交）"
+                  categoryBadge="住所产权 / 租赁合同 / 补充公文"
+                  categoryColor="indigo"
+                  issuer="地方市政规划委员会 & 房屋所有权登记局"
+                  defaultFileName="市政规划委员会_独立常住住宅不动产权公证书与租约_ADD-2026-7810.pdf"
+                  defaultRefNo={splitOtherDocNo}
+                  ocrSummary="已识别房屋租赁合同及独立网格电费编号，具备独立常住生活居住条件"
+                  sampleApplicantName={currentFamily?.headName}
+                  isRequired={false}
+                  initialUploaded={splitOtherDocUploaded}
+                  onStatusChange={(uploaded, file) => {
+                    setSplitOtherDocUploaded(uploaded);
+                    if (file) setSplitOtherDocNo(file.referenceNo);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Judge Result & Action Buttons */}
+            <div className="pt-2 space-y-3">
+              {splitJudgeResult && !splitJudgeResult.passed && (
+                <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+                    <span>系统自动判别未通过</span>
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                    {splitJudgeResult.reason}
+                  </p>
+                  <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSubmitSplitForElectronicReview}
+                      className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <FileCheck2 className="w-3.5 h-3.5" />
+                      <span>转入分部电子审核 (提交分部门人员手动复核)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSplitJudgeResult(null)}
+                      className="px-3 py-2 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      重新调整人员
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {(!splitJudgeResult || splitJudgeResult.passed) && (
+                <button
+                  type="button"
+                  disabled={splitSelectedIds.length === 0}
+                  onClick={handleSystemAutoJudgeSplit}
+                  className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow transition-colors cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>提交分户申请 · 优先系统智能判别</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1758,47 +1823,128 @@ export const CitizenFamilySystem: React.FC<Props> = ({
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <FileCheck2 className="w-5 h-5 text-amber-500" />
-              <span>{t.branchReviewConsoleTitle}</span>
+              <span>电子审核工作台</span>
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.branchReviewConsoleSubtitle}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              统一受理申请分户、申请解冻、变更户主、成员录入、成员转移等需分部门人工核验的电子审核工单，支持两级在线审批
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Ticket List Column */}
-            <div className="space-y-2 lg:col-span-1">
-              <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">待办审核工单列表</div>
-              {reviewTickets.map(tk => (
-                <div
-                  key={tk.id}
-                  onClick={() => setSelectedTicketId(tk.id)}
-                  className={`p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
-                    selectedTicketId === tk.id
-                      ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-900 dark:text-white">{tk.id}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        tk.status === '待分部初审'
-                          ? 'bg-amber-500/10 text-amber-500'
-                          : tk.status === '待经理终审'
-                          ? 'bg-blue-500/10 text-blue-500'
-                          : tk.status === '已批准'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'bg-rose-500/10 text-rose-500'
+            {/* Ticket List Column with Source Filters */}
+            <div className="space-y-3 lg:col-span-1">
+              <div>
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                  <span>待办工单清单</span>
+                  <span className="text-[11px] text-slate-400">
+                    共 {reviewTickets.length} 笔工单
+                  </span>
+                </div>
+
+                {/* Source Filter Pills */}
+                <div className="flex flex-wrap gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px]">
+                  {(['全部', '申请分户', '申请解冻', '变更户主', '成员录入', '成员转移'] as const).map(sourceName => {
+                    const count = sourceName === '全部'
+                      ? reviewTickets.length
+                      : reviewTickets.filter(t => t.source === sourceName).length;
+                    const isActive = reviewFilterSource === sourceName;
+                    return (
+                      <button
+                        key={sourceName}
+                        type="button"
+                        onClick={() => setReviewFilterSource(sourceName)}
+                        className={`px-2 py-1 rounded-lg font-medium transition-colors cursor-pointer flex items-center gap-1 ${
+                          isActive
+                            ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs font-bold'
+                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <span>{sourceName}</span>
+                        <span className={`text-[10px] px-1 rounded-full ${
+                          isActive
+                            ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Filtered Tickets List */}
+              <div className="space-y-2 max-h-[640px] overflow-y-auto pr-0.5">
+                {(() => {
+                  const displayedTickets = reviewTickets.filter(
+                    t => reviewFilterSource === '全部' || t.source === reviewFilterSource
+                  );
+
+                  if (displayedTickets.length === 0) {
+                    return (
+                      <div className="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/30">
+                        当前【{reviewFilterSource}】来源下暂无待办工单
+                      </div>
+                    );
+                  }
+
+                  const getSourceBadgeStyle = (source: ReviewTicket['source']) => {
+                    switch (source) {
+                      case '申请分户':
+                        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30';
+                      case '申请解冻':
+                        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                      case '变更户主':
+                        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30';
+                      case '成员录入':
+                        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                      case '成员转移':
+                        return 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30';
+                      default:
+                        return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+                    }
+                  };
+
+                  return displayedTickets.map(tk => (
+                    <div
+                      key={tk.id}
+                      onClick={() => setSelectedTicketId(tk.id)}
+                      className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                        selectedTicketId === tk.id
+                          ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 shadow-xs'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900/40'
                       }`}
                     >
-                      {tk.status}
-                    </span>
-                  </div>
-                  <div className="text-slate-600 dark:text-slate-300 font-medium mt-1">{tk.appType}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
-                    目标对象: {tk.targetMemberName} · {tk.submittedAt}
-                  </div>
-                </div>
-              ))}
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${getSourceBadgeStyle(tk.source)}`}>
+                            {tk.source}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-white font-mono">{tk.id}</span>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold shrink-0 ${
+                            tk.status === '待分部初审'
+                              ? 'bg-amber-500/10 text-amber-500'
+                              : tk.status === '待经理终审'
+                              ? 'bg-blue-500/10 text-blue-500'
+                              : tk.status === '已批准'
+                              ? 'bg-emerald-500/10 text-emerald-500'
+                              : 'bg-rose-500/10 text-rose-500'
+                          }`}
+                        >
+                          {tk.status}
+                        </span>
+                      </div>
+                      <div className="text-slate-800 dark:text-slate-200 font-semibold">{tk.appType}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center justify-between">
+                        <span className="truncate">目标: {tk.targetMemberName}</span>
+                        <span className="font-mono shrink-0 ml-1">{tk.submittedAt.slice(5)}</span>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
             </div>
 
             {/* Ticket Work Area Column */}
@@ -1814,9 +1960,14 @@ export const CitizenFamilySystem: React.FC<Props> = ({
                     {/* Ticket Header & Reason */}
                     <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white">
-                          工单编号：{activeTicket.id}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white font-mono">
+                            工单编号：{activeTicket.id}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            来源：{activeTicket.source}
+                          </span>
+                        </div>
                         <span className="text-slate-400">{activeTicket.submittedAt}</span>
                       </div>
                       <div className="text-slate-600 dark:text-slate-300">

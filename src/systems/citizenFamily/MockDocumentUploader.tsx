@@ -458,31 +458,43 @@ export const MockDocumentUploader: React.FC<MockDocumentUploaderProps> = ({
               </div>
             </div>
 
-            {/* Actions: Preview & Reupload & Remove */}
-            <div className="flex items-center gap-1 shrink-0">
+            {/* Actions: Preview & Reupload & Remove with visible text labels */}
+            <div className="flex flex-wrap items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowPreviewModal(true)}
-                className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer"
-                title={lang === 'ar' ? 'معاينة الوثيقة' : lang === 'ku' ? 'پیشاندانی بەڵگەنامە' : lang === 'en' ? 'Preview Document' : '预览官方文件原件'}
+                className="px-2.5 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                title="预览官方证明公文"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-3.5 h-3.5" />
+                <span>预览</span>
               </button>
               <button
                 type="button"
                 onClick={handleOpenLocalFilePicker}
-                className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                 title="选择本地新文件重新上传"
               >
-                <RefreshCw className="w-4 h-4" />
+                <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
+                <span>重新上传</span>
+              </button>
+              <button
+                type="button"
+                onClick={triggerSimulatedUpload}
+                className="px-2 py-1 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                title="重新载入官方模板公文"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">重载样本</span>
               </button>
               <button
                 type="button"
                 onClick={handleRemoveFile}
-                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                title="删除此附件"
+                className="px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                title="删除此证明附件"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                <span>删除附件</span>
               </button>
             </div>
           </div>
