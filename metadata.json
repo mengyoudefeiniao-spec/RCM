@@ -1,0 +1,6 @@
+{
+  "name": "国家数字配给卡综合服务与协同管理平台",
+  "description": "基于125项业务功能点全覆盖的独立子系统协同架构平台，涵盖公民与家庭、配给业务、身份核验、代理商管理、电子支付、消息通知、数据交叉核验、仓储管理、运营管理、移动应用及智能与大数据应用。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
