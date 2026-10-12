@@ -8,7 +8,7 @@
           <span>审核工作台</span>
         </h2>
         <p class="text-xs text-slate-500 mt-1">
-          统一受理申请分户、申请解冻、变更户主、成员录入、成员转移等人工核验工单，支持两级在线审批流转。
+          统一受理申请分户、申请解冻、变更户主、代理转移、成员录入、成员转移等人工核验工单，支持两级在线审批流转。
         </p>
       </div>
 
@@ -274,7 +274,7 @@ import { Stamp, Refresh, Document, Check } from '@element-plus/icons-vue';
 
 const reviewStore = useReviewStore();
 
-const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '成员录入', '成员转移'];
+const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '代理转移', '成员录入', '成员转移'];
 const staffOpinionInput = ref('经调阅内政部户籍底册比对属实，官方证明材料核验通过，建议准予办理。');
 const managerNotesInput = ref('符合贸易部例外审批规程，同意专员审查意见，准予签发。');
 
@@ -308,6 +308,8 @@ function getSourceTagType(source) {
       return 'warning';
     case '变更户主':
       return 'primary';
+    case '代理转移':
+      return 'warning';
     case '成员录入':
       return 'success';
     case '成员转移':

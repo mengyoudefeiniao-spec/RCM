@@ -57,6 +57,12 @@ const routes = [
         meta: { title: '申请分立分户', roles: ['admin', 'citizen'] }
       },
       {
+        path: 'citizen/transfer-agent',
+        name: 'TransferAgent',
+        component: () => import('../views/citizen/TransferAgentView.vue'),
+        meta: { title: '申请代理转移', roles: ['admin', 'citizen'] }
+      },
+      {
         path: 'review',
         name: 'ElectronicReview',
         component: () => import('../views/review/ElectronicReviewView.vue'),

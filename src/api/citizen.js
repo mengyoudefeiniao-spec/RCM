@@ -87,3 +87,25 @@ export function addFamilyMember(cardNo, data) {
     data
   });
 }
+
+/**
+ * 获取代理转移候选省份、分部、中心及代理网点元数据 (GET)
+ */
+export function getTransferOptions() {
+  return request({
+    url: '/citizen/transfer-agent/options',
+    method: 'GET'
+  });
+}
+
+/**
+ * 提交配给卡代理转移申请 (POST)
+ * 自动判定省内自动生效或跨省转交电子审核工作台
+ */
+export function submitTransferAgent(data) {
+  return request({
+    url: '/citizen/transfer-agent/submit',
+    method: 'POST',
+    data
+  });
+}

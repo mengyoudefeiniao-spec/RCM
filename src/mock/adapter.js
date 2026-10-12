@@ -5,6 +5,7 @@ import { MOCK_STOCKS } from './data/warehouseData.js';
 import { MOCK_AGENTS } from './data/agentData.js';
 import { MOCK_DASHBOARD_STATS } from './data/dashboardData.js';
 import { MOCK_CITIZEN_CARDS, MOCK_FAMILIES_ADMIN, MOCK_AGENTS_ADMIN } from './data/adminData.js';
+import { TRANSFER_BRANCH_OPTIONS } from './data/transferData.js';
 
 // 本地内存持久化副本，支持前端交互后的数据联动
 let familiesStore = JSON.parse(JSON.stringify(MOCK_FAMILIES));
@@ -348,6 +349,94 @@ export async function mockDispatch(config) {
     return createResponse({ ticketId }, 200, `已成功提交电子审核！工单号【${ticketId}】，等待分部门人员手动审核`);
   }
 
+  // 代理转移候选分部、中心及代理元数据 (GET)
+  if (url.includes('/citizen/transfer-agent/options') && method === 'GET') {
+    return createResponse(TRANSFER_BRANCH_OPTIONS);
+  }
+
+  // 提交配给卡代理转移申请 (POST)
+  if (url.includes('/citizen/transfer-agent/submit') && method === 'POST') {
+    const {
+      cardNo,
+      fromProvince,
+      toProvince,
+      toBranch,
+      toCenter,
+      toFlourAgent,
+      toFoodAgent,
+      district,
+      subDistrict,
+      nearestLandmark,
+      residenceProofDoc,
+      article140Doc
+    } = data;
+
+    // 1. 容量红线检查 (1,500户上限)
+    if (toFlourAgent?.currentHouseholds >= 1500) {
+      return createResponse({}, 400, `所选面粉代理【${toFlourAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`);
+    }
+    if (toFoodAgent?.currentHouseholds >= 1500) {
+      return createResponse({}, 400, `所选食品代理【${toFoodAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`);
+    }
+
+    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const isIntraProvince = fromProvince && toProvince && (fromProvince.split(' ')[0] === toProvince.split(' ')[0]);
+
+    if (isIntraProvince) {
+      // 路径 A: 省内转移 (全自动批准)
+      family.province = toProvince;
+      family.district = `${toBranch} · ${toCenter?.centerName || ''}`;
+      family.agentId = `${toFlourAgent?.id || 'FA'} / ${toFoodAgent?.id || 'FD'}`;
+      family.agentName = `${toFlourAgent?.name || ''} ＆ ${toFoodAgent?.name || ''}`;
+      family.address = `${toProvince} ${district || ''} ${subDistrict || ''} (地标: ${nearestLandmark || '就近街区'})`;
+
+      return createResponse({
+        autoApproved: true,
+        passed: true,
+        message: `【省内转移自动核准通过】已自动将配给卡转移至【${toFlourAgent?.name}】与【${toFoodAgent?.name}】，配给卡代理及供货点已即时更新生效！`
+      }, 200, '省内转移全自动批准生效！');
+    } else {
+      // 路径 B: 跨省转移 (流转至转入分部两级电子审核工作台)
+      const ticketId = `REV-TRF-${Date.now().toString().slice(-4)}`;
+      const newTicket = {
+        id: ticketId,
+        source: '代理转移',
+        categoryType: '跨省代理转移两级审批',
+        appType: `跨省代理转移 (${fromProvince} → ${toProvince})`,
+        cardNo: cardNo || family.rationCardNo,
+        applicantName: family.headName,
+        targetMemberName: `${family.headName} (全户 ${family.memberCount} 人)`,
+        reason: `因工作/家庭迁居由【${fromProvince}】跨省迁往【${toProvince} · ${toBranch} · ${toCenter?.centerName}】，申请就近转移面粉代理【${toFlourAgent?.name}】与食品代理【${toFoodAgent?.name}】。`,
+        status: '待分部初审',
+        submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        staffOpinion: '',
+        managerDecision: '待决',
+        attachments: [
+          { name: residenceProofDoc || '新迁入地居住证及确认证明公函.pdf', type: 'required', verified: true },
+          ...(article140Doc ? [{ name: article140Doc, type: 'required', verified: true }] : [])
+        ],
+        payload: {
+          type: 'transferAgent',
+          cardNo: cardNo || family.rationCardNo,
+          toProvince,
+          toBranch,
+          toCenterName: toCenter?.centerName,
+          toFlourAgent,
+          toFoodAgent,
+          newAddress: `${toProvince} ${district || ''} ${subDistrict || ''} (地标: ${nearestLandmark || '就近街区'})`
+        }
+      };
+      ticketsStore.unshift(newTicket);
+
+      return createResponse({
+        autoApproved: false,
+        passed: true,
+        ticketId,
+        message: `跨省代理转移申请已提交！已流转至【${toProvince}】转入分部审核工作台，工单编号：${ticketId}。`
+      }, 200, `跨省转移申报已转入分部审核工作台 (工单号 ${ticketId})`);
+    }
+  }
+
   // ==========================================
   // 3. 审核工作台模块 (Electronic Review)
   // ==========================================
@@ -386,7 +475,17 @@ export async function mockDispatch(config) {
 
       // 若终审接受，自动落地对应业务实体变更
       if (decision === '接受' && ticket.payload) {
-        if (ticket.payload.newHeadId) {
+        if (ticket.payload.type === 'transferAgent') {
+          // 跨省代理转移终审落地
+          const targetFam = familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
+          if (targetFam) {
+            targetFam.province = ticket.payload.toProvince;
+            targetFam.district = `${ticket.payload.toBranch} · ${ticket.payload.toCenterName}`;
+            targetFam.agentId = `${ticket.payload.toFlourAgent?.id || 'FA'} / ${ticket.payload.toFoodAgent?.id || 'FD'}`;
+            targetFam.agentName = `${ticket.payload.toFlourAgent?.name || ''} ＆ ${ticket.payload.toFoodAgent?.name || ''}`;
+            targetFam.address = ticket.payload.newAddress;
+          }
+        } else if (ticket.payload.newHeadId) {
           const family = familiesStore.find((f) => f.rationCardNo === ticket.cardNo);
           if (family) {
             const newHead = family.members.find((m) => m.id === ticket.payload.newHeadId);

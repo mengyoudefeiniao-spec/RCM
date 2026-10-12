@@ -28,6 +28,10 @@
 
         <!-- 业务快捷操作按钮 -->
         <div class="flex items-center gap-2 flex-wrap">
+          <el-button type="success" plain @click="$router.push('/citizen/transfer-agent')">
+            <el-icon class="mr-1"><Switch /></el-icon>
+            申请代理转移
+          </el-button>
           <el-button type="primary" plain @click="$router.push('/citizen/split-household')">
             <el-icon class="mr-1"><Share /></el-icon>
             申请分户
@@ -350,6 +354,7 @@ import {
   Share,
   UserFilled,
   Unlock,
+  Switch,
   Plus,
   InfoFilled,
   CircleCheckFilled
