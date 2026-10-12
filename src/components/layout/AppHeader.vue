@@ -1,32 +1,36 @@
 <template>
-  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-      <!-- 左侧区域：平台Logo与模块栏靠左排版 -->
-      <div class="flex items-center gap-6 lg:gap-8 flex-1 min-w-0">
-        <!-- 平台标识与名称 -->
-        <div class="flex items-center gap-3 cursor-pointer shrink-0" @click="handleLogoClick">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40 w-full">
+    <!-- 全宽顶栏：Logo贴左上角，模块紧贴左侧靠齐，操作栏固定右上角，彻底移除横向滚动条 -->
+    <div class="w-full px-3 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->
+      <div class="flex items-center gap-3 lg:gap-5 min-w-0">
+        <!-- 平台标识与名称 (固定左上角) -->
+        <div class="flex items-center gap-2.5 cursor-pointer shrink-0" @click="handleLogoClick">
+          <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
             RC
           </div>
-          <div>
-            <div class="text-sm font-bold tracking-wide flex items-center gap-2">
+          <div class="shrink-0">
+            <div class="text-xs sm:text-sm font-bold tracking-wide flex items-center gap-1.5">
               <span>国家数字配给卡平台</span>
-              <el-tag size="small" effect="dark" type="primary" class="font-mono">RCM-V2</el-tag>
+              <el-tag size="small" effect="dark" type="primary" class="font-mono scale-90 origin-left">RCM-V2</el-tag>
             </div>
-            <div class="text-[10px] text-slate-400 font-mono">
+            <div class="text-[9px] text-slate-400 font-mono hidden sm:block">
               REPUBLIC OF IRAQ · MINISTRY OF TRADE
             </div>
           </div>
         </div>
 
-        <!-- 核心系统快捷导航 (靠左紧贴Logo，靠左对齐，防换行保持绝对稳定) -->
-        <nav class="hidden md:flex items-center gap-1 text-xs overflow-x-auto py-1">
+        <!-- 分隔浅竖线 -->
+        <div class="hidden xl:block h-5 w-px bg-slate-800 shrink-0"></div>
+
+        <!-- 核心系统快捷导航 (动态往左侧靠齐，不产生任何滚动条) -->
+        <nav class="hidden md:flex items-center gap-1 text-xs shrink-0">
           <!-- 1. 数据看板：Admin 与 Agent 可见 -->
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/dashboard"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path === '/dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/dashboard' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><DataAnalysis /></el-icon>
             <span>{{ $t('nav.dashboard') }}</span>
@@ -36,8 +40,8 @@
           <router-link
             v-if="hasAccess(['admin', 'citizen'])"
             to="/citizen"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path.startsWith('/citizen') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path.startsWith('/citizen') ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><User /></el-icon>
             <span>{{ $t('nav.citizen') }}</span>
@@ -47,8 +51,8 @@
           <router-link
             v-if="hasAccess(['admin'])"
             to="/review"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path === '/review' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/review' ? 'bg-amber-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Stamp /></el-icon>
             <span>{{ $t('nav.review') }}</span>
@@ -61,8 +65,8 @@
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/warehouse"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path === '/warehouse' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/warehouse' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Box /></el-icon>
             <span>{{ $t('nav.warehouse') }}</span>
@@ -72,8 +76,8 @@
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/agent"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path === '/agent' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/agent' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Shop /></el-icon>
             <span>{{ $t('nav.agent') }}</span>
@@ -83,8 +87,8 @@
           <router-link
             v-if="hasAccess(['admin'])"
             to="/admin"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
-            :class="$route.path.startsWith('/admin') ? 'bg-indigo-600 text-white' : 'text-indigo-300 hover:text-white hover:bg-slate-800'"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path.startsWith('/admin') ? 'bg-indigo-600 text-white font-bold' : 'text-indigo-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Setting /></el-icon>
             <span>{{ $t('nav.admin') }}</span>
@@ -92,16 +96,16 @@
         </nav>
       </div>
 
-      <!-- 用户信息与语言切换 -->
-      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+      <!-- 右侧区域：语言切换、用户信息与退出系统 (固定右上角) -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
         <!-- 国际化语言切换选择器 (4种语言) -->
         <LanguageSwitcher />
 
-        <!-- 角色切换下拉 -->
+        <!-- 角色身份切换下拉 -->
         <el-dropdown trigger="click" @command="handleRoleCommand">
           <span class="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700">
             <span class="w-2 h-2 rounded-full" :class="roleDotColor"></span>
-            <span>{{ roleLabel }}</span>
+            <span class="whitespace-nowrap">{{ roleLabel }}</span>
             <el-icon><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
@@ -114,7 +118,7 @@
         </el-dropdown>
 
         <!-- 退出登录按钮 -->
-        <el-button size="small" type="danger" plain @click="handleLogout">
+        <el-button size="small" type="danger" plain @click="handleLogout" class="whitespace-nowrap">
           <el-icon class="mr-1"><SwitchButton /></el-icon>
           {{ $t('nav.logout') }}
         </el-button>
@@ -152,54 +156,54 @@ onMounted(() => {
   }
 });
 
-// 权限匹配判定
-function hasAccess(roles) {
-  return roles.includes(authStore.currentRole);
-}
-
 const pendingReviewCount = computed(() => {
-  return reviewStore.tickets.filter((t) => t.status === '待分部初审' || t.status === '待经理终审').length;
+  return reviewStore.tickets.filter((t) => t.status.includes('待')).length;
 });
 
 const roleLabel = computed(() => {
-  const r = authStore.currentRole;
-  if (r === 'admin') return '督察官 (Admin)';
-  if (r === 'citizen') return '公民 (Citizen)';
-  if (r === 'agent') return '代理 (Agent)';
-  return r;
+  switch (authStore.currentRole) {
+    case 'admin':
+      return '国家督察官';
+    case 'citizen':
+      return '持卡公民';
+    case 'agent':
+      return '配给代理';
+    default:
+      return '访客';
+  }
 });
 
 const roleDotColor = computed(() => {
-  const r = authStore.currentRole;
-  if (r === 'admin') return 'bg-indigo-400';
-  if (r === 'citizen') return 'bg-blue-400';
-  if (r === 'agent') return 'bg-amber-400';
-  return 'bg-emerald-400';
+  switch (authStore.currentRole) {
+    case 'admin':
+      return 'bg-amber-400';
+    case 'citizen':
+      return 'bg-blue-400';
+    case 'agent':
+      return 'bg-emerald-400';
+    default:
+      return 'bg-slate-400';
+  }
 });
 
+function hasAccess(roles) {
+  if (!roles || roles.length === 0) return true;
+  return roles.includes(authStore.currentRole);
+}
+
 function handleLogoClick() {
-  const target = getDefaultPathByRole(authStore.currentRole);
-  router.push(target);
+  const defaultPath = getDefaultPathByRole(authStore.currentRole);
+  router.push(defaultPath);
 }
 
-function handleRoleCommand(command) {
-  authStore.switchRole(command);
-  // 检查当前所在路径新角色是否有权访问，若无权则跳转至其默认首页
-  const defaultPath = getDefaultPathByRole(command);
-  if (command === 'citizen') {
-    if (!route.path.startsWith('/citizen')) {
-      router.push(defaultPath);
-    }
-  } else if (command === 'agent') {
-    const allowed = ['/agent', '/dashboard', '/warehouse'];
-    if (!allowed.some((p) => route.path.startsWith(p))) {
-      router.push(defaultPath);
-    }
-  }
+function handleRoleCommand(role) {
+  authStore.switchRole(role);
+  const targetPath = getDefaultPathByRole(role);
+  router.push(targetPath);
 }
 
-async function handleLogout() {
-  await authStore.logout();
+function handleLogout() {
+  authStore.logout();
   router.push('/login');
 }
 </script>
