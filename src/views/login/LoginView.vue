@@ -66,26 +66,25 @@
         <el-button
           type="primary"
           size="large"
-          class="w-full font-bold shadow-md"
+          class="w-full font-bold shadow-md tracking-wide"
           :loading="loading"
           @click="handleLogin"
         >
-          立即登录系统
+          登录
         </el-button>
       </el-form>
 
-      <!-- 纸质配给卡数字化注册通道入口 (用户需求 2.1) -->
-      <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-center space-y-1.5">
-        <div class="text-xs text-blue-900 font-semibold">持有历史纸质配给卡，首次使用？</div>
+      <!-- 纸质配给卡数字化注册通道入口 -->
+      <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-2.5 flex items-center justify-between text-xs">
+        <span class="text-slate-600 font-medium">首次使用持纸质配给卡？</span>
         <el-button
           type="primary"
           plain
           size="small"
-          class="w-full font-bold"
+          class="font-bold px-4"
           @click="registerDialogVisible = true"
         >
-          <el-icon class="mr-1"><Document /></el-icon>
-          纸质卡 OCR 扫描识别与公民数字化注册
+          注册
         </el-button>
       </div>
 

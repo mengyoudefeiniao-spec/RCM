@@ -65,8 +65,21 @@ export async function mockDispatch(config) {
     return createResponse({ success: true }, 200, '登出成功');
   }
 
-  // 1.1 纸质配给卡 OCR 扫描识别
+  // 1.1 纸质配给卡 OCR 扫描识别与有效性比对校验
   if (url.includes('/auth/ocr-paper-card') && method === 'POST') {
+    if (data.mockInvalid) {
+      return createResponse({
+        paperCardNo: 'IQ-P-1988-001928',
+        headName: '萨巴赫·努里',
+        province: '巴格达省',
+        district: '曼苏尔区',
+        memberCount: 0,
+        isValid: false,
+        validationStatus: '已注销失效',
+        validationNotice: '核验未通过：该纸质配给卡存根已于历史系统完成注销注记，存在重卡风险，禁止申领新卡。'
+      }, 400, '纸质配给卡已被注销或存根失效，无法升级注册！');
+    }
+
     return createResponse({
       paperCardNo: 'IQ-P-1994-082194',
       headName: data.headName || '艾哈迈德·哈桑·萨利赫',
@@ -75,8 +88,11 @@ export async function mockDispatch(config) {
       memberCount: 5,
       issueYear: '1994',
       branchCode: 'BAG-KARKH-01',
-      confidenceScore: 0.985
-    }, 200, '纸质配给卡内政部底账存根 OCR 解析成功！');
+      confidenceScore: 0.985,
+      isValid: true,
+      validationStatus: '有效在册',
+      validationNotice: '内政部底账存根真实有效，经防重筛查无历史重复建卡记录，准予进入数字化建档。'
+    }, 200, '纸质配给卡 OCR 识别完成并通过有效性校验！');
   }
 
   // 1.2 发送手机短信验证码

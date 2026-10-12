@@ -8,104 +8,159 @@
   >
     <!-- 步骤进度指示条 (Element Plus el-steps) -->
     <el-steps :active="currentStep" finish-status="success" simple class="mb-5">
-      <el-step title="纸质卡 OCR 识别" :icon="Document" />
+      <el-step title="纸质卡拍照与 OCR 识别" :icon="Document" />
       <el-step title="补充公民信息" :icon="Edit" />
       <el-step title="人脸 / 远程验证" :icon="Check" />
     </el-steps>
 
     <!-- ======================================================== -->
-    <!-- 步骤 1: 上传纸质配给卡 OCR 自动识别 -->
+    <!-- 步骤 1: 拍照上传纸质配给卡 (默认开启 OCR 自动识别与底账校验) -->
     <!-- ======================================================== -->
     <div v-if="currentStep === 0" class="space-y-4">
-      <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-800 space-y-1">
-        <div class="font-bold flex items-center gap-1.5">
-          <el-icon><InfoFilled /></el-icon>
-          <span>纸质配给卡换发数字化电子卡指南</span>
+      <!-- 顶部提示：明确指出 OCR 默认开启 -->
+      <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <el-icon class="text-blue-600"><Camera /></el-icon>
+          <span>OCR 识别与内政部存根对碰系统<strong>已默认开启</strong>，请直接拍照或上传纸质配给卡正面照片。</span>
         </div>
-        <p>请上传现持有之伊拉克贸易部历史纸质家庭配给卡正面照片，系统将启动 OCR 视觉模型自动识别存根档案。</p>
+        <el-tag size="small" type="success" effect="dark" class="font-mono">OCR ACTIVE</el-tag>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 左侧：纸卡预览与模拟上传 -->
+        <!-- 左侧：拍照/上传纸质旧卡区域 -->
         <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 text-white flex flex-col justify-between space-y-3">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-xs font-bold text-amber-400">历史纸质配给卡存根</span>
-            <el-tag size="small" type="warning" effect="dark">旧卡样本</el-tag>
+            <span class="text-xs font-bold text-amber-400">纸质配给卡影像采集</span>
+            <span class="text-[10px] text-slate-400 font-mono">AUTOSCAN · READY</span>
           </div>
 
-          <!-- 模拟纸质旧卡 -->
-          <div class="aspect-4/3 rounded-lg bg-amber-950/40 border border-amber-800/60 p-3 flex flex-col justify-between text-amber-200 font-mono text-[10px] relative overflow-hidden">
-            <!-- OCR 扫描光束动效 -->
-            <div v-if="scanning" class="absolute inset-x-0 h-1 bg-emerald-400/80 shadow-[0_0_12px_#34d399] animate-pulse top-1/2"></div>
+          <!-- 模拟取景器 / 上传预览卡片 -->
+          <div
+            class="aspect-4/3 rounded-lg border-2 border-dashed transition-all relative overflow-hidden flex flex-col items-center justify-center p-3 cursor-pointer"
+            :class="hasUploadedPhoto ? 'border-emerald-500 bg-amber-950/40 text-amber-200' : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-blue-500 hover:bg-slate-900'"
+            @click="triggerPhotoCapture"
+          >
+            <!-- 正在扫描激光束动效 -->
+            <div v-if="scanning" class="absolute inset-x-0 h-1 bg-emerald-400/90 shadow-[0_0_14px_#34d399] animate-pulse top-1/2 z-20"></div>
 
-            <div class="flex justify-between border-b border-amber-800/40 pb-1">
-              <span>بطاقة التموين الغذائية (1994)</span>
-              <span>BAGHDAD</span>
+            <div v-if="hasUploadedPhoto" class="w-full h-full flex flex-col justify-between font-mono text-[10px] relative z-10">
+              <div class="flex justify-between border-b border-amber-800/40 pb-1">
+                <span>بطاقة التموين (1994)</span>
+                <span class="text-emerald-400 font-bold">已捕获图像</span>
+              </div>
+              <div class="space-y-1 my-auto">
+                <div>纸卡编号: <strong class="text-white">IQ-P-1994-082194</strong></div>
+                <div>持卡户主: <strong class="text-white">艾哈迈德·哈桑·萨利赫</strong></div>
+                <div>在册人数: <strong class="text-white">5 人 (全额保供)</strong></div>
+              </div>
+              <div class="text-[9px] text-amber-400/80 border-t border-amber-800/40 pt-1 flex justify-between">
+                <span>MINISTRY OF TRADE</span>
+                <span>存根印章清晰</span>
+              </div>
             </div>
-            <div class="space-y-1 my-auto">
-              <div>纸质编号: <strong class="text-white">IQ-P-1994-082194</strong></div>
-              <div>户主姓名: <strong class="text-white">艾哈迈德·哈桑·萨利赫</strong></div>
-              <div>保障人口: <strong class="text-white">5 人 (全额配发)</strong></div>
-              <div>配发分部: <strong>卡尔赫第一代销所 (BAG-01)</strong></div>
+
+            <div v-else class="text-center space-y-2 py-4">
+              <div class="w-12 h-12 rounded-full bg-slate-800 text-blue-400 flex items-center justify-center mx-auto">
+                <el-icon :size="24"><Camera /></el-icon>
+              </div>
+              <div class="text-xs font-bold text-slate-200">点击拍照 / 上传纸质配给卡照片</div>
+              <div class="text-[10px] text-slate-500">拍照完成后系统将自动进行 OCR 解析与存根校验</div>
             </div>
-            <div class="text-[9px] text-amber-400/80 border-t border-amber-800/40 pt-1 flex justify-between">
-              <span>MINISTRY OF TRADE</span>
-              <span>STAMP: VERIFIED</span>
-            </div>
+
+            <!-- 隐藏的真实文件选择控件，方便移动端真实调起摄像头 -->
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              @change="handleFileChange"
+            />
           </div>
 
-          <div class="flex gap-2">
-            <el-button size="small" type="primary" plain class="w-full" :loading="scanning" @click="handleRunOcr">
-              {{ scanning ? '正在光学解析识别...' : '启动智能 OCR 识别' }}
+          <!-- 拍照上传操作按钮 -->
+          <div class="grid grid-cols-2 gap-2">
+            <el-button size="small" type="primary" :loading="scanning" class="w-full font-bold" @click="triggerPhotoCapture">
+              <el-icon class="mr-1"><Camera /></el-icon>
+              {{ hasUploadedPhoto ? '重新拍照上传' : '拍照上传配给卡' }}
+            </el-button>
+            <el-button size="small" type="info" plain class="w-full" :disabled="scanning" @click="triggerTestInvalidCard">
+              模拟已注销纸卡
             </el-button>
           </div>
         </div>
 
-        <!-- 右侧：OCR 提取数据预览卡 -->
+        <!-- 右侧：自动 OCR 识别与有效性校验状态卡 -->
         <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-              <span class="text-xs font-bold text-slate-800">OCR 结构化识别结果</span>
-              <el-tag v-if="ocrExtracted" size="small" type="success">匹配度 98.5%</el-tag>
-              <el-tag v-else size="small" type="info">待识别</el-tag>
+              <span class="text-xs font-bold text-slate-800">OCR 识别与存根比对</span>
+              <el-tag v-if="scanning" size="small" type="warning" effect="dark">
+                自动解析中...
+              </el-tag>
+              <el-tag v-else-if="ocrExtracted && isValidCard" size="small" type="success" effect="dark">
+                有效存根 ✓
+              </el-tag>
+              <el-tag v-else-if="ocrExtracted && !isValidCard" size="small" type="danger" effect="dark">
+                已失效 ✕
+              </el-tag>
+              <el-tag v-else size="small" type="info">待拍照上传</el-tag>
             </div>
 
-            <div v-if="ocrExtracted" class="mt-3 space-y-2 text-xs">
+            <!-- 识别并校验成功展示 -->
+            <div v-if="ocrExtracted && isValidCard" class="mt-3 space-y-2 text-xs">
+              <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-1.5">
+                <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+                <span>纸卡有效！即将自动进入下一步补充信息...</span>
+              </div>
               <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">纸质配给卡编号:</span>
+                <span class="text-slate-400">纸质卡号:</span>
                 <span class="font-mono font-bold text-slate-800">{{ ocrData.paperCardNo }}</span>
               </div>
               <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">法定户主姓名:</span>
+                <span class="text-slate-400">法定户主:</span>
                 <span class="font-bold text-slate-800">{{ ocrData.headName }}</span>
               </div>
               <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">行政省份 / 区域:</span>
+                <span class="text-slate-400">行政辖区:</span>
                 <span class="text-slate-700">{{ ocrData.province }} {{ ocrData.district }}</span>
               </div>
               <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">在册核准人数:</span>
+                <span class="text-slate-400">核准人口:</span>
                 <span class="font-bold text-blue-600">{{ ocrData.memberCount }} 人</span>
               </div>
               <div class="flex justify-between py-1">
-                <span class="text-slate-400">内政部底账状态:</span>
-                <span class="text-emerald-600 font-bold">存根有效无重卡记录 ✓</span>
+                <span class="text-slate-400">存根校验:</span>
+                <span class="text-emerald-600 font-bold">有效在册，准予数字化换发</span>
               </div>
             </div>
 
-            <div v-else class="h-32 flex flex-col items-center justify-center text-slate-400 text-xs gap-1">
-              <el-icon :size="28"><Document /></el-icon>
-              <span>点击左侧按钮启动 OCR 扫描识别</span>
+            <!-- 校验失败阻断提示 -->
+            <div v-else-if="ocrExtracted && !isValidCard" class="mt-3 space-y-2 text-xs">
+              <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-semibold flex items-center gap-1.5">
+                <el-icon class="text-rose-600"><CircleCloseFilled /></el-icon>
+                <span>校验未通过：纸卡存根失效</span>
+              </div>
+              <p class="text-rose-700 leading-relaxed text-[11px]">
+                {{ validationNotice || '系统查验到该纸质配给卡已于历史档案中注销或存在重卡异常，禁止换发新卡。' }}
+              </p>
+            </div>
+
+            <!-- 初始待上传状态 -->
+            <div v-else class="h-32 flex flex-col items-center justify-center text-slate-400 text-xs gap-1.5">
+              <el-icon :size="28" class="text-slate-300"><Picture /></el-icon>
+              <span>拍摄上传照片后，系统将自动识别并核验有效性</span>
             </div>
           </div>
 
+          <!-- 推进按钮（支持自动跳转，也可手动点击立即推进） -->
           <el-button
             type="primary"
             class="w-full font-bold"
-            :disabled="!ocrExtracted"
+            :disabled="!ocrExtracted || !isValidCard"
             @click="currentStep = 1"
           >
-            下一步：补充公民身份信息
+            {{ isValidCard ? '已通过校验：下一步补充公民信息' : '请拍照上传有效纸质配给卡' }}
           </el-button>
         </div>
       </div>
@@ -265,7 +320,10 @@ import {
   Document,
   Edit,
   Check,
-  InfoFilled
+  Camera,
+  Picture,
+  CircleCheckFilled,
+  CircleCloseFilled
 } from '@element-plus/icons-vue';
 
 const props = defineProps({
@@ -278,13 +336,26 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const visible = ref(props.modelValue);
-watch(() => props.modelValue, (val) => { visible.value = val; });
+watch(() => props.modelValue, (val) => {
+  visible.value = val;
+  if (val) {
+    // 弹窗打开时重置状态
+    currentStep.value = 0;
+  }
+});
 
 const currentStep = ref(0);
 
-// 步骤 1: OCR 识别
+// ==========================================
+// 步骤 1: 拍照上传与自动 OCR 识别及有效性校验
+// ==========================================
+const fileInputRef = ref(null);
 const scanning = ref(false);
+const hasUploadedPhoto = ref(false);
 const ocrExtracted = ref(false);
+const isValidCard = ref(false);
+const validationNotice = ref('');
+
 const ocrData = reactive({
   paperCardNo: '',
   headName: '',
@@ -293,27 +364,76 @@ const ocrData = reactive({
   memberCount: 5
 });
 
-async function handleRunOcr() {
+// 调起拍照或上传
+function triggerPhotoCapture() {
+  if (fileInputRef.value) {
+    fileInputRef.value.click();
+  } else {
+    executeAutoOcrProcess(false);
+  }
+}
+
+function handleFileChange(event) {
+  const file = event.target.files?.[0];
+  if (file || true) {
+    // 用户拍照或选图后，立即默认自动执行 OCR 解析与存根校验，无需再次点击
+    executeAutoOcrProcess(false);
+  }
+}
+
+// 模拟测试注销卡
+function triggerTestInvalidCard() {
+  executeAutoOcrProcess(true);
+}
+
+// 核心：拍照后自动执行 OCR 扫描并比对内政部有效性存根
+async function executeAutoOcrProcess(mockInvalid = false) {
   scanning.value = true;
+  hasUploadedPhoto.value = true;
+  ocrExtracted.value = false;
+  isValidCard.value = false;
+  validationNotice.value = '';
+
   try {
-    const res = await ocrScanPaperCard();
+    const res = await ocrScanPaperCard({ mockInvalid });
     Object.assign(ocrData, res);
     ocrExtracted.value = true;
-    // 同步到步骤 2 表单
-    registerForm.headName = res.headName;
-    registerForm.paperCardNo = res.paperCardNo;
-    registerForm.province = res.province;
-    registerForm.district = res.district;
-    registerForm.memberCount = res.memberCount;
-    ElMessage.success('纸质配给卡内政部存根 OCR 解析匹配成功！');
-  } catch (e) {
-    ElMessage.error('OCR 扫描失败');
+    isValidCard.value = !!res.isValid;
+    validationNotice.value = res.validationNotice || '';
+
+    if (res.isValid) {
+      // 校验是有效配给卡，自动带入步骤 2 表单
+      registerForm.headName = res.headName;
+      registerForm.paperCardNo = res.paperCardNo;
+      registerForm.province = res.province;
+      registerForm.district = res.district;
+      registerForm.memberCount = res.memberCount;
+
+      ElMessage.success('纸质配给卡照片识别成功，存根真实有效！');
+
+      // 自动推进到下一步补充公民信息
+      setTimeout(() => {
+        if (currentStep.value === 0 && isValidCard.value) {
+          currentStep.value = 1;
+          ElMessage.info('已自动进入下一步：请补充公民身份信息');
+        }
+      }, 1200);
+    } else {
+      ElMessage.error(res.validationNotice || '该纸质配给卡已失效或已被注销，禁止建档！');
+    }
+  } catch (err) {
+    ocrExtracted.value = true;
+    isValidCard.value = false;
+    validationNotice.value = '系统查验到该纸质配给卡已被注销或存根失效，无法升级注册！';
+    ElMessage.error('纸质配给卡校验失效，禁止推进！');
   } finally {
     scanning.value = false;
   }
 }
 
+// ==========================================
 // 步骤 2: 补充公民信息
+// ==========================================
 const registerForm = reactive({
   headName: '',
   paperCardNo: '',
@@ -361,7 +481,9 @@ function handleProceedToVerify() {
   currentStep.value = 2;
 }
 
+// ==========================================
 // 步骤 3: 认证与开户
+// ==========================================
 const showBiometricModal = ref(false);
 const showRemoteModal = ref(false);
 const biometricPassed = ref(false);
@@ -394,7 +516,6 @@ async function handleCompleteRegistration() {
     authStore.userProfile = res.user;
     localStorage.setItem('rcm_auth_token', res.token);
     localStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
-    // 标记当前设备为受信任设备
     localStorage.setItem('rcm_trusted_device', 'true');
 
     visible.value = false;
