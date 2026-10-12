@@ -170,6 +170,29 @@ export async function mockDispatch(config) {
     return createResponse(family);
   }
 
+  // 申报添加新家庭成员 (POST)
+  if (url.match(/\/citizen\/family\/([^/]+)\/members/) && method === 'POST') {
+    const cardNo = url.split('/')[3];
+    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const newMember = {
+      id: `M-${Date.now().toString().slice(-4)}`,
+      name: data.name,
+      nationalId: data.nationalId,
+      familyCode: family.familyCode,
+      relation: data.relation || '子女',
+      birthDate: data.birthDate || '2020-01-01',
+      gender: data.gender || '男',
+      status: '正常',
+      phone: data.phone || '',
+      residenceInfo: data.residenceInfo || family.address,
+      isUpdatedInSystem: true,
+      faceVerified: true
+    };
+    family.members.push(newMember);
+    family.memberCount = family.members.length;
+    return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
+  }
+
   // 更新成员信息 (PUT)
   if (url.match(/\/citizen\/members\/([^/]+)/) && method === 'PUT') {
     const memberId = url.split('/').pop();

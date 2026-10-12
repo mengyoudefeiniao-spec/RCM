@@ -2,14 +2,20 @@
   <div class="change-head-view space-y-6">
     <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
       <!-- 标题与业务说明 -->
-      <div>
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <el-icon class="text-blue-600"><UserFilled /></el-icon>
-          <span>户主死亡注销与替代户主任命</span>
-        </h2>
-        <p class="text-xs text-slate-500 mt-1">
-          原户主身故需提交法医死亡医学证明公函与户籍注销公函，经内政部底账核验后任命新法定户主。
-        </p>
+      <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <el-icon class="text-blue-600"><UserFilled /></el-icon>
+            <span>户主死亡注销与替代户主任命</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">
+            原户主身故需提交法医死亡医学证明公函与户籍注销公函，经内政部底账核验后任命新法定户主。
+          </p>
+        </div>
+        <el-button size="small" plain @click="$router.push('/citizen')">
+          <el-icon class="mr-1"><Back /></el-icon>
+          返回公民服务
+        </el-button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,7 +108,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
-import { UserFilled } from '@element-plus/icons-vue';
+import { UserFilled, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();

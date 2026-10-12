@@ -75,3 +75,15 @@ export function submitSplitHouseholdForReview(data) {
     data
   });
 }
+
+/**
+ * 申报添加新家庭成员 (POST)
+ * 校验生物特征、位置、婚姻社会关系、儿童证明、父亲生物识别及电子支付
+ */
+export function addFamilyMember(cardNo, data) {
+  return request({
+    url: `/citizen/family/${cardNo}/members`,
+    method: 'POST',
+    data
+  });
+}

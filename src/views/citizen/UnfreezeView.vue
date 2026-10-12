@@ -1,14 +1,20 @@
 <template>
   <div class="unfreeze-view space-y-6">
     <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-      <div>
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <el-icon class="text-amber-500"><Unlock /></el-icon>
-          <span>数字配给卡冻结状态申诉与解冻申请</span>
-        </h2>
-        <p class="text-xs text-slate-500 mt-1">
-          支持因商业注销、旅行归国、薪资核定、社区网格复查等 8 大法定解冻情形提交对应官方证明材料。
-        </p>
+      <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <el-icon class="text-amber-500"><Unlock /></el-icon>
+            <span>数字配给卡冻结状态申诉与解冻申请</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">
+            支持因商业注销、旅行归国、薪资核定、社区网格复查等 8 大法定解冻情形提交对应官方证明材料。
+          </p>
+        </div>
+        <el-button size="small" plain @click="$router.push('/citizen')">
+          <el-icon class="mr-1"><Back /></el-icon>
+          返回公民服务
+        </el-button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -89,7 +95,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
-import { Unlock } from '@element-plus/icons-vue';
+import { Unlock, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();

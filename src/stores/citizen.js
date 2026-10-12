@@ -6,7 +6,8 @@ import {
   submitChangeHouseholdHead,
   submitApplyUnfreeze,
   autoJudgeSplitHousehold,
-  submitSplitHouseholdForReview
+  submitSplitHouseholdForReview,
+  addFamilyMember
 } from '../api/citizen.js';
 import { ElMessage } from 'element-plus';
 
@@ -90,6 +91,16 @@ export const useCitizenStore = defineStore('citizen', () => {
     return res;
   }
 
+  /**
+   * 申报添加新家庭成员
+   */
+  async function addMember(cardNo, payload) {
+    const res = await addFamilyMember(cardNo, payload);
+    ElMessage.success(res.message || '新成员添加成功并纳保');
+    await fetchFamilies();
+    return res;
+  }
+
   return {
     families,
     currentFamily,
@@ -97,6 +108,7 @@ export const useCitizenStore = defineStore('citizen', () => {
     fetchFamilies,
     selectFamily,
     updateMember,
+    addMember,
     changeHead,
     applyUnfreeze,
     judgeSplitHousehold,

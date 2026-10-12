@@ -2,14 +2,20 @@
   <div class="split-household-view space-y-6">
     <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
       <!-- 标题与业务说明 -->
-      <div>
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <el-icon class="text-purple-600"><Share /></el-icon>
-          <span>申请家庭分立分户 (优先智能判别)</span>
-        </h2>
-        <p class="text-xs text-slate-500 mt-1">
-          将现有配给卡内已婚成员（夫妻年满 14 周岁且具法定结婚证明）分立并设立全新数字配给卡。
-        </p>
+      <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <el-icon class="text-purple-600"><Share /></el-icon>
+            <span>申请家庭分立分户 (优先智能判别)</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">
+            将现有配给卡内已婚成员（夫妻年满 14 周岁且具法定结婚证明）分立并设立全新数字配给卡。
+          </p>
+        </div>
+        <el-button size="small" plain @click="$router.push('/citizen')">
+          <el-icon class="mr-1"><Back /></el-icon>
+          返回公民服务
+        </el-button>
       </div>
 
       <!-- 智能办理流转须知 -->
@@ -149,7 +155,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
-import { Share, Compass, Document, WarningFilled, Stamp } from '@element-plus/icons-vue';
+import { Share, Compass, Document, WarningFilled, Stamp, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();

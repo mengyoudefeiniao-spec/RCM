@@ -74,23 +74,23 @@
           </div>
         </div>
 
-        <!-- 显式操作按钮栏：预览、重新上传、重载样本、删除 -->
-        <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+        <!-- 显式操作按钮栏：优化按钮排版、尺寸与图标，自适应小容器与换行 -->
+        <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
           <el-button size="small" type="primary" plain @click="previewModalVisible = true">
-            <el-icon class="mr-1"><View /></el-icon>
-            预览原件
+            <el-icon class="mr-1"><ZoomIn /></el-icon>
+            预览
           </el-button>
-          <el-button size="small" @click="triggerOpenLocalFile">
-            <el-icon class="mr-1"><Upload /></el-icon>
-            重新上传
+          <el-button size="small" plain @click="triggerOpenLocalFile">
+            <el-icon class="mr-1"><UploadFilled /></el-icon>
+            重传
           </el-button>
-          <el-button size="small" text @click="triggerReloadTemplate">
-            <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-button size="small" text type="info" @click="triggerReloadTemplate">
+            <el-icon class="mr-1"><RefreshRight /></el-icon>
             重载样本
           </el-button>
           <el-button size="small" type="danger" plain @click="handleRemoveFile">
-            <el-icon class="mr-1"><Delete /></el-icon>
-            删除附件
+            <el-icon class="mr-1"><DeleteFilled /></el-icon>
+            删除
           </el-button>
         </div>
       </div>
@@ -111,14 +111,14 @@
         <div class="text-[11px] text-slate-400">
           支持 PDF、JPG、PNG 格式 · 最大 15MB · 自动提取 OCR 防伪条码与公章印鉴
         </div>
-        <div class="flex items-center gap-2.5 mt-2 flex-wrap justify-center">
-          <el-button type="primary" size="small" @click="triggerOpenLocalFile">
-            <el-icon class="mr-1"><FolderOpened /></el-icon>
-            选择本地文件上传
+        <div class="flex items-center gap-3 mt-2 flex-wrap justify-center">
+          <el-button type="primary" size="small" class="font-medium" @click="triggerOpenLocalFile">
+            <el-icon class="mr-1"><UploadFilled /></el-icon>
+            选择文件上传
           </el-button>
-          <el-button size="small" @click="triggerReloadTemplate">
-            <el-icon class="mr-1"><Refresh /></el-icon>
-            一键载入官方公文样本
+          <el-button size="small" plain @click="triggerReloadTemplate">
+            <el-icon class="mr-1"><DocumentCopy /></el-icon>
+            载入公文样本
           </el-button>
         </div>
       </div>
@@ -183,12 +183,11 @@ import { ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
   Document,
-  View,
-  Upload,
-  Refresh,
-  Delete,
+  ZoomIn,
   UploadFilled,
-  FolderOpened
+  RefreshRight,
+  DeleteFilled,
+  DocumentCopy
 } from '@element-plus/icons-vue';
 
 const props = defineProps({
