@@ -109,3 +109,35 @@ export function submitTransferAgent(data) {
     data
   });
 }
+
+/**
+ * 获取可转移成员演示候选池列表 (GET)
+ */
+export function getTransferableMemberList() {
+  return request({
+    url: '/citizen/member-transfer/candidates',
+    method: 'GET'
+  });
+}
+
+/**
+ * 根据国民编号精确查询待转移成员档案与前置更新状态 (GET)
+ */
+export function queryTransferableMember(nationalId) {
+  return request({
+    url: `/citizen/member-transfer/query/${nationalId}`,
+    method: 'GET'
+  });
+}
+
+/**
+ * 提交成员转移申请 (POST)
+ * 涵盖妻子自动识别、子女条件与第140号决议自动/两级电子审核分流
+ */
+export function submitMemberTransfer(data) {
+  return request({
+    url: '/citizen/member-transfer/submit',
+    method: 'POST',
+    data
+  });
+}

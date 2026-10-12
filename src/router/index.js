@@ -63,6 +63,12 @@ const routes = [
         meta: { title: '申请代理转移', roles: ['admin', 'citizen'] }
       },
       {
+        path: 'citizen/member-transfer',
+        name: 'MemberTransfer',
+        component: () => import('../views/citizen/MemberTransferView.vue'),
+        meta: { title: '申请成员转移', roles: ['admin', 'citizen'] }
+      },
+      {
         path: 'review',
         name: 'ElectronicReview',
         component: () => import('../views/review/ElectronicReviewView.vue'),

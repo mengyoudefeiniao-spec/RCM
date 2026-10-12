@@ -32,6 +32,10 @@
             <el-icon class="mr-1"><Switch /></el-icon>
             {{ $t('citizen.applyTransferAgent') }}
           </el-button>
+          <el-button color="#6366f1" plain @click="$router.push('/citizen/member-transfer')">
+            <el-icon class="mr-1"><User /></el-icon>
+            {{ $t('citizen.applyMemberTransfer') }}
+          </el-button>
           <el-button type="primary" plain @click="$router.push('/citizen/split-household')">
             <el-icon class="mr-1"><Share /></el-icon>
             {{ $t('citizen.applySplitHousehold') }}
@@ -352,6 +356,7 @@ import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import {
   Share,
+  User,
   UserFilled,
   Unlock,
   Switch,

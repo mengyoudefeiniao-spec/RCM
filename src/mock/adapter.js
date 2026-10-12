@@ -6,9 +6,11 @@ import { MOCK_AGENTS } from './data/agentData.js';
 import { MOCK_DASHBOARD_STATS } from './data/dashboardData.js';
 import { MOCK_CITIZEN_CARDS, MOCK_FAMILIES_ADMIN, MOCK_AGENTS_ADMIN } from './data/adminData.js';
 import { TRANSFER_BRANCH_OPTIONS } from './data/transferData.js';
+import { MOCK_TRANSFERABLE_MEMBERS } from './data/memberTransferData.js';
 
 // 本地内存持久化副本，支持前端交互后的数据联动
 let familiesStore = JSON.parse(JSON.stringify(MOCK_FAMILIES));
+let transferableMembersStore = JSON.parse(JSON.stringify(MOCK_TRANSFERABLE_MEMBERS));
 let ticketsStore = JSON.parse(JSON.stringify(MOCK_REVIEW_TICKETS));
 let stocksStore = JSON.parse(JSON.stringify(MOCK_STOCKS));
 let agentsStore = JSON.parse(JSON.stringify(MOCK_AGENTS));
@@ -438,6 +440,149 @@ export async function mockDispatch(config) {
   }
 
   // ==========================================
+  // 2.2 成员转移业务 (Member Transfer)
+  // ==========================================
+  // 成员转移候选池 (GET)
+  if (url.includes('/citizen/member-transfer/candidates') && method === 'GET') {
+    return createResponse(transferableMembersStore);
+  }
+
+  // 根据国民编号精确查询待转移成员档案与状态 (GET)
+  if (url.includes('/citizen/member-transfer/query') && method === 'GET') {
+    const nationalId = url.split('/').pop();
+    const found = transferableMembersStore.find((m) => m.nationalId === nationalId);
+    if (!found) {
+      return createResponse({}, 404, `未查询到国民编号为【${nationalId}】的公民档案，请核对后重试`);
+    }
+    return createResponse(found);
+  }
+
+  // 提交成员转移申请 (POST)
+  if (url.includes('/citizen/member-transfer/submit') && method === 'POST') {
+    const {
+      targetCardNo,
+      member,
+      transferType, // 'wife' | 'child' | 'guardianship' | 'support' | 'other'
+      article140Doc,
+      reasonDoc,
+      paymentInfo
+    } = data;
+
+    // 核心前置拦截：未在系统中更新的成员从一开始就禁止选择和转移
+    if (!member || member.isUpdatedInSystem === false) {
+      return createResponse({}, 400, '【前置条件未满足】：该成员未在配给卡系统中完成登记更新，国家法令严禁办理转移业务！');
+    }
+
+    const currentFamily = familiesStore.find((f) => f.rationCardNo === targetCardNo) || familiesStore[0];
+    const isArticle140 = !!(member.isArticle140Area || currentFamily.province.includes('基尔库克') || currentFamily.province.includes('迪亚拉') || currentFamily.province.includes('尼尼微'));
+
+    let autoApproved = false;
+    let reasonText = '';
+
+    // 5. 按成员类型划分的自动批准条件
+    if (transferType === 'wife') {
+      // 5.1 妻子转移：同家庭编号 且 双方父亲姓名不同
+      // 夫家父亲名 (艾哈迈德的父亲为哈桑·萨利赫)
+      const isIdentified = (member.familyCode === currentFamily.familyCode) && (member.fatherName !== '哈桑·萨利赫');
+      if (isIdentified) {
+        autoApproved = true;
+        reasonText = '【妻子自动识别通过】：妻子与新卡户主同属已登记家庭档案，且双方父亲姓名不同（排除近亲），系统自动核准通过。';
+      } else {
+        autoApproved = false;
+        reasonText = '系统未能自动匹配妻子关联信息（家庭档案未同步或近亲识别异常），申请转交配给分部两级电子审核。';
+      }
+    } else if (transferType === 'child') {
+      // 5.2 子女转移
+      if (isArticle140) {
+        // 在第140号决议地区以内：子女转移始终须经配给分部员工电子审核，并上传第140号决议无异议文件
+        autoApproved = false;
+        reasonText = '涉及第140号决议争议覆盖区域，依据国家法规，子女转移必须转交转入分部两级人工电子审核并备案无异议公函。';
+      } else {
+        // 在第140号决议地区以外：同时满足 1.家庭编号一致 2.父亲名字与新卡户主一致
+        const famCodeMatch = member.familyCode === currentFamily.familyCode;
+        const fatherNameMatch = member.fatherName === currentFamily.headName;
+        if (famCodeMatch && fatherNameMatch) {
+          autoApproved = true;
+          reasonText = '【子女自动识别通过】：子女与新卡家庭编号一致且生父姓名与新卡户主一致，系统自动批准转移。';
+        } else {
+          autoApproved = false;
+          reasonText = '子女亲属比对信息未完全吻合，申请转交配给分部员工进行电子审核。';
+        }
+      }
+    } else {
+      // 5.3 其他情况（监护、抚养或其他原因）：始终须经配给分部员工电子审核
+      autoApproved = false;
+      reasonText = `转移事由属于【${transferType === 'guardianship' ? '法定监护' : transferType === 'support' ? '亲属抚养' : '特殊法定原因'}】，依法须经配给分部两级人工审查法定证明公文。`;
+    }
+
+    if (autoApproved) {
+      // 路径 1: 自动批准：将成员正式移入当前家庭
+      const newMember = {
+        id: `M-TRF-${Date.now().toString().slice(-4)}`,
+        name: member.name,
+        nationalId: member.nationalId,
+        familyCode: currentFamily.familyCode,
+        relation: transferType === 'wife' ? '配偶' : '子女',
+        birthDate: member.birthDate || '1995-01-01',
+        gender: member.gender || '女',
+        status: '正常',
+        phone: member.phone || currentFamily.phone,
+        residenceInfo: currentFamily.address,
+        isUpdatedInSystem: true,
+        faceVerified: true
+      };
+
+      currentFamily.members.push(newMember);
+      currentFamily.memberCount = currentFamily.members.length;
+
+      // 从候选池移除
+      transferableMembersStore = transferableMembersStore.filter((m) => m.nationalId !== member.nationalId);
+
+      return createResponse({
+        autoApproved: true,
+        passed: true,
+        member: newMember,
+        message: `【成员转移全自动批准生效】${reasonText}，新成员【${member.name}】已成功移入您的电子配给卡！`
+      }, 200, '成员转移已自动批准并即刻生效！');
+    } else {
+      // 路径 2: 电子审核：转入配给分部工作台 (分部初审 -> 经理终审)
+      const ticketId = `REV-MEM-${Date.now().toString().slice(-4)}`;
+      const newTicket = {
+        id: ticketId,
+        source: '成员转移',
+        categoryType: transferType === 'wife' ? '妻子转移人工核验' : transferType === 'child' ? '子女跨卡转移审核' : '法定监护/抚养跨卡转移',
+        appType: `跨卡成员转移 (${member.name})`,
+        cardNo: targetCardNo || currentFamily.rationCardNo,
+        applicantName: currentFamily.headName,
+        targetMemberName: `${member.name} (国民号: ${member.nationalId})`,
+        reason: `${reasonText} 原持卡所属【${member.currentProvince} · ${member.currentCenterName}】`,
+        status: '待分部初审',
+        submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        staffOpinion: '',
+        managerDecision: '待决',
+        attachments: [
+          { name: reasonDoc || '亲属法律关系证明公函.pdf', type: 'required', verified: true },
+          ...(article140Doc ? [{ name: article140Doc, type: 'required', verified: true }] : [])
+        ],
+        payload: {
+          type: 'memberTransfer',
+          targetCardNo,
+          member,
+          transferType
+        }
+      };
+      ticketsStore.unshift(newTicket);
+
+      return createResponse({
+        autoApproved: false,
+        passed: true,
+        ticketId,
+        message: `成员转移申请已受理！工单号【${ticketId}】，已转入接收分部审核工作台，请等待分部专员与经理两级终审签批。`
+      }, 200, `已成功转入分部电子审核工作台 (工单号 ${ticketId})`);
+    }
+  }
+
+  // ==========================================
   // 3. 审核工作台模块 (Electronic Review)
   // ==========================================
   if (url.includes('/review/tickets') && method === 'GET') {
@@ -505,6 +650,27 @@ export async function mockDispatch(config) {
               m.freezeReason = '';
             }
           });
+        } else if (ticket.payload.type === 'memberTransfer' && ticket.payload.member) {
+          // 成员转移终审落地
+          const targetFam = familiesStore.find((f) => f.rationCardNo === ticket.payload.targetCardNo) || familiesStore[0];
+          if (targetFam) {
+            const mem = ticket.payload.member;
+            targetFam.members.push({
+              id: `M-TRF-${Date.now().toString().slice(-4)}`,
+              name: mem.name,
+              nationalId: mem.nationalId,
+              familyCode: targetFam.familyCode,
+              relation: ticket.payload.transferType === 'wife' ? '配偶' : ticket.payload.transferType === 'child' ? '子女' : '被监护亲属',
+              birthDate: mem.birthDate || '2000-01-01',
+              gender: mem.gender || '女',
+              status: '正常',
+              phone: mem.phone || targetFam.phone,
+              residenceInfo: targetFam.address,
+              isUpdatedInSystem: true,
+              faceVerified: true
+            });
+            targetFam.memberCount = targetFam.members.length;
+          }
         }
       }
     }
