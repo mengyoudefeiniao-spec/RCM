@@ -4,16 +4,27 @@
     <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none"></div>
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 relative z-10 border border-slate-100">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5 relative z-10 border border-slate-100">
       <!-- 官方徽标与标题 -->
-      <div class="text-center space-y-2">
-        <div class="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mx-auto shadow-md">
+      <div class="text-center space-y-1.5">
+        <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mx-auto shadow-md">
           RC
         </div>
         <h2 class="text-xl font-bold text-slate-900">国家数字配给卡综合服务平台</h2>
         <p class="text-xs text-slate-500 font-mono">
           REPUBLIC OF IRAQ · MINISTRY OF TRADE
         </p>
+      </div>
+
+      <!-- 新设备终端安全状态条 -->
+      <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'">
+        <div class="flex items-center gap-1.5">
+          <el-icon><Monitor /></el-icon>
+          <span>终端状态：<strong class="font-mono">{{ isTrustedDevice ? '已受信任授信设备' : '未授信新设备终端' }}</strong></span>
+        </div>
+        <el-button type="info" text size="small" @click="toggleDeviceTrust">
+          {{ isTrustedDevice ? '模拟新设备' : '恢复授信' }}
+        </el-button>
       </div>
 
       <!-- 登录表单 -->
@@ -45,9 +56,9 @@
           />
         </el-form-item>
 
-        <div class="flex items-center justify-between text-xs text-slate-500 mb-4">
+        <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
           <el-checkbox v-model="rememberMe">记住当前设备</el-checkbox>
-          <span class="text-blue-600 cursor-pointer hover:underline" @click="biometricDialogVisible = true">
+          <span class="text-blue-600 cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
             生物特征 / NFC 免密认证
           </span>
         </div>
@@ -63,8 +74,23 @@
         </el-button>
       </el-form>
 
-      <!-- 快速演示通道 -->
-      <div class="pt-4 border-t border-slate-100 space-y-2">
+      <!-- 纸质配给卡数字化注册通道入口 (用户需求 2.1) -->
+      <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-center space-y-1.5">
+        <div class="text-xs text-blue-900 font-semibold">持有历史纸质配给卡，首次使用？</div>
+        <el-button
+          type="primary"
+          plain
+          size="small"
+          class="w-full font-bold"
+          @click="registerDialogVisible = true"
+        >
+          <el-icon class="mr-1"><Document /></el-icon>
+          纸质卡 OCR 扫描识别与公民数字化注册
+        </el-button>
+      </div>
+
+      <!-- 快速演示预设身份切换 -->
+      <div class="pt-3 border-t border-slate-100 space-y-2">
         <div class="text-[11px] text-slate-400 font-semibold text-center">
           快速演示预设身份切换：
         </div>
@@ -82,9 +108,70 @@
       </div>
     </div>
 
-    <!-- 模拟生物特征/NFC读取弹窗 -->
+    <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
+    <CitizenRegisterDialog v-model="registerDialogVisible" />
+
+    <!-- 弹窗 2: 新设备登录二次核验选择弹窗 (用户需求 2.2) -->
     <el-dialog
-      v-model="biometricDialogVisible"
+      v-model="newDeviceVerifyDialogVisible"
+      title="新设备安全登录二次身份核验"
+      width="480px"
+      align-center
+    >
+      <div class="space-y-4">
+        <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 space-y-1">
+          <div class="font-bold">检测到未授信新设备终端接入</div>
+          <p>
+            依据《国家配给安全与反冒领条例》，新终端首次登录已注册账户，必须执行二次身份核验以绑定设备硬件指纹。
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-xs font-semibold text-slate-700">请选择二次身份核验方式：</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div
+              class="border rounded-xl p-3 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all space-y-1"
+              @click="openBiometricVerify"
+            >
+              <el-icon :size="24" class="text-blue-600"><Camera /></el-icon>
+              <div class="text-xs font-bold text-slate-800">人脸与国民卡核验</div>
+              <div class="text-[10px] text-slate-400">现场自拍与芯片对碰</div>
+            </div>
+
+            <div
+              class="border rounded-xl p-3 text-center cursor-pointer hover:border-amber-500 hover:bg-amber-50/50 transition-all space-y-1"
+              @click="openRemoteVerify"
+            >
+              <el-icon :size="24" class="text-amber-600"><Location /></el-icon>
+              <div class="text-xs font-bold text-slate-800">异地成员远程核验</div>
+              <div class="text-[10px] text-slate-400">异地手机 GPS 核查</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="newDeviceVerifyDialogVisible = false">取消</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 3: 生物人脸活体核验弹窗 (新设备登录使用) -->
+    <BiometricVerifyDialog
+      v-model="biometricVerifyDialogVisible"
+      :user-name="loginForm.username"
+      :user-card-no="loginForm.username"
+      @success="handleSecondaryVerifySuccess"
+    />
+
+    <!-- 弹窗 4: 异地成员远程核验弹窗 (新设备登录使用) -->
+    <RemoteVerifyDialog
+      v-model="remoteVerifyDialogVisible"
+      default-member-name="艾哈迈德·哈桑·萨利赫"
+      @success="handleSecondaryVerifySuccess"
+    />
+
+    <!-- 弹窗 5: 快捷生物特征 / NFC 免密感应核验 -->
+    <el-dialog
+      v-model="quickNfcDialogVisible"
       title="统一国民卡 NFC 芯片及活体人脸核验"
       width="420px"
       align-center
@@ -99,8 +186,8 @@
         </div>
       </div>
       <template #footer>
-        <el-button @click="biometricDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="biometricLoading" @click="simulateBiometricPass">
+        <el-button @click="quickNfcDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="quickNfcLoading" @click="simulateQuickNfcPass">
           模拟感应核验通过
         </el-button>
       </template>
@@ -112,19 +199,50 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
-import { User, Lock, Iphone } from '@element-plus/icons-vue';
+import { getDefaultPathByRole } from '../../router/index.js';
+import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
+import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
+import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
+import {
+  User,
+  Lock,
+  Iphone,
+  Monitor,
+  Document,
+  Camera,
+  Location
+} from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-import { getDefaultPathByRole } from '../../router/index.js';
-
 const formRef = ref(null);
 const loading = ref(false);
 const rememberMe = ref(true);
-const biometricDialogVisible = ref(false);
-const biometricLoading = ref(false);
+
+// 终端授信状态
+const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true');
+
+function toggleDeviceTrust() {
+  if (isTrustedDevice.value) {
+    localStorage.removeItem('rcm_trusted_device');
+    isTrustedDevice.value = false;
+    ElMessage.warning('已切换为【未授信新设备】状态，登录时将强制触发二次身份认证！');
+  } else {
+    localStorage.setItem('rcm_trusted_device', 'true');
+    isTrustedDevice.value = true;
+    ElMessage.success('已切换为【已授信设备】状态');
+  }
+}
+
+// 弹窗控制
+const registerDialogVisible = ref(false);
+const newDeviceVerifyDialogVisible = ref(false);
+const biometricVerifyDialogVisible = ref(false);
+const remoteVerifyDialogVisible = ref(false);
+const quickNfcDialogVisible = ref(false);
+const quickNfcLoading = ref(false);
 
 const loginForm = reactive({
   username: 'admin',
@@ -140,18 +258,50 @@ async function handleLogin() {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid) => {
     if (valid) {
-      loading.value = true;
-      try {
-        const ok = await authStore.login(loginForm.username, loginForm.password);
-        if (ok) {
-          const target = getDefaultPathByRole(authStore.currentRole);
-          router.push(target);
-        }
-      } finally {
-        loading.value = false;
+      // 判断是否为新设备 (非 Admin 角色或者新设备模式下触发二次身份认证)
+      if (!isTrustedDevice.value && loginForm.username !== 'admin') {
+        newDeviceVerifyDialogVisible.value = true;
+        return;
       }
+
+      // 已授信或管理员，直接登录
+      executeDirectLogin();
     }
   });
+}
+
+async function executeDirectLogin() {
+  loading.value = true;
+  try {
+    const ok = await authStore.login(loginForm.username, loginForm.password);
+    if (ok) {
+      if (rememberMe.value) {
+        localStorage.setItem('rcm_trusted_device', 'true');
+      }
+      const target = getDefaultPathByRole(authStore.currentRole);
+      router.push(target);
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+function openBiometricVerify() {
+  newDeviceVerifyDialogVisible.value = false;
+  biometricVerifyDialogVisible.value = true;
+}
+
+function openRemoteVerify() {
+  newDeviceVerifyDialogVisible.value = false;
+  remoteVerifyDialogVisible.value = true;
+}
+
+// 新设备二次认证成功回调
+async function handleSecondaryVerifySuccess() {
+  localStorage.setItem('rcm_trusted_device', 'true');
+  isTrustedDevice.value = true;
+  ElMessage.success('新设备身份认证通过，已将本终端加入授信白名单！');
+  executeDirectLogin();
 }
 
 function fillPreset(role) {
@@ -167,13 +317,14 @@ function fillPreset(role) {
   }
 }
 
-async function simulateBiometricPass() {
-  biometricLoading.value = true;
+async function simulateQuickNfcPass() {
+  quickNfcLoading.value = true;
   setTimeout(async () => {
-    biometricLoading.value = false;
-    biometricDialogVisible.value = false;
+    quickNfcLoading.value = false;
+    quickNfcDialogVisible.value = false;
     ElMessage.success('统一国民卡 NFC 读取成功，活体人脸比对一致 ✓');
     await authStore.login('RC-10029381', 'iq-pass-2026');
+    localStorage.setItem('rcm_trusted_device', 'true');
     const target = getDefaultPathByRole(authStore.currentRole);
     router.push(target);
   }, 600);

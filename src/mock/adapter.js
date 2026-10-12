@@ -65,6 +65,82 @@ export async function mockDispatch(config) {
     return createResponse({ success: true }, 200, '登出成功');
   }
 
+  // 1.1 纸质配给卡 OCR 扫描识别
+  if (url.includes('/auth/ocr-paper-card') && method === 'POST') {
+    return createResponse({
+      paperCardNo: 'IQ-P-1994-082194',
+      headName: data.headName || '艾哈迈德·哈桑·萨利赫',
+      province: '巴格达省',
+      district: '卡尔赫区 (Al-Karkh)',
+      memberCount: 5,
+      issueYear: '1994',
+      branchCode: 'BAG-KARKH-01',
+      confidenceScore: 0.985
+    }, 200, '纸质配给卡内政部底账存根 OCR 解析成功！');
+  }
+
+  // 1.2 发送手机短信验证码
+  if (url.includes('/auth/send-sms') && method === 'POST') {
+    const code = '839201'; // 固化演示验证码便于一键填入
+    return createResponse({
+      smsCode: code,
+      phone: data.phone,
+      expireSeconds: 300
+    }, 200, `验证码已发送至手机 ${data.phone || ''}，演示验证码：${code}`);
+  }
+
+  // 1.3 纸质卡升级换发与公民账号注册
+  if (url.includes('/auth/register-citizen') && method === 'POST') {
+    const newCardNo = `RC-1002${Math.floor(2000 + Math.random() * 7000)}`;
+    const newUser = {
+      id: `usr-${Date.now().toString().slice(-4)}`,
+      username: newCardNo,
+      name: `${data.headName || '新注册持卡人'} (户主)`,
+      role: 'citizen',
+      department: `${data.province || '巴格达省'}${data.district || '卡尔赫区'}`,
+      cardNo: newCardNo,
+      token: `jwt-token-citizen-new-${Date.now()}`
+    };
+    MOCK_USERS.push(newUser);
+    return createResponse({
+      user: newUser,
+      token: newUser.token,
+      cardNo: newCardNo
+    }, 200, `恭喜！纸质配给卡数字化升级成功，已签发新电子配给卡【${newCardNo}】！`);
+  }
+
+  // 1.4 活体人脸识别与统一国民卡双因子核验
+  if (url.includes('/auth/verify-biometric') && method === 'POST') {
+    return createResponse({
+      passed: true,
+      similarityScore: '99.4%',
+      chipStatus: 'AUTHENTIC',
+      matchNotice: '生物活体人脸与统一国民卡 ICAO-9303 防伪芯片匹配通过',
+      timestamp: new Date().toISOString()
+    }, 200, '生物活体及统一卡双因子对碰成功！');
+  }
+
+  // 1.5 异地家庭成员 GPS 与邀请码远程核查
+  if (url.includes('/auth/verify-remote') && method === 'POST') {
+    const { memberName, location } = data;
+    if (location === 'same' || location === '同一住址') {
+      return createResponse({
+        passed: false,
+        message: '核验未通过：定位检测该成员与户主处于同一物理位置，不属于异地居住情形，拒绝授权。'
+      }, 400, '非异地成员定位异常');
+    }
+    if (!memberName || memberName.trim().length < 2) {
+      return createResponse({
+        passed: false,
+        message: '核验未通过：姓名与家庭存根不吻合。'
+      }, 400, '姓名核对未通过');
+    }
+    return createResponse({
+      passed: true,
+      message: `异地基站与 GPS 核验通过！已确认家庭成员【${memberName}】在【${location || '异地'}】的合法配给授信。`
+    }, 200, '异地远程验证通过！');
+  }
+
   // ==========================================
   // 2. 公民与家庭管理模块 (Citizen & Family)
   // ==========================================
