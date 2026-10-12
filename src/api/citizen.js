@@ -122,11 +122,10 @@ export function getTransferableMemberList() {
 
 /**
  * 根据国民编号查询待转移成员档案与前置更新状态 (GET)
- * 支持 mode = 'demo' (演示自适应模拟) 或 'real' (严格真实验证)
  */
-export function queryTransferableMember(nationalId, mode = 'demo') {
+export function queryTransferableMember(nationalId) {
   return request({
-    url: `/citizen/member-transfer/query/${nationalId}?mode=${mode}`,
+    url: `/citizen/member-transfer/query/${nationalId}`,
     method: 'GET'
   });
 }

@@ -49,190 +49,120 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 步骤 1: 录入成员国民编号与资格核验 (演示模式与真实验证逻辑区分) -->
+      <!-- 步骤 1: 录入成员国民编号与资格核验 (家庭成员列表与精确核验) -->
       <!-- ======================================================== -->
-      <div v-show="currentStep === 1" class="space-y-4 animate-fade-in">
+      <div v-show="currentStep === 1" class="space-y-5 animate-fade-in">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
             <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold">1</span>
             <span>{{ $t('memberTransfer.step1') }}</span>
           </label>
-          <span class="text-xs text-slate-400">核验更新状态与被转移成员活体意愿</span>
+          <span class="text-xs text-slate-400">核验系统更新状态与被转移成员活体意愿</span>
         </div>
 
-        <!-- 演示模式 vs 真实核验模式 切换面板 -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div class="flex items-center gap-2.5">
-            <span class="font-bold text-slate-700 flex items-center gap-1">
-              <el-icon class="text-indigo-600"><Operation /></el-icon>
-              <span>{{ $t('memberTransfer.modeTitle') }}：</span>
+        <!-- 关联家庭成员列表 (卡片选择) -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <el-icon class="text-indigo-600"><UserFilled /></el-icon>
+              <span>{{ $t('memberTransfer.familyMemberList') }}</span>
             </span>
-            <el-radio-group v-model="verificationMode" size="small" @change="handleModeChange">
-              <el-radio-button value="demo">
-                <span class="flex items-center gap-1 font-semibold">
-                  <el-icon><MagicStick /></el-icon>
-                  <span>{{ $t('memberTransfer.demoMode') }}</span>
-                </span>
-              </el-radio-button>
-              <el-radio-button value="real">
-                <span class="flex items-center gap-1 font-semibold">
-                  <el-icon><Lock /></el-icon>
-                  <span>{{ $t('memberTransfer.realMode') }}</span>
-                </span>
-              </el-radio-button>
-            </el-radio-group>
+            <span class="text-[11px] text-slate-400">{{ $t('memberTransfer.familyMemberHint') }}</span>
           </div>
-          <div class="text-[11px]">
-            <span v-if="verificationMode === 'demo'" class="text-indigo-600 font-medium">
-              💡 {{ $t('memberTransfer.demoModeDesc') }}
-            </span>
-            <span v-else class="text-amber-700 font-medium">
-              🛡️ {{ $t('memberTransfer.realModeDesc') }}
-            </span>
-          </div>
-        </div>
 
-        <!-- 快捷演示推荐编号清单 (一键填充并核验) -->
-        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-2 text-xs">
-          <div class="font-bold text-indigo-900 flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <el-icon><InfoFilled /></el-icon>
-              <span>推荐用于演示的标准被转移国民编号（点击即可一键填入并核验）：</span>
+          <!-- 家庭成员卡片网格 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div
+              v-for="item in familyMemberList"
+              :key="item.nationalId"
+              class="p-3.5 rounded-xl border transition-all cursor-pointer relative flex flex-col justify-between gap-2"
+              :class="selectedMember?.nationalId === item.nationalId
+                ? 'bg-indigo-50/60 border-indigo-500 shadow-xs ring-1 ring-indigo-500'
+                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'"
+              @click="handleSelectFamilyMember(item)"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                    <span>{{ item.name }}</span>
+                    <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">
+                      {{ item.relationLabel || '关联成员' }}
+                    </el-tag>
+                  </div>
+                  <div class="text-[11px] font-mono text-slate-500 mt-0.5">
+                    ID: {{ item.nationalId }}
+                  </div>
+                </div>
+
+                <!-- 状态徽章 -->
+                <el-tag
+                  size="small"
+                  :type="item.isUpdatedInSystem ? 'success' : 'danger'"
+                  effect="dark"
+                  class="shrink-0 scale-90"
+                >
+                  {{ item.isUpdatedInSystem ? '有效在册' : '未更新' }}
+                </el-tag>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100/80 pt-1.5 mt-0.5">
+                <span>{{ item.currentProvince }}</span>
+                <span class="text-indigo-600 font-semibold" v-if="selectedMember?.nationalId === item.nationalId">
+                  ✓ 已选择
+                </span>
+                <span class="text-slate-400 hover:text-indigo-600" v-else>
+                  点击选择
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="flex flex-wrap gap-2 pt-1">
-            <el-tag
-              size="default"
-              class="cursor-pointer hover:scale-105 transition-transform font-mono font-bold"
-              type="success"
-              effect="plain"
-              @click="fillAndQuery('198302194821')"
-            >
-              198302194821 (妻子·自动批准)
-            </el-tag>
-            <el-tag
-              size="default"
-              class="cursor-pointer hover:scale-105 transition-transform font-mono font-bold"
-              type="primary"
-              effect="plain"
-              @click="fillAndQuery('201509124481')"
-            >
-              201509124481 (子女·自动批准)
-            </el-tag>
-            <el-tag
-              size="default"
-              class="cursor-pointer hover:scale-105 transition-transform font-mono font-bold"
-              type="warning"
-              effect="plain"
-              @click="fillAndQuery('201608219902')"
-            >
-              201608219902 (子女·140区两级审核)
-            </el-tag>
-            <el-tag
-              size="default"
-              class="cursor-pointer hover:scale-105 transition-transform font-mono font-bold"
-              type="info"
-              effect="plain"
-              @click="fillAndQuery('201011029871')"
-            >
-              201011029871 (法定监护·两级审核)
-            </el-tag>
-            <el-tag
-              size="default"
-              class="cursor-pointer hover:scale-105 transition-transform font-mono font-bold"
-              type="danger"
-              effect="plain"
-              @click="fillAndQuery('200109128833')"
-            >
-              200109128833 (未在系统更新·红线拦截)
-            </el-tag>
           </div>
         </div>
 
         <!-- 国民编号查询输入框 -->
-        <div class="flex gap-3">
-          <div class="flex-1">
-            <el-input
-              v-model="searchNationalId"
-              :placeholder="verificationMode === 'demo' ? '输入被转移成员国民编号 (如 198302194821 或任意编号如 1233213)' : '输入国家数据库收录之有效国民编号 (如 198302194821)'"
+        <div class="space-y-1.5 pt-1">
+          <div class="text-xs font-semibold text-slate-700">
+            {{ $t('memberTransfer.inputNationalId') }}：
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <el-input
+                v-model="searchNationalId"
+                :placeholder="$t('memberTransfer.inputNationalIdPlaceholder')"
+                size="large"
+                clearable
+                maxlength="18"
+                @keyup.enter="handleQueryMember"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+            </div>
+            <el-button
+              type="primary"
               size="large"
-              clearable
-              maxlength="18"
-              @keyup.enter="handleQueryMember"
+              :loading="querying"
+              class="px-6 font-bold"
+              @click="handleQueryMember"
             >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
+              {{ $t('memberTransfer.queryBtn') }}
+            </el-button>
           </div>
-          <el-button
-            type="primary"
-            size="large"
-            :loading="querying"
-            class="px-6 font-bold"
-            @click="handleQueryMember"
-          >
-            {{ $t('memberTransfer.queryBtn') }}
-          </el-button>
-        </div>
-
-        <!-- 真实验证模式下的查无此人拦截提示卡片 -->
-        <div v-if="realModeErrorMsg" class="p-4 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 space-y-1.5 animate-shake">
-          <div class="font-bold flex items-center gap-2 text-sm text-amber-800">
-            <el-icon :size="18"><CircleCloseFilled /></el-icon>
-            <span>国家人口档案库拦截提示</span>
-          </div>
-          <p class="leading-relaxed">
-            {{ realModeErrorMsg }}
-          </p>
         </div>
 
         <!-- 查找到的被转移成员卡片 -->
-        <div v-if="selectedMember" class="space-y-4">
-          <!-- 演示场景快捷切换器 (在演示模式下极大地提升演示体验) -->
-          <div v-if="verificationMode === 'demo'" class="p-3 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2 text-xs">
-            <div class="font-bold text-purple-900 flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <el-icon><Tools /></el-icon>
-                <span>{{ $t('memberTransfer.scenarioSwitcherTitle') }}</span>
-              </div>
-              <el-tag size="small" type="purple" effect="plain" v-if="selectedMember.isDemoGenerated">
-                {{ $t('memberTransfer.demoBadge') }}
-              </el-tag>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <el-button size="small" :type="currentScenarioKey === 'wifeAuto' ? 'primary' : 'default'" @click="applyScenarioPreset('wifeAuto')">
-                {{ $t('memberTransfer.scenarioWifeAuto') }}
-              </el-button>
-              <el-button size="small" :type="currentScenarioKey === 'wifeReview' ? 'primary' : 'default'" @click="applyScenarioPreset('wifeReview')">
-                {{ $t('memberTransfer.scenarioWifeReview') }}
-              </el-button>
-              <el-button size="small" :type="currentScenarioKey === 'childAuto' ? 'primary' : 'default'" @click="applyScenarioPreset('childAuto')">
-                {{ $t('memberTransfer.scenarioChildAuto') }}
-              </el-button>
-              <el-button size="small" :type="currentScenarioKey === 'child140' ? 'primary' : 'default'" @click="applyScenarioPreset('child140')">
-                {{ $t('memberTransfer.scenarioChild140') }}
-              </el-button>
-              <el-button size="small" :type="currentScenarioKey === 'guardianship' ? 'primary' : 'default'" @click="applyScenarioPreset('guardianship')">
-                {{ $t('memberTransfer.scenarioGuardianship') }}
-              </el-button>
-              <el-button size="small" :type="currentScenarioKey === 'notUpdated' ? 'danger' : 'default'" plain @click="applyScenarioPreset('notUpdated')">
-                {{ $t('memberTransfer.scenarioNotUpdated') }}
-              </el-button>
-            </div>
-          </div>
-
+        <div v-if="selectedMember" class="space-y-4 pt-1">
           <!-- 法定红线拦截警示条 (当未在系统中更新时) -->
           <div
             v-if="!selectedMember.isUpdatedInSystem"
-            class="p-4 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-900 space-y-2 animate-shake"
+            class="p-4 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 space-y-1.5 animate-shake"
           >
             <div class="font-bold flex items-center gap-2 text-sm text-rose-800">
-              <el-icon :size="20"><CircleCloseFilled /></el-icon>
+              <el-icon :size="18"><CircleCloseFilled /></el-icon>
               <span>{{ $t('memberTransfer.notUpdatedAlert') }}</span>
             </div>
             <p class="text-xs text-rose-700 leading-relaxed">
-              依据伊拉克贸易部配给总局第 2026/04 号规程，所有成员在发起跨卡转移前，必须已在国家配给卡系统中完成个人登记信息更新（包含人脸微表情特征、常住地网格与民事地位）。该成员尚未在系统中更新，<strong>系统严厉禁止办理转移业务，禁止点击下一步！</strong>
+              依据伊拉克贸易部配给总局规程，所有成员在发起跨卡转移前，必须已在国家配给卡系统中完成登记信息更新（包含活体特征与民事地位）。该成员尚未在系统中更新，<strong>系统严厉禁止办理转移业务！</strong>
             </p>
           </div>
 
@@ -598,6 +528,7 @@ import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import {
   User,
+  UserFilled,
   Back,
   Right,
   Search,
@@ -608,11 +539,7 @@ import {
   Connection,
   Compass,
   CreditCard,
-  Cellphone,
-  Operation,
-  MagicStick,
-  Lock,
-  Tools
+  Cellphone
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
@@ -620,20 +547,15 @@ const router = useRouter();
 const { t } = useI18n();
 const citizenStore = useCitizenStore();
 
-// 模式管理: demo (演示自适应模拟) vs real (严格真实验证)
-const verificationMode = ref('demo');
-const realModeErrorMsg = ref('');
-const currentScenarioKey = ref('wifeAuto');
-
 // 步骤状态
 const currentStep = ref(1);
 const querying = ref(false);
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
 
-// 候选池与查询状态
-const demoMemberList = ref([]);
-const searchNationalId = ref('198302194821'); // 默认填入标准演示国民编号（妻子·自动批准）
+// 家庭成员列表与查询状态
+const familyMemberList = ref([]);
+const searchNationalId = ref('198302194821'); // 默认初始国民编号
 const selectedMember = ref(null);
 
 // 生物识别与附件
@@ -652,42 +574,35 @@ onMounted(async () => {
   if (!citizenStore.currentFamily) {
     await citizenStore.fetchFamilies();
   }
-  await loadDemoMembers();
+  await loadFamilyMembers();
 });
 
-async function loadDemoMembers() {
+async function loadFamilyMembers() {
   try {
     const res = await getTransferableMemberList();
     const list = Array.isArray(res) ? res : (res?.data || []);
-    demoMemberList.value = list;
+    familyMemberList.value = list;
 
-    // 默认执行一次预设编号核验，保证页面一进入便有合法档案并可直接点击下一步
-    if (searchNationalId.value) {
-      await handleQueryMember();
+    // 默认选中第一位在册成员
+    if (list.length > 0) {
+      handleSelectFamilyMember(list[0]);
     }
   } catch (err) {
-    console.error('加载候选成员失败', err);
+    console.error('加载家庭成员列表失败', err);
   }
 }
 
-// 一键填入并查询核验
-function fillAndQuery(id) {
-  searchNationalId.value = id;
-  handleQueryMember();
+// 在家庭成员列表中点击选择某位成员
+function handleSelectFamilyMember(member) {
+  selectedMember.value = { ...member };
+  searchNationalId.value = member.nationalId;
+  biometricVerified.value = member.isUpdatedInSystem ? true : false;
+  transferReasonType.value = member.relationType || 'wife';
+  proofDocUploaded.value = Boolean(member.proofDocName || true);
+  article140Uploaded.value = false;
 }
 
-function handleModeChange(mode) {
-  realModeErrorMsg.value = '';
-  if (mode === 'real') {
-    if (selectedMember.value?.isDemoGenerated) {
-      selectedMember.value = null;
-    }
-    ElMessage.info('已切换为真实验证模式，将严格核验国家内政部公民数据库');
-  } else {
-    ElMessage.success('已切换为演示模式，支持任意编号自适应生成与测试场景切换');
-  }
-}
-
+// 依据国民编号主动查询核验
 async function handleQueryMember() {
   const qId = searchNationalId.value?.trim();
   if (!qId) {
@@ -695,136 +610,25 @@ async function handleQueryMember() {
     return;
   }
 
-  realModeErrorMsg.value = '';
   querying.value = true;
   try {
-    const res = await queryTransferableMember(qId, verificationMode.value);
-    // 兼容 Axios 响应拦截器解包或未解包情况
+    const res = await queryTransferableMember(qId);
     const memberData = (res && res.nationalId) ? res : (res?.data || null);
 
     if (memberData) {
       selectedMember.value = { ...memberData };
-      // 若成员在系统中已更新，默认核验通过
       biometricVerified.value = memberData.isUpdatedInSystem ? true : false;
       transferReasonType.value = memberData.relationType || 'wife';
       proofDocUploaded.value = Boolean(memberData.proofDocName || true);
       article140Uploaded.value = false;
-
-      // 自动映射当前场景预设标识
-      if (!memberData.isUpdatedInSystem) {
-        currentScenarioKey.value = 'notUpdated';
-      } else if (memberData.relationType === 'wife' && memberData.familyCode === currentFamilyCode.value) {
-        currentScenarioKey.value = 'wifeAuto';
-      } else if (memberData.relationType === 'wife') {
-        currentScenarioKey.value = 'wifeReview';
-      } else if (memberData.relationType === 'child' && memberData.isArticle140Area) {
-        currentScenarioKey.value = 'child140';
-      } else if (memberData.relationType === 'child') {
-        currentScenarioKey.value = 'childAuto';
-      } else {
-        currentScenarioKey.value = 'guardianship';
-      }
-
-      if (memberData.isDemoGenerated) {
-        ElMessage.success(t('memberTransfer.demoGeneratedNotice', { id: qId }));
-      } else {
-        ElMessage.success(`档案核验通过：${memberData.name} (${memberData.relationLabel || '在册公民'})`);
-      }
+      ElMessage.success(`档案核验通过：${memberData.name}`);
     }
   } catch (err) {
     selectedMember.value = null;
-    const msg = err.message || t('memberTransfer.realNotFoundAlert', { id: qId });
-    realModeErrorMsg.value = msg;
+    const msg = err.message || t('memberTransfer.notFoundAlert', { id: qId });
     ElMessage.error(msg);
   } finally {
     querying.value = false;
-  }
-}
-
-// 快速应用测试场景预设 (极大地赋能演示与评审)
-function applyScenarioPreset(key) {
-  if (!selectedMember.value) return;
-  currentScenarioKey.value = key;
-
-  switch (key) {
-    case 'wifeAuto':
-      selectedMember.value.relationType = 'wife';
-      selectedMember.value.familyCode = currentFamilyCode.value;
-      selectedMember.value.fatherName = '拉希德·哈米德'; // 与哈桑·萨利赫不同
-      selectedMember.value.isArticle140Area = false;
-      selectedMember.value.isUpdatedInSystem = true;
-      selectedMember.value.faceVerified = true;
-      selectedMember.value.proofDocName = '最高司法委员会民事结婚公证书_MC.pdf';
-      transferReasonType.value = 'wife';
-      biometricVerified.value = true;
-      proofDocUploaded.value = true;
-      ElMessage.success('已切换场景：妻子转移（同家庭编号·自动识别通过）');
-      break;
-
-    case 'wifeReview':
-      selectedMember.value.relationType = 'wife';
-      selectedMember.value.familyCode = 'FAM-DIFF-99812'; // 家庭编号不同
-      selectedMember.value.fatherName = '马吉德·卡利勒';
-      selectedMember.value.isArticle140Area = false;
-      selectedMember.value.isUpdatedInSystem = true;
-      selectedMember.value.faceVerified = true;
-      selectedMember.value.proofDocName = '异地结婚公证书与分部档案_DIY.pdf';
-      transferReasonType.value = 'wife';
-      biometricVerified.value = true;
-      proofDocUploaded.value = true;
-      ElMessage.info('已切换场景：妻子转移（家庭编号不一致·转两级人工审核）');
-      break;
-
-    case 'childAuto':
-      selectedMember.value.relationType = 'child';
-      selectedMember.value.familyCode = currentFamilyCode.value;
-      selectedMember.value.fatherName = currentHeadName.value; // 与户主完全一致
-      selectedMember.value.isArticle140Area = false;
-      selectedMember.value.isUpdatedInSystem = true;
-      selectedMember.value.faceVerified = true;
-      selectedMember.value.proofDocName = '卫生部医学出生证明及户口记录_BC.pdf';
-      transferReasonType.value = 'child';
-      biometricVerified.value = true;
-      proofDocUploaded.value = true;
-      ElMessage.success('已切换场景：子女转移（非140地区·条件吻合·自动批准）');
-      break;
-
-    case 'child140':
-      selectedMember.value.relationType = 'child';
-      selectedMember.value.familyCode = currentFamilyCode.value;
-      selectedMember.value.fatherName = currentHeadName.value;
-      selectedMember.value.isArticle140Area = true; // 命中第140号决议
-      selectedMember.value.currentProvince = '基尔库克省 (Kirkuk)';
-      selectedMember.value.currentCenterName = '基尔库克第一配给中心 (#101)';
-      selectedMember.value.isUpdatedInSystem = true;
-      selectedMember.value.faceVerified = true;
-      selectedMember.value.proofDocName = '出生证明公证书_KIR.pdf';
-      transferReasonType.value = 'child';
-      biometricVerified.value = true;
-      proofDocUploaded.value = true;
-      article140Uploaded.value = false;
-      ElMessage.warning('已切换场景：子女转移（命中第140号决议·强制两级审核与无异议公函）');
-      break;
-
-    case 'guardianship':
-      selectedMember.value.relationType = 'guardianship';
-      selectedMember.value.familyCode = 'FAM-EXT-33012';
-      selectedMember.value.isArticle140Area = false;
-      selectedMember.value.isUpdatedInSystem = true;
-      selectedMember.value.faceVerified = true;
-      selectedMember.value.proofDocName = '民事法庭法定监护终审判决公函_GD.pdf';
-      transferReasonType.value = 'guardianship';
-      biometricVerified.value = true;
-      proofDocUploaded.value = true;
-      ElMessage.info('已切换场景：法定监护（司法裁决·转两级人工审核）');
-      break;
-
-    case 'notUpdated':
-      selectedMember.value.isUpdatedInSystem = false; // 红线拦截
-      selectedMember.value.faceVerified = false;
-      biometricVerified.value = false;
-      ElMessage.error('已切换场景：受限成员（未在系统更新·红线拦截禁止下一步）');
-      break;
   }
 }
 
@@ -896,7 +700,7 @@ const finalPathDecision = computed(() => {
 function handleNextStep() {
   if (currentStep.value === 1) {
     if (!selectedMember.value) {
-      ElMessage.warning('请先输入被转移成员国民编号并点击【查询档案并核验】');
+      ElMessage.warning('请先选择待转移成员或输入国民编号完成核验');
       return;
     }
     if (!selectedMember.value.isUpdatedInSystem) {
