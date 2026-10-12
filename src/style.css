@@ -11,7 +11,8 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* 统一支持现代无衬线、阿拉伯语与库尔德语的自适应字体栈，确保字形饱满且布局度量稳定 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", "Tahoma", "Helvetica Neue", Arial, sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
 }
@@ -35,14 +36,8 @@ body {
   background: #94a3b8;
 }
 
-/* RTL 排版与阿拉伯语/库尔德语字体系 */
-[dir="rtl"], .rtl-layout {
-  font-family: system-ui, -apple-system, "Segoe UI", "Tahoma", "Noto Sans Arabic", "Scheherazade New", sans-serif;
-  text-align: right;
-}
-
-[dir="rtl"] .font-mono {
+/* 保证多语言切换时布局稳定性，数字与编码统一LTR单向显示 */
+.font-mono {
   direction: ltr;
   unicode-bidi: isolate;
 }
-

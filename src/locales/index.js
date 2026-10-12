@@ -13,10 +13,10 @@ import ar from './ar.js';
 import ku from './ku.js';
 
 export const SUPPORTED_LANGUAGES = [
-  { code: 'zh', name: '简体中文', nativeName: '中文 (ZH)', dir: 'ltr', flag: '🇨🇳' },
-  { code: 'en', name: 'English', nativeName: 'English (US)', dir: 'ltr', flag: '🇺🇸' },
-  { code: 'ar', name: 'العربية', nativeName: 'العربية (IQ)', dir: 'rtl', flag: '🇮🇶' },
-  { code: 'ku', name: 'Kurdî', nativeName: 'کوردی (KU)', dir: 'rtl', flag: '☀️' }
+  { code: 'zh', name: '简体中文', nativeName: '中文 (ZH)', flag: '🇨🇳' },
+  { code: 'en', name: 'English', nativeName: 'English (US)', flag: '🇺🇸' },
+  { code: 'ar', name: 'العربية', nativeName: 'العربية (IQ)', flag: '🇮🇶' },
+  { code: 'ku', name: 'Kurdî', nativeName: 'کوردی (KU)', flag: '☀️' }
 ];
 
 const savedLang = localStorage.getItem('rcm_language') || 'zh';
@@ -42,9 +42,7 @@ export const elementLocale = computed(() => {
     case 'en':
       return elEn;
     case 'ar':
-      return elAr;
     case 'ku':
-      // 库尔德语使用 RTL 体验且与阿拉伯语基础通用
       return elAr;
     case 'zh':
     default:
@@ -54,6 +52,7 @@ export const elementLocale = computed(() => {
 
 /**
  * 切换全局语言
+ * 确保各语言切换时保持全局骨架与对齐布局一致（统一维持标准现代化 LTR 容器布局，避免左右颠倒导致UI错位）
  * @param {string} lang 'zh' | 'en' | 'ar' | 'ku'
  */
 export function setLanguage(lang) {
@@ -63,25 +62,13 @@ export function setLanguage(lang) {
   i18n.global.locale.value = lang;
   localStorage.setItem('rcm_language', lang);
 
-  // 动态处理文本走向 (LTR / RTL)
-  const isRtl = lang === 'ar' || lang === 'ku';
-  document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+  // 保持全局容器排版走向严格一致 (dir="ltr")，防止左右镜像颠倒破坏导航与栅格系统
+  document.documentElement.setAttribute('dir', 'ltr');
   document.documentElement.setAttribute('lang', lang);
-
-  // 根据语言定制字体与排版类
-  if (isRtl) {
-    document.documentElement.classList.add('rtl-layout');
-  } else {
-    document.documentElement.classList.remove('rtl-layout');
-  }
 }
 
-// 页面初始化时执行一次文本排版初始化
+// 页面初始化时执行一致性初始化
 (function initLayoutDirection() {
-  const isRtl = savedLang === 'ar' || savedLang === 'ku';
-  document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('dir', 'ltr');
   document.documentElement.setAttribute('lang', savedLang);
-  if (isRtl) {
-    document.documentElement.classList.add('rtl-layout');
-  }
 })();

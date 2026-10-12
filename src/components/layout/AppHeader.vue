@@ -19,13 +19,13 @@
           </div>
         </div>
 
-        <!-- 核心系统快捷导航 (靠左紧贴Logo，靠左对齐) -->
-        <nav class="hidden md:flex items-center gap-1 text-xs">
+        <!-- 核心系统快捷导航 (靠左紧贴Logo，靠左对齐，防换行保持绝对稳定) -->
+        <nav class="hidden md:flex items-center gap-1 text-xs overflow-x-auto py-1">
           <!-- 1. 数据看板：Admin 与 Agent 可见 -->
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/dashboard"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path === '/dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><DataAnalysis /></el-icon>
@@ -36,7 +36,7 @@
           <router-link
             v-if="hasAccess(['admin', 'citizen'])"
             to="/citizen"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path.startsWith('/citizen') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><User /></el-icon>
@@ -47,7 +47,7 @@
           <router-link
             v-if="hasAccess(['admin'])"
             to="/review"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path === '/review' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Stamp /></el-icon>
@@ -61,7 +61,7 @@
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/warehouse"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path === '/warehouse' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Box /></el-icon>
@@ -72,7 +72,7 @@
           <router-link
             v-if="hasAccess(['admin', 'agent'])"
             to="/agent"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path === '/agent' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Shop /></el-icon>
@@ -83,7 +83,7 @@
           <router-link
             v-if="hasAccess(['admin'])"
             to="/admin"
-            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+            class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap shrink-0"
             :class="$route.path.startsWith('/admin') ? 'bg-indigo-600 text-white' : 'text-indigo-300 hover:text-white hover:bg-slate-800'"
           >
             <el-icon><Setting /></el-icon>
