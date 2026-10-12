@@ -1,5 +1,10 @@
 <template>
   <div class="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <!-- 国际化语言切换选择器 (右上角浮动) -->
+    <div class="absolute top-4 right-4 z-20">
+      <LanguageSwitcher />
+    </div>
+
     <!-- 背景光影装饰 -->
     <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none"></div>
@@ -10,7 +15,7 @@
         <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mx-auto shadow-md">
           RC
         </div>
-        <h2 class="text-xl font-bold text-slate-900">国家数字配给卡综合服务平台</h2>
+        <h2 class="text-xl font-bold text-slate-900">{{ $t('login.title') }}</h2>
         <p class="text-xs text-slate-500 font-mono">
           REPUBLIC OF IRAQ · MINISTRY OF TRADE
         </p>
@@ -70,7 +75,7 @@
           :loading="loading"
           @click="handleLogin"
         >
-          登录
+          {{ $t('login.loginBtn') }}
         </el-button>
       </el-form>
 
@@ -84,7 +89,7 @@
           class="font-bold px-4"
           @click="registerDialogVisible = true"
         >
-          注册
+          {{ $t('login.registerBtn') }}
         </el-button>
       </div>
 
@@ -202,6 +207,7 @@ import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
+import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import {
   User,
   Lock,

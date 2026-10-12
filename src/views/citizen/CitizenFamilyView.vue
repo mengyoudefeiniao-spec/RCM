@@ -30,19 +30,19 @@
         <div class="flex items-center gap-2 flex-wrap">
           <el-button type="success" plain @click="$router.push('/citizen/transfer-agent')">
             <el-icon class="mr-1"><Switch /></el-icon>
-            申请代理转移
+            {{ $t('citizen.applyTransferAgent') }}
           </el-button>
           <el-button type="primary" plain @click="$router.push('/citizen/split-household')">
             <el-icon class="mr-1"><Share /></el-icon>
-            申请分户
+            {{ $t('citizen.applySplitHousehold') }}
           </el-button>
           <el-button type="warning" plain @click="$router.push('/citizen/change-head')">
             <el-icon class="mr-1"><UserFilled /></el-icon>
-            变更户主
+            {{ $t('citizen.applyChangeHead') }}
           </el-button>
           <el-button type="info" plain @click="$router.push('/citizen/unfreeze')">
             <el-icon class="mr-1"><Unlock /></el-icon>
-            申请解冻
+            {{ $t('citizen.applyUnfreeze') }}
           </el-button>
         </div>
       </div>
@@ -50,19 +50,19 @@
       <!-- 属性网格 -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
         <div>
-          <span class="text-slate-400 block text-[11px]">所属行政省区：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.province') }}：</span>
           <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.province }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">基层配给服务网格：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.district') }}：</span>
           <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.district }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">对应食品/面粉代销网点：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.agentName') }}：</span>
           <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.agentName }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">家庭登记常住地址：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.address') }}：</span>
           <span class="font-medium text-slate-800 truncate block">{{ citizenStore.currentFamily.address }}</span>
         </div>
       </div>
@@ -72,12 +72,12 @@
     <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <span>家庭全部成员名单 ({{ citizenStore.currentFamily?.members?.length || 0 }} 人)</span>
+          <span>{{ $t('citizen.memberList') }} ({{ citizenStore.currentFamily?.members?.length || 0 }} {{ $t('common.person') }})</span>
         </h3>
-        <!-- 将原来的“刷新成员列表”改为“添加新成员” (需求 2) -->
+        <!-- 添加新成员 -->
         <el-button type="primary" size="small" class="font-bold shadow-xs" @click="openAddMemberDialog">
           <el-icon class="mr-1"><Plus /></el-icon>
-          添加新成员
+          {{ $t('citizen.addNewMember') }}
         </el-button>
       </div>
 
@@ -89,29 +89,29 @@
         border
         stripe
       >
-        <el-table-column prop="name" label="姓名" min-width="140" fixed>
+        <el-table-column prop="name" :label="$t('citizen.headName')" min-width="140" fixed>
           <template #default="{ row }">
             <span class="font-bold text-slate-800">{{ row.name }}</span>
           </template>
         </el-table-column>
 
         <!-- 需求 1: 加上电子配给卡编号 (并关联纸质配给卡编号) -->
-        <el-table-column label="电子配给卡 / 关联纸质卡编号" min-width="210">
+        <el-table-column :label="`${$t('citizen.rationCardNo')} / ${$t('citizen.oldPaperCardNo')}`" min-width="210">
           <template #default>
             <div class="space-y-0.5">
               <div class="flex items-center gap-1 font-mono">
                 <span class="font-bold text-blue-600">{{ citizenStore.currentFamily?.rationCardNo }}</span>
-                <el-tag size="small" effect="plain" type="primary" class="scale-90 origin-left">电子卡</el-tag>
+                <el-tag size="small" effect="plain" type="primary" class="scale-90 origin-left">{{ $t('citizen.rationCard') }}</el-tag>
               </div>
               <div class="text-[11px] text-amber-800 font-mono flex items-center gap-1">
-                <span>关联纸卡:</span>
+                <span>{{ $t('citizen.oldPaperCardNo') }}:</span>
                 <span class="font-semibold">{{ citizenStore.currentFamily?.oldPaperCardNo || 'IQ-P-1994-082194' }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column prop="relation" label="家庭关系" width="100" align="center">
+        <el-table-column prop="relation" :label="$t('citizen.relation')" width="100" align="center">
           <template #default="{ row }">
             <el-tag
               size="small"
@@ -122,15 +122,15 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="gender" label="性别" width="70" align="center" />
+        <el-table-column prop="gender" :label="$t('citizen.gender')" width="70" align="center" />
 
-        <el-table-column prop="nationalId" label="统一国民卡身份编码" min-width="160">
+        <el-table-column prop="nationalId" :label="$t('citizen.nationalId')" min-width="160">
           <template #default="{ row }">
             <span class="font-mono text-slate-600">{{ row.nationalId }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" label="配给资格状态" width="110" align="center">
+        <el-table-column prop="status" :label="$t('citizen.status')" width="110" align="center">
           <template #default="{ row }">
             <el-tag
               size="small"
@@ -142,16 +142,16 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="phone" label="联系电话" min-width="130">
+        <el-table-column prop="phone" :label="$t('citizen.phone')" min-width="130">
           <template #default="{ row }">
             <span class="font-mono">{{ row.phone || '—' }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="110" align="center" fixed="right">
+        <el-table-column :label="$t('common.action')" width="110" align="center" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" link @click="openEditModal(row)">
-              更新信息
+              {{ $t('citizen.updateInfo') }}
             </el-button>
           </template>
         </el-table-column>

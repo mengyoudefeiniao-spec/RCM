@@ -19,18 +19,18 @@
           </div>
           <div>
             <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <span>统一电子支付收银台</span>
+              <span>{{ $t('payment.title') }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
-                CBI 监管认证
+                {{ $t('payment.cbiCertified') }}
               </el-tag>
             </div>
             <div class="text-[11px] text-slate-400">
-              国家数字配给规费清算网关 (National E-Payment Gateway)
+              {{ $t('payment.gatewayName') }}
             </div>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[11px] text-slate-400 block">有效支付倒计时</span>
+          <span class="text-[11px] text-slate-400 block">{{ $t('payment.countdown') }}</span>
           <span class="font-mono text-xs font-bold text-amber-600">{{ countdownFormatted }}</span>
         </div>
       </div>
@@ -40,8 +40,8 @@
         <!-- 金额与账单信息卡 -->
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-xs space-y-3">
           <div class="flex items-center justify-between text-xs text-slate-400">
-            <span>{{ title || '法定业务公文规费' }}</span>
-            <span class="font-mono text-[11px]">单号: {{ orderId }}</span>
+            <span>{{ title || $t('payment.title') }}</span>
+            <span class="font-mono text-[11px]">{{ $t('payment.orderNo') }}: {{ orderId }}</span>
           </div>
 
           <div class="flex items-baseline justify-between">
@@ -49,13 +49,13 @@
               {{ amount.toLocaleString() }} <span class="text-sm text-slate-300 font-normal">{{ currency }}</span>
             </div>
             <el-tag size="small" type="warning" effect="dark">
-              待扫码支付
+              {{ $t('common.pending') }}
             </el-tag>
           </div>
 
           <div class="pt-2 border-t border-slate-700/60 text-[11px] text-slate-300 flex flex-wrap justify-between gap-y-1">
-            <span>缴费卡号：<strong class="font-mono text-white">{{ businessNo || 'RC-10029381' }}</strong></span>
-            <span>申请人：<strong class="text-white">{{ applicantName || '持卡户主' }}</strong></span>
+            <span>{{ $t('payment.cardNo') }}：<strong class="font-mono text-white">{{ businessNo || 'RC-10029381' }}</strong></span>
+            <span>{{ $t('payment.applicant') }}：<strong class="text-white">{{ applicantName || '持卡户主' }}</strong></span>
           </div>
         </div>
 
@@ -157,8 +157,8 @@
           </div>
 
           <div class="text-center text-xs text-slate-500">
-            <p class="font-medium text-slate-700">请使用手机银行或 {{ currentChannelName }} 扫码支付</p>
-            <p class="text-[11px] text-slate-400 mt-0.5">支持指纹与面部生物识别免密快速扣款</p>
+            <p class="font-medium text-slate-700">{{ $t('payment.scanHint') }} ({{ currentChannelName }})</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">{{ $t('payment.biometricHint') }}</p>
           </div>
         </div>
 
@@ -171,10 +171,10 @@
             @click="handleSimulateScanPay"
           >
             <el-icon class="mr-1.5"><Cellphone /></el-icon>
-            模拟扫码并完成付款
+            {{ $t('payment.simulatePayBtn') }}
           </el-button>
           <el-button size="large" @click="handleCancel">
-            返回修改
+            {{ $t('payment.cancelBtn') }}
           </el-button>
         </div>
       </div>
@@ -183,7 +183,7 @@
       <div v-else-if="paymentStatus === 'processing'" class="py-12 flex flex-col items-center justify-center space-y-4">
         <div class="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin flex items-center justify-center" />
         <div class="text-center space-y-1">
-          <h3 class="text-base font-bold text-slate-800">正在与国家清算网络进行银行间扣款...</h3>
+          <h3 class="text-base font-bold text-slate-800">{{ $t('payment.processing') }}</h3>
           <p class="text-xs text-slate-400 font-mono">Channel: {{ currentChannelName }} · Order: {{ orderId }}</p>
         </div>
       </div>
@@ -195,15 +195,15 @@
         </div>
 
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900">电子支付扣款成功！</h3>
-          <p class="text-xs text-emerald-700 font-medium">已获得伊拉克央行清算网关交易授权流水</p>
+          <h3 class="text-lg font-bold text-slate-900">{{ $t('payment.success') }}</h3>
+          <p class="text-xs text-emerald-700 font-medium">CBI E-Payment Clearance Verified</p>
           <div class="font-mono text-xs text-slate-400 mt-2">
-            凭证号：TXN-{{ Math.floor(100000 + Math.random() * 900000) }}-IQD
+            TXN-{{ Math.floor(100000 + Math.random() * 900000) }}-IQD
           </div>
         </div>
 
         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 max-w-sm">
-          规费已全额缴纳入国库配给专户，正在将您的申请正式提交系统核验与流转...
+          {{ $t('payment.successHint') }}
         </div>
       </div>
     </div>

@@ -34,3 +34,15 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* RTL 排版与阿拉伯语/库尔德语字体系 */
+[dir="rtl"], .rtl-layout {
+  font-family: system-ui, -apple-system, "Segoe UI", "Tahoma", "Noto Sans Arabic", "Scheherazade New", sans-serif;
+  text-align: right;
+}
+
+[dir="rtl"] .font-mono {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
