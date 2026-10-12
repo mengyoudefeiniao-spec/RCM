@@ -139,14 +139,25 @@
             class="w-full font-bold shadow-md bg-purple-600 border-purple-600 hover:bg-purple-500"
             :disabled="selectedMemberIds.length === 0"
             :loading="judging"
-            @click="handlePriorityAutoJudge"
+            @click="handleStartSplitPayment"
           >
             <el-icon class="mr-1.5"><Compass /></el-icon>
-            提交分户申请 · 优先系统智能判别
+            验证资料并前往电子支付 (规费 10,000 IQD)
           </el-button>
         </div>
       </div>
     </div>
+
+    <!-- 电子支付二维码收银台 -->
+    <ElectronicPaymentDialog
+      v-model="paymentDialogVisible"
+      title="数字配给卡家庭分立分户与独立建卡规费"
+      :amount="10000"
+      currency="IQD"
+      :business-no="citizenStore.currentFamily?.rationCardNo"
+      :applicant-name="citizenStore.currentFamily?.headName"
+      @success="handlePaymentSuccess"
+    />
   </div>
 </template>
 
@@ -155,6 +166,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import { Share, Compass, Document, WarningFilled, Stamp, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
@@ -168,6 +180,7 @@ const otherDocUploaded = ref(false);
 const judgeResult = ref(null);
 const judging = ref(false);
 const reviewSubmitting = ref(false);
+const paymentDialogVisible = ref(false);
 
 onMounted(async () => {
   if (!citizenStore.currentFamily) {
@@ -189,9 +202,9 @@ function toggleMember(memberId) {
 }
 
 /**
- * 优先系统智能自动判别
+ * 1. 验证资料信息通过后，唤起电子支付二维码收银台
  */
-async function handlePriorityAutoJudge() {
+function handleStartSplitPayment() {
   if (selectedMemberIds.value.length === 0) {
     ElMessage.error('请勾选移入新户的家庭成员！');
     return;
@@ -202,11 +215,19 @@ async function handlePriorityAutoJudge() {
     return;
   }
 
+  paymentDialogVisible.value = true;
+}
+
+/**
+ * 2. 扫码付款通过后，正式执行优先系统智能判别
+ */
+async function handlePaymentSuccess(paymentInfo) {
   judging.value = true;
   try {
     const res = await citizenStore.judgeSplitHousehold({
       memberIds: selectedMemberIds.value,
-      currentCardNo: citizenStore.currentFamily.rationCardNo
+      currentCardNo: citizenStore.currentFamily.rationCardNo,
+      paymentInfo
     });
 
     if (res.passed) {

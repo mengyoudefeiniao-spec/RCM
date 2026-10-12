@@ -79,14 +79,25 @@
               size="large"
               class="w-full font-bold shadow-md"
               :loading="submitting"
-              @click="handleSubmitUnfreeze"
+              @click="handleStartUnfreeze"
             >
-              提交解冻申请 (转入审核工作台)
+              验证材料并前往电子支付 (规费 5,000 IQD)
             </el-button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 电子支付二维码收银台 -->
+    <ElectronicPaymentDialog
+      v-model="paymentDialogVisible"
+      :title="`数字配给卡资格解冻申诉规费 (${unfreezeType}情形)`"
+      :amount="5000"
+      currency="IQD"
+      :business-no="citizenStore.currentFamily?.rationCardNo"
+      :applicant-name="citizenStore.currentFamily?.headName"
+      @success="handlePaymentSuccess"
+    />
   </div>
 </template>
 
@@ -95,6 +106,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import { Unlock, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
@@ -105,6 +117,7 @@ const unfreezeType = ref('商业');
 const unfreezeFileUploaded = ref(true);
 const unfreezeStatement = ref('该商户名额已于2026年正式注销并完成清税，申请恢复食品配给。');
 const submitting = ref(false);
+const paymentDialogVisible = ref(false);
 
 const DOC_CONFIGS = {
   商业: {
@@ -189,20 +202,27 @@ function handleTypeChange() {
   unfreezeFileUploaded.value = true;
 }
 
-async function handleSubmitUnfreeze() {
+// 1. 验证证明材料通过后，唤起电子支付二维码收银台
+function handleStartUnfreeze() {
   if (!unfreezeFileUploaded.value) {
     ElMessage.error('请先上传对应的法定解冻官方证明文件！');
     return;
   }
+  paymentDialogVisible.value = true;
+}
 
+// 2. 扫码付款通过后，再正式提交系统审核
+async function handlePaymentSuccess(paymentInfo) {
   submitting.value = true;
   try {
     const res = await citizenStore.applyUnfreeze({
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
       unfreezeType: unfreezeType.value,
       targetMemberId: 'M-004',
-      docName: currentDocConfig.value.fileName
+      docName: currentDocConfig.value.fileName,
+      paymentInfo
     });
+    ElMessage.success('规费支付成功，已正式提交至【审核工作台】！');
     router.push('/review');
   } finally {
     submitting.value = false;

@@ -92,14 +92,25 @@
               size="large"
               class="w-full font-bold shadow-md"
               :loading="submitting"
-              @click="handleSubmitChangeHead"
+              @click="handleStartChangeHead"
             >
-              提交变更户主申请 (转入审核工作台)
+              验证材料并前往电子支付 (规费 5,000 IQD)
             </el-button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 电子支付二维码收银台 -->
+    <ElectronicPaymentDialog
+      v-model="paymentDialogVisible"
+      title="法定户主身故继承任命公文规费"
+      :amount="5000"
+      currency="IQD"
+      :business-no="citizenStore.currentFamily?.rationCardNo"
+      :applicant-name="currentCandidateName"
+      @success="handlePaymentSuccess"
+    />
   </div>
 </template>
 
@@ -108,6 +119,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import { UserFilled, Back } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
@@ -118,6 +130,7 @@ const deathProofNo = ref('DTH-BAG-2026-90182');
 const deathProofUploaded = ref(true);
 const replacementHeadId = ref('');
 const submitting = ref(false);
+const paymentDialogVisible = ref(false);
 
 onMounted(async () => {
   if (!citizenStore.currentFamily) {
@@ -139,7 +152,12 @@ const eligibleCandidates = computed(() => {
   );
 });
 
-async function handleSubmitChangeHead() {
+const currentCandidateName = computed(() => {
+  return eligibleCandidates.value.find((m) => m.id === replacementHeadId.value)?.name || '继任户主候选人';
+});
+
+// 1. 资料信息填写验证通过后，打开电子支付二维码
+function handleStartChangeHead() {
   if (!deathProofUploaded.value) {
     ElMessage.error('请先上传有效的户主死亡医学证明与户籍注销公函！');
     return;
@@ -150,13 +168,21 @@ async function handleSubmitChangeHead() {
     return;
   }
 
+  // 验证全部通过，弹出扫码付款
+  paymentDialogVisible.value = true;
+}
+
+// 2. 扫码付款通过后，再正式提交系统审核
+async function handlePaymentSuccess(paymentInfo) {
   submitting.value = true;
   try {
     const res = await citizenStore.changeHead({
       cardNo: citizenStore.currentFamily.rationCardNo,
       newHeadId: replacementHeadId.value,
-      deathProofNo: deathProofNo.value
+      deathProofNo: deathProofNo.value,
+      paymentInfo
     });
+    ElMessage.success('规费支付成功，已正式提交至【审核工作台】！');
     router.push('/review');
   } finally {
     submitting.value = false;
