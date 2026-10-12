@@ -247,6 +247,21 @@ export default {
     autoPath: '[Path 1: Instant Automated Approval] Meets matching criteria, system will enact approval immediately upon payment!',
     reviewPath: '[Path 2: Two-Tier Electronic Audit] Transferred to receiving Branch Staff preliminary review and Branch Manager final approval.',
     feeLabel: 'Statutory Family Member Transfer & Archive Filing Fee:',
-    payAndSubmitBtn: 'Open QR Code & Complete E-Payment'
+    payAndSubmitBtn: 'Open QR Code & Complete E-Payment',
+    modeTitle: 'Verification Environment Mode',
+    demoMode: 'Demo Mode (Adaptive Simulation · Unblocked)',
+    realMode: 'Strict Mode (National Database Verification)',
+    demoModeDesc: 'Demo Mode: Any National ID (e.g., 1233213) auto-generates a realistic profile with switchable test scenarios.',
+    realModeDesc: 'Strict Mode: Strictly queries the Ministry of Interior registry; unlisted IDs are blocked.',
+    demoBadge: 'Simulated Demo Profile',
+    demoGeneratedNotice: '[Demo Mode Adaptive]: Auto-generated a simulated profile for ID [{id}], allowing full flow progression!',
+    realNotFoundAlert: '[Strict Verification Blocked]: No citizen profile found for National ID [{id}] in the national database. Please verify and retry.',
+    scenarioSwitcherTitle: 'Quick Scenario Preset Switcher:',
+    scenarioWifeAuto: 'Wife (Matched · Auto-Approved)',
+    scenarioWifeReview: 'Wife (Unmatched · Manual Review)',
+    scenarioChildAuto: 'Child (Non-140 · Auto-Approved)',
+    scenarioChild140: 'Child (Article 140 · Mandatory Review)',
+    scenarioGuardianship: 'Legal Guardianship (Manual Review)',
+    scenarioNotUpdated: 'Restricted (Not Updated · Hard Block)'
   }
 };

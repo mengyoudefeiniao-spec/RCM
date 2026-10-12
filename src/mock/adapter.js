@@ -447,12 +447,42 @@ export async function mockDispatch(config) {
     return createResponse(transferableMembersStore);
   }
 
-  // 根据国民编号精确查询待转移成员档案与状态 (GET)
+  // 根据国民编号查询待转移成员档案与状态 (GET)
+  // 支持 mode = 'demo' (演示自适应模拟) 或 'real' (严格真实验证)
   if (url.includes('/citizen/member-transfer/query') && method === 'GET') {
-    const nationalId = url.split('/').pop();
-    const found = transferableMembersStore.find((m) => m.nationalId === nationalId);
+    const cleanUrl = url.split('?')[0];
+    const nationalId = cleanUrl.split('/').pop();
+    const isRealMode = url.includes('mode=real');
+
+    let found = transferableMembersStore.find((m) => m.nationalId === nationalId);
     if (!found) {
-      return createResponse({}, 404, `未查询到国民编号为【${nationalId}】的公民档案，请核对后重试`);
+      if (isRealMode) {
+        return createResponse({}, 404, `【真实验证模式拦截】：国家内政部公民数据库未查找到国民编号为【${nationalId}】的在册公民档案，请核对有效编号后重试。`);
+      }
+
+      // 演示模拟模式：根据任意输入的国民编号动态创建高仿真成员档案，确保演示流程畅通无阻
+      const currentFamily = familiesStore[0] || { familyCode: 'FAM-BAG-08832', headName: '艾哈迈德·哈桑·萨利赫' };
+      const demoMember = {
+        nationalId: nationalId,
+        name: `萨尔曼·拉希德 (演示模拟_${nationalId.slice(-4) || '01'})`,
+        relationType: 'wife',
+        relationLabel: '妻子 (演示自适应)',
+        gender: '女',
+        birthDate: '1992-06-15',
+        fatherName: '拉希德·哈米德', // 默认不同父
+        familyCode: currentFamily.familyCode, // 默认同家庭编号
+        currentCardNo: `RC-${Date.now().toString().slice(-8)}`,
+        currentProvince: '巴格达省 (Baghdad)',
+        currentCenterName: '鲁萨法第一配给中心 (#01)',
+        isArticle140Area: false,
+        isUpdatedInSystem: true,
+        faceVerified: true,
+        suggestedReason: '演示模式自适应模拟成员，支持全流程贯通与场景切换测试',
+        proofDocName: '最高司法委员会民事结婚登记证书_DEMO.pdf',
+        isDemoGenerated: true
+      };
+      transferableMembersStore.push(demoMember);
+      found = demoMember;
     }
     return createResponse(found);
   }

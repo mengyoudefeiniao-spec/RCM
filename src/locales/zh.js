@@ -247,6 +247,21 @@ export default {
     autoPath: '【第一路径：全自动批准】满足自动识别匹配条件，规费支付后系统将即时批准生效！',
     reviewPath: '【第二路径：两级电子审核】申请将转交新卡所属配给分部员工初审并呈报分部经理终审裁决。',
     feeLabel: '成员跨卡建档与转移法定公文规费：',
-    payAndSubmitBtn: '打开电子支付二维码并完成付款'
+    payAndSubmitBtn: '打开电子支付二维码并完成付款',
+    modeTitle: '核验环境模式',
+    demoMode: '演示模式 (自适应模拟·全流程贯通)',
+    realMode: '真实验证模式 (国家数据库严格核验)',
+    demoModeDesc: '演示模式：支持输入任意国民编号（如 1233213）自适应生成高仿真档案，支持切换测试场景',
+    realModeDesc: '真实模式：严格联网核验国家内政部公民数据库，非在册或未录入人员依法予以拦截',
+    demoBadge: '演示自适应档案',
+    demoGeneratedNotice: '【演示模式自适应】：已根据输入的编号【{id}】动态生成模拟档案，支持畅通演示！',
+    realNotFoundAlert: '【真实验证模式拦截】：国家内政部公民数据库未查找到国民编号为【{id}】的在册公民档案，请核对有效编号后重试。',
+    scenarioSwitcherTitle: '快速切换此档案的业务测试场景：',
+    scenarioWifeAuto: '妻子（同家庭不同父·自动批准）',
+    scenarioWifeReview: '妻子（不同家庭·转人工审核）',
+    scenarioChildAuto: '子女（非140区同父·自动批准）',
+    scenarioChild140: '子女（第140区·强制两级审核）',
+    scenarioGuardianship: '法定监护（转人工审核）',
+    scenarioNotUpdated: '受限成员（未在系统更新·红线拦截）'
   }
 };
