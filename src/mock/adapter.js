@@ -451,7 +451,7 @@ export async function mockDispatch(config) {
   // 支持 mode = 'demo' (演示自适应模拟) 或 'real' (严格真实验证)
   if (url.includes('/citizen/member-transfer/query') && method === 'GET') {
     const cleanUrl = url.split('?')[0];
-    const nationalId = cleanUrl.split('/').pop();
+    const nationalId = cleanUrl.replace(/\/+$/, '').split('/').pop().trim();
     const isRealMode = url.includes('mode=real');
 
     let found = transferableMembersStore.find((m) => m.nationalId === nationalId);
