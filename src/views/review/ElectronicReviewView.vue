@@ -5,7 +5,7 @@
       <div>
         <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <el-icon class="text-amber-500"><Stamp /></el-icon>
-          <span>电子审核工作台</span>
+          <span>审核工作台</span>
         </h2>
         <p class="text-xs text-slate-500 mt-1">
           统一受理申请分户、申请解冻、变更户主、成员录入、成员转移等人工核验工单，支持两级在线审批流转。

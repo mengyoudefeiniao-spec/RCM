@@ -76,7 +76,7 @@
           <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-200 text-xs text-amber-800 space-y-1">
             <div class="font-bold">审核流转须知：</div>
             <p>
-              提交后将生成工单自动转入<strong>【电子审核工作台】</strong>，经分部员工初审与分部经理终审双岗确认后正式变更。
+              提交后将生成工单自动转入<strong>【审核工作台】</strong>，经分部员工初审与分部经理终审双岗确认后正式变更。
             </p>
           </div>
 
@@ -88,7 +88,7 @@
               :loading="submitting"
               @click="handleSubmitChangeHead"
             >
-              提交变更户主申请 (转入电子审核工作台)
+              提交变更户主申请 (转入审核工作台)
             </el-button>
           </div>
         </div>

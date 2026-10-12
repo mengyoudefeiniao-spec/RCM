@@ -5,7 +5,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
             <el-icon class="text-amber-600"><Shop /></el-icon>
-            <span>配给代销网点治理与容积率监管</span>
+            <span>代理管理与网点容积率监管</span>
           </h2>
           <p class="text-xs text-slate-500 mt-1">
             执行单店 1,500 户容量红线监控、合并网点不超过 750 户限制以及经营面积实地抽检考核。

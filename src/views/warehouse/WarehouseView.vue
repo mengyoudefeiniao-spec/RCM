@@ -5,7 +5,7 @@
         <div>
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
             <el-icon class="text-teal-600"><Box /></el-icon>
-            <span>国家食品配给战略物资储备与批次追溯 (SCM)</span>
+            <span>仓储管理与战略物资储备 (SCM)</span>
           </h2>
           <p class="text-xs text-slate-500 mt-1">
             大米、面粉、食用油、白糖等战略配给物资中央粮库出入库批次管控与安全库存预警。

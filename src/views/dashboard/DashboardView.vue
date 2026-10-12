@@ -54,7 +54,7 @@
 
       <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
         <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
-          <span>电子审核工作台待办工单</span>
+          <span>审核工作台待办工单</span>
           <el-tag size="small" type="warning">待办</el-tag>
         </div>
         <div class="text-2xl font-bold text-slate-900 text-amber-600">
@@ -118,13 +118,13 @@
           </p>
         </div>
 
-        <!-- 卡片 3: 电子审核工作台 -->
+        <!-- 卡片 3: 审核工作台 -->
         <div
           class="p-4 rounded-xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50 transition-colors cursor-pointer space-y-2"
           @click="$router.push('/review')"
         >
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-900">电子审核工作台</span>
+            <span class="text-xs font-bold text-amber-900">审核工作台</span>
             <el-tag size="small" type="warning" effect="light">分来源待办</el-tag>
           </div>
           <p class="text-xs text-slate-600">

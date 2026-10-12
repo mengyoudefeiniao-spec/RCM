@@ -118,6 +118,8 @@ import { ElMessage } from 'element-plus';
 const router = useRouter();
 const authStore = useAuthStore();
 
+import { getDefaultPathByRole } from '../../router/index.js';
+
 const formRef = ref(null);
 const loading = ref(false);
 const rememberMe = ref(true);
@@ -142,7 +144,8 @@ async function handleLogin() {
       try {
         const ok = await authStore.login(loginForm.username, loginForm.password);
         if (ok) {
-          router.push('/dashboard');
+          const target = getDefaultPathByRole(authStore.currentRole);
+          router.push(target);
         }
       } finally {
         loading.value = false;
@@ -171,7 +174,8 @@ async function simulateBiometricPass() {
     biometricDialogVisible.value = false;
     ElMessage.success('统一国民卡 NFC 读取成功，活体人脸比对一致 ✓');
     await authStore.login('RC-10029381', 'iq-pass-2026');
-    router.push('/dashboard');
+    const target = getDefaultPathByRole(authStore.currentRole);
+    router.push(target);
   }, 600);
 }
 </script>

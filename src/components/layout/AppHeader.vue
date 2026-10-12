@@ -2,7 +2,7 @@
   <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       <!-- 平台标识与名称 -->
-      <div class="flex items-center gap-3 cursor-pointer" @click="$router.push('/dashboard')">
+      <div class="flex items-center gap-3 cursor-pointer" @click="handleLogoClick">
         <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
           RC
         </div>
@@ -17,9 +17,11 @@
         </div>
       </div>
 
-      <!-- 核心系统快捷导航 (Vue Router 路由跳转) -->
+      <!-- 核心系统快捷导航 (基于当前登录角色的动态权限展示) -->
       <nav class="hidden md:flex items-center gap-1 text-xs">
+        <!-- 1. 数据看板：Admin 与 Agent 可见 -->
         <router-link
+          v-if="hasAccess(['admin', 'agent'])"
           to="/dashboard"
           class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
           :class="$route.path === '/dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
@@ -28,43 +30,62 @@
           <span>数据看板</span>
         </router-link>
 
+        <!-- 2. 公民服务：Admin 与 Citizen 可见 -->
         <router-link
+          v-if="hasAccess(['admin', 'citizen'])"
           to="/citizen"
           class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
           :class="$route.path.startsWith('/citizen') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
         >
           <el-icon><User /></el-icon>
-          <span>公民与家庭</span>
+          <span>公民服务</span>
         </router-link>
 
+        <!-- 3. 审核工作台：仅 Admin 可见 -->
         <router-link
+          v-if="hasAccess(['admin'])"
           to="/review"
           class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
           :class="$route.path === '/review' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
         >
           <el-icon><Stamp /></el-icon>
-          <span>电子审核工作台</span>
+          <span>审核工作台</span>
           <span v-if="pendingReviewCount > 0" class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold">
             {{ pendingReviewCount }}
           </span>
         </router-link>
 
+        <!-- 4. 仓储管理：Admin 与 Agent 可见 -->
         <router-link
+          v-if="hasAccess(['admin', 'agent'])"
           to="/warehouse"
           class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
           :class="$route.path === '/warehouse' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
         >
           <el-icon><Box /></el-icon>
-          <span>仓储战略储备</span>
+          <span>仓储管理</span>
         </router-link>
 
+        <!-- 5. 代理管理：Admin 与 Agent 可见 -->
         <router-link
+          v-if="hasAccess(['admin', 'agent'])"
           to="/agent"
           class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
           :class="$route.path === '/agent' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
         >
           <el-icon><Shop /></el-icon>
-          <span>代销网点治理</span>
+          <span>代理管理</span>
+        </router-link>
+
+        <!-- 6. 后台管理：仅 Admin 监督官可见 -->
+        <router-link
+          v-if="hasAccess(['admin'])"
+          to="/admin"
+          class="px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium"
+          :class="$route.path.startsWith('/admin') ? 'bg-indigo-600 text-white' : 'text-indigo-300 hover:text-white hover:bg-slate-800'"
+        >
+          <el-icon><Setting /></el-icon>
+          <span>后台管理</span>
         </router-link>
       </nav>
 
@@ -73,7 +94,7 @@
         <!-- 角色切换下拉 -->
         <el-dropdown trigger="click" @command="handleRoleCommand">
           <span class="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white cursor-pointer px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="w-2 h-2 rounded-full" :class="roleDotColor"></span>
             <span>{{ roleLabel }}</span>
             <el-icon><ArrowDown /></el-icon>
           </span>
@@ -98,26 +119,36 @@
 
 <script setup>
 import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { useReviewStore } from '../../stores/review.js';
+import { getDefaultPathByRole } from '../../router/index.js';
 import {
   DataAnalysis,
   User,
   Stamp,
   Box,
   Shop,
+  Setting,
   ArrowDown,
   SwitchButton
 } from '@element-plus/icons-vue';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
 
 onMounted(() => {
-  reviewStore.fetchTickets('全部');
+  if (authStore.currentRole === 'admin') {
+    reviewStore.fetchTickets('全部');
+  }
 });
+
+// 权限匹配判定
+function hasAccess(roles) {
+  return roles.includes(authStore.currentRole);
+}
 
 const pendingReviewCount = computed(() => {
   return reviewStore.tickets.filter((t) => t.status === '待分部初审' || t.status === '待经理终审').length;
@@ -126,13 +157,38 @@ const pendingReviewCount = computed(() => {
 const roleLabel = computed(() => {
   const r = authStore.currentRole;
   if (r === 'admin') return '督察官 (Admin)';
-  if (r === 'citizen') return '公民户主 (Citizen)';
-  if (r === 'agent') return '代销代理 (Agent)';
+  if (r === 'citizen') return '公民 (Citizen)';
+  if (r === 'agent') return '代理 (Agent)';
   return r;
 });
 
+const roleDotColor = computed(() => {
+  const r = authStore.currentRole;
+  if (r === 'admin') return 'bg-indigo-400';
+  if (r === 'citizen') return 'bg-blue-400';
+  if (r === 'agent') return 'bg-amber-400';
+  return 'bg-emerald-400';
+});
+
+function handleLogoClick() {
+  const target = getDefaultPathByRole(authStore.currentRole);
+  router.push(target);
+}
+
 function handleRoleCommand(command) {
   authStore.switchRole(command);
+  // 检查当前所在路径新角色是否有权访问，若无权则跳转至其默认首页
+  const defaultPath = getDefaultPathByRole(command);
+  if (command === 'citizen') {
+    if (!route.path.startsWith('/citizen')) {
+      router.push(defaultPath);
+    }
+  } else if (command === 'agent') {
+    const allowed = ['/agent', '/dashboard', '/warehouse'];
+    if (!allowed.some((p) => route.path.startsWith(p))) {
+      router.push(defaultPath);
+    }
+  }
 }
 
 async function handleLogout() {

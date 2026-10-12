@@ -4,12 +4,16 @@ import { MOCK_REVIEW_TICKETS } from './data/reviewData.js';
 import { MOCK_STOCKS } from './data/warehouseData.js';
 import { MOCK_AGENTS } from './data/agentData.js';
 import { MOCK_DASHBOARD_STATS } from './data/dashboardData.js';
+import { MOCK_CITIZEN_CARDS, MOCK_FAMILIES_ADMIN, MOCK_AGENTS_ADMIN } from './data/adminData.js';
 
 // 本地内存持久化副本，支持前端交互后的数据联动
 let familiesStore = JSON.parse(JSON.stringify(MOCK_FAMILIES));
 let ticketsStore = JSON.parse(JSON.stringify(MOCK_REVIEW_TICKETS));
 let stocksStore = JSON.parse(JSON.stringify(MOCK_STOCKS));
 let agentsStore = JSON.parse(JSON.stringify(MOCK_AGENTS));
+let adminCardsStore = JSON.parse(JSON.stringify(MOCK_CITIZEN_CARDS));
+let adminFamiliesStore = JSON.parse(JSON.stringify(MOCK_FAMILIES_ADMIN));
+let adminAgentsStore = JSON.parse(JSON.stringify(MOCK_AGENTS_ADMIN));
 
 /**
  * 包装为企业级统一规范响应体
@@ -110,7 +114,7 @@ export async function mockDispatch(config) {
     };
     ticketsStore.unshift(newTicket);
 
-    return createResponse({ ticketId }, 200, `户主变更申请已提交！已自动转入【电子审核工作台】(工单号 ${ticketId})`);
+    return createResponse({ ticketId }, 200, `户主变更申请已提交！已自动转入【审核工作台】(工单号 ${ticketId})`);
   }
 
   // 申请解冻 (POST)
@@ -136,7 +140,7 @@ export async function mockDispatch(config) {
     };
     ticketsStore.unshift(newTicket);
 
-    return createResponse({ ticketId }, 200, `解冻申请已受理！已转入【电子审核工作台】(工单号 ${ticketId})`);
+    return createResponse({ ticketId }, 200, `解冻申请已受理！已转入【审核工作台】(工单号 ${ticketId})`);
   }
 
   // 申请分户：优先系统智能自动判别 (POST)
@@ -230,7 +234,7 @@ export async function mockDispatch(config) {
   }
 
   // ==========================================
-  // 3. 电子审核工作台模块 (Electronic Review)
+  // 3. 审核工作台模块 (Electronic Review)
   // ==========================================
   if (url.includes('/review/tickets') && method === 'GET') {
     const source = params.source;
@@ -312,6 +316,173 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/dashboard/overview') && method === 'GET') {
     return createResponse(MOCK_DASHBOARD_STATS);
+  }
+
+  // ==========================================
+  // 7. 监督官后台管理模块 (Admin Management)
+  // ==========================================
+  // 7.1 公民配给卡列表
+  if (url.includes('/admin/citizen-cards') && method === 'GET') {
+    let result = [...adminCardsStore];
+    if (params.cardNo) {
+      result = result.filter((c) => c.cardNo.toLowerCase().includes(params.cardNo.toLowerCase()));
+    }
+    if (params.headName) {
+      result = result.filter((c) => c.headName.includes(params.headName));
+    }
+    if (params.status && params.status !== '全部') {
+      result = result.filter((c) => c.status === params.status);
+    }
+    if (params.province && params.province !== '全部') {
+      result = result.filter((c) => c.province.includes(params.province));
+    }
+    return createResponse(result);
+  }
+
+  // 7.2 修改配给卡状态（解冻 / 冻结 / 吊销）
+  if (url.match(/\/admin\/citizen-cards\/([^/]+)\/status/) && method === 'PUT') {
+    const cardId = url.split('/')[3];
+    const target = adminCardsStore.find((c) => c.id === cardId || c.cardNo === cardId);
+    if (target) {
+      target.status = data.status;
+      target.freezeReason = data.reason || '';
+      return createResponse(target, 200, `配给卡【${target.cardNo}】状态已变更为【${data.status}】`);
+    }
+    return createResponse({}, 404, '未找到指定配给卡记录');
+  }
+
+  // 7.3 调整月度配额
+  if (url.match(/\/admin\/citizen-cards\/([^/]+)\/quota/) && method === 'PUT') {
+    const cardId = url.split('/')[3];
+    const target = adminCardsStore.find((c) => c.id === cardId || c.cardNo === cardId);
+    if (target) {
+      target.quotas = { ...target.quotas, ...data.quotas };
+      return createResponse(target, 200, `配给卡【${target.cardNo}】月度定额已更新成功`);
+    }
+    return createResponse({}, 404, '未找到指定配给卡记录');
+  }
+
+  // 7.4 换发新卡 / 重置 NFC
+  if (url.match(/\/admin\/citizen-cards\/([^/]+)\/reissue/) && method === 'POST') {
+    const cardId = url.split('/')[3];
+    const target = adminCardsStore.find((c) => c.id === cardId || c.cardNo === cardId);
+    if (target) {
+      target.rfidChipUid = `NFC-IQ-${Math.floor(1000000 + Math.random() * 8999999)}X`;
+      target.lastVerifiedAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      return createResponse(target, 200, `配给卡【${target.cardNo}】已完成芯片重置并换发新卡`);
+    }
+    return createResponse({}, 404, '未找到指定配给卡记录');
+  }
+
+  // 7.5 家庭户籍档案列表
+  if (url.includes('/admin/families') && method === 'GET') {
+    let result = [...adminFamiliesStore];
+    if (params.familyCode) {
+      result = result.filter((f) => f.familyCode.toLowerCase().includes(params.familyCode.toLowerCase()));
+    }
+    if (params.headName) {
+      result = result.filter((f) => f.headName.includes(params.headName));
+    }
+    if (params.category && params.category !== '全部') {
+      result = result.filter((f) => f.category === params.category);
+    }
+    return createResponse(result);
+  }
+
+  // 7.6 新增家庭户籍档案
+  if (url.includes('/admin/families') && method === 'POST') {
+    const newFamily = {
+      id: `FAM-BAG-${Date.now().toString().slice(-4)}`,
+      familyCode: `FAM-BAG-${Math.floor(10000 + Math.random() * 89999)}`,
+      cardNo: data.cardNo || `RC-1002${Math.floor(2000 + Math.random() * 7000)}`,
+      headName: data.headName,
+      headNationalId: data.headNationalId,
+      category: data.category || '普通保障家庭',
+      memberCount: data.memberCount || 1,
+      address: data.address || '',
+      registeredDate: new Date().toISOString().split('T')[0],
+      adminBranch: data.adminBranch || '卡尔赫第一粮食供应分部',
+      phone: data.phone || '',
+      members: data.members || []
+    };
+    adminFamiliesStore.unshift(newFamily);
+    return createResponse(newFamily, 200, `家庭户籍档案【${newFamily.familyCode}】登记成功！`);
+  }
+
+  // 7.7 编辑家庭档案
+  if (url.match(/\/admin\/families\/([^/]+)/) && method === 'PUT') {
+    const familyId = url.split('/').pop();
+    const target = adminFamiliesStore.find((f) => f.id === familyId || f.familyCode === familyId);
+    if (target) {
+      Object.assign(target, data);
+      return createResponse(target, 200, `家庭档案【${target.familyCode}】已更新！`);
+    }
+    return createResponse({}, 404, '未找到指定家庭档案');
+  }
+
+  // 7.8 删除家庭档案
+  if (url.match(/\/admin\/families\/([^/]+)/) && method === 'DELETE') {
+    const familyId = url.split('/').pop();
+    adminFamiliesStore = adminFamiliesStore.filter((f) => f.id !== familyId && f.familyCode !== familyId);
+    return createResponse({ success: true }, 200, '家庭户籍档案已注销注销成功');
+  }
+
+  // 7.9 代理网点管理列表
+  if (url.includes('/admin/agents') && method === 'GET') {
+    let result = [...adminAgentsStore];
+    if (params.code) {
+      result = result.filter((a) => a.code.toLowerCase().includes(params.code.toLowerCase()));
+    }
+    if (params.name) {
+      result = result.filter((a) => a.name.includes(params.name));
+    }
+    if (params.status && params.status !== '全部') {
+      result = result.filter((a) => a.status === params.status);
+    }
+    return createResponse(result);
+  }
+
+  // 7.10 修改代理网点状态
+  if (url.match(/\/admin\/agents\/([^/]+)\/status/) && method === 'PUT') {
+    const agentId = url.split('/')[3];
+    const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
+    if (target) {
+      target.status = data.status;
+      return createResponse(target, 200, `代理网点【${target.name}】状态已切换为【${data.status}】`);
+    }
+    return createResponse({}, 404, '未找到指定代理网点');
+  }
+
+  // 7.11 新增代理网点
+  if (url.includes('/admin/agents') && method === 'POST') {
+    const newAgent = {
+      id: `AGT-${Date.now().toString().slice(-4)}`,
+      code: `FA-${Math.floor(10000 + Math.random() * 89999)}`,
+      name: data.name,
+      manager: data.manager,
+      phone: data.phone,
+      province: data.province || '巴格达省',
+      district: data.district || '',
+      address: data.address || '',
+      status: '正常营业',
+      rating: 5,
+      servedHouseholds: data.servedHouseholds || 500,
+      storageCapacity: data.storageCapacity || 50,
+      lastInspectedAt: new Date().toISOString().split('T')[0]
+    };
+    adminAgentsStore.unshift(newAgent);
+    return createResponse(newAgent, 200, `代理网点【${newAgent.name}】入网登记成功！`);
+  }
+
+  // 7.12 更新代理网点资料
+  if (url.match(/\/admin\/agents\/([^/]+)/) && method === 'PUT') {
+    const agentId = url.split('/').pop();
+    const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
+    if (target) {
+      Object.assign(target, data);
+      return createResponse(target, 200, `代理网点资料已更新成功`);
+    }
+    return createResponse({}, 404, '未找到指定代理网点');
   }
 
   // 默认兜底响应

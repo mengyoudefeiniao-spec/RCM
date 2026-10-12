@@ -63,7 +63,7 @@
           <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-200 text-xs text-blue-800 space-y-1">
             <div class="font-bold">审核流转须知：</div>
             <p>
-              本申诉提交后将生成工单自动转入<strong>【电子审核工作台】</strong>，经分部员工初审与分部经理终审双岗确认后，系统将自动恢复其配给资格与每月粮油面粉指标。
+              本申诉提交后将生成工单自动转入<strong>【审核工作台】</strong>，经分部员工初审与分部经理终审双岗确认后，系统将自动恢复其配给资格与每月粮油面粉指标。
             </p>
           </div>
 
@@ -75,7 +75,7 @@
               :loading="submitting"
               @click="handleSubmitUnfreeze"
             >
-              提交解冻申请 (转入电子审核工作台)
+              提交解冻申请 (转入审核工作台)
             </el-button>
           </div>
         </div>
