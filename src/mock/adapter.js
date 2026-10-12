@@ -463,15 +463,42 @@ export async function mockDispatch(config) {
   if (url.includes('/citizen/member-transfer/submit') && method === 'POST') {
     const {
       targetCardNo,
-      member,
-      transferType, // 'wife' | 'child' | 'guardianship' | 'support' | 'other'
+      nationalId,
+      member: reqMember,
+      transferType: reqTransferType,
+      transferReasonType,
       article140Doc,
+      article140DocName,
       reasonDoc,
+      proofDocName,
       paymentInfo
     } = data;
 
-    // 核心前置拦截：未在系统中更新的成员从一开始就禁止选择和转移
-    if (!member || member.isUpdatedInSystem === false) {
+    const transferType = reqTransferType || transferReasonType || 'wife';
+    const effectiveNationalId = nationalId || reqMember?.nationalId;
+    let member = reqMember || transferableMembersStore.find((m) => m.nationalId === effectiveNationalId);
+
+    // 若通过 ID 未找到，动态构建有效在册人员以确保全流程演示通畅
+    if (!member) {
+      member = {
+        nationalId: effectiveNationalId || '198302194821',
+        name: '萨米拉·卡西姆·哈米德',
+        relationType: transferType,
+        gender: transferType === 'wife' ? '女' : '男',
+        birthDate: '1983-02-19',
+        fatherName: '卡西姆·哈米德',
+        familyCode: 'FAM-BAG-08832',
+        currentCardNo: 'RC-99081293',
+        currentProvince: '巴格达省 (Baghdad)',
+        currentCenterName: '鲁萨法第二配给中心 (#08)',
+        isArticle140Area: false,
+        isUpdatedInSystem: true,
+        faceVerified: true
+      };
+    }
+
+    // 核心前置拦截：未在系统中更新的成员禁止转移
+    if (member.isUpdatedInSystem === false) {
       return createResponse({}, 400, '【前置条件未满足】：该成员未在配给卡系统中完成登记更新，国家法令严禁办理转移业务！');
     }
 

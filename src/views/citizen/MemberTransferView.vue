@@ -463,7 +463,7 @@
             size="large"
             class="px-8 font-bold shadow-md bg-indigo-600 border-indigo-600 hover:bg-indigo-500"
             :loading="submitting"
-            @click="paymentDialogVisible = true"
+            @click="handleOpenPaymentDialog"
           >
             <el-icon class="mr-1.5"><Cellphone /></el-icon>
             {{ $t('memberTransfer.payAndSubmitBtn') }}
@@ -745,17 +745,32 @@ function getReasonTypeLabel(type) {
   return map[type] || type;
 }
 
+function handleOpenPaymentDialog() {
+  if (!selectedMember.value || !selectedMember.value.isUpdatedInSystem) {
+    ElMessage.error('【前置条件未满足】：该成员未在配给卡系统中完成登记更新，国家法令严禁办理转移及发起支付！');
+    return;
+  }
+  paymentDialogVisible.value = true;
+}
+
 // 电子支付成功回调，正式提交业务申请
 async function handlePaymentSuccess(payResult) {
   submitting.value = true;
   try {
     const payload = {
+      targetCardNo: citizenStore.currentFamily?.rationCardNo,
       nationalId: selectedMember.value.nationalId,
+      member: selectedMember.value,
+      transferType: transferReasonType.value,
       transferReasonType: transferReasonType.value,
       proofDocName: selectedMember.value.proofDocName || '法定关系证明公文_2026.pdf',
-      article140DocName: isArticle140Area.value ? '第140号决议转移无异议批函_2026.pdf' : '',
-      paymentTxId: payResult?.txId || `PAY-MT-${Date.now()}`,
-      paidAmount: 5000
+      reasonDoc: selectedMember.value.proofDocName || '法定关系证明公文_2026.pdf',
+      article140Doc: isArticle140Area.value ? '第140号决议转移无异议批函_2026.pdf' : '',
+      paymentInfo: {
+        txId: payResult?.txId || `PAY-MT-${Date.now()}`,
+        amount: 5000,
+        channel: payResult?.channel || 'Qi Card'
+      }
     };
 
     const res = await submitMemberTransfer(payload);
