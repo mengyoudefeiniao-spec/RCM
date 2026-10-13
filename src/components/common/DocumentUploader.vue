@@ -11,15 +11,44 @@
 
     <!-- 顶部标题、必需标记与机构信息 -->
     <div class="flex items-center justify-between gap-2 flex-wrap text-xs">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 flex-wrap">
         <span class="font-bold text-slate-800">{{ title }}</span>
-        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold">
+        <!-- 感叹号+圆圈新图层提示图标 (不挤压卡片框体) -->
+        <el-popover
+          v-if="subtitle"
+          trigger="click"
+          placement="bottom-start"
+          :width="300"
+          :teleported="true"
+          :show-arrow="true"
+          popper-class="module-desc-layer-popover"
+        >
+          <template #reference>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center w-5 h-5 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer select-none"
+              title="查看材料规范与要求说明"
+            >
+              <el-icon :size="13"><InfoFilled /></el-icon>
+            </button>
+          </template>
+          <div class="p-1 space-y-1.5 text-xs">
+            <div class="font-bold text-slate-800 flex items-center gap-1 text-[11px] pb-1 border-b border-slate-100">
+              <el-icon class="text-blue-500" :size="12"><InfoFilled /></el-icon>
+              <span>材料提交与核验规范</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200/90 text-slate-600 rounded-lg p-2 text-xs leading-relaxed break-words font-normal">
+              {{ subtitle }}
+            </div>
+          </div>
+        </el-popover>
+        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-95">
           必需材料 ★
         </el-tag>
-        <el-tag v-else type="info" size="small" effect="plain">
+        <el-tag v-else type="info" size="small" effect="plain" class="scale-95">
           可选材料
         </el-tag>
-        <el-tag v-if="categoryBadge" size="small" effect="light">
+        <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-95">
           {{ categoryBadge }}
         </el-tag>
       </div>
@@ -27,10 +56,6 @@
         颁发：{{ issuer }}
       </span>
     </div>
-
-    <p v-if="subtitle" class="text-[11px] text-slate-500">
-      {{ subtitle }}
-    </p>
 
     <!-- 1. 上传进度中状态 -->
     <div v-if="isUploading" class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
@@ -187,8 +212,12 @@ import {
   UploadFilled,
   RefreshRight,
   DeleteFilled,
-  DocumentCopy
+  DocumentCopy,
+  InfoFilled,
+  Close
 } from '@element-plus/icons-vue';
+
+const showSubtitle = ref(false);
 
 const props = defineProps({
   modelValue: {

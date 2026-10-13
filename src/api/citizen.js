@@ -141,3 +141,8 @@ export function submitMemberTransfer(data) {
     data
   });
 }
+
+// 别名兼容导出
+export const queryMemberForTransfer = queryTransferableMember;
+export const getTransferrableMembers = getTransferableMemberList;
+

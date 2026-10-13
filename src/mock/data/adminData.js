@@ -205,3 +205,91 @@ export const MOCK_AGENTS_ADMIN = [
     lastInspectedAt: '2026-04-02'
   }
 ];
+
+export const MOCK_WAREHOUSES_ADMIN = [
+  {
+    id: 'WH-01',
+    code: 'WH-BAG-01',
+    name: '巴格达第一国家储备粮库 (中心总仓)',
+    type: '战略储备总仓',
+    province: '巴格达省',
+    center: '卡尔赫第一粮食供应分部',
+    capacity: 160000,
+    currentStock: 148500,
+    manager: '阿卜杜勒·哈基姆',
+    phone: '+964 780 998 1122',
+    status: '正常运转',
+    address: '巴格达卡尔赫区工业保供园1号'
+  },
+  {
+    id: 'WH-02',
+    code: 'WH-BAG-02',
+    name: '卡尔赫面粉战略储备仓',
+    type: '区域中心仓',
+    province: '巴格达省',
+    center: '卡尔赫第一粮食供应分部',
+    capacity: 110000,
+    currentStock: 98200,
+    manager: '卡西姆·纳吉',
+    phone: '+964 771 883 2233',
+    status: '正常运转',
+    address: '卡尔赫曼苏尔储备大街5号'
+  },
+  {
+    id: 'WH-03',
+    code: 'WH-BAG-03',
+    name: '鲁萨法物资配送总站 (枢纽前置仓)',
+    type: '枢纽前置仓',
+    province: '巴格达省',
+    center: '鲁萨法第二粮食供应分部',
+    capacity: 75000,
+    currentStock: 69400,
+    manager: '拉希德·萨利赫',
+    phone: '+964 782 119 3344',
+    status: '正常运转',
+    address: '鲁萨法萨德尔城东侧调拨物流港'
+  },
+  {
+    id: 'WH-04',
+    code: 'WH-BAS-01',
+    name: '巴士拉海港战略粮油保供总仓',
+    type: '战略储备总仓',
+    province: '巴士拉省',
+    center: '巴士拉港口配给保障站',
+    capacity: 120000,
+    currentStock: 113000,
+    manager: '瓦利德·法鲁克',
+    phone: '+964 750 443 8899',
+    status: '正常运转',
+    address: '乌姆盖斯尔深水港粮油专用码头库区'
+  },
+  {
+    id: 'WH-05',
+    code: 'WH-MOS-01',
+    name: '摩苏尔北区口粮战备储备库',
+    type: '区域中心仓',
+    province: '尼尼微省',
+    center: '摩苏尔老城配给管理中心',
+    capacity: 90000,
+    currentStock: 82000,
+    manager: '萨米尔·马吉德',
+    phone: '+964 773 665 7711',
+    status: '正常运转',
+    address: '摩苏尔西岸工业开发区第7号储备站'
+  },
+  {
+    id: 'WH-06',
+    code: 'WH-DIY-01',
+    name: '迪亚拉哈奈根前置保供仓 (第140号决议区)',
+    type: '应急保供仓',
+    province: '迪亚拉省',
+    center: '迪亚拉哈奈根前置保供仓服务分部',
+    capacity: 35000,
+    currentStock: 31200,
+    manager: '哈桑·巴吉尔',
+    phone: '+964 781 224 5566',
+    status: '警戒储备',
+    address: '哈奈根边境过境口岸储备基地'
+  }
+];
+

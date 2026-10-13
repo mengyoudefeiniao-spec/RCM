@@ -44,8 +44,8 @@
             </div>
           </div>
 
-          <el-button size="small" type="primary" plain class="w-full" @click="faceCaptured = !faceCaptured">
-            {{ faceCaptured ? '重新拍摄人脸' : '拍摄活体人脸' }}
+          <el-button size="small" type="primary" plain class="w-full" @click="faceLivenessDialogVisible = true">
+            {{ faceCaptured ? '重新进行活体人脸动作核验' : '启动活体人脸动作核验' }}
           </el-button>
         </div>
 
@@ -153,12 +153,20 @@
       </div>
     </template>
   </el-dialog>
+
+  <!-- 活体人脸动作核验子弹窗 (带正视、摇头、张嘴动作检测) -->
+  <FaceLivenessVerifyDialog
+    v-model="faceLivenessDialogVisible"
+    :target-name="userName"
+    @success="handleFaceLivenessSuccess"
+  />
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { verifyBiometricFace } from '../../api/auth.js';
 import { ElMessage } from 'element-plus';
+import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
 import {
   Lock,
   Camera,
@@ -179,11 +187,17 @@ const emit = defineEmits(['update:modelValue', 'success']);
 const visible = ref(props.modelValue);
 watch(() => props.modelValue, (val) => { visible.value = val; });
 
+const faceLivenessDialogVisible = ref(false);
 const faceCaptured = ref(false);
 const cardFrontCaptured = ref(false);
 const cardBackCaptured = ref(false);
 const verifying = ref(false);
 const verificationPassed = ref(false);
+
+function handleFaceLivenessSuccess() {
+  faceCaptured.value = true;
+  ElMessage.success('活体人脸特征点比对完成，已采集活体样本');
+}
 
 const allCaptured = computed(() => faceCaptured.value && cardFrontCaptured.value && cardBackCaptured.value);
 

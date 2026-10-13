@@ -1,91 +1,1120 @@
 <template>
   <div class="agent-mgmt-view space-y-6">
-    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <el-icon class="text-amber-600"><Shop /></el-icon>
-            <span>代理管理与网点容积率监管</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">
-            执行单店 1,500 户容量红线监控、合并网点不超过 750 户限制以及经营面积实地抽检考核。
-          </p>
+    <!-- ======================================================== -->
+    <!-- 1. 顶部代理商身份看板与第 140 号决议监管总览 (仅管理视察角色可见，代理角色已去除) -->
+    <!-- ======================================================== -->
+    <div v-if="isAdmin" class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center text-white shadow-xs shrink-0 mt-0.5 sm:mt-0">
+            <el-icon class="text-xl"><Shop /></el-icon>
+          </div>
+          <ModuleDescTip
+            :title="$t('agent.title')"
+            :content="$t('agent.subtitle')"
+            badge-type="warning"
+            title-class="text-lg font-bold text-slate-900"
+          >
+            <template #extra>
+              <el-tag size="small" type="warning" effect="dark" class="scale-95 ml-1">
+                {{ $t('agent.article140Tag') }}
+              </el-tag>
+            </template>
+          </ModuleDescTip>
         </div>
-        <el-button size="small" @click="fetchAgents">
-          <el-icon class="mr-1"><Refresh /></el-icon>
-          刷新代销点列表
-        </el-button>
+
+        <!-- 顶部快捷操作栏：管理角色仅提供视察和跳转后台管理，代理角色展示四大申报按钮 -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <el-button type="info" plain class="font-bold border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100" @click="openWorkflowOverview">
+            <el-icon class="mr-1"><Guide /></el-icon>
+            业务全景流转与时序约束 (V1~V5)
+          </el-button>
+
+          <template v-if="!isAdmin">
+            <el-button type="primary" @click="handleOpenApply()">
+              <el-icon class="mr-1"><Plus /></el-icon>
+              {{ $t('agent.applyGrant') }}
+            </el-button>
+            <el-button type="warning" @click="handleOpenRotation()">
+              <el-icon class="mr-1"><Switch /></el-icon>
+              {{ $t('agent.applyRotation') }}
+            </el-button>
+            <el-button type="danger" plain @click="handleOpenRestoration()">
+              <el-icon class="mr-1"><RefreshRight /></el-icon>
+              {{ $t('agent.applyRestoration') }}
+            </el-button>
+          </template>
+          <template v-else>
+            <el-tag type="info" size="small" effect="plain" class="font-bold">
+              {{ $t('agent.inspectorMode') || '监督视察模式：仅供查阅网格代理分布' }}
+            </el-tag>
+            <el-button type="primary" size="small" @click="$router.push('/admin')">
+              {{ $t('agent.goToAdmin') || '前往后台管理行使专属法定职权' }}
+            </el-button>
+          </template>
+          <el-button @click="loadAllData">
+            <el-icon class="mr-1"><Refresh /></el-icon>
+            {{ $t('common.refresh') }}
+          </el-button>
+        </div>
       </div>
 
-      <el-table :data="agents" v-loading="loading" border style="width: 100%" class="text-xs">
-        <el-table-column prop="id" label="网点许可编号" width="110">
+      <!-- 统计指标与当前账号资质卡片 (针对 Pixel 9 412px 视口优化: 2x2 规整网格) -->
+      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 text-xs">
+        <!-- 指标 1: 名下代理中心总数 -->
+        <div class="p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1 sm:space-y-1.5">
+          <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-[11px]">
+            <span>{{ $t('agent.contractedStations') || '已签约网点' }}</span>
+            <el-icon class="text-blue-600 text-sm sm:text-base"><OfficeBuilding /></el-icon>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-xl sm:text-2xl font-bold font-mono text-slate-900">{{ myCenters.length }}</span>
+            <span class="text-[10px] sm:text-xs text-slate-400">{{ $t('agent.stationUnit') || '个' }}</span>
+          </div>
+          <div class="text-[11px] text-slate-500 flex items-center gap-1">
+            <span>{{ $t('agent.authorizedAccount') || '持权账号' }}：</span>
+            <span class="font-bold text-slate-800">{{ isEn ? 'Mohammed Jabbar' : (agentProfile?.name || '穆罕默德·贾巴尔') }}</span>
+          </div>
+        </div>
+
+        <!-- 指标 2: 全国19省与第140号决议网点覆盖 -->
+        <div class="p-3 sm:p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1 sm:space-y-1.5">
+          <div class="flex items-center justify-between text-amber-800 text-[10px] sm:text-[11px]">
+            <span>{{ isEn ? '19 Provinces / 600 Warehouses' : '19省 / 600配给仓库' }}</span>
+            <el-icon class="text-amber-600 text-sm sm:text-base"><LocationFilled /></el-icon>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-xl sm:text-2xl font-bold font-mono text-amber-700">104</span>
+            <span class="text-[10px] sm:text-xs text-amber-800/80">{{ isEn ? 'Article 140 Centers' : '所第140号决议中心' }}</span>
+          </div>
+          <div class="text-[11px] text-amber-700 font-medium truncate">
+            {{ isEn ? 'Kirkuk / Nineveh / Diyala flagged' : '基尔库克 / 尼尼微 / 迪亚拉等重点标识' }}
+          </div>
+        </div>
+
+        <!-- 指标 3: 签约服务户数与容量健康度 -->
+        <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-1.5">
+          <div class="flex items-center justify-between text-emerald-800 text-[11px]">
+            <span>{{ isEn ? 'Contracted Households' : '签约服务家庭总户数' }}</span>
+            <el-icon class="text-emerald-600"><UserFilled /></el-icon>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-bold font-mono text-emerald-700">{{ totalHouseholdsServed.toLocaleString() }}</span>
+            <span class="text-emerald-800/80">{{ $t('agent.householdUnit') || '户' }}</span>
+          </div>
+          <div class="text-[11px] text-emerald-700">
+            {{ isEn ? '1,500 Households Limit' : '单店上限 1,500 户' }}
+          </div>
+        </div>
+
+        <!-- 指标 4: 进行中的业务申请工单 -->
+        <div class="p-4 rounded-xl bg-indigo-50/70 border border-indigo-200/80 space-y-1.5">
+          <div class="flex items-center justify-between text-indigo-800 text-[11px]">
+            <span>{{ isEn ? 'Licensing Workorders' : '代理业务审批工单' }}</span>
+            <el-icon class="text-indigo-600"><Document /></el-icon>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-bold font-mono text-indigo-700">{{ activeApplicationsCount }}</span>
+            <span class="text-indigo-800/80">{{ isEn ? 'Active' : '笔在办' }}</span>
+          </div>
+          <div class="text-[11px] text-indigo-700">
+            {{ isEn ? 'Audits & Pending Fees' : '审批与待缴规费工单' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 2. 主体选项卡：我的中心列表、140号决议中心库、业务工单流水 -->
+    <!-- ======================================================== -->
+    <!-- 管理角色简化视图：仅展示所有省市和中心列表 -->
+    <div v-if="isAdmin" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="p-5 border-b border-slate-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+            <h3 class="text-sm font-bold text-slate-800">全国省市与配给中心总览</h3>
+            <el-tag size="small" type="info" effect="plain" class="font-mono">监督视察模式</el-tag>
+          </div>
+          <div class="flex items-center gap-2">
+            <el-input
+              v-model="searchKeyword"
+              placeholder="搜索中心名称/省份/编号"
+              clearable
+              size="small"
+              style="width: 260px"
+              @input="fetchArticle140Centers"
+            >
+              <template #prefix><el-icon><Search /></el-icon></template>
+            </el-input>
+            <el-select v-model="filterProvince" size="small" style="width: 180px" @change="fetchArticle140Centers">
+              <el-option label="全部省份" value="全部" />
+              <el-option label="巴格达省 (Baghdad)" value="巴格达省" />
+              <el-option label="迪亚拉省 (Diyala)" value="迪亚拉省" />
+              <el-option label="基尔库克省 (Kirkuk)" value="基尔库克省" />
+              <el-option label="尼尼微省 (Nineveh)" value="尼尼微省" />
+              <el-option label="巴士拉省 (Basra)" value="巴士拉省" />
+            </el-select>
+          </div>
+        </div>
+      </div>
+      <el-table
+        :data="article140Centers"
+        v-loading="loadingArticle140"
+        border
+        style="width: 100%"
+        class="text-xs"
+      >
+        <el-table-column prop="centerId" label="中心编号" width="95" align="center">
           <template #default="{ row }">
-            <span class="font-mono font-bold text-slate-800">{{ row.id }}</span>
+            <span class="font-mono font-bold text-slate-800">#{{ row.centerId }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="网点官方名称" min-width="180">
+        <el-table-column label="配给中心名称与区域" min-width="260">
           <template #default="{ row }">
-            <span class="font-semibold text-slate-800">{{ row.name }}</span>
-            <div class="text-[11px] text-slate-400">{{ row.address }}</div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="agentType" label="经营品类" width="120" />
-        <el-table-column prop="ownerName" label="经营负责人" width="120" />
-        <el-table-column prop="storeAreaSqM" label="营业面积" width="100" align="right">
-          <template #default="{ row }">
-            <span class="font-mono">{{ row.storeAreaSqM }} ㎡</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="服务户数 / 容积率警戒" min-width="180">
-          <template #default="{ row }">
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="font-mono font-bold">{{ row.householdsCount }} / {{ row.maxCap }} 户</span>
-                <span class="font-mono">{{ ((row.householdsCount / row.maxCap) * 100).toFixed(1) }}%</span>
-              </div>
-              <el-progress
-                :percentage="Math.min(100, (row.householdsCount / row.maxCap) * 100)"
-                :status="row.householdsCount >= 1400 ? 'warning' : 'primary'"
-                :show-text="false"
-              />
+            <div class="flex items-center gap-1.5 font-bold text-slate-900">
+              <span>{{ row.centerName }}</span>
+              <el-tag
+                v-if="row.isArticle140"
+                size="small"
+                type="warning"
+                effect="dark"
+                class="scale-90 origin-left"
+              >
+                第140号决议
+              </el-tag>
             </div>
+            <div class="text-[10px] text-slate-400 mt-0.5">{{ row.address }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="营业状态" width="140" align="center">
+        <el-table-column prop="province" label="所属省份" width="160">
+          <template #default="{ row }">
+            <span class="font-semibold text-slate-800">{{ row.province }}</span>
+            <div class="text-[10px] text-slate-400">{{ row.branchName }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="category" label="经营品类" width="110" />
+        <el-table-column label="代理授权状态" width="150" align="center">
           <template #default="{ row }">
             <el-tag
               size="small"
-              :type="row.status.includes('预警') ? 'warning' : 'success'"
+              :type="row.status === '已被代理' ? 'danger' : 'success'"
               effect="light"
             >
               {{ row.status }}
             </el-tag>
+            <div v-if="row.currentAgentName" class="text-[10px] text-slate-500 truncate mt-0.5">
+              {{ row.currentAgentName }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="服务户数" width="120" align="right">
+          <template #default="{ row }">
+            <span class="font-mono font-bold text-slate-800">
+              {{ row.currentHouseholds || row.registeredHouseholds || 0 }} 户
+            </span>
+            <div class="text-[10px] text-slate-400">上限 1,500 户</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button size="small" type="primary" link @click="$router.push('/admin')">
+              后台管理
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
+
+    <!-- 代理商角色完整视图：三个选项卡 (移动端边距优化与平滑滚动) -->
+    <div v-else class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <el-tabs v-model="activeTab" class="agent-custom-tabs px-3 sm:px-6 pt-2 sm:pt-3">
+        <!-- ======================================================== -->
+        <!-- TAB 1: 已代理中心 (支持多条件过滤与分页) -->
+        <!-- ======================================================== -->
+        <el-tab-pane name="myCenters">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><Shop /></el-icon>
+              <span class="font-bold">{{ $t('agent.myCenters') }}</span>
+              <el-badge :value="filteredMyCenters.length" type="primary" class="ml-1" />
+            </div>
+          </template>
+
+          <div class="py-4 space-y-4">
+            <!-- 代理快捷业务申报与刷新操作栏 -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span class="font-bold text-slate-800 text-xs sm:text-sm">已代理中心网格管理 (单店上限 1,500 户)</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <el-button type="primary" size="small" @click="handleOpenApply()">
+                  <el-icon class="mr-1"><Plus /></el-icon>
+                  申请代理 (新授予)
+                </el-button>
+              </div>
+            </div>
+
+            <!-- 过滤查询条件工具栏 (需求 2) -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">中心名称 / 编号关键字</span>
+                <el-input
+                  v-model="myCenterKeyword"
+                  placeholder="搜索名称 / 编号 / 地址"
+                  clearable
+                  size="small"
+                  @input="myCentersCurrentPage = 1"
+                >
+                  <template #prefix><el-icon><Search /></el-icon></template>
+                </el-input>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">所属省份筛选</span>
+                <el-select v-model="myCenterProvinceFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
+                  <el-option label="全部省份" value="全部" />
+                  <el-option label="巴格达省 (Baghdad)" value="巴格达省" />
+                  <el-option label="迪亚拉省 (Diyala)" value="迪亚拉省" />
+                  <el-option label="基尔库克省 (Kirkuk)" value="基尔库克省" />
+                  <el-option label="尼尼微省 (Nineveh)" value="尼尼微省" />
+                  <el-option label="巴士拉省 (Basra)" value="巴士拉省" />
+                </el-select>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">经营品类筛选</span>
+                <el-select v-model="myCenterCategoryFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
+                  <el-option label="全部品类" value="全部" />
+                  <el-option label="综合 (食品+面粉)" value="综合" />
+                  <el-option label="食品" value="食品" />
+                  <el-option label="面粉" value="面粉" />
+                </el-select>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">营业状态筛选</span>
+                <el-select v-model="myCenterStatusFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
+                  <el-option label="全部状态" value="全部" />
+                  <el-option label="正常营业" value="正常" />
+                  <el-option label="已注销 (待轮替)" value="注销" />
+                </el-select>
+              </div>
+              <div class="flex items-end gap-2">
+                <el-button size="small" type="primary" class="flex-1" @click="myCentersCurrentPage = 1">
+                  <el-icon class="mr-1"><Search /></el-icon>
+                  查询
+                </el-button>
+                <el-button size="small" class="flex-1" @click="handleResetMyCentersFilter">
+                  重置
+                </el-button>
+              </div>
+            </div>
+
+            <!-- 列表信息与精简提示 -->
+            <div class="flex items-center justify-between text-xs px-1 text-slate-500">
+              <span class="text-[11px]">提示：已被代理中心若需变更为其他人承接或重新申请，须先注销代理。</span>
+              <span class="text-[11px] font-mono">符合条件中心：共 {{ filteredMyCenters.length }} 个</span>
+            </div>
+
+            <!-- 已代理中心表格 -->
+            <el-table
+              :data="pagedMyCenters"
+              v-loading="loadingMyCenters"
+              border
+              style="width: 100%"
+              class="text-xs"
+            >
+              <el-table-column prop="id" label="网点许可编号" width="120">
+                <template #default="{ row }">
+                  <span class="font-mono font-bold text-slate-800">{{ row.id }}</span>
+                  <div class="text-[10px] text-slate-400">{{ row.licenseNo }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="配给中心及网点名称" min-width="220">
+                <template #default="{ row }">
+                  <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span>{{ row.centerName }}</span>
+                    <el-tag
+                      v-if="row.isArticle140"
+                      size="small"
+                      type="warning"
+                      effect="dark"
+                      class="scale-90 origin-left"
+                    >
+                      第140号决议
+                    </el-tag>
+                  </div>
+                  <div class="text-[11px] text-slate-600 mt-0.5">{{ row.name }}</div>
+                  <div class="text-[10px] text-slate-400">{{ row.address }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="province" label="所属省份 / 分部" width="180">
+                <template #default="{ row }">
+                  <span class="font-medium text-slate-800">{{ row.province }}</span>
+                  <div class="text-[10px] text-slate-400">{{ row.branchName }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="agentType" label="经营品类" width="120">
+                <template #default="{ row }">
+                  <el-tag size="small" type="info" effect="plain">{{ row.agentType }}</el-tag>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="服务户数 / 1,500 户硬上限" min-width="210">
+                <template #default="{ row }">
+                  <div v-if="row.status !== '已注销'" class="space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-mono font-bold">{{ row.householdsCount }} / 1,500 户</span>
+                      <span v-if="row.householdsCount >= 1500" class="text-rose-600 font-bold flex items-center gap-0.5">
+                        <el-tag size="small" type="danger" effect="dark" class="scale-90">网格饱和锁定</el-tag>
+                      </span>
+                      <span v-else-if="row.householdsCount >= 1400" class="text-amber-600 font-bold">
+                        临界预警 ({{ ((row.householdsCount / 1500) * 100).toFixed(1) }}%)
+                      </span>
+                      <span v-else class="text-slate-500 font-mono">
+                        {{ ((row.householdsCount / 1500) * 100).toFixed(1) }}%
+                      </span>
+                    </div>
+                    <el-progress
+                      :percentage="Math.min(100, (row.householdsCount / 1500) * 100)"
+                      :status="row.householdsCount >= 1500 ? 'exception' : (row.householdsCount >= 1400 ? 'warning' : 'primary')"
+                      :show-text="false"
+                      :stroke-width="6"
+                    />
+                    <div v-if="row.householdsCount >= 1500" class="text-[10px] text-rose-600">
+                      V1规则拦截：禁止新户迁入，必须由区域经理分流设立新代理点
+                    </div>
+                    <div v-else class="text-[10px] text-slate-400">
+                      单中心物理绑定：隶属【{{ row.centerName }}】
+                    </div>
+                  </div>
+                  <div v-else class="text-[11px] text-slate-400">
+                    网点处于已注销清退状态（原额度已冻结）
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="storeAreaSqM" label="营业面积" width="95" align="right">
+                <template #default="{ row }">
+                  <span class="font-mono font-medium">{{ row.storeAreaSqM }} ㎡</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="status" label="网点营业状态" width="130" align="center">
+                <template #default="{ row }">
+                  <el-tag
+                    size="small"
+                    :type="row.status.includes('正常') ? 'success' : 'danger'"
+                    effect="light"
+                  >
+                    {{ row.status }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+
+              <!-- 操作列：管理角色为只读引导，代理商支持轮替转移/注销 -->
+              <el-table-column label="操作" width="180" fixed="right" align="center">
+                <template #default="{ row }">
+                  <div v-if="isAdmin" class="text-slate-400 text-[11px]">
+                    <el-button size="small" type="primary" link @click="$router.push('/admin')">
+                      在后台管理中监管
+                    </el-button>
+                  </div>
+                  <div v-else class="flex items-center justify-center gap-1.5 flex-wrap">
+                    <!-- 正常营业状态：支持轮替或注销 -->
+                    <template v-if="row.isCurrentActive || row.status === '正常营业'">
+                      <el-button
+                        size="small"
+                        type="warning"
+                        link
+                        @click="handleOpenRotation(row.centerId)"
+                      >
+                        办理轮替
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="danger"
+                        link
+                        @click="handleOpenCancellation(row)"
+                      >
+                        注销代理
+                      </el-button>
+                    </template>
+
+                    <!-- 已注销状态：支持恢复或重新申请 -->
+                    <template v-else>
+                      <el-button
+                        size="small"
+                        type="primary"
+                        link
+                        @click="handleOpenRestoration(row.centerId)"
+                      >
+                        申请恢复
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="success"
+                        link
+                        @click="handleOpenApply(row.centerId)"
+                      >
+                        重新申请
+                      </el-button>
+                    </template>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- 分页控件 -->
+            <div class="flex items-center justify-between pt-3 text-xs border-t border-slate-100">
+              <div class="text-slate-400 text-[11px]">
+                第 {{ myCentersCurrentPage }} 页 / 共 {{ Math.ceil(filteredMyCenters.length / myCentersPageSize) || 1 }} 页
+              </div>
+              <el-pagination
+                v-model:current-page="myCentersCurrentPage"
+                v-model:page-size="myCentersPageSize"
+                :page-sizes="[5, 10, 20]"
+                :total="filteredMyCenters.length"
+                layout="total, sizes, prev, pager, next, jumper"
+                size="small"
+                background
+              />
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- ======================================================== -->
+        <!-- TAB 2: 批发采购 (街道代理 -> 政府中心仓) -->
+        <!-- ======================================================== -->
+        <el-tab-pane name="g2bOrders">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><Van /></el-icon>
+              <span class="font-bold">批发采购</span>
+              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">集中订货</el-tag>
+            </div>
+          </template>
+          <div class="py-4">
+            <AgentG2BPanel />
+          </div>
+        </el-tab-pane>
+
+        <!-- ======================================================== -->
+        <!-- TAB 3: 支付凭据 (支持多条件过滤与分页) -->
+        <!-- ======================================================== -->
+        <el-tab-pane name="applications">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><DocumentChecked /></el-icon>
+              <span class="font-bold">{{ $t('agent.applications') }}</span>
+              <el-badge :value="filteredApplications.length" type="info" class="ml-1" />
+            </div>
+          </template>
+
+          <div class="py-4 space-y-4">
+            <!-- 过滤查询条件工具栏 (需求 3) -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">工单编号 / 中心 / 申请人</span>
+                <el-input
+                  v-model="appKeyword"
+                  placeholder="搜索工单号/网点/申请人"
+                  clearable
+                  size="small"
+                  @input="applicationsCurrentPage = 1"
+                >
+                  <template #prefix><el-icon><Search /></el-icon></template>
+                </el-input>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">业务申报类型</span>
+                <el-select v-model="appTypeFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
+                  <el-option label="全部业务类型" value="全部" />
+                  <el-option label="新代理权申请 (25万)" value="GRANT" />
+                  <el-option label="代理权轮替转移 (5万)" value="ROTATION" />
+                  <el-option label="恢复已注销代理权" value="RESTORATION" />
+                  <el-option label="注销代理记录" value="CANCELLATION" />
+                </el-select>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">支付状态筛选</span>
+                <el-select v-model="appPayStatusFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
+                  <el-option label="全部支付状态" value="全部" />
+                  <el-option label="已电子入库 (已付)" value="PAID" />
+                  <el-option label="待电子支付 (未付)" value="UNPAID" />
+                  <el-option label="免收规费" value="FREE" />
+                </el-select>
+              </div>
+              <div>
+                <span class="block text-slate-500 mb-1 font-semibold">第 140 号决议属性</span>
+                <el-select v-model="appArticle140Filter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
+                  <el-option label="全部区域属性" value="全部" />
+                  <el-option label="涉及第140号决议区" value="true" />
+                  <el-option label="常规行政区" value="false" />
+                </el-select>
+              </div>
+              <div class="flex items-end gap-2">
+                <el-button size="small" type="primary" class="flex-1" @click="applicationsCurrentPage = 1">
+                  <el-icon class="mr-1"><Search /></el-icon>
+                  查询
+                </el-button>
+                <el-button size="small" class="flex-1" @click="handleResetAppFilter">
+                  重置
+                </el-button>
+              </div>
+            </div>
+
+            <!-- 列表信息与精简介绍词 -->
+            <div class="flex items-center justify-between text-xs px-1 text-slate-500">
+              <span class="text-[11px]">展示国库电子规费支付流水与审批凭据</span>
+              <span class="text-[11px] font-mono">符合条件记录：共 {{ filteredApplications.length }} 笔</span>
+            </div>
+
+            <!-- 支付凭据工单表格 -->
+            <el-table
+              :data="pagedApplications"
+              v-loading="loadingApplications"
+              border
+              style="width: 100%"
+              class="text-xs"
+            >
+              <el-table-column prop="ticketNo" label="申请工单编号" width="180">
+                <template #default="{ row }">
+                  <span class="font-mono font-bold text-slate-800">{{ row.ticketNo }}</span>
+                  <div class="text-[10px] text-slate-400">{{ row.submitTime }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="typeName" label="申请业务类型" width="180">
+                <template #default="{ row }">
+                  <div class="font-bold text-slate-800">{{ row.typeName }}</div>
+                  <div class="text-[10px]" :class="row.isArticle140 ? 'text-amber-600 font-semibold' : 'text-slate-400'">
+                    {{ row.isArticle140 ? '● 涉及第140号决议区' : '常规行政区' }}
+                  </div>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="关联配给中心" min-width="190">
+                <template #default="{ row }">
+                  <span class="font-semibold text-slate-800">{{ row.centerName }}</span>
+                  <div class="text-[10px] text-slate-400">{{ row.province }} · 品类: {{ row.category }}</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="applicantName" label="申请人 / 受让人" width="140" />
+
+              <el-table-column label="法定规费金额" width="130" align="right">
+                <template #default="{ row }">
+                  <div v-if="row.feeAmount > 0">
+                    <span class="font-mono font-bold text-slate-800">{{ row.feeAmount.toLocaleString() }} IQD</span>
+                    <div>
+                      <el-tag size="small" :type="row.feePaid ? 'success' : 'warning'" effect="plain">
+                        {{ row.feePaid ? '已电子入库' : '待支付' }}
+                      </el-tag>
+                    </div>
+                  </div>
+                  <div v-else class="text-slate-400 text-[11px]">免收规费</div>
+                </template>
+              </el-table-column>
+
+              <el-table-column prop="status" label="审核与业务状态" width="140" align="center">
+                <template #default="{ row }">
+                  <el-tag
+                    size="small"
+                    :type="row.status === '已完成' ? 'success' : (row.status.includes('待') ? 'warning' : 'primary')"
+                    effect="light"
+                  >
+                    {{ row.status }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" width="140" fixed="right" align="center">
+                <template #default="{ row }">
+                  <el-button
+                    v-if="!row.feePaid && row.status.includes('支付')"
+                    size="small"
+                    type="success"
+                    @click="handlePayExistingTicket(row)"
+                  >
+                    立即支付
+                  </el-button>
+                  <el-button
+                    v-else
+                    size="small"
+                    type="primary"
+                    link
+                    @click="handleViewTicketDetail(row)"
+                  >
+                    查看详情
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- 分页控件 -->
+            <div class="flex items-center justify-between pt-3 text-xs border-t border-slate-100">
+              <div class="text-slate-400 text-[11px]">
+                第 {{ applicationsCurrentPage }} 页 / 共 {{ Math.ceil(filteredApplications.length / applicationsPageSize) || 1 }} 页
+              </div>
+              <el-pagination
+                v-model:current-page="applicationsCurrentPage"
+                v-model:page-size="applicationsPageSize"
+                :page-sizes="[5, 10, 20]"
+                :total="filteredApplications.length"
+                layout="total, sizes, prev, pager, next, jumper"
+                size="small"
+                background
+              />
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 3. 弹窗组件挂载 -->
+    <!-- ======================================================== -->
+    <!-- 1. 申请代理权 (新授予) 向导弹窗 -->
+    <AgentApplyModal
+      ref="applyModalRef"
+      :center-options="article140Centers"
+      @success="handleBusinessSuccess"
+    />
+
+    <!-- 2. 代理权轮替 (转移) 向导弹窗 -->
+    <AgentRotationModal
+      ref="rotationModalRef"
+      :center-options="article140Centers"
+      @success="handleBusinessSuccess"
+    />
+
+    <!-- 3. 恢复已注销代理权向导弹窗 -->
+    <AgentRestorationModal
+      ref="restorationModalRef"
+      :center-options="article140Centers"
+      @success="handleBusinessSuccess"
+    />
+
+    <!-- 4. 注销代理中心确认弹窗 (满足中心已被代理需先注销才能申请) -->
+    <AgentCancellationModal
+      ref="cancellationModalRef"
+      @success="handleBusinessSuccess"
+    />
+
+    <!-- 5. 业务全景时序与约束规则全貌抽屉 -->
+    <AgentWorkflowOverviewDrawer ref="workflowDrawerRef" />
+
+    <!-- 工单详情查看抽屉 -->
+    <el-drawer v-model="drawerVisible" title="代理审批工单与联合委员会审查报告" size="520px">
+      <div v-if="selectedTicket" class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-500">工单编号：</span>
+            <span class="font-mono font-bold text-slate-800">{{ selectedTicket.ticketNo }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">业务类型：</span>
+            <span class="font-bold text-slate-800">{{ selectedTicket.typeName }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">关联中心：</span>
+            <span class="font-medium text-slate-800">{{ selectedTicket.centerName }} ({{ selectedTicket.province }})</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">法定规费：</span>
+            <span class="font-mono font-bold text-emerald-600">{{ selectedTicket.feeAmount.toLocaleString() }} IQD</span>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-bold text-slate-800">审查与推进批注：</h4>
+          <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 leading-relaxed text-[11px]">
+            {{ selectedTicket.auditNotes || '已按法定程序进入数字化两级审批与现场联合抽查环节。' }}
+          </div>
+        </div>
+
+        <div v-if="selectedTicket.committeeMembers?.length" class="space-y-2">
+          <h4 class="font-bold text-slate-800">联合实地检查委员会成员意见：</h4>
+          <div class="space-y-1.5">
+            <div
+              v-for="(member, idx) in selectedTicket.committeeMembers"
+              :key="idx"
+              class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between"
+            >
+              <div>
+                <span class="font-medium text-slate-800">{{ member.dept }}</span>
+                <span class="text-[10px] text-slate-400 ml-1">({{ member.officer }})</span>
+              </div>
+              <el-tag size="small" type="success" effect="plain">{{ member.status }}</el-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getAgentList } from '../../api/agent.js';
-import { Shop, Refresh } from '@element-plus/icons-vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/auth.js';
 
-const agents = ref([]);
-const loading = ref(false);
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
+import { ElMessage } from 'element-plus';
+import {
+  getMyAgentCenters,
+  getArticle140Centers,
+  getAgentProfile,
+  getAgentApplications,
+  payAgentApplicationFee
+} from '../../api/agent.js';
+import {
+  IRAQ_19_PROVINCES,
+  IRAQ_PROVINCE_CITIES
+} from '../../mock/data/iraqRegionWarehouses.js';
 
-async function fetchAgents() {
-  loading.value = true;
+// 子组件导入
+import AgentApplyModal from './components/AgentApplyModal.vue';
+import AgentRotationModal from './components/AgentRotationModal.vue';
+import AgentRestorationModal from './components/AgentRestorationModal.vue';
+import AgentCancellationModal from './components/AgentCancellationModal.vue';
+import AgentG2BPanel from './components/AgentG2BPanel.vue';
+import AgentWorkflowOverviewDrawer from './components/AgentWorkflowOverviewDrawer.vue';
+import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
+
+// 图标导入
+import {
+  Shop,
+  Plus,
+  Switch,
+  RefreshRight,
+  Share,
+  Refresh,
+  OfficeBuilding,
+  LocationFilled,
+  UserFilled,
+  Document,
+  DocumentChecked,
+  Compass,
+  InfoFilled,
+  Search,
+  Guide,
+  Van,
+  FullScreen,
+  DataAnalysis,
+  Connection
+} from '@element-plus/icons-vue';
+
+// 响应式数据
+const router = useRouter();
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isAdmin);
+const workflowDrawerRef = ref(null);
+
+const openWorkflowOverview = () => {
+  workflowDrawerRef.value?.open();
+};
+
+const activeTab = ref('myCenters');
+const myCenters = ref([]);
+const article140Centers = ref([]);
+const applications = ref([]);
+const agentProfile = ref(null);
+
+// 加载状态
+const loadingMyCenters = ref(false);
+const loadingArticle140 = ref(false);
+const loadingApplications = ref(false);
+
+// 筛选条件与分页状态 (已代理中心，需求 2)
+const myCenterKeyword = ref('');
+const myCenterProvinceFilter = ref('全部');
+const myCenterCategoryFilter = ref('全部');
+const myCenterStatusFilter = ref('全部');
+const myCentersCurrentPage = ref(1);
+const myCentersPageSize = ref(5);
+
+// 筛选条件与分页状态 (省份与中心：19省、300+市、600仓库，支持第140号决议标识)
+const filterProvince = ref('全部');
+const filterCity = ref('全部');
+const filterArticle140 = ref('');
+const filterCenterStatus = ref('全部');
+const searchKeyword = ref('');
+const provinceCentersCurrentPage = ref(1);
+const provinceCentersPageSize = ref(10);
+
+// 筛选条件与分页状态 (支付凭据，需求 3)
+const appKeyword = ref('');
+const appTypeFilter = ref('全部');
+const appPayStatusFilter = ref('全部');
+const appArticle140Filter = ref('全部');
+const applicationsCurrentPage = ref(1);
+const applicationsPageSize = ref(5);
+const applicationTypeFilter = ref('全部');
+
+// 弹窗组件引用
+const applyModalRef = ref(null);
+const rotationModalRef = ref(null);
+const restorationModalRef = ref(null);
+const cancellationModalRef = ref(null);
+
+// 工单详情抽屉
+const drawerVisible = ref(false);
+const selectedTicket = ref(null);
+
+// 计算属性
+const myArticle140Count = computed(() => {
+  return myCenters.value.filter((c) => c.isArticle140).length;
+});
+
+const totalHouseholdsServed = computed(() => {
+  return myCenters.value.reduce((acc, cur) => acc + (cur.householdsCount || 0), 0);
+});
+
+const activeApplicationsCount = computed(() => {
+  return applications.value.filter((a) => !a.feePaid || a.status.includes('中')).length;
+});
+
+// 已代理中心过滤 (需求 2)
+const filteredMyCenters = computed(() => {
+  return myCenters.value.filter((c) => {
+    // 关键字过滤
+    if (myCenterKeyword.value.trim()) {
+      const kw = myCenterKeyword.value.trim().toLowerCase();
+      const matchName = (c.centerName || '').toLowerCase().includes(kw);
+      const matchStore = (c.name || '').toLowerCase().includes(kw);
+      const matchId = (c.id || '').toLowerCase().includes(kw);
+      const matchAddr = (c.address || '').toLowerCase().includes(kw);
+      if (!matchName && !matchStore && !matchId && !matchAddr) return false;
+    }
+    // 所属省份
+    if (myCenterProvinceFilter.value !== '全部') {
+      if (!c.province?.includes(myCenterProvinceFilter.value)) return false;
+    }
+    // 经营品类
+    if (myCenterCategoryFilter.value !== '全部') {
+      if (!c.agentType?.includes(myCenterCategoryFilter.value)) return false;
+    }
+    // 营业状态
+    if (myCenterStatusFilter.value !== '全部') {
+      if (!c.status?.includes(myCenterStatusFilter.value)) return false;
+    }
+    return true;
+  });
+});
+
+// 已代理中心分页切片 (需求 2)
+const pagedMyCenters = computed(() => {
+  const start = (myCentersCurrentPage.value - 1) * myCentersPageSize.value;
+  return filteredMyCenters.value.slice(start, start + myCentersPageSize.value);
+});
+
+function handleResetMyCentersFilter() {
+  myCenterKeyword.value = '';
+  myCenterProvinceFilter.value = '全部';
+  myCenterCategoryFilter.value = '全部';
+  myCenterStatusFilter.value = '全部';
+  myCentersCurrentPage.value = 1;
+}
+
+// 支付凭据过滤 (需求 3)
+const filteredApplications = computed(() => {
+  return applications.value.filter((app) => {
+    // 关键字过滤
+    if (appKeyword.value.trim()) {
+      const kw = appKeyword.value.trim().toLowerCase();
+      const matchNo = (app.ticketNo || '').toLowerCase().includes(kw);
+      const matchCenter = (app.centerName || '').toLowerCase().includes(kw);
+      const matchApplicant = (app.applicantName || '').toLowerCase().includes(kw);
+      if (!matchNo && !matchCenter && !matchApplicant) return false;
+    }
+    // 业务申报类型
+    if (appTypeFilter.value !== '全部') {
+      if (app.type !== appTypeFilter.value) return false;
+    }
+    // 支付状态
+    if (appPayStatusFilter.value === 'PAID') {
+      if (!app.feePaid) return false;
+    } else if (appPayStatusFilter.value === 'UNPAID') {
+      if (app.feePaid || app.feeAmount <= 0) return false;
+    } else if (appPayStatusFilter.value === 'FREE') {
+      if (app.feeAmount > 0) return false;
+    }
+    // 第140号决议属性
+    if (appArticle140Filter.value === 'true') {
+      if (!app.isArticle140) return false;
+    } else if (appArticle140Filter.value === 'false') {
+      if (app.isArticle140) return false;
+    }
+    return true;
+  });
+});
+
+// 支付凭据分页切片 (需求 3)
+const pagedApplications = computed(() => {
+  const start = (applicationsCurrentPage.value - 1) * applicationsPageSize.value;
+  return filteredApplications.value.slice(start, start + applicationsPageSize.value);
+});
+
+function handleResetAppFilter() {
+  appKeyword.value = '';
+  appTypeFilter.value = '全部';
+  appPayStatusFilter.value = '全部';
+  appArticle140Filter.value = '全部';
+  applicationsCurrentPage.value = 1;
+}
+
+// 数据获取方法
+async function fetchMyCenters() {
+  loadingMyCenters.value = true;
   try {
-    const data = await getAgentList();
-    agents.value = data;
+    const res = await getMyAgentCenters();
+    myCenters.value = res || [];
   } finally {
-    loading.value = false;
+    loadingMyCenters.value = false;
   }
 }
 
+// 省份与中心计算属性与联动 (19省、300+市、600仓库)
+const article140CentersCount = computed(() => {
+  return article140Centers.value.filter((c) => c.isArticle140).length;
+});
+
+const regularCentersCount = computed(() => {
+  return article140Centers.value.filter((c) => !c.isArticle140).length;
+});
+
+const availableCities = computed(() => {
+  if (filterProvince.value === '全部' || !filterProvince.value) {
+    return [];
+  }
+  const provKey = filterProvince.value.split(' ')[0];
+  const cities = IRAQ_PROVINCE_CITIES[provKey] || [];
+  return cities.map((c) => c.replace('*', ''));
+});
+
+// 省份与中心分页切片 (600所中心)
+const pagedProvinceCenters = computed(() => {
+  const start = (provinceCentersCurrentPage.value - 1) * provinceCentersPageSize.value;
+  return article140Centers.value.slice(start, start + provinceCentersPageSize.value);
+});
+
+function handleProvinceChange() {
+  filterCity.value = '全部';
+  provinceCentersCurrentPage.value = 1;
+  fetchArticle140Centers();
+}
+
+function handleResetProvinceCenterFilter() {
+  filterProvince.value = '全部';
+  filterCity.value = '全部';
+  filterArticle140.value = '';
+  filterCenterStatus.value = '全部';
+  searchKeyword.value = '';
+  provinceCentersCurrentPage.value = 1;
+  fetchArticle140Centers();
+}
+
+async function fetchArticle140Centers() {
+  loadingArticle140.value = true;
+  try {
+    const params = {
+      province: filterProvince.value,
+      city: filterCity.value,
+      isArticle140: filterArticle140.value,
+      status: filterCenterStatus.value,
+      keyword: searchKeyword.value
+    };
+    const res = await getArticle140Centers(params);
+    article140Centers.value = res || [];
+  } finally {
+    loadingArticle140.value = false;
+  }
+}
+
+async function fetchApplications() {
+  loadingApplications.value = true;
+  try {
+    const params = {
+      type: applicationTypeFilter.value
+    };
+    const res = await getAgentApplications(params);
+    applications.value = res || [];
+  } finally {
+    loadingApplications.value = false;
+  }
+}
+
+async function fetchProfile() {
+  try {
+    const res = await getAgentProfile();
+    agentProfile.value = res;
+  } catch (e) {
+    // ignore
+  }
+}
+
+function loadAllData() {
+  fetchMyCenters();
+  fetchArticle140Centers();
+  fetchApplications();
+  fetchProfile();
+}
+
+// 弹窗打开交互
+function handleOpenApply(presetCenterId = '') {
+  applyModalRef.value?.open(presetCenterId);
+}
+
+function handleOpenRotation(presetCenterId = '') {
+  rotationModalRef.value?.open(presetCenterId);
+}
+
+function handleOpenRestoration(presetCenterId = '') {
+  restorationModalRef.value?.open(presetCenterId);
+}
+
+function handleOpenCancellation(center) {
+  cancellationModalRef.value?.open(center);
+}
+
+function handleViewTicketDetail(ticket) {
+  selectedTicket.value = ticket;
+  drawerVisible.value = true;
+}
+
+async function handlePayExistingTicket(ticket) {
+  try {
+    await payAgentApplicationFee(ticket.ticketNo, { channel: 'QI_CARD' });
+    ElMessage.success(`工单 ${ticket.ticketNo} 电子规费缴纳成功！`);
+    loadAllData();
+  } catch (err) {
+    // handled
+  }
+}
+
+function handleBusinessSuccess() {
+  loadAllData();
+}
+
 onMounted(() => {
-  fetchAgents();
+  loadAllData();
 });
 </script>
+
+<style scoped>
+.agent-custom-tabs :deep(.el-tabs__header) {
+  margin-bottom: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.agent-custom-tabs :deep(.el-tabs__item) {
+  padding: 0 16px;
+  height: 48px;
+  font-size: 13px;
+}
+</style>

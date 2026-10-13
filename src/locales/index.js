@@ -65,6 +65,11 @@ export function setLanguage(lang) {
   // 保持全局容器排版走向严格一致 (dir="ltr")，防止左右镜像颠倒破坏导航与栅格系统
   document.documentElement.setAttribute('dir', 'ltr');
   document.documentElement.setAttribute('lang', lang);
+
+  // 分发全局语言切换事件，通知业务 Store 响应式刷新对应语言的测试数据
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('rcm-language-changed', { detail: lang }));
+  }
 }
 
 // 页面初始化时执行一致性初始化

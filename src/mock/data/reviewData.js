@@ -7,6 +7,8 @@ export const MOCK_REVIEW_TICKETS = [
     cardNo: 'RC-10029381',
     applicantName: '奥马尔·艾哈迈德·哈桑',
     targetMemberName: '奥马尔·艾哈迈德·哈桑',
+    province: '巴格达省',
+    center: '卡尔赫第一粮食供应分部',
     reason: '拟分立成员为单独一人，不满足“夫妻标准组合”系统自动判别条件，转入分部门人员手动审核。',
     status: '待分部初审',
     submittedAt: '2026-10-10 10:15',
@@ -31,6 +33,8 @@ export const MOCK_REVIEW_TICKETS = [
     cardNo: 'RC-10029381',
     applicantName: '艾哈迈德·哈桑·萨利赫',
     targetMemberName: '宰娜卜·艾哈迈德·哈桑',
+    province: '巴格达省',
+    center: '鲁萨法第二粮食供应分部',
     reason: '商户名额已注销，依据工商税务清税公函COM-TAX-2026-9901申请解除配给卡冻结。',
     status: '待分部初审',
     submittedAt: '2026-10-11 09:30',
@@ -56,6 +60,8 @@ export const MOCK_REVIEW_TICKETS = [
     cardNo: 'RC-10029381',
     applicantName: '法蒂玛·阿里·穆罕默德',
     targetMemberName: '原户主 → 法蒂玛·阿里·穆罕默德',
+    province: '巴士拉省',
+    center: '巴士拉港口配给保障站',
     reason: '依据法医死亡鉴定医学公函DTH-BAG-2026-90182申请指定配偶法蒂玛为法定继任户主。',
     status: '待经理终审',
     submittedAt: '2026-10-09 16:40',
@@ -80,6 +86,8 @@ export const MOCK_REVIEW_TICKETS = [
     cardNo: 'RC-10029381',
     applicantName: '艾哈迈德·哈桑·萨利赫',
     targetMemberName: '拉希德·艾哈迈德',
+    province: '尼尼微省',
+    center: '摩苏尔老城配给管理中心',
     reason: '系统自动校验比对发现家庭编号存在跨省异动记录，提请人工双岗复核。',
     status: '待分部初审',
     submittedAt: '2026-10-11 14:20',
@@ -100,6 +108,8 @@ export const MOCK_REVIEW_TICKETS = [
     cardNo: 'RC-10029381',
     applicantName: '海德尔·卡西姆·纳赛尔',
     targetMemberName: '宰娜卜·艾哈迈德·哈桑',
+    province: '迪亚拉省',
+    center: '迪亚拉哈奈根前置保供仓服务分部',
     reason: '结婚跨卡迁移投靠，已提供最高民事法院登记证明，转入审核工单。',
     status: '已批准',
     submittedAt: '2026-10-08 09:10',
@@ -111,6 +121,28 @@ export const MOCK_REVIEW_TICKETS = [
     managerDecidedAt: '2026-10-09 10:20',
     attachments: [
       { name: '最高司法委员会_跨区分立投靠证明书_TRF-2026-1182.pdf', type: 'required', verified: true }
+    ]
+  },
+  {
+    id: 'REV-AGT-006',
+    source: '申请分户',
+    categoryType: '直系分户多卡立户',
+    appType: '直系子女成家独立分户',
+    cardNo: 'RC-10034820',
+    applicantName: '阿里·卡里姆',
+    targetMemberName: '哈立德·阿里·卡里姆',
+    province: '埃尔比勒省',
+    center: '埃尔比勒中心粮食调拨总站',
+    reason: '长子成婚独立购置住房，申请分立为独立新配给卡家庭。',
+    status: '待经理终审',
+    submittedAt: '2026-10-12 11:00',
+    staffOpinion: '房屋产权与婚保证明齐全，建议终审批准。',
+    staffName: '拉希德·纳比勒',
+    staffReviewedAt: '2026-10-12 13:20',
+    managerDecision: '待决',
+    managerNotes: '',
+    attachments: [
+      { name: '埃尔比勒司法局_房屋产权登记证_EBL-2026-5510.pdf', type: 'required', verified: true }
     ]
   }
 ];

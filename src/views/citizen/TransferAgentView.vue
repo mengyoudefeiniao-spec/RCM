@@ -1,413 +1,512 @@
 <template>
-  <div class="transfer-agent-view space-y-6">
-    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
+  <div class="transfer-agent-view space-y-4 sm:space-y-6">
+    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 sm:space-y-6">
       <!-- 顶部标题与返回导航 -->
-      <div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <el-icon class="text-blue-600"><Switch /></el-icon>
-            <span>申请配给卡代理转移 (就近获取与迁居转网)</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">
-            允许持卡公民因居住地变更或就近获取配给物资需要，将配给卡转移至新的面粉及食品代理。
-          </p>
-        </div>
-        <el-button size="small" plain @click="$router.push('/citizen')">
+      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <ModuleDescTip
+          :title="$t('transfer.title')"
+          :content="$t('transfer.subtitle')"
+          title-class="text-base font-bold text-slate-900"
+        >
+          <template #icon>
+            <el-icon class="text-blue-600 text-lg"><Switch /></el-icon>
+          </template>
+        </ModuleDescTip>
+        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
           <el-icon class="mr-1"><Back /></el-icon>
-          返回公民服务
+          {{ $t('common.back') }}
         </el-button>
       </div>
 
       <!-- 当前家庭配给卡与原代理存根概览 -->
       <div v-if="citizenStore.currentFamily" class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
         <div>
-          <span class="text-slate-400 block text-[11px]">电子配给卡号：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.rationCardNo') }}：</span>
           <span class="font-mono font-bold text-blue-600">{{ citizenStore.currentFamily.rationCardNo }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">法定户主姓名：</span>
-          <span class="font-bold text-slate-800">{{ citizenStore.currentFamily.headName }} ({{ citizenStore.currentFamily.memberCount }} 人)</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.headName') }}：</span>
+          <span class="font-bold text-slate-800">{{ citizenStore.currentFamily.headName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">当前所在省份：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('transfer.currentProvince') }}：</span>
           <span class="font-medium text-slate-800">{{ currentFromProvince }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">当前签约代销网点：</span>
+          <span class="text-slate-400 block text-[11px]">{{ $t('transfer.currentAgent') }}：</span>
           <span class="font-medium text-amber-700 truncate block">{{ citizenStore.currentFamily.agentName }}</span>
         </div>
       </div>
 
-      <!-- 顶部步骤条导航 (清晰展示当前进度) -->
-      <div class="py-2">
-        <el-steps :active="currentStep - 1" finish-status="success" align-center>
-          <el-step title="第一步" description="选择目标代理网点" />
-          <el-step title="第二步" description="新居住信息与证明" />
-          <el-step title="第三步" description="第140号决议核验" />
-          <el-step title="第四步" description="电子支付与提交" />
-        </el-steps>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- 步骤 1: 选择目标分部、中心及代理 (带 1,500 户容量红线监控) -->
-      <!-- ======================================================== -->
-      <div v-show="currentStep === 1" class="space-y-4 animate-fade-in">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">1</span>
-            <span>选择拟转入的目标配给分部、中心及代理网点</span>
-            <el-tag size="small" type="danger" effect="plain" class="scale-90">1,500 户容量红线监控</el-tag>
-          </label>
-          <span class="text-xs text-slate-400">面粉代理与食品代理独立核算容量</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">目标行政省份</span>
-            <el-select v-model="targetProvince" class="w-full" size="large" @change="handleProvinceChange">
-              <el-option
-                v-for="prov in provinceOptions"
-                :key="prov.province"
-                :label="prov.province"
-                :value="prov.province"
-              />
-            </el-select>
-          </div>
-
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">配给分部</span>
-            <el-select v-model="targetBranchName" class="w-full" size="large" @change="handleBranchChange">
-              <el-option
-                v-for="branch in currentBranchList"
-                :key="branch.branchName"
-                :label="branch.branchName"
-                :value="branch.branchName"
-              />
-            </el-select>
-          </div>
-
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">配给中心</span>
-            <el-select v-model="targetCenterId" class="w-full" size="large" @change="handleCenterChange">
-              <el-option
-                v-for="cnt in currentCenterList"
-                :key="cnt.centerId"
-                :label="`${cnt.centerName} (#${cnt.centerId})`"
-                :value="cnt.centerId"
-              />
-            </el-select>
-          </div>
-        </div>
-
-        <!-- 路径快速感知提示 -->
-        <div
-          class="p-3 rounded-xl border text-xs flex items-center justify-between"
-          :class="isSameProvince ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'"
-        >
-          <div class="flex items-center gap-2">
-            <el-icon><Compass /></el-icon>
-            <span>
-              目标省份为【{{ targetProvince }}】，属于【<strong>{{ isSameProvince ? '省内转移' : '跨省转移' }}</strong>】
-              ({{ isSameProvince ? '系统全自动批准生效' : '需转入分部两级电子审核' }})
-            </span>
-          </div>
-          <el-tag :type="isSameProvince ? 'success' : 'warning'" size="small">
-            {{ isSameProvince ? '自动路径' : '电子审核' }}
-          </el-tag>
-        </div>
-
-        <!-- 双代理选择：面粉代理 & 食品代理 -->
-        <div v-if="selectedCenter" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <!-- 面粉代理网点选择 -->
-          <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
-              <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                <span>拟选面粉代销网点</span>
-                <span class="text-[11px] text-slate-400 font-normal">(上限 1,500 户)</span>
+      <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
+      <div class="process-card-wrapper relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div class="flex flex-col lg:flex-row items-stretch">
+          
+          <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
+          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-slate-50/80 lg:border-r border-slate-200 lg:p-6 p-0">
+            <!-- 桌面端侧边栏标题 -->
+            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <el-icon class="text-blue-600"><Guide /></el-icon>
+                <span>{{ cleanTransferTitle }}</span>
               </span>
-              <el-tag size="small" type="warning" effect="dark">面粉保供</el-tag>
+              <span class="text-[11px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-semibold">
+                {{ $t('common.stepsCount', { current: currentStep, total: 5 }) }}
+              </span>
             </div>
 
-            <el-radio-group v-model="selectedFlourAgentId" class="w-full space-y-2 flex flex-col">
+            <!-- 时间线节点列表 -->
+            <div class="timeline-nodes-list">
+              <!-- 纵向连接线 -->
+              <div class="timeline-connector-line"></div>
+
+              <!-- 各节点 -->
               <div
-                v-for="ag in selectedCenter.flourAgents"
-                :key="ag.id"
-                class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                v-for="s in processSteps"
+                :key="s.step"
+                class="timeline-node-item"
                 :class="[
-                  selectedFlourAgentId === ag.id ? 'border-amber-500 ring-1 ring-amber-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
-                  ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
+                  s.step === currentStep ? 'is-active' : '',
+                  s.step < currentStep ? 'is-finish' : 'is-pending'
                 ]"
               >
-                <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
-                  <span class="font-bold text-slate-800">{{ ag.name }}</span>
-                  <span class="text-[11px] text-slate-400 block mt-0.5">责任人: {{ ag.manager }}</span>
-                </el-radio>
+                <!-- 节点圆圈图标 -->
+                <div class="node-icon-wrapper">
+                  <el-icon v-if="s.step < currentStep" class="text-xs"><Check /></el-icon>
+                  <span v-else class="font-bold text-xs">{{ s.step }}</span>
+                </div>
 
-                <div class="text-right shrink-0">
-                  <span
-                    class="font-mono font-bold text-xs"
-                    :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
-                  >
-                    {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} 户
-                  </span>
-                  <el-tag
-                    v-if="ag.currentHouseholds >= 1500"
-                    size="small"
-                    type="danger"
-                    effect="dark"
-                    class="scale-90 origin-right block mt-0.5"
-                  >
-                    已满额禁止转入
-                  </el-tag>
-                  <span v-else class="text-[10px] text-emerald-600 block">容量充裕 ✓</span>
+                <!-- 节点文本 (仅桌面端显示) -->
+                <div class="node-text-wrapper hidden lg:block">
+                  <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-blue-600' : s.step < currentStep ? 'text-slate-700' : 'text-slate-400'">
+                    {{ s.name }}
+                  </div>
+                  <div class="node-desc text-[11px] text-slate-400 mt-0.5">
+                    {{ s.desc }}
+                  </div>
                 </div>
               </div>
-            </el-radio-group>
+            </div>
           </div>
 
-          <!-- 食品代理网点选择 -->
-          <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
-              <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                <span>拟选食品代销网点</span>
-                <span class="text-[11px] text-slate-400 font-normal">(上限 1,500 户)</span>
+          <!-- 右侧主操作区 -->
+          <div class="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7 space-y-6">
+            <!-- 移动端顶部轻量步骤指示器 -->
+            <div class="lg:hidden flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+              <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span>{{ $t('common.stepNumber', { step: currentStep }) }}：{{ processSteps[currentStep - 1]?.name }}</span>
               </span>
-              <el-tag size="small" type="primary" effect="dark">粮油副食保供</el-tag>
+              <span class="font-mono text-slate-400 text-[11px]">{{ $t('common.progress', { current: currentStep, total: 5 }) }}</span>
             </div>
 
-            <el-radio-group v-model="selectedFoodAgentId" class="w-full space-y-2 flex flex-col">
-              <div
-                v-for="ag in selectedCenter.foodAgents"
-                :key="ag.id"
-                class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
-                :class="[
-                  selectedFoodAgentId === ag.id ? 'border-blue-500 ring-1 ring-blue-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
-                  ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
-                ]"
-              >
-                <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
-                  <span class="font-bold text-slate-800">{{ ag.name }}</span>
-                  <span class="text-[11px] text-slate-400 block mt-0.5">责任人: {{ ag.manager }}</span>
-                </el-radio>
+            <!-- ======================================================== -->
+            <!-- 步骤 1: 选择目标分部、中心及代理 (带 1,500 户容量红线监控) -->
+            <!-- ======================================================== -->
+            <div v-show="currentStep === 1" class="space-y-4 animate-fade-in">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+                <label class="text-sm font-bold text-slate-800 flex items-center gap-2 flex-wrap">
+                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">1</span>
+                  <span>{{ $t('transfer.step1TargetTitle') }}</span>
+                  <el-tag size="small" type="danger" effect="plain" class="scale-90">{{ $t('transfer.capacityAlert') }}</el-tag>
+                </label>
+                <span class="text-xs text-slate-400">{{ $t('transfer.capacityNotice') }}</span>
+              </div>
 
-                <div class="text-right shrink-0">
-                  <span
-                    class="font-mono font-bold text-xs"
-                    :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
-                  >
-                    {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} 户
-                  </span>
-                  <el-tag
-                    v-if="ag.currentHouseholds >= 1500"
-                    size="small"
-                    type="danger"
-                    effect="dark"
-                    class="scale-90 origin-right block mt-0.5"
-                  >
-                    已满额禁止转入
-                  </el-tag>
-                  <span v-else class="text-[10px] text-emerald-600 block">容量充裕 ✓</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetProvince') }}</span>
+                  <el-select v-model="targetProvince" class="w-full" size="large" @change="handleProvinceChange">
+                    <el-option
+                      v-for="prov in provinceOptions"
+                      :key="prov.province"
+                      :label="prov.province"
+                      :value="prov.province"
+                    />
+                  </el-select>
+                </div>
+
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetBranch') }}</span>
+                  <el-select v-model="targetBranchName" class="w-full" size="large" @change="handleBranchChange">
+                    <el-option
+                      v-for="branch in currentBranchList"
+                      :key="branch.branchName"
+                      :label="branch.branchName"
+                      :value="branch.branchName"
+                    />
+                  </el-select>
+                </div>
+
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetCenter') }}</span>
+                  <el-select v-model="targetCenterId" class="w-full" size="large" @change="handleCenterChange">
+                    <el-option
+                      v-for="cnt in currentCenterList"
+                      :key="cnt.centerId"
+                      :label="`${cnt.centerName} (#${cnt.centerId})`"
+                      :value="cnt.centerId"
+                    />
+                  </el-select>
                 </div>
               </div>
-            </el-radio-group>
-          </div>
-        </div>
-      </div>
 
-      <!-- ======================================================== -->
-      <!-- 步骤 2: 录入新居住信息与上传居住证明 -->
-      <!-- ======================================================== -->
-      <div v-show="currentStep === 2" class="space-y-5 animate-fade-in">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">2</span>
-            <span>录入新常住地址信息并上传居住证明文件</span>
-          </label>
-          <span class="text-xs text-rose-500">* 为法定必填材料</span>
-        </div>
+              <!-- 路径快速感知提示 -->
+              <div
+                class="p-3 rounded-xl border text-xs flex items-center justify-between"
+                :class="isSameProvince ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'"
+              >
+                <div class="flex items-center gap-2">
+                  <el-icon><Compass /></el-icon>
+                  <span>
+                    {{ $t('transfer.routeNotice', { prov: targetProvince, route: isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute'), approval: isSameProvince ? $t('transfer.autoPathNotice') : $t('transfer.reviewPathNotice') }) }}
+                  </span>
+                </div>
+                <el-tag :type="isSameProvince ? 'success' : 'warning'" size="small">
+                  {{ isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute') }}
+                </el-tag>
+              </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">行政区 (District) <span class="text-rose-500">*</span></span>
-            <el-input v-model="residenceForm.district" size="large" placeholder="例如：曼苏尔区 / 辛贾尔镇" />
-          </div>
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">乡 / 街区 (Sub-district) <span class="text-rose-500">*</span></span>
-            <el-input v-model="residenceForm.subDistrict" size="large" placeholder="例如：第14住宅大街 / 商业区" />
-          </div>
-          <div>
-            <span class="block text-xs font-semibold text-slate-600 mb-1.5">最近显著地标 (Landmark) <span class="text-rose-500">*</span></span>
-            <el-input v-model="residenceForm.nearestLandmark" size="large" placeholder="例如：中央大清真寺东侧200米" />
-          </div>
-        </div>
+              <!-- 双代理选择：面粉代理 & 食品代理 -->
+              <div v-if="selectedCenter" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <!-- 面粉代理网点选择 -->
+                <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
+                  <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                    <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                      <span>{{ $t('transfer.flourAgent') }}</span>
+                      <span class="text-[11px] text-slate-400 font-normal">({{ $t('transfer.limit1500') }})</span>
+                    </span>
+                    <el-tag size="small" type="warning" effect="dark">{{ $t('transfer.flourSupply') }}</el-tag>
+                  </div>
 
-        <!-- 居住证明文件上传模块 (必需材料) -->
-        <div class="pt-2">
-          <DocumentUploader
-            v-model="residenceProofUploaded"
-            title="居住证或官方居住确认公证书 (必需)"
-            subtitle="请上传由内政部居住署、当地市政委员会或治安官签发的常住地址公证书"
-            is-required
-            category-badge="居住凭证"
-            issuer="内政部居住署 / 市政委员会"
-            default-file-name="公民常住新地址居住确认公函_2026.pdf"
-          />
-        </div>
-      </div>
+                  <el-radio-group v-model="selectedFlourAgentId" class="w-full space-y-2 flex flex-col">
+                    <div
+                      v-for="ag in selectedCenter.flourAgents"
+                      :key="ag.id"
+                      class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      :class="[
+                        selectedFlourAgentId === ag.id ? 'border-amber-500 ring-1 ring-amber-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
+                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
+                      ]"
+                    >
+                      <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                        <span class="font-bold text-slate-800">{{ ag.name }}</span>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                      </el-radio>
 
-      <!-- ======================================================== -->
-      <!-- 步骤 3: 第 140 号决议合规核验 (特定争议领土强制要求) -->
-      <!-- ======================================================== -->
-      <div v-show="currentStep === 3" class="space-y-5 animate-fade-in">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">3</span>
-            <span>宪法第 140 号决议特定区域合规核验</span>
-          </label>
-          <el-tag :type="requiresArticle140 ? 'danger' : 'success'" size="small">
-            {{ requiresArticle140 ? '涉及第140号决议：强制无异议公文' : '未涉及争议领土：免予提交' }}
-          </el-tag>
-        </div>
+                      <div class="text-right shrink-0">
+                        <span
+                          class="font-mono font-bold text-xs"
+                          :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
+                        >
+                          {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} {{ $t('common.households') }}
+                        </span>
+                        <el-tag
+                          v-if="ag.currentHouseholds >= 1500"
+                          size="small"
+                          type="danger"
+                          effect="dark"
+                          class="scale-90 origin-right block mt-0.5"
+                        >
+                          {{ $t('transfer.capacityFull') }}
+                        </el-tag>
+                        <span v-else class="text-[10px] text-emerald-600 block">{{ $t('transfer.capacityAvailable') }}</span>
+                      </div>
+                    </div>
+                  </el-radio-group>
+                </div>
 
-        <!-- 涉及第 140 号决议的警示与上传模块 -->
-        <div v-if="requiresArticle140" class="space-y-4">
-          <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5">
-            <div class="font-bold flex items-center gap-1.5 text-sm text-rose-900">
-              <el-icon><WarningFilled /></el-icon>
-              <span>重要法令合规提示：命中第 140 号决议监管区域</span>
+                <!-- 食品代理网点选择 -->
+                <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
+                  <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                    <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                      <span>{{ $t('transfer.foodAgent') }}</span>
+                      <span class="text-[11px] text-slate-400 font-normal">({{ $t('transfer.limit1500') }})</span>
+                    </span>
+                    <el-tag size="small" type="primary" effect="dark">{{ $t('transfer.foodSupply') }}</el-tag>
+                  </div>
+
+                  <el-radio-group v-model="selectedFoodAgentId" class="w-full space-y-2 flex flex-col">
+                    <div
+                      v-for="ag in selectedCenter.foodAgents"
+                      :key="ag.id"
+                      class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      :class="[
+                        selectedFoodAgentId === ag.id ? 'border-blue-500 ring-1 ring-blue-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
+                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
+                      ]"
+                    >
+                      <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                        <span class="font-bold text-slate-800">{{ ag.name }}</span>
+                        <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                      </el-radio>
+
+                      <div class="text-right shrink-0">
+                        <span
+                          class="font-mono font-bold text-xs"
+                          :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
+                        >
+                          {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} {{ $t('common.households') }}
+                        </span>
+                        <el-tag
+                          v-if="ag.currentHouseholds >= 1500"
+                          size="small"
+                          type="danger"
+                          effect="dark"
+                          class="scale-90 origin-right block mt-0.5"
+                        >
+                          {{ $t('transfer.capacityFull') }}
+                        </el-tag>
+                        <span v-else class="text-[10px] text-emerald-600 block">{{ $t('transfer.capacityAvailable') }}</span>
+                      </div>
+                    </div>
+                  </el-radio-group>
+                </div>
+              </div>
             </div>
-            <p class="leading-relaxed">
-              检测到您拟转入或当前转出的区域属于<strong>伊拉克宪法第 140 号决议所覆盖之省份与中心</strong>（迪亚拉省哈奈根/贾劳拉、尼尼微省辛贾尔/祖马尔、萨拉赫丁省图兹或基尔库克全境）。依据国家特别法令，必须提交<strong>第 140 号决议无异议批文 (No-Objection Certificate)</strong>方可受理流转。
-            </p>
-          </div>
 
-          <DocumentUploader
-            v-model="article140Uploaded"
-            title="第 140 号决议官方无异议批文 (No-Objection Certificate)"
-            subtitle="请上传由联邦内政部与第140号决议实施委员会签发的跨区转移无异议官方公函"
-            is-required
-            category-badge="第140号决议文书"
-            issuer="第140号决议最高实施委员会"
-            default-file-name="第140号决议无异议执行批文_2026.pdf"
-          />
-        </div>
+            <!-- ======================================================== -->
+            <!-- 步骤 2: 录入新居住信息与上传居住证明 -->
+            <!-- ======================================================== -->
+            <div v-show="currentStep === 2" class="space-y-5 animate-fade-in">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">2</span>
+                  <span>{{ $t('transfer.step2Title') }}</span>
+                </label>
+                <span class="text-xs text-rose-500">{{ $t('transfer.mandatoryNotice') }}</span>
+              </div>
 
-        <!-- 不涉及第 140 号决议的友好提示 -->
-        <div v-else class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-xs space-y-3">
-          <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-            <el-icon class="text-emerald-600" :size="18"><CircleCheckFilled /></el-icon>
-            <span>经系统智能地理比对：未涵盖在第 140 号决议争议清单内</span>
-          </div>
-          <p class="text-emerald-700 leading-relaxed">
-            您当前的原所属省份（{{ currentFromProvince }}）与拟转入网点（{{ targetProvince }} · {{ targetBranchName }}）均不属于宪法第 140 号决议覆盖区域，依法<strong>免于提交第 140 号决议无异议批文</strong>，可直接进入下一步办理。
-          </p>
-          <div>
-            <el-tag type="success" effect="dark" size="small">法定免除通过 (EXEMPTED ✓)</el-tag>
-          </div>
-        </div>
-      </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceDistrict') }} <span class="text-rose-500">*</span></span>
+                  <el-input v-model="residenceForm.district" size="large" :placeholder="$t('transfer.districtPlaceholder')" />
+                </div>
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceSubDistrict') }} <span class="text-rose-500">*</span></span>
+                  <el-input v-model="residenceForm.subDistrict" size="large" :placeholder="$t('transfer.subDistrictPlaceholder')" />
+                </div>
+                <div>
+                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceLandmark') }} <span class="text-rose-500">*</span></span>
+                  <el-input v-model="residenceForm.nearestLandmark" size="large" :placeholder="$t('transfer.landmarkPlaceholder')" />
+                </div>
+              </div>
 
-      <!-- ======================================================== -->
-      <!-- 步骤 4: 确认信息与规费电子支付 -->
-      <!-- ======================================================== -->
-      <div v-show="currentStep === 4" class="space-y-5 animate-fade-in">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">4</span>
-            <span>核对申请摘要并扫码完成电子支付</span>
-          </label>
-          <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark">
-            {{ isSameProvince ? '省内自动审批生效' : '跨省两级电子审核' }}
-          </el-tag>
-        </div>
-
-        <!-- 申请明细摘要核对卡 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-          <div>
-            <span class="text-slate-400 block text-[11px]">目标省份与分部：</span>
-            <span class="font-bold text-slate-800">{{ targetProvince }} / {{ targetBranchName }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">拟签约面粉代理：</span>
-            <span class="font-bold text-amber-800">{{ currentSelectedFlourAgent?.name }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">拟签约食品代理：</span>
-            <span class="font-bold text-blue-800">{{ currentSelectedFoodAgent?.name }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">新常住地标：</span>
-            <span class="font-bold text-slate-800 truncate block">{{ residenceForm.nearestLandmark }}</span>
-          </div>
-        </div>
-
-        <!-- 规费账单提示 -->
-        <div class="p-4 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="space-y-1">
-            <div class="text-xs text-slate-400">配给卡转网与数据同步法定公文规费：</div>
-            <div class="text-2xl font-bold font-mono text-emerald-400">
-              5,000 IQD <span class="text-xs text-slate-400 font-normal">(伊拉克第纳尔)</span>
+              <!-- 居住证明文件上传模块 (必需材料) -->
+              <div class="pt-2">
+                <DocumentUploader
+                  v-model="residenceProofUploaded"
+                  :title="$t('transfer.residenceProofTitle')"
+                  :subtitle="$t('transfer.residenceProofSubtitle')"
+                  is-required
+                  :category-badge="$t('transfer.residenceProofBadge')"
+                  :issuer="$t('transfer.residenceProofIssuer')"
+                  :default-file-name="isEn ? 'Residence_Confirmation_Certificate_2026.pdf' : '公民常住新地址居住确认公函_2026.pdf'"
+                />
+              </div>
             </div>
-            <div class="text-[11px] text-slate-400">
-              支持国家 Qi Card 电子支付钱包、ZainCash 扫码支付
+
+            <!-- ======================================================== -->
+            <!-- 步骤 3: 第 140 号决议合规核验 (特定争议领土强制要求) -->
+            <!-- ======================================================== -->
+            <div v-show="currentStep === 3" class="space-y-5 animate-fade-in">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">3</span>
+                  <span>{{ $t('transfer.article140Title') }}</span>
+                </label>
+                <el-tag :type="requiresArticle140 ? 'danger' : 'success'" size="small">
+                  {{ requiresArticle140 ? $t('transfer.article140Warning') : $t('transfer.article140Exempted') }}
+                </el-tag>
+              </div>
+
+              <!-- 涉及第 140 号决议的警示与上传模块 -->
+              <div v-if="requiresArticle140" class="space-y-4">
+                <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5">
+                  <div class="font-bold flex items-center gap-1.5 text-sm text-rose-900">
+                    <el-icon><WarningFilled /></el-icon>
+                    <span>{{ $t('transfer.art140NoticeTitle') }}</span>
+                  </div>
+                  <p class="leading-relaxed">
+                    {{ $t('transfer.art140NoticeContent') }}
+                  </p>
+                </div>
+
+                <DocumentUploader
+                  v-model="article140Uploaded"
+                  :title="$t('transfer.art140DocTitle')"
+                  :subtitle="$t('transfer.art140DocSubtitle')"
+                  is-required
+                  :category-badge="$t('transfer.art140DocBadge')"
+                  :issuer="$t('transfer.art140DocIssuer')"
+                  :default-file-name="isEn ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议无异议执行批文_2026.pdf'"
+                />
+              </div>
+
+              <!-- 不涉及第 140 号决议的友好提示 -->
+              <div v-else class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-xs space-y-3">
+                <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                  <el-icon class="text-emerald-600" :size="18"><CircleCheckFilled /></el-icon>
+                  <span>{{ $t('transfer.art140ExemptTitle') }}</span>
+                </div>
+                <p class="text-emerald-700 leading-relaxed">
+                  {{ $t('transfer.art140ExemptContent', { from: currentFromProvince, target: `${targetProvince} · ${targetBranchName}` }) }}
+                </p>
+                <div>
+                  <el-tag type="success" effect="dark" size="small">{{ $t('transfer.art140ExemptBadge') }}</el-tag>
+                </div>
+              </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- 步骤 4: 确认信息与规费电子支付 -->
+            <!-- ======================================================== -->
+            <div v-show="currentStep === 4" class="space-y-5 animate-fade-in">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">4</span>
+                  <span>{{ $t('transfer.step4Title') }}</span>
+                </label>
+                <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark">
+                  {{ isSameProvince ? $t('transfer.intraProvinceAuto') : $t('transfer.interProvinceReview') }}
+                </el-tag>
+              </div>
+
+              <!-- 申请明细摘要核对卡 -->
+              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.summaryTarget') }}：</span>
+                  <span class="font-bold text-slate-800">{{ targetProvince }} / {{ targetBranchName }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.flourAgent') }}：</span>
+                  <span class="font-bold text-amber-800">{{ currentSelectedFlourAgent?.name }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.foodAgent') }}：</span>
+                  <span class="font-bold text-blue-800">{{ currentSelectedFoodAgent?.name }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.summaryLandmark') }}：</span>
+                  <span class="font-bold text-slate-800 truncate block">{{ residenceForm.nearestLandmark }}</span>
+                </div>
+              </div>
+
+              <!-- 规费账单提示 -->
+              <div class="p-4 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div class="text-xs text-slate-400">{{ $t('transfer.feeDescription') }}：</div>
+                  <div class="text-2xl font-bold font-mono text-emerald-400">
+                    5,000 IQD <span class="text-xs text-slate-400 font-normal">({{ $t('common.iqdUnit') }})</span>
+                  </div>
+                  <div class="text-[11px] text-slate-400">
+                    {{ $t('transfer.payChannels') }}
+                  </div>
+                </div>
+                <div>
+                  <el-tag type="success" effect="dark" size="small">
+                    {{ $t('transfer.feeReady') }}
+                  </el-tag>
+                </div>
+              </div>
+
+              <!-- 引导进行扫码支付卡片 -->
+              <div class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                  <el-icon :size="24"><CreditCard /></el-icon>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900">{{ $t('transfer.lastStepTitle') }}</h4>
+                  <p class="text-xs text-slate-500 mt-1">
+                    {{ $t('transfer.lastStepSubtitle') }}
+                  </p>
+                </div>
+                <el-button
+                  type="success"
+                  size="large"
+                  class="px-8 font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500"
+                  :loading="submitting"
+                  @click="handleOpenPaymentDialog"
+                >
+                  <el-icon class="mr-1.5"><Cellphone /></el-icon>
+                  {{ $t('transfer.payAndSubmit') }}
+                </el-button>
+              </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- 步骤 5: 受理办结与审核流转凭据 -->
+            <!-- ======================================================== -->
+            <div v-show="currentStep === 5" class="space-y-6 animate-fade-in text-center py-6">
+              <div
+                class="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
+                :class="transferResult?.autoApproved ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'"
+              >
+                <el-icon :size="36"><CircleCheckFilled /></el-icon>
+              </div>
+
+              <div class="space-y-2">
+                <h3 class="text-lg font-bold text-slate-900">
+                  {{ transferResult?.autoApproved ? $t('transfer.autoSuccessTitle') : $t('transfer.reviewSuccessTitle') }}
+                </h3>
+                <p class="text-xs text-slate-500 max-w-lg mx-auto">
+                  {{ transferResult?.message || (transferResult?.autoApproved ? $t('transfer.autoSuccessDesc') : $t('transfer.reviewSuccessDesc')) }}
+                </p>
+              </div>
+
+              <!-- 凭证卡片 -->
+              <div class="max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left space-y-3 text-xs">
+                <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                  <span class="font-bold text-slate-800">{{ $t('transfer.receiptTitle') }}</span>
+                  <el-tag :type="transferResult?.autoApproved ? 'success' : 'warning'" size="small">
+                    {{ transferResult?.autoApproved ? $t('transfer.autoApprovedBadge') : $t('transfer.reviewingBadge') }}
+                  </el-tag>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-slate-600">
+                  <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-slate-800">{{ transferResult?.ticketId || 'TR-2026-BAG-0918' }}</span></div>
+                  <div>{{ $t('citizen.headName') }}：<span class="font-bold text-slate-800">{{ citizenStore.currentFamily?.headName }}</span></div>
+                  <div>{{ $t('transfer.originalAgent') }}：<span class="text-slate-800">{{ citizenStore.currentFamily?.agentName }}</span></div>
+                  <div>{{ $t('transfer.flourAgent') }}：<span class="font-bold text-amber-700">{{ currentSelectedFlourAgent?.name }}</span></div>
+                  <div>{{ $t('transfer.foodAgent') }}：<span class="font-bold text-blue-700">{{ currentSelectedFoodAgent?.name }}</span></div>
+                  <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-emerald-600 font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center gap-3 pt-2">
+                <el-button type="primary" size="large" class="px-8 font-bold" @click="$router.push('/citizen')">
+                  {{ $t('transfer.backToFamily') }}
+                </el-button>
+              </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- 底部步骤切换操作栏 (上一步 / 下一步) -->
+            <!-- ======================================================== -->
+            <div v-if="currentStep < 5" class="flex items-center justify-between pt-4 border-t border-slate-100">
+              <el-button
+                v-if="currentStep > 1"
+                size="large"
+                @click="handlePrevStep"
+              >
+                <el-icon class="mr-1"><Back /></el-icon>
+                {{ $t('common.prevStep') }}
+              </el-button>
+              <div v-else />
+
+              <div>
+                <el-button
+                  v-if="currentStep < 4"
+                  type="primary"
+                  size="large"
+                  class="px-6 font-bold"
+                  @click="handleNextStep"
+                >
+                  {{ $t('common.nextStep') }}
+                  <el-icon class="ml-1"><Right /></el-icon>
+                </el-button>
+              </div>
             </div>
           </div>
-          <div>
-            <el-tag type="success" effect="dark" size="small">
-              规费核定就绪 ✓
-            </el-tag>
-          </div>
-        </div>
-
-        <!-- 引导进行扫码支付卡片 -->
-        <div class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-center space-y-3">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-            <el-icon :size="24"><CreditCard /></el-icon>
-          </div>
-          <div>
-            <h4 class="text-sm font-bold text-slate-900">最后一步：进行电子支付并提交</h4>
-            <p class="text-xs text-slate-500 mt-1">
-              点击下方按钮将打开电子支付二维码收银台，手机扫码付款通过后，系统将正式受理
-            </p>
-          </div>
-          <el-button
-            type="success"
-            size="large"
-            class="px-8 font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500"
-            :loading="submitting"
-            @click="handleOpenPaymentDialog"
-          >
-            <el-icon class="mr-1.5"><Cellphone /></el-icon>
-            打开电子支付二维码并完成付款
-          </el-button>
-        </div>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- 底部步骤切换操作栏 (上一步 / 下一步) -->
-      <!-- ======================================================== -->
-      <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-        <el-button
-          v-if="currentStep > 1"
-          size="large"
-          @click="handlePrevStep"
-        >
-          <el-icon class="mr-1"><Back /></el-icon>
-          上一步
-        </el-button>
-        <div v-else />
-
-        <div>
-          <el-button
-            v-if="currentStep < 4"
-            type="primary"
-            size="large"
-            class="px-6 font-bold"
-            @click="handleNextStep"
-          >
-            下一步
-            <el-icon class="ml-1"><Right /></el-icon>
-          </el-button>
         </div>
       </div>
     </div>
@@ -415,7 +514,7 @@
     <!-- 通用电子支付二维码收银台弹窗 -->
     <ElectronicPaymentDialog
       v-model="paymentDialogVisible"
-      title="配给卡代理转移转网行政规费"
+      :title="$t('transfer.paymentTitle')"
       :amount="5000"
       currency="IQD"
       :business-no="citizenStore.currentFamily?.rationCardNo"
@@ -426,12 +525,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getTransferOptions, submitTransferAgent } from '../../api/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
+import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import {
   Switch,
   Back,
@@ -440,22 +540,42 @@ import {
   WarningFilled,
   CircleCheckFilled,
   CreditCard,
-  Cellphone
+  Cellphone,
+  Guide,
+  Check
 } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { ElMessage } from 'element-plus';
 
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
 const router = useRouter();
 const citizenStore = useCitizenStore();
 
-// 当前向导步骤：1 | 2 | 3 | 4
+// 纯模块主标题
+const cleanTransferTitle = computed(() => {
+  return t('transfer.title').replace(/\s*[\(（].*?[\)）]/g, '').trim();
+});
+
+// 流程节点定义 (响应式多语言适配)
+const processSteps = computed(() => [
+  { step: 1, name: t('transfer.step1Name'), desc: t('transfer.step1Desc') },
+  { step: 2, name: t('transfer.step2Name'), desc: t('transfer.step2Desc') },
+  { step: 3, name: t('transfer.step3Name'), desc: t('transfer.step3Desc') },
+  { step: 4, name: t('transfer.step4Name'), desc: t('transfer.step4Desc') },
+  { step: 5, name: t('common.completed'), desc: t('transfer.autoApprovedBadge') },
+]);
+
+// 当前向导步骤：1 | 2 | 3 | 4 | 5
 const currentStep = ref(1);
+const transferResult = ref(null);
 
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
 const provinceOptions = ref([]);
 
 // 目标省份/分部/中心/代理选择状态
-const targetProvince = ref('巴格达省 (Baghdad)');
+const targetProvince = ref('');
 const targetBranchName = ref('');
 const targetCenterId = ref('');
 const selectedFlourAgentId = ref('');
@@ -463,28 +583,56 @@ const selectedFoodAgentId = ref('');
 
 // 新居住信息表单
 const residenceForm = reactive({
-  district: '卡尔赫区曼苏尔街区',
-  subDistrict: '第14住宅大街',
-  nearestLandmark: '中央大清真寺西侧'
+  district: '',
+  subDistrict: '',
+  nearestLandmark: ''
 });
+
+function initResidenceForm() {
+  if (locale.value === 'en') {
+    residenceForm.district = 'Al-Mansour District, Karkh';
+    residenceForm.subDistrict = 'Street 14, Sector 6';
+    residenceForm.nearestLandmark = 'West of Grand Mosque';
+  } else {
+    residenceForm.district = '卡尔赫区曼苏尔街区';
+    residenceForm.subDistrict = '第14住宅大街';
+    residenceForm.nearestLandmark = '中央大清真寺西侧';
+  }
+}
 
 // 证明文件状态
 const residenceProofUploaded = ref(true);
 const article140Uploaded = ref(true);
 
+const handleLangChanged = async () => {
+  await citizenStore.fetchFamilies();
+  await loadTransferOptions();
+  initResidenceForm();
+};
+
 onMounted(async () => {
+  initResidenceForm();
   if (!citizenStore.currentFamily) {
     await citizenStore.fetchFamilies();
   }
   await loadTransferOptions();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('rcm-language-changed', handleLangChanged);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('rcm-language-changed', handleLangChanged);
+  }
 });
 
 // 当前家庭原省份
 const currentFromProvince = computed(() => {
-  return citizenStore.currentFamily?.province || '巴格达省 (Baghdad)';
+  return citizenStore.currentFamily?.province || (isEn.value ? 'Baghdad Governorate' : '巴格达省 (Baghdad)');
 });
 
-// 是否为省内转移 (同一省份自动审批，跨省两级电子审核)
+// 是否为省内转移
 const isSameProvince = computed(() => {
   const fromP = currentFromProvince.value.split(' ')[0];
   const toP = targetProvince.value.split(' ')[0];
@@ -524,56 +672,64 @@ const currentSelectedFoodAgent = computed(() => {
   return selectedCenter.value?.foodAgents.find((a) => a.id === selectedFoodAgentId.value);
 });
 
-// 核心规则：第 140 号决议判断
+// 是否涉及第 140 号决议特定争议领土
+const ARTICLE_140_KEYWORDS = ['迪亚拉', '尼尼微', '萨拉赫丁', '基尔库克', 'Diyala', 'Ninawa', 'Nineveh', 'Kirkuk', 'Salah al-Din', 'Khanaqin', 'Sinjar'];
 const requiresArticle140 = computed(() => {
-  const toCenterIs140 = selectedCenter.value?.isArticle140;
-  const fromIs140 =
-    currentFromProvince.value.includes('基尔库克') ||
-    currentFromProvince.value.includes('迪亚拉') ||
-    currentFromProvince.value.includes('尼尼微');
-  return !!(toCenterIs140 || fromIs140);
+  const from = currentFromProvince.value;
+  const to = `${targetProvince.value} ${targetBranchName.value}`;
+  return ARTICLE_140_KEYWORDS.some((kw) => from.includes(kw) || to.includes(kw));
 });
 
+// 加载省市区网点树形元数据
 async function loadTransferOptions() {
   try {
-    const data = await getTransferOptions();
-    provinceOptions.value = data || [];
-    if (data && data.length > 0) {
-      targetProvince.value = data[0].province;
-      handleProvinceChange();
+    const list = await getTransferOptions();
+    provinceOptions.value = list || [];
+    if (provinceOptions.value.length > 0) {
+      if (!targetProvince.value || !provinceOptions.value.some(p => p.province === targetProvince.value)) {
+        targetProvince.value = provinceOptions.value[0].province;
+      }
+      handleProvinceChange(targetProvince.value);
     }
   } catch (err) {
-    ElMessage.error('加载转网候选代理网点失败');
+    // handled by axios
   }
 }
 
-function handleProvinceChange() {
-  if (currentBranchList.value.length > 0) {
-    targetBranchName.value = currentBranchList.value[0].branchName;
-    handleBranchChange();
+function handleProvinceChange(val) {
+  const prov = provinceOptions.value.find((p) => p.province === val);
+  if (prov && prov.branches?.length > 0) {
+    targetBranchName.value = prov.branches[0].branchName;
+    handleBranchChange(targetBranchName.value);
+  } else {
+    targetBranchName.value = '';
+    targetCenterId.value = '';
+    selectedFlourAgentId.value = '';
+    selectedFoodAgentId.value = '';
   }
 }
 
-function handleBranchChange() {
-  if (currentCenterList.value.length > 0) {
-    targetCenterId.value = currentCenterList.value[0].centerId;
-    handleCenterChange();
+function handleBranchChange(val) {
+  const branch = currentBranchList.value.find((b) => b.branchName === val);
+  if (branch && branch.centers?.length > 0) {
+    targetCenterId.value = branch.centers[0].centerId;
+    handleCenterChange(targetCenterId.value);
+  } else {
+    targetCenterId.value = '';
+    selectedFlourAgentId.value = '';
+    selectedFoodAgentId.value = '';
   }
 }
 
-function handleCenterChange() {
-  if (selectedCenter.value) {
-    const validFlour = selectedCenter.value.flourAgents.find((a) => a.currentHouseholds < 1500);
-    selectedFlourAgentId.value = validFlour ? validFlour.id : '';
-
-    const validFood = selectedCenter.value.foodAgents.find((a) => a.currentHouseholds < 1500);
-    selectedFoodAgentId.value = validFood ? validFood.id : '';
+function handleCenterChange(val) {
+  const center = currentCenterList.value.find((c) => c.centerId === val);
+  if (center) {
+    selectedFlourAgentId.value = center.flourAgents?.[0]?.id || '';
+    selectedFoodAgentId.value = center.foodAgents?.[0]?.id || '';
   }
 }
 
-// ========================
 // 步骤切换与严格前置校验
-// ========================
 function handlePrevStep() {
   if (currentStep.value > 1) {
     currentStep.value--;
@@ -581,60 +737,55 @@ function handlePrevStep() {
 }
 
 function handleNextStep() {
-  // 校验步骤 1
   if (currentStep.value === 1) {
     if (!targetBranchName.value || !targetCenterId.value) {
-      ElMessage.warning('请选择拟转入的目标配给分部与配给中心');
+      ElMessage.warning(t('transfer.selectBranchAndCenter'));
       return;
     }
     if (!selectedFlourAgentId.value || !selectedFoodAgentId.value) {
-      ElMessage.warning('请选择面粉代销网点和食品代销网点');
+      ElMessage.warning(t('transfer.selectBothAgents'));
       return;
     }
     const flourAg = currentSelectedFlourAgent.value;
     const foodAg = currentSelectedFoodAgent.value;
     if (flourAg?.currentHouseholds >= 1500) {
-      ElMessage.error(`面粉代理【${flourAg.name}】已达到 1,500 户上限，禁止转入！`);
+      ElMessage.error(t('transfer.agentCapacityFull', { name: flourAg.name }));
       return;
     }
     if (foodAg?.currentHouseholds >= 1500) {
-      ElMessage.error(`食品代理【${foodAg.name}】已达到 1,500 户上限，禁止转入！`);
+      ElMessage.error(t('transfer.agentCapacityFull', { name: foodAg.name }));
       return;
     }
     currentStep.value = 2;
     return;
   }
 
-  // 校验步骤 2
   if (currentStep.value === 2) {
     if (!residenceForm.district || !residenceForm.subDistrict || !residenceForm.nearestLandmark) {
-      ElMessage.warning('请完整填写新常住行政区、街区及最近地标');
+      ElMessage.warning(t('transfer.fillAddressFields'));
       return;
     }
     if (!residenceProofUploaded.value) {
-      ElMessage.warning('请上传必需的新居住地有效居住证明公函');
+      ElMessage.warning(t('transfer.uploadResidenceProof'));
       return;
     }
     currentStep.value = 3;
     return;
   }
 
-  // 校验步骤 3
   if (currentStep.value === 3) {
     if (requiresArticle140.value && !article140Uploaded.value) {
-      ElMessage.warning('涉及第 140 号决议争议领土，必须上传第 140 号决议无异议官方公函！');
+      ElMessage.warning(t('transfer.uploadArt140Doc'));
       return;
     }
     currentStep.value = 4;
   }
 }
 
-// 唤起电子支付二维码
 function handleOpenPaymentDialog() {
   paymentDialogVisible.value = true;
 }
 
-// 支付成功回调：正式提交系统流转
 async function handlePaymentSuccess(paymentInfo) {
   submitting.value = true;
   try {
@@ -649,29 +800,16 @@ async function handlePaymentSuccess(paymentInfo) {
       district: residenceForm.district,
       subDistrict: residenceForm.subDistrict,
       nearestLandmark: residenceForm.nearestLandmark,
-      residenceProofDoc: '新居所官方确认公函_2026.pdf',
-      article140Doc: requiresArticle140.value ? '第140号决议无异议执行批文_2026.pdf' : '',
+      residenceProofDoc: isEn.value ? 'Residence_Confirmation_Certificate_2026.pdf' : '新居所官方确认公函_2026.pdf',
+      article140Doc: requiresArticle140.value ? (isEn.value ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议无异议执行批文_2026.pdf') : '',
       paymentInfo
     };
 
     const res = await submitTransferAgent(payload);
-
-    if (res.autoApproved) {
-      await ElMessageBox.alert(
-        res.message || '恭喜！省内转移已全自动审批通过并即刻生效，配给卡上的供货网点与代理信息已刷新。',
-        '省内转移自动批准通过 ✓',
-        { confirmButtonText: '查看我的配给卡', type: 'success' }
-      );
-      await citizenStore.fetchFamilies();
-      router.push('/citizen');
-    } else {
-      await ElMessageBox.alert(
-        res.message || `跨省代理转移申报已受理！工单号【${res.ticketId}】，已流转至目标分部审核工作台，请等待分部员工与经理两级终审。`,
-        '跨省转移已提交电子审核 ⏳',
-        { confirmButtonText: '确定并返回', type: 'info' }
-      );
-      router.push('/citizen');
-    }
+    transferResult.value = res;
+    currentStep.value = 5;
+    await citizenStore.fetchFamilies();
+    ElMessage.success(t('transfer.paySuccessMsg'));
   } catch (err) {
     // handled by axios interceptor
   } finally {
@@ -681,17 +819,129 @@ async function handlePaymentSuccess(paymentInfo) {
 </script>
 
 <style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.25s ease-in-out;
+.process-card-wrapper {
+  --theme-color: #2563eb;
+  --theme-color-rgb: 37, 99, 235;
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
+
+/* 桌面端时间线样式 */
+@media (min-width: 1024px) {
+  .timeline-nodes-list {
+    position: relative;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .timeline-connector-line {
+    position: absolute;
+    left: 15px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background-color: #e2e8f0;
+    z-index: 1;
+  }
+  .timeline-node-item {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 24px;
+  }
+  .timeline-node-item:last-child {
+    padding-bottom: 0;
+  }
+  .node-icon-wrapper {
+    width: 30px;
+    height: 30px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: #ffffff;
+    border: 2px solid #cbd5e1;
+    color: #64748b;
+    transition: all 0.25s ease;
+  }
+  .timeline-node-item.is-finish .node-icon-wrapper {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+  }
+  .timeline-node-item.is-active .node-icon-wrapper {
+    background-color: var(--theme-color);
+    border-color: var(--theme-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(var(--theme-color-rgb), 0.2);
+    transform: scale(1.08);
+  }
+}
+
+/* 移动端时间线样式 */
+@media (max-width: 1023px) {
+  .timeline-rail-aside {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .timeline-nodes-list {
+    position: absolute;
+    left: 0;
+    top: 56px;
+    bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .timeline-connector-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #cbd5e1;
+    z-index: 1;
+  }
+  .timeline-node-item {
+    position: relative;
+    z-index: 2;
+  }
+  .node-icon-wrapper {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8fafc;
+    border: 2px solid #cbd5e1;
+    color: #94a3b8;
+    font-size: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .timeline-node-item.is-finish .node-icon-wrapper {
+    background-color: #10b981;
+    border-color: #059669;
+    color: #ffffff;
+  }
+  .timeline-node-item.is-active .node-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+    border-color: #ffffff;
+    background-color: var(--theme-color);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: bold;
+    box-shadow: 0 0 0 2px var(--theme-color), 0 4px 10px rgba(0, 0, 0, 0.18);
+    z-index: 10;
   }
 }
 </style>

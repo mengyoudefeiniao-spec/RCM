@@ -4,24 +4,24 @@
     <div v-if="citizenStore.currentFamily" class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl border border-blue-100">
-            卡
+          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm border border-blue-100">
+            {{ $t('citizen.cardBadge') }}
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-base font-bold text-slate-900">{{ citizenStore.currentFamily.headName }} (户主)</span>
+              <span class="text-base font-bold text-slate-900">{{ citizenStore.currentFamily.headName }} ({{ $t('citizen.head') }})</span>
               <el-tag size="small" type="success" effect="light">{{ citizenStore.currentFamily.status }}</el-tag>
-              <el-tag size="small" type="primary" effect="plain" class="font-mono">电子配给卡</el-tag>
+              <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('citizen.rationCard') }}</el-tag>
             </div>
             <!-- 电子配给卡与关联纸质卡编号 -->
             <div class="text-xs text-slate-500 font-mono mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
               <span>
-                电子配给卡号：<strong class="text-blue-600 font-bold">{{ citizenStore.currentFamily.rationCardNo }}</strong>
+                {{ $t('citizen.rationCardNo') }}：<strong class="text-blue-600 font-bold">{{ citizenStore.currentFamily.rationCardNo }}</strong>
               </span>
               <span>
-                关联纸质卡存根：<strong class="text-amber-700 font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}</strong>
+                {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-amber-700 font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}</strong>
               </span>
-              <span class="text-slate-400">家庭编号：{{ citizenStore.currentFamily.familyCode }}</span>
+              <span class="text-slate-400">{{ $t('citizen.familyCode') }}：{{ citizenStore.currentFamily.familyCode }}</span>
             </div>
           </div>
         </div>
@@ -75,11 +75,19 @@
     <!-- 家庭成员清单表格 -->
     <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <span>{{ $t('citizen.memberList') }} ({{ citizenStore.currentFamily?.members?.length || 0 }} {{ $t('common.person') }})</span>
-        </h3>
+        <ModuleDescTip
+          :title="$t('citizen.memberList')"
+          :content="`伊拉克内政部统一国民身份认证联网，当前家庭在册共 ${citizenStore.currentFamily?.members?.length || 0} 位直系亲属及受抚养成员。`"
+          :badge="`${citizenStore.currentFamily?.members?.length || 0} ${$t('common.person')}`"
+          badge-type="primary"
+          title-class="text-sm font-bold text-slate-900"
+        >
+          <template #icon>
+            <el-icon class="text-blue-600 text-base"><User /></el-icon>
+          </template>
+        </ModuleDescTip>
         <!-- 添加新成员 -->
-        <el-button type="primary" size="small" class="font-bold shadow-xs" @click="openAddMemberDialog">
+        <el-button type="primary" size="small" class="font-bold shadow-xs shrink-0" @click="openAddMemberDialog">
           <el-icon class="mr-1"><Plus /></el-icon>
           {{ $t('citizen.addNewMember') }}
         </el-button>
@@ -99,7 +107,6 @@
           </template>
         </el-table-column>
 
-        <!-- 需求 1: 加上电子配给卡编号 (并关联纸质配给卡编号) -->
         <el-table-column :label="`${$t('citizen.rationCardNo')} / ${$t('citizen.oldPaperCardNo')}`" min-width="210">
           <template #default>
             <div class="space-y-0.5">
@@ -115,18 +122,18 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="relation" :label="$t('citizen.relation')" width="100" align="center">
+        <el-table-column prop="relation" :label="$t('citizen.relation')" width="110" align="center">
           <template #default="{ row }">
             <el-tag
               size="small"
-              :type="row.relation === '户主' ? 'primary' : row.relation === '配偶' ? 'success' : 'info'"
+              :type="row.relation === '户主' || row.relation === 'Head' ? 'primary' : (row.relation === '配偶' || row.relation === 'Spouse') ? 'success' : 'info'"
             >
               {{ row.relation }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="gender" :label="$t('citizen.gender')" width="70" align="center" />
+        <el-table-column prop="gender" :label="$t('citizen.gender')" width="80" align="center" />
 
         <el-table-column prop="nationalId" :label="$t('citizen.nationalId')" min-width="160">
           <template #default="{ row }">
@@ -138,7 +145,7 @@
           <template #default="{ row }">
             <el-tag
               size="small"
-              :type="row.status === '正常' ? 'success' : row.status === '冻结' ? 'danger' : 'info'"
+              :type="row.status === '正常' || row.status === 'Active' ? 'success' : (row.status === '冻结' || row.status === 'Frozen') ? 'danger' : 'info'"
               effect="light"
             >
               {{ row.status }}{{ row.freezeReason ? ` (${row.freezeReason})` : '' }}
@@ -167,89 +174,96 @@
     <!-- ======================================================== -->
     <el-dialog
       v-model="addMemberDialogVisible"
-      title="申报登记添加新家庭成员"
-      width="680px"
+      :title="$t('citizen.addMemberTitle')"
+      width="640px"
       align-center
     >
       <div class="space-y-4 text-xs">
-        <!-- 顶部法定申报须知 -->
-        <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-blue-900 space-y-1">
-          <div class="font-bold flex items-center gap-1.5">
-            <el-icon><InfoFilled /></el-icon>
-            <span>国家配给成员纳保前置法定核验</span>
-          </div>
-          <p>
-            依据国家数字配给卡管理条例，新增成员必须完成系统更新、生物识别、地理位置核验与指定社会关系，未满12岁儿童须上传相符证明，且父亲须具备生物识别与电子支付方式。
-          </p>
+        <!-- 流程化步骤条导航 -->
+        <div class="py-1">
+          <el-steps :active="addMemberStep - 1" finish-status="success" align-center>
+            <el-step :title="$t('citizen.stepBasic')" :description="$t('citizen.stepBasicDesc')" />
+            <el-step :title="$t('citizen.stepVerify')" :description="$t('citizen.stepVerifyDesc')" />
+            <el-step :title="$t('citizen.stepConfirm')" :description="$t('citizen.stepConfirmDesc')" />
+          </el-steps>
         </div>
 
-        <!-- 父亲资格核验卡 (前提条件 6: 父亲具备有效生物数据 & 电子支付) -->
-        <div class="p-3.5 bg-slate-900 text-white rounded-xl border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="font-bold text-amber-400">法定父亲资质核验存根</span>
-            <el-tag size="small" type="success" effect="dark">内政部已校验 ✓</el-tag>
-          </div>
-          <div class="grid grid-cols-2 gap-3 text-slate-300">
+        <!-- 步骤 1: 填写基本身份信息 -->
+        <div v-show="addMemberStep === 1" class="space-y-3.5">
+          <!-- 简要指引提示 -->
+          <div class="bg-blue-50/80 border border-blue-200/80 p-3 rounded-xl text-blue-900 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <el-icon class="text-emerald-400"><CircleCheckFilled /></el-icon>
-              <span>父亲生物识别数据：<strong class="text-white">有效在册 (活体人脸及虹膜)</strong></span>
+              <el-icon class="text-blue-600"><InfoFilled /></el-icon>
+              <span>{{ $t('citizen.fillRealIdentityNotice') }}</span>
             </div>
-            <div class="flex items-center gap-2">
-              <el-icon class="text-emerald-400"><CircleCheckFilled /></el-icon>
-              <span>电子支付方式：<strong class="text-white">已绑定国家 Qi Card 电子账户</strong></span>
-            </div>
+            <!-- 法定户主就绪小标签 -->
+            <el-tag size="small" type="success" effect="light">{{ $t('citizen.headVerifiedBadge') }}</el-tag>
           </div>
+
+          <el-form label-position="top" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <el-form-item :label="$t('citizen.memberFullName')" required>
+                <el-input v-model="newMemberForm.name" :placeholder="$t('citizen.inputFullNamePlaceholder')" />
+              </el-form-item>
+              <el-form-item :label="$t('citizen.nidLabel')" required>
+                <el-input v-model="newMemberForm.nationalId" :placeholder="$t('citizen.inputNidPlaceholder')" />
+              </el-form-item>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <el-form-item :label="$t('citizen.birthDate')" required>
+                <el-date-picker
+                  v-model="newMemberForm.birthDate"
+                  type="date"
+                  :placeholder="$t('citizen.selectBirthDate')"
+                  value-format="YYYY-MM-DD"
+                  class="w-full"
+                  @change="handleBirthDateChange"
+                />
+              </el-form-item>
+              <el-form-item :label="$t('citizen.gender')" required>
+                <el-select v-model="newMemberForm.gender" class="w-full">
+                  <el-option :label="$t('citizen.male')" :value="isEn ? 'Male' : '男'" />
+                  <el-option :label="$t('citizen.female')" :value="isEn ? 'Female' : '女'" />
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="$t('citizen.specifyRelation')" required>
+                <el-select v-model="newMemberForm.relation" :placeholder="$t('citizen.selectRelation')" class="w-full">
+                  <el-option :label="$t('citizen.relationChild')" :value="isEn ? 'Child' : '子女'" />
+                  <el-option :label="$t('citizen.relationSpouse')" :value="isEn ? 'Spouse' : '配偶'" />
+                  <el-option :label="$t('citizen.relationFather')" :value="isEn ? 'Father' : '父亲'" />
+                  <el-option :label="$t('citizen.relationMother')" :value="isEn ? 'Mother' : '母亲'" />
+                  <el-option :label="$t('citizen.relationDependent')" :value="isEn ? 'Dependent' : '受抚养人'" />
+                </el-select>
+              </el-form-item>
+            </div>
+
+            <!-- 户主资质极简展示 -->
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-[11px] text-slate-600">
+              <div class="flex items-center gap-2">
+                <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
+                <span>{{ $t('citizen.headBioEnrolled') }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
+                <span>{{ $t('citizen.qiCardBound') }}</span>
+              </div>
+            </div>
+          </el-form>
         </div>
 
-        <el-form label-position="top" class="space-y-3">
-          <!-- 1. 基本信息 -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <el-form-item label="成员完整姓名" required>
-              <el-input v-model="newMemberForm.name" placeholder="请输入成员真实姓名" />
-            </el-form-item>
-            <el-form-item label="统一国民卡身份编码 (NID)" required>
-              <el-input v-model="newMemberForm.nationalId" placeholder="例如：201882910489" />
-            </el-form-item>
+        <!-- 步骤 2: 三重资格核验 -->
+        <div v-show="addMemberStep === 2" class="space-y-3">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
+            {{ $t('citizen.verifyNotice') }}
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <el-form-item label="出生日期 (自动判定儿童)" required>
-              <el-date-picker
-                v-model="newMemberForm.birthDate"
-                type="date"
-                placeholder="选择出生日期"
-                value-format="YYYY-MM-DD"
-                class="w-full"
-                @change="handleBirthDateChange"
-              />
-            </el-form-item>
-            <el-form-item label="性别" required>
-              <el-select v-model="newMemberForm.gender" class="w-full">
-                <el-option label="男" value="男" />
-                <el-option label="女" value="女" />
-              </el-select>
-            </el-form-item>
-            <!-- 前提条件 4: 指定婚姻／社会关系 -->
-            <el-form-item label="指定婚姻 / 社会关系" required>
-              <el-select v-model="newMemberForm.relation" placeholder="选择家庭关系" class="w-full">
-                <el-option label="子女 (亲生/法定收养)" value="子女" />
-                <el-option label="配偶 (法定民事婚姻)" value="配偶" />
-                <el-option label="父亲 (户主直系长辈)" value="父亲" />
-                <el-option label="母亲 (户主直系长辈)" value="母亲" />
-                <el-option label="受抚养亲属" value="受抚养人" />
-              </el-select>
-            </el-form-item>
-          </div>
-
-          <!-- 2. 前提条件 1 & 2 & 3: 系统更新比对、生物识别验证、地理位置核验 -->
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
-            <div class="font-bold text-slate-800">三重法定合规实时核验：</div>
-
-            <!-- 条件 1: 信息在配给卡系统中更新 -->
-            <div class="flex items-center justify-between p-2 rounded bg-white border border-slate-200">
-              <div class="space-y-0.5">
-                <div class="font-semibold text-slate-800">1. 内政部配给卡底账系统更新比对</div>
-                <div class="text-[11px] text-slate-500">比对该成员是否已在国家统一身份管理底账完成最新存根登记</div>
+          <div class="space-y-2.5">
+            <!-- 条件 1: 系统更新 -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div>
+                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item1Title') }}</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item1Desc') }}</div>
               </div>
               <el-button
                 size="small"
@@ -257,31 +271,31 @@
                 :plain="systemInfoUpdated"
                 @click="systemInfoUpdated = true"
               >
-                {{ systemInfoUpdated ? '已更新比对吻合 ✓' : '执行系统更新对碰' }}
+                {{ systemInfoUpdated ? $t('citizen.step2Item1Done') : $t('citizen.step2Item1Action') }}
               </el-button>
             </div>
 
-            <!-- 条件 2: 生物识别验证 -->
-            <div class="flex items-center justify-between p-2 rounded bg-white border border-slate-200">
-              <div class="space-y-0.5">
-                <div class="font-semibold text-slate-800">2. 该成员现场生物识别特征验证</div>
-                <div class="text-[11px] text-slate-500">采集活体人脸微表情及指纹/虹膜特征向量</div>
+            <!-- 条件 2: 生物识别 -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div>
+                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item2Title') }}</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item2Desc') }}</div>
               </div>
               <el-button
                 size="small"
                 :type="memberBiometricVerified ? 'success' : 'primary'"
                 :plain="memberBiometricVerified"
-                @click="memberBiometricVerified = true"
+                @click="newMemberFaceDialogVisible = true"
               >
-                {{ memberBiometricVerified ? '生物识别验证通过 ✓' : '启动生物特征采集' }}
+                {{ memberBiometricVerified ? $t('citizen.step2Item2Done') : $t('citizen.step2Item2Action') }}
               </el-button>
             </div>
 
-            <!-- 条件 3: 地理位置核验 -->
-            <div class="flex items-center justify-between p-2 rounded bg-white border border-slate-200">
-              <div class="space-y-0.5">
-                <div class="font-semibold text-slate-800">3. 居住网格 GPS 与基站地理位置核验</div>
-                <div class="text-[11px] text-slate-500">核查当前定位与家庭配给卡登记地址（巴格达卡尔赫区）一致性</div>
+            <!-- 条件 3: 地理位置 -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div>
+                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item3Title') }}</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item3Desc') }}</div>
               </div>
               <el-button
                 size="small"
@@ -289,71 +303,119 @@
                 :plain="locationVerified"
                 @click="locationVerified = true"
               >
-                {{ locationVerified ? '地理位置核验一致 ✓' : '检测基站与GPS位置' }}
+                {{ locationVerified ? $t('citizen.step2Item3Done') : $t('citizen.step2Item3Action') }}
               </el-button>
             </div>
           </div>
+        </div>
 
-          <!-- 前提条件 5: 上传与该儿童情形相符的文件 (如果添加新成员未满12岁) -->
+        <!-- 步骤 3: 证明材料与确认纳保 -->
+        <div v-show="addMemberStep === 3" class="space-y-3.5">
+          <!-- 申报信息摘要 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+            <div>
+              <span class="text-slate-400 block">{{ $t('citizen.headName') }}：</span>
+              <span class="font-bold text-slate-800">{{ newMemberForm.name }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">{{ $t('citizen.nationalId') }}：</span>
+              <span class="font-mono text-slate-800">{{ newMemberForm.nationalId }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">{{ $t('citizen.relation') }}：</span>
+              <span class="font-bold text-blue-700">{{ newMemberForm.relation }} ({{ newMemberForm.gender }})</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">{{ $t('citizen.ageJudge') }}：</span>
+              <span class="font-medium" :class="isUnder12 ? 'text-rose-600' : 'text-emerald-600'">
+                {{ isUnder12 ? $t('citizen.under12Child') : $t('citizen.over12Person') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 儿童证明文件上传 (若未满12岁) -->
           <div v-if="isUnder12" class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-rose-700">未满 12 岁儿童证明文件上传 (法定必需 ★)：</span>
-              <el-tag type="danger" size="small" effect="dark">儿童情形文件</el-tag>
+              <span class="font-bold text-rose-700">{{ $t('citizen.childDocTitle') }}</span>
+              <el-tag type="danger" size="small" effect="plain">{{ $t('citizen.childDocBadge') }}</el-tag>
             </div>
             <DocumentUploader
               v-model="childDocumentUploaded"
-              title="卫生部出生医学证明 / 司法收养公函"
-              subtitle="请上传儿童出生证明或法定抚养权公文原件（PDF或图片）"
+              :title="$t('citizen.childDocName')"
+              :subtitle="$t('citizen.childDocSubtitle')"
               is-required
-              category-badge="儿童出生证明"
-              issuer="卫生部与民政总局"
-              default-file-name="儿童出生医学证明存根_2020.pdf"
+              :category-badge="$t('citizen.childDocBadge')"
+              issuer="MOH & Ministry of Interior"
+              default-file-name="Medical_Birth_Certificate_2020.pdf"
             />
           </div>
-          <div v-else class="text-[11px] text-slate-400 bg-slate-50 p-2 rounded border border-slate-200">
-            经出生日期核算，该成员已年满 12 周岁，根据配给管理规定，免于提交儿童医学出生证明。
+          <div v-else class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex items-center gap-2">
+            <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+            <span>{{ $t('citizen.over12ExemptNotice') }}</span>
           </div>
-        </el-form>
+        </div>
       </div>
 
       <template #footer>
-        <el-button @click="addMemberDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="addingMember" @click="handleSubmitAddMember">
-          确认申报并纳保
-        </el-button>
+        <div class="flex items-center justify-between w-full">
+          <div>
+            <el-button v-if="addMemberStep > 1" @click="addMemberStep--">{{ $t('common.prevStep') }}</el-button>
+          </div>
+          <div class="flex items-center gap-2">
+            <el-button @click="addMemberDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+            <el-button v-if="addMemberStep < 3" type="primary" @click="handleNextAddMemberStep">
+              {{ $t('common.nextStep') }}
+            </el-button>
+            <el-button v-else type="primary" :loading="addingMember" @click="handleSubmitAddMember">
+              {{ $t('citizen.confirmAddMember') }}
+            </el-button>
+          </div>
+        </div>
       </template>
     </el-dialog>
 
     <!-- 成员信息更新弹窗 -->
     <el-dialog
       v-model="editModalVisible"
-      title="更新家庭成员电子档案信息"
+      :title="$t('citizen.editMemberTitle')"
       width="480px"
       align-center
     >
       <el-form :model="editForm" label-position="top">
-        <el-form-item label="成员姓名">
+        <el-form-item :label="$t('citizen.headName')">
           <el-input v-model="editForm.name" disabled />
         </el-form-item>
-        <el-form-item label="联系手机号码">
-          <el-input v-model="editForm.phone" placeholder="请输入手机号" />
+        <el-form-item :label="$t('citizen.contactPhone')">
+          <el-input v-model="editForm.phone" :placeholder="$t('citizen.inputPhonePlaceholder')" />
         </el-form-item>
-        <el-form-item label="常住详细住址">
-          <el-input v-model="editForm.residenceInfo" placeholder="请输入居住地址" />
+        <el-form-item :label="$t('citizen.residenceAddress')">
+          <el-input v-model="editForm.residenceInfo" :placeholder="$t('citizen.inputAddressPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editModalVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSaveMember">确认更新</el-button>
+        <el-button @click="editModalVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSaveMember">{{ $t('citizen.confirmUpdate') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 活体人脸动作核验弹窗 (添加新成员生物识别) -->
+    <FaceLivenessVerifyDialog
+      v-model="newMemberFaceDialogVisible"
+      title="新登记家庭成员活体人脸动作核验"
+      :target-name="newMemberForm.name || '待登记成员'"
+      :target-national-id="newMemberForm.nationalId || '198004198271'"
+      @success="handleNewMemberFaceSuccess"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
+import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import {
   Share,
   User,
@@ -366,6 +428,8 @@ import {
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
 const citizenStore = useCitizenStore();
 const editModalVisible = ref(false);
 const saving = ref(false);
@@ -377,8 +441,17 @@ const editForm = reactive({
   residenceInfo: ''
 });
 
+function handleLanguageChange() {
+  citizenStore.fetchFamilies();
+}
+
 onMounted(() => {
   citizenStore.fetchFamilies();
+  window.addEventListener('rcm-language-changed', handleLanguageChange);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('rcm-language-changed', handleLanguageChange);
 });
 
 function openEditModal(member) {
@@ -403,16 +476,23 @@ async function handleSaveMember() {
 }
 
 // ==========================================
-// 需求 2: 添加新成员 (覆盖六大前提条件)
+// 需求 2: 添加新成员 (流程化步骤与前提核验)
 // ==========================================
 const addMemberDialogVisible = ref(false);
 const addingMember = ref(false);
+const addMemberStep = ref(1);
 
 // 核验前提状态
+const newMemberFaceDialogVisible = ref(false);
 const systemInfoUpdated = ref(false);
 const memberBiometricVerified = ref(false);
 const locationVerified = ref(false);
 const childDocumentUploaded = ref(false);
+
+function handleNewMemberFaceSuccess(data) {
+  memberBiometricVerified.value = true;
+  ElMessage.success(`家庭成员【${newMemberForm.name || '待登记成员'}】活体人脸识别与生物特征比对通过！`);
+}
 
 const newMemberForm = reactive({
   name: '',
@@ -438,11 +518,13 @@ function handleBirthDateChange() {
 }
 
 function openAddMemberDialog() {
-  newMemberForm.name = '优素福·艾哈迈德·哈桑';
+  addMemberStep.value = 1;
+  const isEnglish = locale.value === 'en';
+  newMemberForm.name = isEnglish ? 'Youssef Ahmed Hassan' : '优素福·艾哈迈德·哈桑';
   newMemberForm.nationalId = '201982910488';
   newMemberForm.birthDate = '2019-05-15';
-  newMemberForm.gender = '男';
-  newMemberForm.relation = '子女';
+  newMemberForm.gender = isEnglish ? 'Male' : '男';
+  newMemberForm.relation = isEnglish ? 'Child' : '子女';
   newMemberForm.phone = '';
 
   // 初始化前提核验为就绪状态
@@ -454,33 +536,60 @@ function openAddMemberDialog() {
   addMemberDialogVisible.value = true;
 }
 
+function handleNextAddMemberStep() {
+  if (addMemberStep.value === 1) {
+    if (!newMemberForm.name || !newMemberForm.nationalId || !newMemberForm.relation) {
+      ElMessage.warning(t('citizen.pleaseFillMemberRequired'));
+      return;
+    }
+    addMemberStep.value = 2;
+    return;
+  }
+  if (addMemberStep.value === 2) {
+    if (!systemInfoUpdated.value) {
+      ElMessage.warning(t('citizen.pleaseCompleteSystemCheck'));
+      return;
+    }
+    if (!memberBiometricVerified.value) {
+      ElMessage.warning(t('citizen.pleaseCompleteBioCheck'));
+      return;
+    }
+    if (!locationVerified.value) {
+      ElMessage.warning(t('citizen.pleaseCompleteLocationCheck'));
+      return;
+    }
+    addMemberStep.value = 3;
+    return;
+  }
+}
+
 async function handleSubmitAddMember() {
   if (!newMemberForm.name || !newMemberForm.nationalId || !newMemberForm.relation) {
-    ElMessage.warning('请填写成员姓名、身份证号及指定家庭关系');
+    ElMessage.warning(t('citizen.pleaseFillMemberRequired'));
     return;
   }
 
   // 1. 校验系统更新
   if (!systemInfoUpdated.value) {
-    ElMessage.error('前提条件未满足：家庭成员信息须已在配给卡系统中更新！');
+    ElMessage.error(t('citizen.precond1'));
     return;
   }
 
   // 2. 校验生物识别
   if (!memberBiometricVerified.value) {
-    ElMessage.error('前提条件未满足：须对该成员进行生物识别验证！');
+    ElMessage.error(t('citizen.precond2'));
     return;
   }
 
   // 3. 校验地理位置
   if (!locationVerified.value) {
-    ElMessage.error('前提条件未满足：须通过地理位置核验！');
+    ElMessage.error(t('citizen.precond3'));
     return;
   }
 
   // 4. 校验未满 12 岁儿童证明
   if (isUnder12.value && !childDocumentUploaded.value) {
-    ElMessage.error('前提条件未满足：该成员未满12岁，须上传与该儿童情形相符的证明文件！');
+    ElMessage.error(t('citizen.under12Notice'));
     return;
   }
 
@@ -493,7 +602,7 @@ async function handleSubmitAddMember() {
     });
     addMemberDialogVisible.value = false;
   } catch (err) {
-    ElMessage.error('添加新成员申报失败');
+    ElMessage.error(t('citizen.addMemberFailed'));
   } finally {
     addingMember.value = false;
   }

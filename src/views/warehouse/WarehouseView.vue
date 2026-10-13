@@ -1,79 +1,83 @@
 <template>
-  <div class="warehouse-view space-y-6">
-    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <el-icon class="text-teal-600"><Box /></el-icon>
-            <span>仓储管理与战略物资储备 (SCM)</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">
-            大米、面粉、食用油、白糖等战略配给物资中央粮库出入库批次管控与安全库存预警。
-          </p>
-        </div>
-        <el-button size="small" @click="fetchStocks">
-          <el-icon class="mr-1"><Refresh /></el-icon>
-          刷新库存数据
-        </el-button>
-      </div>
+  <div class="warehouse-view space-y-4">
+    <!-- 配给管理业务模块选项卡 (去除旧版大标题横幅，列表顶格上移，支持横向平滑响应) -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <el-tabs v-model="activeTab" class="warehouse-custom-tabs px-3 sm:px-6">
+        <!-- 1. 配给计划管理 (月度计划制定与上级/下级三层配额自动排程) -->
+        <el-tab-pane name="rationPlan">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><Calendar /></el-icon>
+              <span class="font-bold">
+                {{ isAdmin ? ($t('warehouse.adminTitle') || '配给计划管理') : isCitizen ? ($t('warehouse.citizenTitle') || '我的配给份额') : '配给计划管理' }}
+              </span>
+            </div>
+          </template>
+          <div class="py-4">
+            <RationPlanTab ref="rationPlanTabRef" />
+          </div>
+        </el-tab-pane>
 
-      <el-table :data="stocks" v-loading="loading" border style="width: 100%" class="text-xs">
-        <el-table-column prop="itemName" label="配给物资品名" min-width="160">
-          <template #default="{ row }">
-            <span class="font-bold text-slate-800">{{ row.itemName }}</span>
-            <div class="text-[11px] text-slate-400 font-mono">{{ row.itemCode }}</div>
+        <!-- 2. 配送与交付 (代理网点收货、配送流水追踪、扫码签收) -->
+        <el-tab-pane name="delivery">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><Checked /></el-icon>
+              <span class="font-bold">配送与交付</span>
+            </div>
           </template>
-        </el-table-column>
-        <el-table-column prop="category" label="物资品类" width="120" />
-        <el-table-column prop="warehouseName" label="所在战略储备仓库" min-width="180" />
-        <el-table-column prop="currentQty" label="当前在库余量" width="140" align="right">
-          <template #default="{ row }">
-            <span class="font-mono font-bold text-blue-600">
-              {{ row.currentQty.toLocaleString() }}
-            </span>
-            <span class="text-slate-400 ml-1 text-[11px]">{{ row.unit }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="batchNo" label="质检入库批次号" width="180">
-          <template #default="{ row }">
-            <span class="font-mono text-slate-600">{{ row.batchNo }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="库存保障状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag
-              size="small"
-              :type="row.status === '库存充沛' ? 'success' : row.status === '正常配给' ? 'primary' : 'warning'"
-              effect="light"
-            >
-              {{ row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
+          <div class="py-4">
+            <DeliveryVerificationTab />
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </div>
+
+    <!-- P1 ~ P5 阶段规则实体验证抽屉 (代理可用) -->
+    <P1P5VerificationDrawer v-if="isAgent" ref="verificationDrawerRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getWarehouseStockList } from '../../api/warehouse.js';
-import { Box, Refresh } from '@element-plus/icons-vue';
+import { ref, computed } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useAuthStore } from '../../stores/auth.js';
+import {
+  Refresh,
+  Checked,
+  Calendar
+} from '@element-plus/icons-vue';
 
-const stocks = ref([]);
-const loading = ref(false);
+// 仅保留配给计划管理与配送交付两个核心子模块
+import RationPlanTab from './components/RationPlanTab.vue';
+import DeliveryVerificationTab from './components/DeliveryVerificationTab.vue';
 
-async function fetchStocks() {
-  loading.value = true;
-  try {
-    const data = await getWarehouseStockList();
-    stocks.value = data;
-  } finally {
-    loading.value = false;
-  }
+// P1~P5 阶段规则实体验证看板抽屉
+import P1P5VerificationDrawer from './components/P1P5VerificationDrawer.vue';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isAdmin);
+const isAgent = computed(() => authStore.currentRole === 'agent');
+const isCitizen = computed(() => authStore.currentRole === 'citizen');
+
+const activeTab = ref('rationPlan');
+const verificationDrawerRef = ref(null);
+const rationPlanTabRef = ref(null);
+
+function openVerificationDrawer() {
+  verificationDrawerRef.value?.open();
 }
 
-onMounted(() => {
-  fetchStocks();
-});
+function refreshAll() {
+  rationPlanTabRef.value?.loadData?.();
+  ElMessage.success('配给计划与供应链履约数据已同步更新！');
+}
 </script>
+
+<style scoped>
+.warehouse-custom-tabs :deep(.el-tabs__item) {
+  font-size: 13px;
+  padding: 0 16px;
+  height: 44px;
+}
+</style>
