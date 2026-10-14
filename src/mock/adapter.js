@@ -1056,9 +1056,9 @@ export async function mockDispatch(config) {
         guidePriceIQD: 250,
         marketPriceIQD: 1200,
         subsidyIQD: 950,
-        packSize: '50kg/袋',
-        origin: '伊拉克中央保供面粉厂',
-        stockStatus: '有现货'
+        packSize: isEn ? '50kg/bag' : '50kg/袋',
+        origin: isEn ? 'Iraq Central Strategic Flour Mill' : '伊拉克中央保供面粉厂',
+        stockStatus: isEn ? 'In Stock' : '有现货'
       },
       {
         itemCode: 'RICE-BAS-01',
@@ -1072,9 +1072,9 @@ export async function mockDispatch(config) {
         guidePriceIQD: 500,
         marketPriceIQD: 2500,
         subsidyIQD: 2000,
-        packSize: '25kg/袋',
-        origin: '国家粮食进出口总局',
-        stockStatus: '有现货'
+        packSize: isEn ? '25kg/bag' : '25kg/袋',
+        origin: isEn ? 'National Grain Import & Export Directorate' : '国家粮食进出口总局',
+        stockStatus: isEn ? 'In Stock' : '有现货'
       },
       {
         itemCode: 'OIL-SUN-03',
@@ -1088,9 +1088,9 @@ export async function mockDispatch(config) {
         guidePriceIQD: 1000,
         marketPriceIQD: 4500,
         subsidyIQD: 3500,
-        packSize: '1L/瓶',
-        origin: '底格里斯精炼食用油厂',
-        stockStatus: '有现货'
+        packSize: isEn ? '1L/bottle' : '1L/瓶',
+        origin: isEn ? 'Tigris Edible Oil Refinery' : '底格里斯精炼食用油厂',
+        stockStatus: isEn ? 'In Stock' : '有现货'
       },
       {
         itemCode: 'SUGAR-WHT-04',
@@ -1104,23 +1104,23 @@ export async function mockDispatch(config) {
         guidePriceIQD: 500,
         marketPriceIQD: 2000,
         subsidyIQD: 1500,
-        packSize: '10kg/袋',
-        origin: '米桑糖业联合储备库',
-        stockStatus: '有现货'
+        packSize: isEn ? '10kg/bag' : '10kg/袋',
+        origin: isEn ? 'Maysan Grain & Sugar State Reserve' : '米桑糖业联合储备库',
+        stockStatus: isEn ? 'In Stock' : '有现货'
       }
     ];
 
     return createResponse({
       cardNo,
-      headName: family?.headName || '艾哈迈德·哈桑·萨利赫',
+      headName: family?.headName || (isEn ? 'Ahmed Hassan Saleh' : '艾哈迈德·哈桑·萨利赫'),
       memberCount,
       agentId: family?.agentId || 'FA-00128',
-      agentName: family?.agentName || '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
-      province: family?.province || '巴格达省',
-      district: family?.district || '卡尔赫区',
-      defaultAddress: family?.address || '巴格达省卡尔赫区海法街88号 3号楼201',
+      agentName: family?.agentName || (isEn ? 'Baghdad Karkh 1st Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)'),
+      province: family?.province || (isEn ? 'Baghdad' : '巴格达省'),
+      district: family?.district || (isEn ? 'Karkh' : '卡尔赫区'),
+      defaultAddress: family?.address || (isEn ? 'Bldg 3, Apt 201, Haifa St 88, Karkh, Baghdad' : '巴格达省卡尔赫区海法街88号 3号楼201'),
       phone: family?.phone || '+964 780 123 4567',
-      quotaPeriod: '2026年10月',
+      quotaPeriod: isEn ? '2026-10' : '2026年10月',
       quotas: quotaList
     });
   }

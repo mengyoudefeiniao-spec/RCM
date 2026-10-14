@@ -1,8 +1,11 @@
 <template>
   <div class="ration-plan-tab space-y-5">
     <!-- 顶部快捷操作栏 -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50 p-3.5 rounded-xl border border-slate-200 gap-2.5">
-      <div class="flex items-center gap-2">
+    <div
+      class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 gap-2.5"
+      :class="isAppMode ? 'flex flex-col items-start gap-2.5' : 'flex flex-col sm:flex-row sm:items-center justify-between'"
+    >
+      <div :class="isAppMode ? 'w-full flex items-center justify-between gap-1.5' : 'flex items-center gap-2'">
         <span class="text-xs font-bold text-slate-800">
           {{
             isCitizen
@@ -12,11 +15,11 @@
               : '月度配给计划与三级代理配额排程中心'
           }}
         </span>
-        <el-tag size="small" type="primary" effect="plain">
+        <el-tag size="small" type="primary" effect="plain" class="shrink-0">
           {{ isCitizen ? ($t('warehouse.personalMonthlyShare') || '个人月度份额') : ($t('warehouse.threeTierAutoCalculation') || '三级代理自动核算') }}
         </el-tag>
       </div>
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'w-full justify-end' : ''">
         <!-- 上级代理根据贸易部计划生成自己和下级代理的月度配给计划 (省级/区域/街道三层，按户数自动分配，不能手动分配) -->
         <el-button v-if="!isCitizen" type="success" size="small" @click="openDecomposeDialog">
           <el-icon class="mr-1"><Share /></el-icon>
@@ -73,24 +76,30 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div class="bg-white p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
-            <span class="text-slate-400 text-[11px]">{{ $t('citizen.rationCardNo') || '家庭配给卡号' }}</span>
-            <div class="font-mono font-bold text-blue-600">{{ citizenFamilyInfo?.rationCardNo || 'RC-10029381' }}</div>
+        <div
+          class="grid gap-2 text-xs"
+          :class="isAppMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'"
+        >
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
+            <span class="text-slate-400 text-[10px] sm:text-[11px] block">{{ $t('citizen.rationCardNo') || '家庭配给卡号' }}</span>
+            <div class="font-mono font-bold text-blue-600 text-xs sm:text-sm truncate">{{ citizenFamilyInfo?.rationCardNo || 'RC-10029381' }}</div>
           </div>
-          <div class="bg-white p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
-            <span class="text-slate-400 text-[11px]">{{ $t('warehouse.registeredMembers') || '登记人口' }}</span>
-            <div class="font-bold text-slate-800">{{ citizenFamilyInfo?.headName || (isEn ? 'Ahmed Hassan' : '艾哈迈德·哈桑') }} ({{ memberCount }} 人)</div>
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
+            <span class="text-slate-400 text-[10px] sm:text-[11px] block">{{ $t('warehouse.registeredMembers') || '登记人口' }}</span>
+            <div class="font-bold text-slate-800 text-xs sm:text-sm truncate">
+              {{ citizenFamilyInfo?.headName || (isEn ? 'Ahmed Hassan' : '艾哈迈德·哈桑') }}
+              <span class="text-[10px] text-slate-500 font-mono">({{ memberCount }} {{ isEn ? 'P' : '人' }})</span>
+            </div>
           </div>
-          <div class="bg-white p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
-            <span class="text-slate-400 text-[11px]">本月指导配额限价总值</span>
-            <div class="font-mono font-bold text-amber-600">{{ (memberCount * 13450).toLocaleString() }} IQD</div>
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
+            <span class="text-slate-400 text-[10px] sm:text-[11px] block">{{ $t('warehouse.guidelineTotalValue') || '本月指导配额限价总值' }}</span>
+            <div class="font-mono font-bold text-amber-600 text-xs sm:text-sm">{{ (memberCount * 13450).toLocaleString() }} IQD</div>
           </div>
-          <div class="bg-white p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
-            <span class="text-slate-400 text-[11px]">{{ $t('warehouse.stockStatus') || '代销站备货状态' }}</span>
-            <div class="font-bold text-emerald-600 flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>现货在店 · 随时可提</span>
+          <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-blue-100 shadow-2xs space-y-0.5">
+            <span class="text-slate-400 text-[10px] sm:text-[11px] block">{{ $t('warehouse.stockStatus') || '代销站备货状态' }}</span>
+            <div class="font-bold text-emerald-600 flex items-center gap-1 text-[11px] sm:text-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span class="truncate">{{ $t('warehouse.stockReady') || '现货在店 · 随时可提' }}</span>
             </div>
           </div>
         </div>
@@ -100,14 +109,17 @@
         <div class="flex items-center justify-between flex-wrap gap-2">
           <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
             <el-icon class="text-blue-600"><Goods /></el-icon>
-            <span>{{ citizenSelectedMonth }} 月度家庭口粮配给份额明细</span>
+            <span>{{ citizenSelectedMonth }} {{ $t('warehouse.rationDetailsTitle') || '月度家庭口粮配给份额明细' }}</span>
           </h4>
           <span class="text-[11px] text-slate-400 font-mono">
-            国家官方指导平价限价保供机制
+            {{ $t('warehouse.priceStabilizedMechanism') || '国家官方指导平价限价保供机制' }}
           </span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div
+          class="grid gap-3.5"
+          :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'"
+        >
           <div
             v-for="item in citizenQuotaItems"
             :key="item.itemCode"
@@ -116,36 +128,38 @@
             <div class="flex items-start justify-between">
               <div>
                 <span class="text-sm font-bold text-slate-900 block">{{ item.itemName }}</span>
-                <span class="text-[11px] text-slate-400">标准: {{ item.standardPerPerson }} {{ item.unit }}/人/月</span>
+                <span class="text-[11px] text-slate-400">
+                  {{ $t('warehouse.standardPerPersonLabel', { quota: item.standardPerPerson, unit: item.unit }) || `标准: ${item.standardPerPerson} ${item.unit}/人/月` }}
+                </span>
               </div>
               <el-tag size="small" type="success" effect="plain" class="font-bold">
-                {{ item.status }}
+                {{ $t('warehouse.fullyAllocated') || item.status }}
               </el-tag>
             </div>
 
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-              <span class="text-[11px] text-slate-500">本户月度核定配额：</span>
+              <span class="text-[11px] text-slate-500">{{ $t('warehouse.householdQuotaLabel') || '本户月度核定配额：' }}</span>
               <div class="flex items-baseline gap-1.5">
                 <span class="text-2xl font-bold font-mono text-blue-600">{{ item.totalHouseholdQuota }}</span>
                 <span class="text-xs text-slate-600 font-bold">{{ item.unit }}</span>
               </div>
               <div class="text-[10px] text-slate-400 flex justify-between pt-1 border-t border-slate-200/50">
-                <span>官方指导限价:</span>
+                <span>{{ $t('warehouse.guidePriceLabel') || '官方指导限价:' }}</span>
                 <span class="font-mono text-slate-600">{{ item.guidePriceIQD }} IQD/{{ item.unit }}</span>
               </div>
             </div>
 
             <div class="text-[11px] text-slate-500 space-y-1">
               <div class="flex justify-between">
-                <span>签约代销网点：</span>
-                <span class="font-medium text-slate-700 truncate max-w-[130px]">{{ citizenFamilyInfo?.agentName?.split(' ')[0] || '卡尔赫第一代销站' }}</span>
+                <span>{{ $t('warehouse.contractedAgentLabel') || '签约代销网点：' }}</span>
+                <span class="font-medium text-slate-700 truncate max-w-[150px]">{{ citizenFamilyInfo?.agentName?.split(' ')[0] || (isEn ? 'Karkh 1st Station' : '卡尔赫第一代销站') }}</span>
               </div>
               <div class="flex justify-between">
-                <span>到货与交付：</span>
-                <span class="font-bold text-emerald-600">已入库待核销 ({{ item.totalHouseholdQuota }} {{ item.unit }})</span>
+                <span>{{ $t('warehouse.arrivalDelivery') || '到货与交付：' }}</span>
+                <span class="font-bold text-emerald-600">{{ $t('warehouse.inStockPendingVerify') || '已入库待核销' }} ({{ item.totalHouseholdQuota }} {{ item.unit }})</span>
               </div>
               <div class="flex justify-between">
-                <span>指导折算金额：</span>
+                <span>{{ $t('warehouse.guideCalculatedAmount') || '指导折算金额：' }}</span>
                 <span class="font-mono font-bold text-amber-700">{{ (Number(item.totalHouseholdQuota) * item.guidePriceIQD).toLocaleString() }} IQD</span>
               </div>
             </div>
@@ -883,13 +897,13 @@
               <el-icon><Tickets /></el-icon>
             </div>
             <div>
-              <div class="text-xs font-bold text-[#18231E]">法定电子配给卡档案凭证</div>
-              <div class="text-[10px] text-[#8C958F]">供代销网点专员现场终端扫描核验</div>
+              <div class="text-xs font-bold text-[#18231E]">{{ $t('citizenCard.voucherTitle') || '法定电子配给卡档案凭证' }}</div>
+              <div class="text-[10px] text-[#8C958F]">{{ $t('citizenCard.voucherSubtitle') || '供代销网点专员现场终端扫描核验' }}</div>
             </div>
           </div>
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
-            <span>档案在册</span>
+            <span>{{ $t('citizenCard.recordActive') || '档案在册' }}</span>
           </span>
         </div>
 
@@ -930,14 +944,14 @@
               <div>
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.legalHeadName') || '法定户主姓名' }}</span>
                 <span class="font-bold text-white text-xs">{{ citizenFamilyInfo?.headName || '艾哈迈德·哈桑' }}</span>
-                <span class="text-[10px] text-emerald-300 font-mono block">（全户在册 {{ memberCount }} 人）</span>
+                <span class="text-[10px] text-emerald-300 font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: memberCount }) || `（全户在册 ${memberCount} 人）` }}</span>
               </div>
               <div class="text-right">
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
                 <span class="text-[11px] text-[#E8D9BF] font-medium truncate block" :title="citizenFamilyInfo?.agentName">
                   {{ citizenFamilyInfo?.agentName || '巴格达卡尔赫第一代销站' }}
                 </span>
-                <span class="text-[10px] text-white/50 font-mono">代码: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
+                <span class="text-[10px] text-white/50 font-mono">{{ $t('citizenCard.agentCodePrefix') || '代码: ' }}{{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
               </div>
             </div>
           </div>
@@ -948,10 +962,10 @@
           <div class="flex items-center justify-between text-[11px] text-[#5E6862] px-1">
             <span class="font-bold text-[#1E3F35] flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
-              <span>现场扫码验证凭证</span>
+              <span>{{ $t('citizenCard.qrVerifyTitle') || '现场扫码验证凭证' }}</span>
             </span>
             <span class="font-mono text-[10px] text-[#C59D5F] bg-[#FAF5ED] px-2 py-0.5 rounded-full border border-[#E8D9BF]">
-              动态防伪中
+              {{ $t('citizenCard.antiCounterfeitActive') || '动态防伪中' }}
             </span>
           </div>
 
@@ -1021,7 +1035,7 @@
           <!-- 动态验证密文与刷新控制 -->
           <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-xl border border-[#ECE7DE]">
             <div class="text-left font-mono">
-              <span class="text-[10px] text-[#8C958F] block">防伪安全校验密文：</span>
+              <span class="text-[10px] text-[#8C958F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
               <span class="font-bold text-[#1E3F35] text-[11px]">{{ dynamicCardCode }}</span>
             </div>
             <button
@@ -1030,12 +1044,12 @@
               @click="refreshDynamicCode"
             >
               <el-icon><Refresh /></el-icon>
-              <span>刷新密文</span>
+              <span>{{ $t('citizenCard.refreshCipher') || '刷新密文' }}</span>
             </button>
           </div>
 
           <div class="text-[10px] text-[#8C958F] leading-tight">
-            请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放
+            {{ $t('citizenCard.qrScanNotice') || '请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放' }}
           </div>
         </div>
 
@@ -1046,7 +1060,7 @@
           style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
           @click="cardModalVisible = false"
         >
-          完成出示 / 关闭
+          {{ $t('citizenCard.closeVoucher') || '完成出示 / 关闭' }}
         </el-button>
       </div>
     </el-dialog>
@@ -1153,7 +1167,7 @@ const citizenQuotaItems = computed(() => {
       totalHouseholdQuota: (3.0 * n).toFixed(1),
       guidePriceIQD: 1000,
       unit: 'KG',
-      status: '本月已足额调配'
+      status: isEn.value ? 'Fully Allocated' : '本月已足额调配'
     },
     {
       itemCode: 'FLOUR-01',
@@ -1162,7 +1176,7 @@ const citizenQuotaItems = computed(() => {
       totalHouseholdQuota: (9.0 * n).toFixed(1),
       guidePriceIQD: 750,
       unit: 'KG',
-      status: '本月已足额调配'
+      status: isEn.value ? 'Fully Allocated' : '本月已足额调配'
     },
     {
       itemCode: 'OIL-03',
@@ -1171,7 +1185,7 @@ const citizenQuotaItems = computed(() => {
       totalHouseholdQuota: (1.0 * n).toFixed(1),
       guidePriceIQD: 2500,
       unit: 'L',
-      status: '本月已足额调配'
+      status: isEn.value ? 'Fully Allocated' : '本月已足额调配'
     },
     {
       itemCode: 'SUGAR-04',
@@ -1180,7 +1194,7 @@ const citizenQuotaItems = computed(() => {
       totalHouseholdQuota: (1.0 * n).toFixed(1),
       guidePriceIQD: 1200,
       unit: 'KG',
-      status: '本月已足额调配'
+      status: isEn.value ? 'Fully Allocated' : '本月已足额调配'
     }
   ];
 });

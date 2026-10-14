@@ -30,7 +30,7 @@
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[9px] text-[#8C958F] block">倒计时</span>
+          <span class="text-[9px] text-[#8C958F] block">{{ $t('payment.expiresIn') || '倒计时' }}</span>
           <span class="font-mono text-xs font-bold text-[#C59D5F]">{{ countdownFormatted }}</span>
         </div>
       </div>
@@ -45,20 +45,22 @@
           <div class="flex items-center justify-between gap-2">
             <div class="space-y-0.5 truncate">
               <div class="text-xs font-bold text-[#E3D9C8] truncate">{{ title || '法定业务公文规费' }}</div>
-              <div class="text-[10px] text-white/60 font-mono">单号: {{ orderId }}</div>
+              <div class="text-[10px] text-white/60 font-mono">{{ $t('payment.orderNo') || '单号' }}: {{ orderId }}</div>
             </div>
             <div class="text-right shrink-0">
               <div class="text-lg font-black font-mono text-[#E4BA76] tracking-tight leading-none">
                 {{ amount.toLocaleString() }} <span class="text-[10px] text-white/80 font-normal">{{ currency }}</span>
               </div>
-              <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">待扣款</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                {{ $t('payment.statusPending') || '待支付' }}
+              </span>
             </div>
           </div>
         </div>
 
         <!-- 扣款渠道账户选择 (APP 模式紧凑单行) -->
         <div :class="isAppMode ? 'space-y-0.5' : 'space-y-1.5'">
-          <div class="text-[10px] font-medium text-[#5E6862]">资金账户：</div>
+          <div class="text-[10px] font-medium text-[#5E6862]">{{ $t('payment.account') || '资金账户：' }}</div>
           <div class="grid grid-cols-3 gap-1.5">
             <button
               v-for="ch in channels"
@@ -84,7 +86,7 @@
           <div class="flex items-center justify-between pb-1 border-b border-[#ECE7DE]">
             <span class="text-[10px] font-bold text-[#18231E] flex items-center gap-1">
               <el-icon class="text-[#1E3F35]"><Lock /></el-icon>
-              <span>核身验签方式</span>
+              <span>{{ $t('payment.verifyMode') || '核身验密方式' }}</span>
             </span>
             <div class="flex bg-[#EAE5DA] p-0.5 rounded-lg text-[10px]">
               <button
@@ -93,7 +95,7 @@
                 :class="verifyMode === 'pin' ? 'bg-white text-[#1E3F35] font-bold shadow-2xs' : 'text-[#5E6862] hover:text-[#18231E]'"
                 @click="switchVerifyMode('pin')"
               >
-                密码
+                {{ $t('payment.modePin') || '密码' }}
               </button>
               <button
                 type="button"
@@ -101,7 +103,7 @@
                 :class="verifyMode === 'fingerprint' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 @click="switchVerifyMode('fingerprint')"
               >
-                指纹
+                {{ $t('payment.modeFingerprint') || '指纹' }}
               </button>
               <button
                 type="button"
@@ -109,7 +111,7 @@
                 :class="verifyMode === 'face' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 @click="switchVerifyMode('face')"
               >
-                刷脸
+                {{ $t('payment.modeFace') || '刷脸' }}
               </button>
             </div>
           </div>
@@ -152,11 +154,11 @@
               </button>
               <button
                 type="button"
-                class="rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                class="rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer font-medium"
                 :class="isAppMode ? 'h-7.5 text-[10px]' : 'h-10 text-xs'"
                 @click="pinCode = ''"
               >
-                清空
+                {{ $t('payment.clear') || '清空' }}
               </button>
               <button
                 type="button"
@@ -177,9 +179,9 @@
             </div>
 
             <div class="flex items-center justify-between text-[10px] pt-0.5">
-              <span class="text-slate-400">支持键盘输入</span>
+              <span class="text-slate-400">{{ $t('payment.keyboardHint') || '支持键盘输入' }}</span>
               <button type="button" class="text-emerald-700 font-bold hover:underline cursor-pointer" @click="handleFastFillPin">
-                一键填入 (666888)
+                {{ $t('payment.fastFill') || '一键填入 (666888)' }}
               </button>
             </div>
 
@@ -192,7 +194,7 @@
               @click="handleSubmitPinPay"
             >
               <el-icon class="mr-1.5"><Lock /></el-icon>
-              确认支付 {{ amount.toLocaleString() }} {{ currency }}
+              {{ $t('payment.confirmPay', { amount: amount.toLocaleString(), currency }) || `确认支付 ${amount.toLocaleString()} ${currency}` }}
             </el-button>
           </div>
 
@@ -201,8 +203,8 @@
           <!-- ======================================================== -->
           <div v-else-if="verifyMode === 'fingerprint'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-3'" class="text-center">
             <div class="space-y-0.5">
-              <div class="text-xs font-semibold text-slate-800">轻触指纹传感器</div>
-              <div class="text-[10px] text-slate-400">安全芯片生物认证 · 免密极速扣款</div>
+              <div class="text-xs font-semibold text-slate-800">{{ $t('payment.touchIdTitle') || '轻触指纹传感器' }}</div>
+              <div class="text-[10px] text-slate-400">{{ $t('payment.touchIdSub') || '安全芯片生物认证 · 免密极速扣款' }}</div>
             </div>
 
             <!-- 指纹感应传感器按钮 -->
@@ -249,7 +251,7 @@
                 </svg>
 
                 <span class="text-[9px] font-mono text-emerald-300/80 mt-0.5">
-                  {{ fingerScanning ? '比对中...' : 'TOUCH ID' }}
+                  {{ fingerScanning ? ($t('payment.touchIdScanning') || '比对中...') : 'TOUCH ID' }}
                 </span>
               </button>
             </div>
@@ -261,7 +263,7 @@
               :loading="fingerScanning"
               @click="triggerFingerprintScan"
             >
-              感应指纹并完成支付
+              {{ $t('payment.touchIdBtn') || '感应指纹并完成支付' }}
             </el-button>
           </div>
 
@@ -270,8 +272,8 @@
           <!-- ======================================================== -->
           <div v-else-if="verifyMode === 'face'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-2'" class="text-center">
             <div class="space-y-0.5">
-              <div class="text-xs font-semibold text-slate-800">注视屏幕进行 Face ID 支付</div>
-              <div class="text-[10px] text-slate-400">身份中心生物证书免密验签</div>
+              <div class="text-xs font-semibold text-slate-800">{{ $t('payment.faceIdTitle') || '注视屏幕进行 Face ID 支付' }}</div>
+              <div class="text-[10px] text-slate-400">{{ $t('payment.faceIdSub') || '身份中心生物证书免密验签' }}</div>
             </div>
 
             <!-- 微型刷脸取景扫描圆框 -->
@@ -289,7 +291,7 @@
               <div class="text-indigo-400/80 flex flex-col items-center">
                 <el-icon :size="isAppMode ? 32 : 48"><User /></el-icon>
                 <div class="text-[8px] font-mono text-indigo-300 mt-0.5">
-                  {{ faceScanning ? 'SCANNING' : 'FACE ID' }}
+                  {{ faceScanning ? ($t('payment.faceIdScanning') || 'SCANNING') : 'FACE ID' }}
                 </div>
               </div>
 
@@ -308,7 +310,7 @@
               @click="triggerFacePayScan"
             >
               <el-icon class="mr-1.5"><Camera /></el-icon>
-              立即刷脸验证并扣款
+              {{ $t('payment.faceIdBtn') || '立即刷脸验证并扣款' }}
             </el-button>
           </div>
         </div>
@@ -357,6 +359,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
   CreditCard,
@@ -368,6 +371,8 @@ import {
   Loading
 } from '@element-plus/icons-vue';
 
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
 const route = useRoute();
 
 // 自动检测是否处于 APP 视口模式 (优先检查 query，兼容会话记忆)
@@ -428,21 +433,21 @@ const fingerScanning = ref(false);
 const faceScanning = ref(false);
 const successTxnNo = ref('');
 
-const channels = [
-  { id: 'qi_card', name: 'Qi Card (万事达)', icon: '💳' },
-  { id: 'zain_cash', name: 'ZainCash 钱包', icon: '📱' },
-  { id: 'cbi_switch', name: 'Switch 银联通道', icon: '🏦' }
-];
+const channels = computed(() => [
+  { id: 'qi_card', name: isEn.value ? 'Qi Card (Mastercard)' : 'Qi Card (万事达)', icon: '💳' },
+  { id: 'zain_cash', name: isEn.value ? 'ZainCash Wallet' : 'ZainCash 钱包', icon: '📱' },
+  { id: 'cbi_switch', name: isEn.value ? 'Switch CBI Gateway' : 'Switch 银联通道', icon: '🏦' }
+]);
 
 const currentChannelName = computed(() => {
-  return channels.find((c) => c.id === selectedChannel.value)?.name || '电子钱包';
+  return channels.value.find((c) => c.id === selectedChannel.value)?.name || (isEn.value ? 'E-Wallet' : '电子钱包');
 });
 
 const currentVerifyLabel = computed(() => {
-  if (verifyMode.value === 'pin') return 'PIN密码安全扣款';
-  if (verifyMode.value === 'fingerprint') return '生物指纹免密扣款';
-  if (verifyMode.value === 'face') return 'Face ID 刷脸支付';
-  return '在线安全扣款';
+  if (verifyMode.value === 'pin') return isEn.value ? 'PIN Secured Debit' : 'PIN密码安全扣款';
+  if (verifyMode.value === 'fingerprint') return isEn.value ? 'Touch ID Biometric Debit' : '生物指纹免密扣款';
+  if (verifyMode.value === 'face') return isEn.value ? 'Face ID Visual Debit' : 'Face ID 刷脸支付';
+  return isEn.value ? 'Secure Debit' : '在线安全扣款';
 });
 
 const countdownFormatted = computed(() => {

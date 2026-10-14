@@ -1,5 +1,5 @@
 <template>
-  <div class="citizen-purchase-tab space-y-4">
+  <div ref="processContainerRef" class="citizen-purchase-tab space-y-4">
     <!-- ======================================================== -->
     <!-- 1. 优化点3：极简户主信息胶囊栏 (释放 APP 移动端首屏宝贵空间) -->
     <!-- ======================================================== -->
@@ -29,7 +29,7 @@
           <span class="truncate max-w-[190px]">{{ quotaInfo.agentName || '卡尔赫第一代销站' }}</span>
         </div>
         <span class="hidden sm:inline text-slate-500 font-mono">·</span>
-        <span class="font-mono text-amber-300 text-[10px]">{{ quotaInfo.quotaPeriod || '2026-10' }}</span>
+        <span class="font-mono text-amber-300 text-[10px]">{{ displayQuotaPeriod }}</span>
         <el-tooltip :content="$t('citizenPurchase.refreshTooltip')" placement="top">
           <button
             type="button"
@@ -58,7 +58,7 @@
               ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
               : 'bg-slate-50 text-slate-400 border-slate-200'
           "
-          @click="currentProcessStep = 1"
+          @click="currentProcessStep = 1; scrollToTop()"
         >
           <span
             class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0"
@@ -121,8 +121,11 @@
     <div v-if="currentProcessStep === 1" class="space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-4">
         <!-- 步骤 1 顶栏操作 -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
-          <div>
+        <div
+          class="pb-3 border-b border-slate-100"
+          :class="isAppMode ? 'flex flex-col gap-2.5 items-start' : 'flex flex-col sm:flex-row sm:items-center justify-between gap-2.5'"
+        >
+          <div class="w-full">
             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
               <el-icon class="text-blue-600"><GoodsFilled /></el-icon>
               <span>{{ $t('citizenPurchase.step1Title') }}</span>
@@ -132,12 +135,12 @@
             </p>
           </div>
 
-          <div class="flex items-center gap-2">
-            <el-button size="small" type="primary" plain @click="handleFillAllQuota">
+          <div :class="isAppMode ? 'grid grid-cols-2 gap-2 w-full' : 'flex items-center gap-2'">
+            <el-button size="small" type="primary" plain class="!m-0 w-full" @click="handleFillAllQuota">
               <el-icon class="mr-1"><Check /></el-icon>
               {{ $t('citizenPurchase.fillAllQuota') }}
             </el-button>
-            <el-button size="small" @click="handleClearSelected">
+            <el-button size="small" class="!m-0 w-full" @click="handleClearSelected">
               {{ $t('citizenPurchase.clearAll') }}
             </el-button>
           </div>
@@ -163,10 +166,10 @@
               <div class="flex items-start justify-between gap-1">
                 <div>
                   <span class="font-bold text-slate-900 text-xs sm:text-sm block">{{ formatItemName(item.itemName) }}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ item.origin }} · {{ item.packSize }}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">{{ formatOriginPack(item) }}</span>
                 </div>
                 <el-tag size="small" type="success" effect="plain" class="scale-90 origin-right font-bold">
-                  {{ item.stockStatus }}
+                  {{ formatStockStatus(item.stockStatus) }}
                 </el-tag>
               </div>
 
@@ -252,21 +255,34 @@
         </div>
 
         <!-- 步骤 1 底部统计与下一步按钮 -->
-        <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-3 text-xs text-slate-600 flex-wrap">
-            <span>{{ $t('citizenPurchase.totalWeight') }}: <strong class="font-mono text-slate-900 text-sm">{{ totalSelectedWeight }} kg/L</strong></span>
-            <span>·</span>
-            <span>{{ $t('citizenPurchase.goodsAmount') }}: <strong class="font-mono text-blue-600 text-sm">{{ totalGoodsAmount.toLocaleString() }} IQD</strong></span>
+        <div
+          class="pt-3 border-t border-slate-100"
+          :class="isAppMode ? 'flex flex-col gap-3 w-full' : 'flex flex-col sm:flex-row sm:items-center justify-between gap-3'"
+        >
+          <!-- 统计摘要行 (APP 模式下双列两端对齐，避免挤压折行) -->
+          <div
+            :class="isAppMode ? 'flex items-center justify-between text-xs text-slate-700 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/60' : 'flex items-center gap-3 text-xs text-slate-600 flex-wrap'"
+          >
+            <span>
+              {{ $t('citizenPurchase.totalWeight') }}:
+              <strong class="font-mono text-slate-900 text-sm ml-1">{{ totalSelectedWeight }} kg/L</strong>
+            </span>
+            <span v-if="!isAppMode">·</span>
+            <span>
+              {{ $t('citizenPurchase.goodsAmount') }}:
+              <strong class="font-mono text-blue-600 text-sm ml-1">{{ totalGoodsAmount.toLocaleString() }} IQD</strong>
+            </span>
           </div>
 
           <el-button
             type="primary"
             size="large"
-            class="font-bold px-6 shadow-xs"
+            class="font-bold shadow-xs !h-11 rounded-xl"
+            :class="isAppMode ? 'w-full !m-0 text-sm' : 'px-6'"
             :disabled="totalSelectedWeight <= 0"
             @click="handleProceedToStep2"
           >
-            {{ $t('citizenPurchase.nextStepDelivery') }}
+            <span>{{ $t('citizenPurchase.nextStepDelivery') }}</span>
             <el-icon class="ml-1"><Right /></el-icon>
           </el-button>
         </div>
@@ -304,23 +320,26 @@
             "
             @click="deliveryType = 'PICKUP'"
           >
-            <div class="flex items-start justify-between">
+            <!-- 头部：图标、标题与费用标签 -->
+            <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg transition"
+                  class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
                   :class="deliveryType === 'PICKUP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'"
                 >
                   <el-icon><Shop /></el-icon>
                 </div>
-                <div>
-                  <span class="text-xs sm:text-sm font-bold text-slate-900 block">{{ $t('citizenPurchase.pickupTitle') }}</span>
-                  <span class="text-[11px] text-slate-500">{{ $t('citizenPurchase.pickupSub') }}</span>
-                </div>
+                <span class="text-xs sm:text-sm font-bold text-slate-900">{{ $t('citizenPurchase.pickupTitle') }}</span>
               </div>
-              <el-tag size="small" type="success" effect="dark" class="font-bold">
+              <el-tag size="small" type="success" effect="dark" class="font-bold shrink-0">
                 {{ $t('citizenPurchase.pickupFree') }}
               </el-tag>
             </div>
+
+            <!-- 说明文本通栏展开 -->
+            <p class="text-[11px] text-slate-500 leading-relaxed">
+              {{ $t('citizenPurchase.pickupSub') }}
+            </p>
 
             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
               <div class="flex justify-between">
@@ -343,23 +362,26 @@
             "
             @click="deliveryType = 'HOME_DELIVERY'"
           >
-            <div class="flex items-start justify-between">
+            <!-- 头部：图标、标题与费用标签 -->
+            <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg transition"
+                  class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
                   :class="deliveryType === 'HOME_DELIVERY' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'"
                 >
                   <el-icon><Van /></el-icon>
                 </div>
-                <div>
-                  <span class="text-xs sm:text-sm font-bold text-slate-900 block">{{ $t('citizenPurchase.deliveryTitle') }}</span>
-                  <span class="text-[11px] text-slate-500">{{ $t('citizenPurchase.deliverySub') }}</span>
-                </div>
+                <span class="text-xs sm:text-sm font-bold text-slate-900">{{ $t('citizenPurchase.deliveryTitle') }}</span>
               </div>
-              <el-tag size="small" type="warning" effect="dark" class="font-bold font-mono">
+              <el-tag size="small" type="warning" effect="dark" class="font-bold font-mono shrink-0">
                 {{ $t('citizenPurchase.deliveryFee') }}
               </el-tag>
             </div>
+
+            <!-- 说明文本通栏展开，绝不挤压折行 -->
+            <p class="text-[11px] text-slate-500 leading-relaxed">
+              {{ $t('citizenPurchase.deliverySub') }}
+            </p>
 
             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
               <div class="flex justify-between">
@@ -405,7 +427,7 @@
 
         <!-- 步骤 2 底部操作栏 (等宽自适应网格防挤压) -->
         <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 1">
+          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 1; scrollToTop()">
             <el-icon class="mr-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
@@ -494,7 +516,7 @@
 
         <!-- 步骤 3 底部操作栏 (等宽自适应网格防截断) -->
         <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 2">
+          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 2; scrollToTop()">
             <el-icon class="mr-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
@@ -718,15 +740,28 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 
+const processContainerRef = ref(null);
 const route = useRoute();
 const isAppMode = computed(() => {
   return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
 });
+
+function scrollToTop() {
+  nextTick(() => {
+    if (processContainerRef.value?.scrollIntoView) {
+      processContainerRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    const appViewport = document.querySelector('.pixel-screen') || document.querySelector('.app-scroll-container') || document.querySelector('.app-viewport') || window;
+    if (appViewport && typeof appViewport.scrollTo === 'function') {
+      appViewport.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+}
 import {
   getCitizenQuotaBalance,
   getCitizenPurchaseOrders,
@@ -807,6 +842,48 @@ function formatItemShort(it) {
   if (code.includes('SUGAR')) return isEn.value ? 'Sugar' : '白糖';
   return isEn.value ? 'Ration' : '口粮';
 }
+
+function formatStockStatus(status) {
+  if (isEn.value) {
+    if (!status || status === '有现货' || status === '充足') return 'In Stock';
+    if (status === '紧缺' || status === '紧张') return 'Low Stock';
+    return 'In Stock';
+  }
+  return status || '有现货';
+}
+
+function formatOriginPack(item) {
+  if (!item) return '';
+  if (isEn.value) {
+    const originMap = {
+      '伊拉克中央保供面粉厂': 'Iraq Central Strategic Flour Mill',
+      '国家粮食进出口总局': 'National Grain Import & Export Directorate',
+      '米桑粮油制糖企业国库': 'Maysan Grain & Sugar State Reserve',
+      '底格里斯食用油脂厂': 'Tigris Edible Oil Refinery'
+    };
+    const packMap = {
+      '50kg/袋': '50kg/Bag',
+      '25kg/袋': '25kg/Bag',
+      '10kg/袋': '10kg/Bag',
+      '1L/瓶': '1L/Bottle',
+      '5L/桶': '5L/Can'
+    };
+    const origin = originMap[item.origin] || item.origin || 'Ministry of Trade Mill';
+    const pack = packMap[item.packSize] || item.packSize || '';
+    return pack ? `${origin} · ${pack}` : origin;
+  }
+  return `${item.origin || ''} · ${item.packSize || ''}`;
+}
+
+const displayQuotaPeriod = computed(() => {
+  const p = quotaInfo.quotaPeriod || '2026-10';
+  if (isEn.value) {
+    if (p.includes('年') || p.includes('月')) {
+      return 'Oct 2026';
+    }
+  }
+  return p;
+});
 
 // 核心流程步骤控制: 1=选购 -> 2=配送方式 -> 3=付款
 const currentProcessStep = ref(1);
@@ -1035,6 +1112,7 @@ function handleJumpToStep(targetStep) {
     return;
   }
   currentProcessStep.value = targetStep;
+  scrollToTop();
 }
 
 // 推进到步骤 2
@@ -1044,6 +1122,7 @@ function handleProceedToStep2() {
     return;
   }
   currentProcessStep.value = 2;
+  scrollToTop();
 }
 
 // 推进到步骤 3
@@ -1053,6 +1132,7 @@ function handleProceedToStep3() {
     return;
   }
   currentProcessStep.value = 3;
+  scrollToTop();
 }
 
 // 唤起第三方电子支付
