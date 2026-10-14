@@ -119,3 +119,9 @@ export function onTabMessage(type, handler) {
     }
   };
 }
+
+// 全局防御性暴露，确保演示流程中任意模块或动态调用均不报错
+if (typeof window !== 'undefined') {
+  window.broadcastTabMessage = broadcastTabMessage;
+  window.onTabMessage = onTabMessage;
+}

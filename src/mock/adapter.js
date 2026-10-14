@@ -48,6 +48,9 @@ import {
   updateSharedFamily
 } from '../utils/sharedSession.js';
 
+// 跨标签页高可靠事件总线
+import { broadcastTabMessage } from '../utils/crossTabBus.js';
+
 // 预置公民配给购买演示订单
 const INITIAL_CITIZEN_PURCHASE_ORDERS_ZH = [
   {
@@ -1281,7 +1284,13 @@ export async function mockDispatch(config) {
     b2cReservationsStore.unshift(b2cItem);
 
     // 跨标签页广播新订单产生事件，通知代理APP与管理端订单大盘
-    broadcastTabMessage('ORDER_PURCHASED', newOrder);
+    try {
+      if (typeof broadcastTabMessage === 'function') {
+        broadcastTabMessage('ORDER_PURCHASED', newOrder);
+      }
+    } catch (e) {
+      console.warn('[MockAdapter] broadcastTabMessage ORDER_PURCHASED failed:', e);
+    }
 
     return createResponse({
       success: true,
@@ -3026,7 +3035,13 @@ export async function mockDispatch(config) {
     });
 
     // 跨标签页广播订单状态变更
-    broadcastTabMessage('ORDER_UPDATED', targetOrder);
+    try {
+      if (typeof broadcastTabMessage === 'function') {
+        broadcastTabMessage('ORDER_UPDATED', targetOrder);
+      }
+    } catch (e) {
+      console.warn('[MockAdapter] broadcastTabMessage ORDER_UPDATED failed:', e);
+    }
 
     // 同步到 b2cReservationsStore
     const b2cItem = b2cReservationsStore.find((r) => r.ticketNo === targetOrder.ticketNo || r.pickupCode === targetOrder.pickupCode);
@@ -3076,7 +3091,13 @@ export async function mockDispatch(config) {
     });
 
     // 跨标签页广播订单状态变更 (已核销交付)
-    broadcastTabMessage('ORDER_UPDATED', targetOrder);
+    try {
+      if (typeof broadcastTabMessage === 'function') {
+        broadcastTabMessage('ORDER_UPDATED', targetOrder);
+      }
+    } catch (e) {
+      console.warn('[MockAdapter] broadcastTabMessage ORDER_UPDATED failed:', e);
+    }
 
     // 扣减代理商本地实物现货库存 (agentLocalStocksStore)
     const deductedItems = [];

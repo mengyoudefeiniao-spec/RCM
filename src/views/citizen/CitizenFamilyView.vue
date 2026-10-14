@@ -384,43 +384,43 @@
     <el-dialog
       v-model="addMemberDialogVisible"
       :title="$t('citizen.addMemberTitle')"
-      :width="isAppMode ? '350px' : '640px'"
+      :width="isAppMode ? 'min(94vw, 384px)' : '640px'"
       align-center
     >
-      <div class="space-y-4 text-xs">
-        <!-- 流程化步骤条导航 -->
+      <div class="space-y-3.5 text-xs">
+        <!-- 流程化步骤条导航 (移动端极简紧凑) -->
         <div class="py-1">
           <el-steps :active="addMemberStep - 1" finish-status="success" align-center>
-            <el-step :title="$t('citizen.stepBasic')" :description="$t('citizen.stepBasicDesc')" />
-            <el-step :title="$t('citizen.stepVerify')" :description="$t('citizen.stepVerifyDesc')" />
-            <el-step :title="$t('citizen.stepConfirm')" :description="$t('citizen.stepConfirmDesc')" />
+            <el-step :title="isAppMode ? (isEn ? 'Basic' : '基本') : $t('citizen.stepBasic')" :description="isAppMode ? '' : $t('citizen.stepBasicDesc')" />
+            <el-step :title="isAppMode ? (isEn ? 'Verify' : '核验') : $t('citizen.stepVerify')" :description="isAppMode ? '' : $t('citizen.stepVerifyDesc')" />
+            <el-step :title="isAppMode ? (isEn ? 'Confirm' : '确认') : $t('citizen.stepConfirm')" :description="isAppMode ? '' : $t('citizen.stepConfirmDesc')" />
           </el-steps>
         </div>
 
         <!-- 步骤 1: 填写基本身份信息 -->
-        <div v-show="addMemberStep === 1" class="space-y-3.5">
+        <div v-show="addMemberStep === 1" class="space-y-3">
           <!-- 简要指引提示 -->
-          <div class="bg-blue-50/80 border border-blue-200/80 p-3 rounded-xl text-blue-900 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <el-icon class="text-blue-600"><InfoFilled /></el-icon>
-              <span>{{ $t('citizen.fillRealIdentityNotice') }}</span>
+          <div class="bg-blue-50/80 border border-blue-200/80 p-2.5 rounded-xl text-blue-900 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <el-icon class="text-blue-600 shrink-0"><InfoFilled /></el-icon>
+              <span class="text-[11px] leading-tight">{{ $t('citizen.fillRealIdentityNotice') }}</span>
             </div>
             <!-- 法定户主就绪小标签 -->
-            <el-tag size="small" type="success" effect="light">{{ $t('citizen.headVerifiedBadge') }}</el-tag>
+            <el-tag size="small" type="success" effect="light" class="shrink-0 font-medium scale-95">{{ $t('citizen.headVerifiedBadge') }}</el-tag>
           </div>
 
-          <el-form label-position="top" class="space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <el-form-item :label="$t('citizen.memberFullName')" required>
+          <el-form label-position="top" class="space-y-2.5">
+            <div :class="isAppMode ? 'space-y-2' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
+              <el-form-item :label="$t('citizen.memberFullName')" required class="!mb-1">
                 <el-input v-model="newMemberForm.name" :placeholder="$t('citizen.inputFullNamePlaceholder')" />
               </el-form-item>
-              <el-form-item :label="$t('citizen.nidLabel')" required>
+              <el-form-item :label="$t('citizen.nidLabel')" required class="!mb-1">
                 <el-input v-model="newMemberForm.nationalId" :placeholder="$t('citizen.inputNidPlaceholder')" />
               </el-form-item>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <el-form-item :label="$t('citizen.birthDate')" required>
+            <div :class="isAppMode ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'">
+              <el-form-item :label="$t('citizen.birthDate')" required class="!mb-1">
                 <el-date-picker
                   v-model="newMemberForm.birthDate"
                   type="date"
@@ -430,30 +430,31 @@
                   @change="handleBirthDateChange"
                 />
               </el-form-item>
-              <el-form-item :label="$t('citizen.gender')" required>
+              <el-form-item :label="$t('citizen.gender')" required class="!mb-1">
                 <el-select v-model="newMemberForm.gender" class="w-full">
                   <el-option :label="$t('citizen.male')" :value="isEn ? 'Male' : '男'" />
                   <el-option :label="$t('citizen.female')" :value="isEn ? 'Female' : '女'" />
                 </el-select>
               </el-form-item>
-              <el-form-item :label="$t('citizen.specifyRelation')" required>
-                <el-select v-model="newMemberForm.relation" :placeholder="$t('citizen.selectRelation')" class="w-full">
-                  <el-option :label="$t('citizen.relationChild')" :value="isEn ? 'Child' : '子女'" />
-                  <el-option :label="$t('citizen.relationSpouse')" :value="isEn ? 'Spouse' : '配偶'" />
-                  <el-option :label="$t('citizen.relationFather')" :value="isEn ? 'Father' : '父亲'" />
-                  <el-option :label="$t('citizen.relationMother')" :value="isEn ? 'Mother' : '母亲'" />
-                  <el-option :label="$t('citizen.relationDependent')" :value="isEn ? 'Dependent' : '受抚养人'" />
-                </el-select>
-              </el-form-item>
             </div>
+
+            <el-form-item :label="$t('citizen.specifyRelation')" required class="!mb-1">
+              <el-select v-model="newMemberForm.relation" :placeholder="$t('citizen.selectRelation')" class="w-full">
+                <el-option :label="$t('citizen.relationChild')" :value="isEn ? 'Child' : '子女'" />
+                <el-option :label="$t('citizen.relationSpouse')" :value="isEn ? 'Spouse' : '配偶'" />
+                <el-option :label="$t('citizen.relationFather')" :value="isEn ? 'Father' : '父亲'" />
+                <el-option :label="$t('citizen.relationMother')" :value="isEn ? 'Mother' : '母亲'" />
+                <el-option :label="$t('citizen.relationDependent')" :value="isEn ? 'Dependent' : '受抚养人'" />
+              </el-select>
+            </el-form-item>
 
             <!-- 户主资质极简展示 -->
             <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-[11px] text-slate-600">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
                 <span>{{ $t('citizen.headBioEnrolled') }}</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
                 <span>{{ $t('citizen.qiCardBound') }}</span>
               </div>
@@ -521,7 +522,7 @@
         <!-- 步骤 3: 证明材料与确认纳保 -->
         <div v-show="addMemberStep === 3" class="space-y-3.5">
           <!-- 申报信息摘要 -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
             <div>
               <span class="text-slate-400 block">{{ $t('citizen.headName') }}：</span>
               <span class="font-bold text-slate-800">{{ newMemberForm.name }}</span>
@@ -566,7 +567,62 @@
       </div>
 
       <template #footer>
-        <div class="flex items-center justify-between w-full">
+        <!-- 移动端 App 视口 (Pixel 9) 底部操作栏 -->
+        <div v-if="isAppMode" class="w-full space-y-2">
+          <!-- Step 3: 上方两按钮(上一步、取消)，下方通栏高亮主按钮(确认并纳保) -->
+          <div v-if="addMemberStep === 3" class="space-y-2 w-full">
+            <div class="grid grid-cols-2 gap-2 w-full">
+              <el-button class="!m-0 w-full" @click="addMemberStep--">
+                <el-icon class="mr-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
+              </el-button>
+              <el-button class="!m-0 w-full" @click="addMemberDialogVisible = false">
+                {{ $t('common.cancel') }}
+              </el-button>
+            </div>
+            <el-button
+              type="primary"
+              class="!m-0 w-full !h-10 text-sm font-semibold shadow-sm"
+              :loading="addingMember"
+              @click="handleSubmitAddMember"
+            >
+              <el-icon class="mr-1.5"><Check /></el-icon>{{ $t('citizen.confirmAddMember') }}
+            </el-button>
+          </div>
+          <!-- Step 2: 上方两按钮(上一步、取消)，下方通栏下一步 -->
+          <div v-else-if="addMemberStep === 2" class="space-y-2 w-full">
+            <div class="grid grid-cols-2 gap-2 w-full">
+              <el-button class="!m-0 w-full" @click="addMemberStep--">
+                <el-icon class="mr-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
+              </el-button>
+              <el-button class="!m-0 w-full" @click="addMemberDialogVisible = false">
+                {{ $t('common.cancel') }}
+              </el-button>
+            </div>
+            <el-button
+              type="primary"
+              class="!m-0 w-full !h-10 text-sm font-semibold shadow-sm"
+              @click="handleNextAddMemberStep"
+            >
+              {{ $t('common.nextStep') }}<el-icon class="ml-1"><ArrowRight /></el-icon>
+            </el-button>
+          </div>
+          <!-- Step 1: 取消与下一步等分双列 -->
+          <div v-else class="grid grid-cols-2 gap-2 w-full">
+            <el-button class="!m-0 w-full" @click="addMemberDialogVisible = false">
+              {{ $t('common.cancel') }}
+            </el-button>
+            <el-button
+              type="primary"
+              class="!m-0 w-full !h-10 text-sm font-semibold shadow-sm"
+              @click="handleNextAddMemberStep"
+            >
+              {{ $t('common.nextStep') }}<el-icon class="ml-1"><ArrowRight /></el-icon>
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 桌面端普通视口底部操作栏 -->
+        <div v-else class="flex items-center justify-between w-full">
           <div>
             <el-button v-if="addMemberStep > 1" @click="addMemberStep--">{{ $t('common.prevStep') }}</el-button>
           </div>
@@ -824,7 +880,10 @@ import {
   InfoFilled,
   CircleCheckFilled,
   Tickets,
-  Refresh
+  Refresh,
+  ArrowLeft,
+  ArrowRight,
+  Check
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 

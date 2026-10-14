@@ -20,8 +20,8 @@
         </el-button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- 左侧：情形选择与对应证明材料上传 -->
+      <div :class="isAppMode ? 'flex flex-col space-y-4' : 'grid grid-cols-1 md:grid-cols-2 gap-6'">
+        <!-- 第一部分：情形选择与申诉陈述 -->
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
@@ -39,7 +39,19 @@
             </el-select>
           </div>
 
-          <!-- 独立证明材料上传组件 -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              {{ $t('unfreeze.statement') }}
+            </label>
+            <el-input
+              v-model="unfreezeStatement"
+              type="textarea"
+              :rows="3"
+              :placeholder="$t('unfreeze.statementPlaceholder')"
+            />
+          </div>
+
+          <!-- 证明材料附件上传组件 (通栏展开，美观宽敞) -->
           <div>
             <DocumentUploader
               v-model="unfreezeFileUploaded"
@@ -55,36 +67,28 @@
           </div>
         </div>
 
-        <!-- 右侧：申诉陈述与审核须知 -->
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
-              {{ $t('unfreeze.statement') }}
-            </label>
-            <el-input
-              v-model="unfreezeStatement"
-              type="textarea"
-              :rows="4"
-              :placeholder="$t('unfreeze.statementPlaceholder')"
-            />
-          </div>
-
-          <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-200 text-xs text-blue-800 space-y-1">
-            <div class="font-bold">{{ $t('unfreeze.reviewNoticeTitle') }}</div>
-            <p>
+        <!-- 第二部分：审核须知与提交支付按钮 -->
+        <div class="space-y-4 flex flex-col justify-between">
+          <div class="p-4 bg-blue-50/60 rounded-xl border border-blue-200/80 text-xs text-blue-900 space-y-1.5">
+            <div class="font-bold flex items-center gap-1.5">
+              <span>📋</span>
+              <span>{{ $t('unfreeze.reviewNoticeTitle') }}</span>
+            </div>
+            <p class="text-blue-800/90 text-[11px] leading-relaxed">
               {{ $t('unfreeze.reviewNoticeText') }}
             </p>
           </div>
 
-          <div class="pt-4">
+          <div class="pt-2">
             <el-button
               type="warning"
               size="large"
-              class="w-full font-bold shadow-md"
+              class="w-full font-bold shadow-md rounded-xl text-sm py-3"
               :loading="submitting"
               @click="handleStartUnfreeze"
             >
-              {{ $t('unfreeze.submitBtn') }}
+              <el-icon class="mr-1.5"><Unlock /></el-icon>
+              <span>{{ $t('unfreeze.submitBtn') }}</span>
             </el-button>
           </div>
         </div>
@@ -105,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
@@ -121,21 +125,85 @@ const router = useRouter();
 const route = useRoute();
 const citizenStore = useCitizenStore();
 
+const isAppMode = computed(() => {
+  return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
+});
+
 function handleGoBack() {
-  if (route.query.layout === 'app') {
+  if (isAppMode.value) {
     router.push({ path: '/citizen', query: { layout: 'app' } });
   } else {
     router.push('/citizen');
   }
 }
 
+const STATEMENTS_BY_TYPE = {
+  商业: {
+    en: 'The commercial business registration was formally deregistered and tax clearance was finalized in 2026. Requesting immediate restoration of strategic ration entitlement.',
+    zh: '该商户名额已于2026年正式注销并完成清税，申请恢复食品配给。',
+    ar: 'تم شطب السجل التجاري رسمياً وإتمام براءة الذمة الضريبية لعام 2026، ونلتمس إعادة تفعيل الحصة التموينية الغذائية.',
+    ku: 'تۆماری بازرگانی بە فەرمی سڕاوەتەوە و باج پاکتاو کراوە لە 2026، داوای گەڕاندنەوەی بەشەخۆراکی دەوڵەتی دەکەین.'
+  },
+  旅行: {
+    en: 'Returned permanently to Iraq through Baghdad International Airport. Completed border control registration and residency affidavit to restore ration allocation.',
+    zh: '已正式回国定居并通过海关入境边检，提交永久居留公证，申请恢复口粮配给。',
+    ar: 'العودة الدائمة إلى العراق عبر مطار بغداد الدولي وإتمام إجراءات الإقامة لطلب إعادة تفعيل البطاقة التموينية.',
+    ku: 'گەڕانەوەی هەمیشەیی بۆ عێراق لە ڕێگەی فڕۆکەخانەی نێودەوڵەتی بەغدا و تەواوکردنی ڕێکارەکان.'
+  },
+  高收入: {
+    en: 'Current verified household income is below the statutory national subsidy cutoff threshold as certified by official payroll audit. Requesting reinstatement.',
+    zh: '最新经核定的家庭人均月收入已低于国家配给补助门槛线，特申请恢复享受口粮配给待遇。',
+    ar: 'الدخل الشهري الحالي للأسرة يقع دون سقف استحقاق الدعم الحكومي بموجب بيان الراتب الرسمي المرفق.',
+    ku: 'داهاتی مانگانەی خێزان لەژێر ڕێژەی دیاریکراوی پشتیوانی دەوڵەتدایە بەپێی بەڵگەنامەی فەرمی.'
+  },
+  住址不明: {
+    en: 'Physical residential address has been verified on-site by community administration and municipal grid committee. Requesting unfreeze.',
+    zh: '已完成属地社区网格员现场入户核验并出具连续居住证明，申请解除因地址异常导致的冻结。',
+    ar: 'تم التحقق الميداني من عنوان السكن الفعلي عبر المختار واللجنة الإدارية المحلية ونلتمس رفع الحظر.',
+    ku: 'پشتڕاستکردنەوەی ناونیشانی نیشتەجێبوون لەلایەن لیژنەی گەڕەکەوە ئەنجامدراوە.'
+  },
+  更新: {
+    en: 'Civil demographic record corrections completed and synchronised with the National Unified Civil Registry database. Requesting unfreezing.',
+    zh: '内政部户政底账信息勘误已完成核准并同步至国家统一数据库，申请解冻配给资格。',
+    ar: 'تم تصحيح وتحديث البيانات الشخصية في السجل المدني الموحد ونطلب رفع التجميد عن البطاقة.',
+    ku: 'ڕاستکردنەوەی زانیارییە کەسییەکان لە تۆماری باری شارستانی فەرمی پەسەندکراوە.'
+  },
+  重复: {
+    en: 'Judicial decree confirmed sole active identity and eliminated redundant duplicate civil registration record. Requesting quota unfreeze.',
+    zh: '司法裁定书已核实并注销重复建卡户籍档案，确认保留唯一合法身份，申请解冻配给。',
+    ar: 'صدر قرار قضائي بإلغاء القيد المكرر وتثبيت القيد القانوني المعتمد الوحيد، ونلتمس رفع التجميد.',
+    ku: 'بڕیاری دادگا بۆ سڕینەوەی تۆماری دووبارە دەرکراوە بۆ کاراکردنەوەی بەشەخۆراک.'
+  },
+  临时: {
+    en: 'The grounds for administrative temporary suspension have been thoroughly remedied and cleared by local supply authority. Requesting immediate reactivation.',
+    zh: '行政临时冻结原因已彻底整改并经属地配给主管部门现场复核，申请解除临时冻结。',
+    ar: 'تمت معالجة وزوال أسباب التعليق الإداري المؤقت، ونرجو استئناف صرف المواد التموينية.',
+    ku: 'هۆکارەکانی ڕاگرتنی کاتی چارەسەرکراون و داوای دەستپێکردنەوەی بەشەخۆراک دەکەین.'
+  },
+  地理位置: {
+    en: 'GPS coordinates and territorial supply outlet alignment verified within accredited distribution zone. Requesting transfer and unfreeze.',
+    zh: '家庭常住地经纬度及属地供销网点网格匹配已通过核定，申请解除定位锁定并恢复配给发放。',
+    ar: 'تم التحقق من الإحداثيات الجغرافية لمحل السكن ومطابقتها للمركز التمويني المعتمد لرفع التجميد.',
+    ku: 'پێگەی جوگرافی شوێنی نیشتەجێبوون پەسەندکراوە لەگەڵ بریکاری پەسەندکراودا.'
+  }
+};
+
+const allDefaultTexts = Object.values(STATEMENTS_BY_TYPE).flatMap(typeObj => Object.values(typeObj));
+
 const unfreezeType = ref('商业');
 const unfreezeFileUploaded = ref(true);
-const unfreezeStatement = ref('该商户名额已于2026年正式注销并完成清税，申请恢复食品配给。');
+const unfreezeStatement = ref(STATEMENTS_BY_TYPE['商业'][locale.value] || STATEMENTS_BY_TYPE['商业'].en);
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
 
 const isEn = computed(() => locale.value === 'en');
+
+watch(locale, (newLang) => {
+  if (allDefaultTexts.includes(unfreezeStatement.value)) {
+    const caseObj = STATEMENTS_BY_TYPE[unfreezeType.value] || STATEMENTS_BY_TYPE['商业'];
+    unfreezeStatement.value = caseObj[newLang] || caseObj.en;
+  }
+});
 
 const DOC_CONFIGS = computed(() => {
   if (isEn.value) {
@@ -297,6 +365,10 @@ const currentDocConfig = computed(() => {
 
 function handleTypeChange() {
   unfreezeFileUploaded.value = true;
+  if (!unfreezeStatement.value.trim() || allDefaultTexts.includes(unfreezeStatement.value)) {
+    const caseObj = STATEMENTS_BY_TYPE[unfreezeType.value] || STATEMENTS_BY_TYPE['商业'];
+    unfreezeStatement.value = caseObj[locale.value] || caseObj.en;
+  }
 }
 
 function handleStartUnfreeze() {

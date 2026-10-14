@@ -204,8 +204,20 @@ export function addSharedTicket(ticketPayload) {
   }
 
   // 跨标签页广播：新工单已提交！
-  broadcastTabMessage('TICKET_SUBMITTED', newTicket);
+  safeBroadcast('TICKET_SUBMITTED', newTicket);
   return newTicket;
+}
+
+function safeBroadcast(type, payload) {
+  try {
+    if (typeof broadcastTabMessage === 'function') {
+      broadcastTabMessage(type, payload);
+    } else if (typeof window !== 'undefined' && typeof window.broadcastTabMessage === 'function') {
+      window.broadcastTabMessage(type, payload);
+    }
+  } catch (err) {
+    console.warn('[SharedSession] safeBroadcast error:', err);
+  }
 }
 
 export function updateSharedTicket(ticketId, updates) {
@@ -221,7 +233,7 @@ export function updateSharedTicket(ticketId, updates) {
     }
 
     // 跨标签页广播：工单状态已变更！
-    broadcastTabMessage('TICKET_UPDATED', currentList[index]);
+    safeBroadcast('TICKET_UPDATED', currentList[index]);
     return currentList[index];
   }
   return null;
@@ -283,7 +295,7 @@ export function addSharedOrder(orderData) {
   }
 
   // 立即跨标签页广播：订单已生成！
-  broadcastTabMessage('ORDER_PURCHASED', newOrder);
+  safeBroadcast('ORDER_PURCHASED', newOrder);
   return newOrder;
 }
 
@@ -300,9 +312,9 @@ export function updateSharedOrder(orderId, updates) {
     }
 
     // 跨标签页广播：订单核销/状态更新！
-    broadcastTabMessage('ORDER_UPDATED', orders[index]);
+    safeBroadcast('ORDER_UPDATED', orders[index]);
     if (updates.status === 'DELIVERED') {
-      broadcastTabMessage('ORDER_VERIFIED', orders[index]);
+      safeBroadcast('ORDER_VERIFIED', orders[index]);
     }
     return orders[index];
   }
@@ -356,7 +368,7 @@ export function updateSharedFamily(cardNo, updater, langOverride) {
       // ignore
     }
 
-    broadcastTabMessage('FAMILY_UPDATED', list[index]);
+    safeBroadcast('FAMILY_UPDATED', list[index]);
     return list[index];
   }
   return null;
@@ -374,6 +386,6 @@ export function addSharedFamily(newFamily, langOverride) {
     // ignore
   }
 
-  broadcastTabMessage('FAMILY_ADDED', newFamily);
+  safeBroadcast('FAMILY_ADDED', newFamily);
   return newFamily;
 }
