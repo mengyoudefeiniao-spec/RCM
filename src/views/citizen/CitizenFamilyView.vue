@@ -183,9 +183,9 @@
             <div class="flex flex-col items-end gap-1 shrink-0">
               <span
                 class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                :class="member.status === '正常' || member.status === 'Active' || member.status === 'نشط' ? 'bg-[#E4F2E9] text-[#275A3E]' : 'bg-[#FEECEC] text-[#D34545]'"
+                :class="isMemberActive(member.status) ? 'bg-[#E4F2E9] text-[#275A3E]' : 'bg-[#FEECEC] text-[#D34545]'"
               >
-                {{ member.status || $t('citizenCard.statusNormal') }}
+                {{ formatMemberStatus(member.status) }}
               </span>
               <button
                 type="button"
@@ -334,14 +334,18 @@
             <template #default="{ row }">
               <el-tag
                 size="small"
-                :type="row.relation === '户主' || row.relation === 'Head' ? 'primary' : (row.relation === '配偶' || row.relation === 'Spouse') ? 'success' : 'info'"
+                :type="isHeadRelation(row.relation) ? 'primary' : 'info'"
               >
-                {{ row.relation }}
+                {{ formatRelation(row.relation) }}
               </el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column prop="gender" :label="$t('citizen.gender')" width="80" align="center" />
+          <el-table-column prop="gender" :label="$t('citizen.gender')" width="80" align="center">
+            <template #default="{ row }">
+              <span>{{ formatGender(row.gender) }}</span>
+            </template>
+          </el-table-column>
 
           <el-table-column prop="nationalId" :label="$t('citizen.nationalId')" min-width="160">
             <template #default="{ row }">
@@ -353,10 +357,10 @@
             <template #default="{ row }">
               <el-tag
                 size="small"
-                :type="row.status === '正常' || row.status === 'Active' ? 'success' : (row.status === '冻结' || row.status === 'Frozen') ? 'danger' : 'info'"
+                :type="isMemberActive(row.status) ? 'success' : 'danger'"
                 effect="light"
               >
-                {{ row.status }}{{ row.freezeReason ? ` (${row.freezeReason})` : '' }}
+                {{ formatMemberStatus(row.status) }}{{ row.freezeReason ? ` (${row.freezeReason})` : '' }}
               </el-tag>
             </template>
           </el-table-column>
@@ -692,13 +696,13 @@
               <el-icon><Tickets /></el-icon>
             </div>
             <div>
-              <div class="text-xs font-bold text-[#18231E]">法定电子配给卡档案凭证</div>
-              <div class="text-[10px] text-[#8C958F]">供代销网点专员现场终端扫描核验</div>
+              <div class="text-xs font-bold text-[#18231E]">{{ $t('citizenCard.voucherTitle') || '法定电子配给卡档案凭证' }}</div>
+              <div class="text-[10px] text-[#8C958F]">{{ $t('citizenCard.voucherSubtitle') || '供代销网点专员现场终端扫描核验' }}</div>
             </div>
           </div>
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
-            <span>档案在册</span>
+            <span>{{ $t('citizenCard.recordActive') || '档案在册' }}</span>
           </span>
         </div>
 
@@ -739,14 +743,14 @@
               <div>
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.legalHeadName') || '法定户主姓名' }}</span>
                 <span class="font-bold text-white text-xs">{{ citizenStore.currentFamily?.headName || '艾哈迈德·哈桑' }}</span>
-                <span class="text-[10px] text-emerald-300 font-mono block">（全户在册 {{ citizenStore.currentFamily?.members?.length || 0 }} 人）</span>
+                <span class="text-[10px] text-emerald-300 font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: citizenStore.currentFamily?.members?.length || 0 }) || `（全户在册 ${citizenStore.currentFamily?.members?.length || 0} 人）` }}</span>
               </div>
               <div class="text-right">
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
                 <span class="text-[11px] text-[#E8D9BF] font-medium truncate block" :title="citizenStore.currentFamily?.agentName">
                   {{ citizenStore.currentFamily?.agentName || '巴格达卡尔赫第一代销站' }}
                 </span>
-                <span class="text-[10px] text-white/50 font-mono">代码: {{ citizenStore.currentFamily?.agentId || 'FA-00128' }}</span>
+                <span class="text-[10px] text-white/50 font-mono">{{ $t('citizenCard.agentCodePrefix') || '代码: ' }}{{ citizenStore.currentFamily?.agentId || 'FA-00128' }}</span>
               </div>
             </div>
           </div>
@@ -757,10 +761,10 @@
           <div class="flex items-center justify-between text-[11px] text-[#5E6862] px-1">
             <span class="font-bold text-[#1E3F35] flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
-              <span>现场扫码验证凭证</span>
+              <span>{{ $t('citizenCard.qrVerifyTitle') || '现场扫码验证凭证' }}</span>
             </span>
             <span class="font-mono text-[10px] text-[#C59D5F] bg-[#FAF5ED] px-2 py-0.5 rounded-full border border-[#E8D9BF]">
-              动态防伪中
+              {{ $t('citizenCard.antiCounterfeitActive') || '动态防伪中' }}
             </span>
           </div>
 
@@ -830,7 +834,7 @@
           <!-- 动态验证密文与刷新控制 -->
           <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-xl border border-[#ECE7DE]">
             <div class="text-left font-mono">
-              <span class="text-[10px] text-[#8C958F] block">防伪安全校验密文：</span>
+              <span class="text-[10px] text-[#8C958F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
               <span class="font-bold text-[#1E3F35] text-[11px]">{{ dynamicCardCode }}</span>
             </div>
             <button
@@ -839,12 +843,12 @@
               @click="refreshDynamicCode"
             >
               <el-icon><Refresh /></el-icon>
-              <span>刷新密文</span>
+              <span>{{ $t('citizenCard.refreshCipher') || '刷新密文' }}</span>
             </button>
           </div>
 
           <div class="text-[10px] text-[#8C958F] leading-tight">
-            请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放
+            {{ $t('citizenCard.qrScanNotice') || '请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放' }}
           </div>
         </div>
 
@@ -855,7 +859,7 @@
           style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
           @click="cardModalVisible = false"
         >
-          完成出示 / 关闭
+          {{ $t('citizenCard.closeVoucher') || '完成出示 / 关闭' }}
         </el-button>
       </div>
     </el-dialog>
@@ -958,6 +962,24 @@ function formatGender(gender) {
   if (g === '男' || g === 'male' || g === 'ذكر' || g === 'نێر') return t('citizenCard.genderMale');
   if (g === '女' || g === 'female' || g === 'أنثى' || g === 'مێ') return t('citizenCard.genderFemale');
   return gender;
+}
+
+function formatMemberStatus(status) {
+  if (!status) return t('citizenCard.statusActive');
+  const s = String(status).trim().toLowerCase();
+  if (s === '正常' || s === 'active' || s === 'نشط' || s === 'چالاک' || s === 'چالاکە') {
+    return t('citizenCard.statusActive');
+  }
+  if (s === '已冻结' || s === '冻结' || s === 'frozen' || s === 'مجمد' || s === 'بەستراو' || s === 'بەستراوە' || s === 'بەستووە') {
+    return t('citizenCard.statusFrozen');
+  }
+  return status;
+}
+
+function isMemberActive(status) {
+  if (!status) return true;
+  const s = String(status).trim().toLowerCase();
+  return s === '正常' || s === 'active' || s === 'نشط' || s === 'چالاک' || s === 'چالاکە';
 }
 
 function navigateToService(path) {

@@ -69,7 +69,7 @@
               v-model="citizenSelectedMonth"
               type="month"
               value-format="YYYY-MM"
-              placeholder="选择月份"
+              :placeholder="$t('warehouse.selectMonth') || (isEn ? 'Select Month' : '选择月份')"
               size="small"
               class="!w-32"
             />
