@@ -13,7 +13,7 @@
             <el-icon class="text-purple-600 text-lg"><Share /></el-icon>
           </template>
         </ModuleDescTip>
-        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
+        <el-button size="small" plain class="shrink-0" @click="handleGoBack">
           <el-icon class="mr-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
@@ -356,7 +356,7 @@
 
             <div class="flex items-center justify-center gap-3 pt-2">
               <template v-if="splitResult?.passed">
-                <el-button type="primary" size="large" class="px-8 font-bold bg-purple-600 border-purple-600 hover:bg-purple-500" @click="$router.push('/citizen')">
+                <el-button type="primary" size="large" class="px-8 font-bold bg-purple-600 border-purple-600 hover:bg-purple-500" @click="handleGoBack">
                   返回我的家庭配给卡
                 </el-button>
               </template>
@@ -426,8 +426,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
+import { addSharedTicket } from '../../utils/sharedSession.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
@@ -450,7 +451,16 @@ import { ElMessage } from 'element-plus';
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const citizenStore = useCitizenStore();
+
+function handleGoBack() {
+  if (route.query.layout === 'app') {
+    router.push({ path: '/citizen', query: { layout: 'app' } });
+  } else {
+    router.push('/citizen');
+  }
+}
 
 // 纯模块主标题（剔除括号内容）
 const cleanSplitTitle = computed(() => {
@@ -590,8 +600,23 @@ async function handleTransferToElectronicReview() {
       memberIds: selectedMemberIds.value,
       reason: splitResult.value?.reason || '系统自动判别未通过，转交分部门人员手动审核'
     });
+
+    // 跨标签页共享与广播新公文
+    addSharedTicket({
+      source: '分户申请公文',
+      sourceCode: 'SPL',
+      categoryType: '分户与配给卡拆分',
+      appType: '公民分户申请',
+      cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
+      applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
+      reason: `拟分出成员 ${selectedMemberIds.value.length} 人，转交分部两级人工审核。`,
+      attachments: [
+        { name: '结婚证明与分户申请文件_SPL-2026.pdf', type: 'required', verified: true }
+      ]
+    });
+
     ElMessage.success('已转入目标分部两级电子审核工作台');
-    router.push('/citizen');
+    handleGoBack();
   } finally {
     reviewSubmitting.value = false;
   }

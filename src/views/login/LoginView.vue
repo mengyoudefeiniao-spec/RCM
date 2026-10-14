@@ -1,31 +1,35 @@
 <template>
-  <div class="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+  <div
+    class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans"
+    style="background: radial-gradient(circle at 15% 20%, rgba(197, 157, 95, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(197, 157, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0D201A 0%, #1E3F35 50%, #122821 100%);"
+  >
     <!-- 国际化语言切换选择器 (右上角浮动) -->
     <div class="absolute top-4 right-4 z-20">
       <LanguageSwitcher />
     </div>
 
-    <!-- 背景光影装饰 -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none"></div>
+    <!-- 背景暖砂金与翡翠墨绿光影装饰 -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#C59D5F]/15 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#1E3F35]/40 blur-3xl pointer-events-none"></div>
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-slate-100">
-      <!-- 官方徽标与标题 -->
+    <div
+      class="max-w-md w-full bg-white rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#ECE7DE]"
+      style="box-shadow: 0 20px 50px -10px rgba(15, 35, 29, 0.35);"
+    >
+      <!-- 官方徽标与标题 (只保留 Ration Card Management 描述) -->
       <div class="text-center space-y-2">
         <div class="flex justify-center">
           <AppLogo size="lg" theme="light" />
         </div>
         <div>
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{{ $t('login.title') }}</h2>
-          <p class="text-xs text-blue-600 font-medium mt-0.5">{{ $t('login.subtitle') }}</p>
-          <p class="text-[10px] text-slate-400 font-mono tracking-wider mt-1">
-            REPUBLIC OF IRAQ · MINISTRY OF TRADE
-          </p>
+          <h2 class="text-base sm:text-lg font-bold text-[#18231E] tracking-normal">
+            Ration Card Management
+          </h2>
         </div>
       </div>
 
       <!-- 新设备终端安全状态条 -->
-      <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'">
+      <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#EDF6F1] border-[#C8D7D2] text-[#2C6E49]' : 'bg-[#FAF6EE] border-[#E8DCC6] text-[#966C2E]'">
         <div class="flex items-center gap-1.5">
           <el-icon><Monitor /></el-icon>
           <span>终端状态：<strong class="font-mono">{{ isTrustedDevice ? '已受信任授信设备' : '未授信新设备终端' }}</strong></span>
@@ -66,7 +70,7 @@
 
         <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
           <el-checkbox v-model="rememberMe">记住当前设备</el-checkbox>
-          <span class="text-blue-600 cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
+          <span class="text-[#C59D5F] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
             生物特征 / NFC 免密认证
           </span>
         </div>
@@ -75,6 +79,7 @@
           type="primary"
           size="large"
           class="w-full font-bold shadow-md tracking-wide"
+          style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
           :loading="loading"
           @click="handleLogin"
         >
@@ -83,42 +88,63 @@
       </el-form>
 
       <!-- 纸质配给卡数字化注册通道入口 -->
-      <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-2.5 flex items-center justify-between text-xs">
-        <span class="text-slate-600 font-medium">首次使用持纸质配给卡？</span>
+      <div class="bg-[#FAF6EE] border border-[#E8DCC6] rounded-xl p-2.5 flex items-center justify-between text-xs">
+        <span class="text-[#5E6862] font-medium">首次使用持纸质配给卡？</span>
         <el-button
           type="primary"
           plain
           size="small"
           class="font-bold px-4"
+          style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
           @click="registerDialogVisible = true"
         >
           {{ $t('login.registerBtn') }}
         </el-button>
       </div>
 
+      <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
+      <div
+        class="rounded-xl border border-[#D4AA6A]/60 bg-gradient-to-r from-[#FAF6EE] to-[#F5ECE0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D4AA6A] hover:shadow-2xs transition-all select-none"
+        @click="$router.push('/portal')"
+      >
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-[#C59D5F] text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <el-icon :size="16"><Compass /></el-icon>
+          </div>
+          <div>
+            <div class="font-bold text-[#1E3F35]">国家食品保障总门户 (Portal)</div>
+            <div class="text-[10px] text-[#8C958F]">跨端终端导航：公民APP · 代理APP · 管理Web</div>
+          </div>
+        </div>
+        <div class="flex items-center text-[#966C2E] font-bold text-[11px] gap-0.5">
+          <span>进入</span>
+          <el-icon><Right /></el-icon>
+        </div>
+      </div>
+
       <!-- 快速演示预设身份与模式切换 (3个图标对应: 1.公民B2C APP模式; 2.代理C2B APP模式; 3.管理员Web模式) -->
-      <div class="pt-3 border-t border-slate-100 space-y-2">
-        <div class="text-[11px] text-slate-400 font-semibold text-center flex items-center justify-center gap-1">
+      <div class="pt-3 border-t border-[#ECE7DE] space-y-2">
+        <div class="text-[11px] text-[#8C958F] font-semibold text-center flex items-center justify-center gap-1">
           <span>快速演示预设身份切换</span>
-          <span class="text-[10px] text-slate-400 font-normal">（点击图标切换模式）</span>
+          <span class="text-[10px] text-[#8C958F] font-normal">（点击图标切换模式）</span>
         </div>
         <div class="grid grid-cols-3 gap-2">
           <!-- 1. 公民角色登录的B2C APP模式 -->
           <div
             class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'citizen_b2c' ? 'border-blue-500 bg-blue-50/70 shadow-sm ring-1 ring-blue-400/50' : 'border-slate-200 bg-slate-50/60 hover:border-blue-400 hover:bg-blue-50/30'"
+            :class="activeMode === 'citizen_b2c' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
             @click="handleSelectPreset('citizen_b2c')"
           >
             <div
               class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'citizen_b2c' ? 'bg-blue-600 text-white shadow-xs' : 'bg-blue-100 text-blue-600'"
+              :class="activeMode === 'citizen_b2c' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
             >
               <el-icon :size="18"><Iphone /></el-icon>
             </div>
-            <div class="text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
               公民角色
             </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-blue-100/70 text-blue-700">
+            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E4F2E9] text-[#275A3E]">
               B2C APP模式
             </div>
           </div>
@@ -126,19 +152,19 @@
           <!-- 2. 代理登录的C2B APP模式 -->
           <div
             class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'agent_c2b' ? 'border-amber-500 bg-amber-50/70 shadow-sm ring-1 ring-amber-400/50' : 'border-slate-200 bg-slate-50/60 hover:border-amber-400 hover:bg-amber-50/30'"
+            :class="activeMode === 'agent_c2b' ? 'border-[#C59D5F] bg-[#FAF5ED] shadow-sm ring-1 ring-[#C59D5F]/50' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#C59D5F]/60 hover:bg-[#FAF5ED]/50'"
             @click="handleSelectPreset('agent_c2b')"
           >
             <div
               class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'agent_c2b' ? 'bg-amber-600 text-white shadow-xs' : 'bg-amber-100 text-amber-600'"
+              :class="activeMode === 'agent_c2b' ? 'bg-[#C59D5F] text-white shadow-xs' : 'bg-[#FAF5ED] text-[#966C2E]'"
             >
               <el-icon :size="18"><Shop /></el-icon>
             </div>
-            <div class="text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-amber-600 transition-colors">
+            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#C59D5F] transition-colors">
               代理角色
             </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-amber-100/70 text-amber-700">
+            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FAF3E6] text-[#966C2E]">
               C2B APP模式
             </div>
           </div>
@@ -146,19 +172,19 @@
           <!-- 3. 管理员角色登录的web模式 -->
           <div
             class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'admin_web' ? 'border-indigo-500 bg-indigo-50/70 shadow-sm ring-1 ring-indigo-400/50' : 'border-slate-200 bg-slate-50/60 hover:border-indigo-400 hover:bg-indigo-50/30'"
+            :class="activeMode === 'admin_web' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
             @click="handleSelectPreset('admin_web')"
           >
             <div
               class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'admin_web' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-indigo-100 text-indigo-600'"
+              :class="activeMode === 'admin_web' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
             >
               <el-icon :size="18"><Monitor /></el-icon>
             </div>
-            <div class="text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
               管理员
             </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-indigo-100/70 text-indigo-700">
+            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#EBF3EE] text-[#1E3F35]">
               Web模式
             </div>
           </div>
@@ -271,7 +297,9 @@ import {
   Shop,
   Document,
   Camera,
-  Location
+  Location,
+  Compass,
+  Right
 } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -427,8 +455,17 @@ async function executeDirectLogin() {
       if (rememberMe.value) {
         localStorage.setItem('rcm_trusted_device', 'true');
       }
-      const target = getDefaultPathByRole(authStore.currentRole);
-      router.push(target);
+      // 根据选中的预设演示身份自动重定向至适配视口
+      if (activeMode.value === 'agent_c2b') {
+        router.push('/dashboard?role=agent&mode=mobile&layout=app');
+      } else if (activeMode.value === 'citizen_b2c') {
+        router.push('/citizen?role=citizen&layout=app');
+      } else if (activeMode.value === 'admin_web') {
+        router.push('/dashboard?role=admin&mode=overview&layout=web');
+      } else {
+        const target = getDefaultPathByRole(authStore.currentRole);
+        router.push(target);
+      }
     }
   } finally {
     loading.value = false;

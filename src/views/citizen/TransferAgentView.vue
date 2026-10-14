@@ -12,7 +12,7 @@
             <el-icon class="text-blue-600 text-lg"><Switch /></el-icon>
           </template>
         </ModuleDescTip>
-        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
+        <el-button size="small" plain class="shrink-0" @click="handleGoBack">
           <el-icon class="mr-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
@@ -189,7 +189,7 @@
                         ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
                       ]"
                     >
-                      <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
                         <span class="font-bold text-slate-800">{{ ag.name }}</span>
                         <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
@@ -236,7 +236,7 @@
                         ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
                       ]"
                     >
-                      <el-radio :label="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
                         <span class="font-bold text-slate-800">{{ ag.name }}</span>
                         <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
@@ -473,7 +473,7 @@
               </div>
 
               <div class="flex items-center justify-center gap-3 pt-2">
-                <el-button type="primary" size="large" class="px-8 font-bold" @click="$router.push('/citizen')">
+                <el-button type="primary" size="large" class="px-8 font-bold" @click="handleGoBack">
                   {{ $t('transfer.backToFamily') }}
                 </el-button>
               </div>
@@ -526,9 +526,10 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getTransferOptions, submitTransferAgent } from '../../api/citizen.js';
+import { addSharedTicket } from '../../utils/sharedSession.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
@@ -550,7 +551,16 @@ import { ElMessage } from 'element-plus';
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 const router = useRouter();
+const route = useRoute();
 const citizenStore = useCitizenStore();
+
+function handleGoBack() {
+  if (route.query.layout === 'app') {
+    router.push({ path: '/citizen', query: { layout: 'app' } });
+  } else {
+    router.push('/citizen');
+  }
+}
 
 // 纯模块主标题
 const cleanTransferTitle = computed(() => {
@@ -808,6 +818,18 @@ async function handlePaymentSuccess(paymentInfo) {
     const res = await submitTransferAgent(payload);
     transferResult.value = res;
     currentStep.value = 5;
+
+    // 跨标签页数据同步与广播：政府端工作台将实时收到该申办公文
+    addSharedTicket({
+      source: '申请代理转移',
+      sourceCode: 'TRF',
+      appType: `配给代理转移 (${payload.fromProvince} ➔ ${payload.toProvince})`,
+      cardNo: payload.cardNo,
+      applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫',
+      reason: `跨辖区住所变迁，申请自【${payload.fromProvince}】转移至【${payload.toProvince} · ${payload.toBranch}】接收代销网点。`,
+      payload
+    });
+
     await citizenStore.fetchFamilies();
     ElMessage.success(t('transfer.paySuccessMsg'));
   } catch (err) {

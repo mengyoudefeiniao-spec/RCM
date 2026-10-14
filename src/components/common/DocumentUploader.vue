@@ -58,49 +58,49 @@
     </div>
 
     <!-- 1. 上传进度中状态 -->
-    <div v-if="isUploading" class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
-      <div class="flex items-center justify-between text-xs text-blue-700 font-medium">
+    <div v-if="isUploading" class="p-4 rounded-xl border border-[#D6E6DC] bg-[#EBF3EE] space-y-2">
+      <div class="flex items-center justify-between text-xs text-[#1E3F35] font-bold">
         <span>{{ uploadStage }}</span>
         <span class="font-mono font-bold">{{ uploadProgress }}%</span>
       </div>
-      <el-progress :percentage="uploadProgress" :show-text="false" status="primary" />
+      <el-progress :percentage="uploadProgress" :show-text="false" color="#1E3F35" />
     </div>
 
     <!-- 2. 已上传完成状态 -->
     <div
       v-else-if="currentFile"
-      class="p-4 rounded-xl border border-blue-200 bg-white shadow-xs transition-all hover:border-blue-300"
+      class="p-4 rounded-xl border border-[#ECE7DE] bg-white shadow-xs transition-all hover:border-[#C59D5F]"
     >
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-start gap-3">
-          <div class="p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+          <div class="p-2.5 rounded-lg bg-[#FAF5ED] text-[#C59D5F] border border-[#E8D9BF] shrink-0">
             <el-icon :size="22"><Document /></el-icon>
           </div>
           <div class="space-y-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold text-slate-900 font-mono break-all">
+              <span class="text-xs font-bold text-[#18231E] font-mono break-all">
                 {{ currentFile.fileName }}
               </span>
               <el-tag type="success" size="small" effect="light" class="font-bold">
                 已核验防伪通过 ✓
               </el-tag>
             </div>
-            <div class="text-[11px] text-slate-500 flex flex-wrap items-center gap-2 font-mono">
+            <div class="text-[11px] text-[#5E6862] flex flex-wrap items-center gap-2 font-mono">
               <span>{{ currentFile.fileSize }}</span>
               <span>•</span>
               <span>备案编号：{{ currentFile.referenceNo }}</span>
               <span>•</span>
-              <span class="text-emerald-600 font-semibold">OCR 置信度：99.6%</span>
+              <span class="text-[#2C6E49] font-semibold">OCR 置信度：99.6%</span>
             </div>
-            <div class="p-1.5 px-2 bg-slate-50 rounded border border-slate-200 text-[11px] text-slate-600">
-              <span class="font-semibold text-slate-700">防伪核验：</span>
+            <div class="p-1.5 px-2 bg-[#FAF8F4] rounded border border-[#ECE7DE] text-[11px] text-[#5E6862]">
+              <span class="font-semibold text-[#18231E]">防伪核验：</span>
               <span>{{ currentFile.ocrSummary }}</span>
             </div>
           </div>
         </div>
 
         <!-- 显式操作按钮栏：优化按钮排版、尺寸与图标，自适应小容器与换行 -->
-        <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+        <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#ECE7DE]">
           <el-button size="small" type="primary" plain @click="previewModalVisible = true">
             <el-icon class="mr-1"><ZoomIn /></el-icon>
             预览
@@ -124,16 +124,16 @@
     <!-- 3. 未上传 / 已删除空状态 -->
     <div
       v-else
-      class="border-2 border-dashed border-slate-300 rounded-xl p-5 text-center bg-slate-50 hover:border-blue-400 transition-colors"
+      class="border-2 border-dashed border-[#DFD9CE] rounded-xl p-5 text-center bg-[#FAF8F4] hover:border-[#C59D5F] transition-colors"
     >
       <div class="flex flex-col items-center justify-center gap-2">
-        <div class="p-2.5 bg-white rounded-full text-slate-400 border border-slate-200">
+        <div class="p-2.5 bg-white rounded-full text-[#C59D5F] border border-[#ECE7DE] shadow-2xs">
           <el-icon :size="24"><UploadFilled /></el-icon>
         </div>
-        <div class="text-xs font-semibold text-slate-700">
+        <div class="text-xs font-semibold text-[#18231E]">
           {{ isRequired ? '请上传必需的官方公文证明文件' : '暂未上传辅助证明材料 (支持本地文件或预设样本)' }}
         </div>
-        <div class="text-[11px] text-slate-400">
+        <div class="text-[11px] text-[#8C958F]">
           支持 PDF、JPG、PNG 格式 · 最大 15MB · 自动提取 OCR 防伪条码与公章印鉴
         </div>
         <div class="flex items-center gap-3 mt-2 flex-wrap justify-center">

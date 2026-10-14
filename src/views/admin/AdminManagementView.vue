@@ -15,9 +15,20 @@
           </div>
         </template>
         <template #extra>
-          <el-tag size="small" type="primary" effect="dark" class="font-bold ml-1">
-            {{ authStore.userProfile?.title || '系统总监' }}
-          </el-tag>
+          <div class="flex items-center gap-2">
+            <el-tag size="small" type="primary" effect="dark" class="font-bold">
+              {{ authStore.userProfile?.title || '系统总监' }}
+            </el-tag>
+            <el-button
+              size="small"
+              type="success"
+              plain
+              class="font-bold text-xs shrink-0"
+              @click="activeTab = 'reconciliation'"
+            >
+              <span>💳 {{ $t('admin.tabReconciliation') || '财政对账与清算' }}</span>
+            </el-button>
+          </div>
         </template>
       </ModuleDescTip>
     </div>
@@ -597,6 +608,21 @@
             </div>
           </div>
         </el-tab-pane>
+
+        <!-- ========================================== -->
+        <!-- Tab 5: 阶段 5 核心：财政对账与清算管理中心 -->
+        <!-- ========================================== -->
+        <el-tab-pane name="reconciliation">
+          <template #label>
+            <span class="flex items-center gap-1.5">
+              <span>{{ $t('admin.tabReconciliation') || '财政对账与清算' }}</span>
+              <el-tag size="small" type="success" effect="dark" class="scale-90 origin-left font-mono">{{ $t('reconciliation.balancedTag') || '100% 平衡' }}</el-tag>
+            </span>
+          </template>
+          <div class="py-2">
+            <ReconciliationTab />
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -823,11 +849,14 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
+import ReconciliationTab from './components/ReconciliationTab.vue';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
+const route = useRoute();
 import {
   getCitizenCards,
   updateCitizenCardStatus,
@@ -1741,6 +1770,9 @@ async function handleDeleteWarehouse(row) {
 }
 
 onMounted(() => {
+  if (route.query.tab) {
+    activeTab.value = route.query.tab;
+  }
   loadCards();
 });
 </script>

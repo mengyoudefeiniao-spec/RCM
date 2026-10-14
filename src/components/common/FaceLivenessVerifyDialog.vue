@@ -14,19 +14,19 @@
     <!-- 全屏/移动端自适应容器 -->
     <div class="p-2 sm:p-4 space-y-3 select-none">
       <!-- 顶部：抬头与核验对象 -->
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
+      <div class="flex items-center justify-between border-b border-[#ECE7DE] pb-2.5 px-1">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
+          <div class="w-8 h-8 rounded-xl bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center font-bold shadow-xs border border-[#C59D5F]/40">
             <el-icon :size="16"><User /></el-icon>
           </div>
           <div>
-            <div class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <div class="text-xs sm:text-sm font-bold text-[#18231E] flex items-center gap-1.5">
               <span>{{ title || '在线人脸生物特征与活体防伪核验' }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                 ICAO-9303
               </el-tag>
             </div>
-            <div class="text-[10px] text-slate-400">
+            <div class="text-[10px] text-[#8C958F]">
               内政部统一公民身份对碰系统 · 自动活体动作识别
             </div>
           </div>
@@ -35,7 +35,7 @@
           <!-- 快速跳过小按钮 (供赶时间/调试使用) -->
           <button
             type="button"
-            class="text-[11px] text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer px-2 py-0.5 rounded border border-slate-200 bg-slate-50"
+            class="text-[11px] text-[#5E6862] hover:text-[#1E3F35] transition-colors cursor-pointer px-2 py-0.5 rounded border border-[#ECE7DE] bg-[#FAF8F4]"
             @click="handleQuickBypassPass"
           >
             快速通过
@@ -43,8 +43,8 @@
         </div>
       </div>
 
-      <!-- 核心取景器：HUD 抬头显示模式 (所有动作指引均浮于视讯黄金视线区) -->
-      <div class="relative w-full aspect-3/4 sm:aspect-4/5 max-h-[440px] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 border-2 border-slate-800 shadow-2xl flex flex-col items-center justify-center">
+      <!-- 核心取景器：HUD 抬头显示模式 (深墨绿夜景 + 暖砂金扫描线) -->
+      <div class="relative w-full aspect-3/4 sm:aspect-4/5 max-h-[440px] rounded-2xl sm:rounded-3xl overflow-hidden bg-[#0A1612] border-2 border-[#1E3F35] shadow-2xl flex flex-col items-center justify-center">
         
         <!-- 真实摄像机视频流 -->
         <video
@@ -60,26 +60,26 @@
         <!-- 仿真人脸影像流 (当物理摄像头未开启/无权限时平滑降级) -->
         <div
           v-if="!cameraActive"
-          class="absolute inset-0 w-full h-full bg-radial from-slate-900 to-slate-950 flex items-center justify-center overflow-hidden"
+          class="absolute inset-0 w-full h-full bg-radial from-[#122820] to-[#0A1612] flex items-center justify-center overflow-hidden"
         >
-          <div class="absolute inset-0 opacity-25 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px]"></div>
+          <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#C59D5F_1px,transparent_1px)] [background-size:16px_16px]"></div>
           <!-- 仿真人脸三维骨架轮廓 -->
           <div
-            class="relative w-44 h-56 rounded-[48%] border-2 border-indigo-500/40 flex items-center justify-center transition-transform duration-300"
+            class="relative w-44 h-56 rounded-[48%] border-2 border-[#C59D5F]/40 flex items-center justify-center transition-transform duration-300"
             :class="[
               currentStep === 'shake' ? 'animate-shake-head' : '',
               currentStep === 'mouth' ? 'animate-mouth-active' : ''
             ]"
           >
-            <div class="w-36 h-48 rounded-[48%] bg-indigo-500/10 backdrop-blur-xs border border-indigo-400/20 relative flex flex-col items-center justify-around py-6">
+            <div class="w-36 h-48 rounded-[48%] bg-[#C59D5F]/10 backdrop-blur-xs border border-[#C59D5F]/20 relative flex flex-col items-center justify-around py-6">
               <div class="flex justify-between w-20 px-1">
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400/80 animate-ping"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400/80 animate-ping"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#D3A757] animate-ping"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#D3A757] animate-ping"></div>
               </div>
-              <div class="w-1.5 h-3 bg-indigo-400/60 rounded-full"></div>
+              <div class="w-1.5 h-3 bg-[#C59D5F]/70 rounded-full"></div>
               <div
-                class="w-8 h-2 rounded-full border border-indigo-300/80 transition-all duration-300"
-                :class="currentStep === 'mouth' ? 'h-6 bg-indigo-400/40 border-emerald-400 scale-125' : 'bg-indigo-400/20'"
+                class="w-8 h-2 rounded-full border border-[#C59D5F]/80 transition-all duration-300"
+                :class="currentStep === 'mouth' ? 'h-6 bg-[#C59D5F]/40 border-[#D3A757] scale-125' : 'bg-[#C59D5F]/20'"
               ></div>
             </div>
           </div>
@@ -159,23 +159,23 @@
           <div
             class="w-full h-full rounded-[48%] border-3 transition-all duration-500 relative flex items-center justify-center"
             :class="[
-              status === 'success' ? 'border-emerald-400 shadow-[0_0_35px_rgba(52,211,153,0.8)] scale-105' :
-              currentStep === 'shake' ? 'border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.6)]' :
-              currentStep === 'mouth' ? 'border-purple-400 shadow-[0_0_25px_rgba(192,132,252,0.6)]' :
-              'border-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.5)]'
+              status === 'success' ? 'border-[#2C6E49] shadow-[0_0_35px_rgba(44,110,73,0.8)] scale-105' :
+              currentStep === 'shake' ? 'border-[#C59D5F] shadow-[0_0_25px_rgba(197,157,95,0.6)]' :
+              currentStep === 'mouth' ? 'border-[#D3A757] shadow-[0_0_25px_rgba(211,167,87,0.6)]' :
+              'border-[#C59D5F] shadow-[0_0_25px_rgba(197,157,95,0.5)]'
             ]"
           >
-            <!-- 激光上下扫描线 -->
+            <!-- 激光上下扫描线 (暖砂金高能光束) -->
             <div
               v-if="status !== 'success'"
-              class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-scan-line"
+              class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-[#D3A757] to-transparent shadow-[0_0_12px_#D3A757] animate-scan-line"
             ></div>
 
-            <!-- 取景框四角高精度瞄准刻度 -->
-            <span class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-3 border-l-3 border-white"></span>
-            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-3 border-r-3 border-white"></span>
-            <span class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-3 border-l-3 border-white"></span>
-            <span class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-3 border-r-3 border-white"></span>
+            <!-- 取景框四角高精度瞄准刻度 (暖金刻度) -->
+            <span class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-3 border-l-3 border-[#D3A757]"></span>
+            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-3 border-r-3 border-[#D3A757]"></span>
+            <span class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-3 border-l-3 border-[#D3A757]"></span>
+            <span class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-3 border-r-3 border-[#D3A757]"></span>
           </div>
 
           <!-- ======================================================== -->

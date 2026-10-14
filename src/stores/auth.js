@@ -46,18 +46,124 @@ export const ROLE_AUTHORITIES_MAP = {
   ]
 };
 
-export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('rcm_auth_token') || '');
-  const userProfile = ref(
-    JSON.parse(localStorage.getItem('rcm_user_profile') || 'null') || {
-      id: 'usr-admin-01',
-      username: 'minister_center',
-      name: '阿卜杜勒·拉赫曼 (配给中心部长)',
-      role: 'minister_center',
-      department: '贸易部配给中心部',
-      title: '配给中心部长'
+/**
+ * 根据指定角色名称构建独立的用户画像资料
+ */
+export function createProfileByRole(role) {
+  switch (role) {
+    case ROLE_MINISTER_CENTER:
+      return {
+        id: 'usr-admin-01',
+        username: 'minister_center',
+        name: '阿卜杜勒·拉赫曼 (配给中心部长)',
+        role: ROLE_MINISTER_CENTER,
+        department: '贸易部配给中心部',
+        title: '配给中心部长'
+      };
+    case ROLE_DEPUTY_MINISTER:
+      return {
+        id: 'usr-admin-02',
+        username: 'deputy_minister',
+        name: '法鲁克·卡西姆 (行政次长)',
+        role: ROLE_DEPUTY_MINISTER,
+        department: '贸易部行政次长室',
+        title: '行政次长'
+      };
+    case ROLE_DIRECTOR_PLANNING:
+      return {
+        id: 'usr-admin-03',
+        username: 'director_planning',
+        name: '塔里克·萨利赫 (规划与跟进司总干事)',
+        role: ROLE_DIRECTOR_PLANNING,
+        department: '规划与跟进司',
+        title: '规划与跟进司总干事'
+      };
+    case 'citizen':
+      return {
+        id: 'usr-cit-01',
+        username: 'citizen_ahmed',
+        name: '艾哈迈德·哈桑·萨利赫 (户主)',
+        role: 'citizen',
+        department: '巴格达省卡尔赫区',
+        title: '配给卡公民户主'
+      };
+    case 'agent':
+      return {
+        id: 'usr-agt-01',
+        username: 'agent_jabar',
+        name: '穆罕默德·贾巴尔 (第一代销网点)',
+        role: 'agent',
+        department: '综合食品面粉代销网点',
+        title: '配给代销责任人'
+      };
+    case 'admin':
+    default:
+      return {
+        id: 'usr-admin-01',
+        username: 'minister_center',
+        name: '阿卜杜勒·拉赫曼 (配给中心部长)',
+        role: ROLE_MINISTER_CENTER,
+        department: '贸易部配给中心部',
+        title: '配给中心部长'
+      };
+  }
+}
+
+/**
+ * 获取当前标签页初始 Profile (优先按 URL role 参数与 sessionStorage 隔离)
+ */
+function getInitialProfile() {
+  if (typeof window !== 'undefined') {
+    // 1. 优先提取当前 URL hash 中的 role 参数 (如 #/citizen?role=citizen)
+    const hash = window.location.hash || '';
+    const match = hash.match(/[\?&]role=([^&]+)/);
+    if (match && match[1]) {
+      const urlRole = decodeURIComponent(match[1]);
+      const profile = createProfileByRole(urlRole);
+      sessionStorage.setItem('rcm_user_profile', JSON.stringify(profile));
+      sessionStorage.setItem('rcm_auth_token', 'mock-token-' + urlRole);
+      return profile;
     }
-  );
+
+    // 2. 检查 sessionStorage 当前标签页专属存储
+    try {
+      const sess = sessionStorage.getItem('rcm_user_profile');
+      if (sess) return JSON.parse(sess);
+    } catch (e) {
+      // ignore
+    }
+
+    // 3. 兜底从 localStorage 读取
+    try {
+      const local = localStorage.getItem('rcm_user_profile');
+      if (local) {
+        const p = JSON.parse(local);
+        sessionStorage.setItem('rcm_user_profile', local);
+        return p;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 默认部长
+  const defaultProf = createProfileByRole(ROLE_MINISTER_CENTER);
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem('rcm_user_profile', JSON.stringify(defaultProf));
+  }
+  return defaultProf;
+}
+
+function getInitialToken() {
+  if (typeof window !== 'undefined') {
+    return sessionStorage.getItem('rcm_auth_token') || localStorage.getItem('rcm_auth_token') || 'mock-token-admin';
+  }
+  return 'mock-token-admin';
+}
+
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(getInitialToken());
+  const userProfile = ref(getInitialProfile());
 
   const isAuthenticated = computed(() => !!token.value);
   const currentRole = computed(() => userProfile.value?.role || 'minister_center');
@@ -77,7 +183,6 @@ export const useAuthStore = defineStore('auth', () => {
    * 校验当前角色是否具备指定专属职权
    */
   function hasAuthority(authorityKey) {
-    // 兼容通用 super admin 模式
     if (currentRole.value === 'admin') return true;
     const list = currentAuthorities.value;
     return list.some((item) => item.key === authorityKey);
@@ -92,8 +197,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = res.token;
       userProfile.value = res.user;
 
+      sessionStorage.setItem('rcm_auth_token', res.token);
+      sessionStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
       localStorage.setItem('rcm_auth_token', res.token);
-      localStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
 
       ElMessage.success(`欢迎进入系统，${res.user.name}`);
       return true;
@@ -106,18 +212,15 @@ export const useAuthStore = defineStore('auth', () => {
    * 退出登录
    */
   async function logout() {
-    // 1. 同步立即清除本地 Token 与用户资料，确保路由守卫立即放行至登录页且避免竞态重定向
     token.value = '';
     userProfile.value = null;
-    localStorage.removeItem('rcm_auth_token');
-    localStorage.removeItem('rcm_user_profile');
+    sessionStorage.removeItem('rcm_auth_token');
+    sessionStorage.removeItem('rcm_user_profile');
 
-    // 2. 派发全局事件通知关闭并卸载客服对话浮窗
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('rcm-close-chat'));
     }
 
-    // 3. 异步通知网关与认证中心吊销 Token
     try {
       await logoutUser();
     } catch (e) {
@@ -127,59 +230,39 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * 切换当前查看角色 (支持新拆分的三种管理员身份)
+   * 显式设定当前标签页会话用户 (路由守卫识别到 URL role 时调用)
+   */
+  function setSessionUser(profile, tokenVal) {
+    userProfile.value = profile;
+    if (tokenVal) {
+      token.value = tokenVal;
+      sessionStorage.setItem('rcm_auth_token', tokenVal);
+    }
+    sessionStorage.setItem('rcm_user_profile', JSON.stringify(profile));
+  }
+
+  /**
+   * 切换当前查看角色 (支持新拆分的三种管理员身份，单标签页会话隔离)
    */
   function switchRole(role) {
-    if (!userProfile.value) return;
-    userProfile.value.role = role;
+    const updated = createProfileByRole(role);
+    userProfile.value = updated;
+    token.value = 'mock-token-' + role;
 
-    switch (role) {
-      case ROLE_MINISTER_CENTER:
-        userProfile.value.name = '阿卜杜勒·拉赫曼 (配给中心部长)';
-        userProfile.value.department = '贸易部配给中心部';
-        userProfile.value.title = '配给中心部长';
-        break;
-      case ROLE_DEPUTY_MINISTER:
-        userProfile.value.name = '法鲁克·卡西姆 (行政次长)';
-        userProfile.value.department = '贸易部行政次长室';
-        userProfile.value.title = '行政次长';
-        break;
-      case ROLE_DIRECTOR_PLANNING:
-        userProfile.value.name = '塔里克·萨利赫 (规划与跟进司总干事)';
-        userProfile.value.department = '规划与跟进司';
-        userProfile.value.title = '规划与跟进司总干事';
-        break;
-      case 'citizen':
-        userProfile.value.name = '艾哈迈德·哈桑·萨利赫 (户主)';
-        userProfile.value.department = '巴格达省卡尔赫区';
-        userProfile.value.title = '配给卡公民户主';
-        break;
-      case 'agent':
-        userProfile.value.name = '穆罕默德·贾巴尔 (第一代销网点)';
-        userProfile.value.department = '综合食品面粉代销网点';
-        userProfile.value.title = '配给代销责任人';
-        break;
-      default:
-        userProfile.value.name = '阿卜杜勒·拉赫曼 (配给中心部长)';
-        userProfile.value.department = '贸易部配给中心部';
-        userProfile.value.title = '配给中心部长';
-    }
-
-    localStorage.setItem('rcm_user_profile', JSON.stringify(userProfile.value));
+    sessionStorage.setItem('rcm_user_profile', JSON.stringify(updated));
+    sessionStorage.setItem('rcm_auth_token', token.value);
 
     // 先清除可能残留的旧提示，防止多条堆叠
     ElMessage.closeAll();
 
-    // 弹出轻量提示，设置短 duration (1.5秒)、允许手动关闭及分组显示
     const msgInstance = ElMessage({
-      message: `角色已切换为【${userProfile.value.title}】模式`,
+      message: `角色已切换为【${updated.title}】模式`,
       type: 'success',
       duration: 1500,
       showClose: true,
       grouping: true
     });
 
-    // 兜底双重保障定时器：无论移动端触控/鼠标悬停是否卡死 Element Plus 内部计时器，1.8秒后强制关闭该提示
     setTimeout(() => {
       try {
         if (msgInstance && typeof msgInstance.close === 'function') {
@@ -189,6 +272,12 @@ export const useAuthStore = defineStore('auth', () => {
         // 忽略可能已销毁的异常
       }
     }, 1800);
+  }
+
+  // 移动端现场核销作业专属模式激活状态
+  const isMobileVerificationActive = ref(false);
+  function setMobileVerificationActive(val) {
+    isMobileVerificationActive.value = !!val;
   }
 
   return {
@@ -202,8 +291,11 @@ export const useAuthStore = defineStore('auth', () => {
     isDirectorPlanning,
     currentAuthorities,
     hasAuthority,
+    isMobileVerificationActive,
+    setMobileVerificationActive,
     login,
     logout,
-    switchRole
+    switchRole,
+    setSessionUser
   };
 });

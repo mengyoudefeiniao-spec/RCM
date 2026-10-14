@@ -35,6 +35,190 @@ import {
   getTranslatedSource
 } from './data/chatMultiLangData.js';
 
+// 多标签页跨端共享数据中心
+import {
+  getSharedTickets,
+  addSharedTicket,
+  updateSharedTicket,
+  getSharedOrders,
+  addSharedOrder,
+  updateSharedOrder,
+  getSharedFamilies,
+  getSharedFamily,
+  updateSharedFamily
+} from '../utils/sharedSession.js';
+
+// 预置公民配给购买演示订单
+const INITIAL_CITIZEN_PURCHASE_ORDERS_ZH = [
+  {
+    orderId: 'PO-20261013-1001',
+    ticketNo: 'PO-20261013-1001',
+    cardNo: 'RC-10029381',
+    headName: '艾哈迈德·哈桑·萨利赫',
+    phone: '+964 780 123 4567',
+    memberCount: 5,
+    agentId: 'FA-00128',
+    agentName: '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+    centerId: '101',
+    deliveryType: 'HOME_DELIVERY',
+    deliveryAddress: '巴格达省卡尔赫区海法街88号 3号楼201',
+    notes: '家中老人行动不便，送达前请电话联系',
+    items: [
+      { itemCode: 'FLOUR-WHT-02', itemName: '战略储备优质小麦面粉', qty: 45, unit: 'kg', unitPrice: 250, subtotal: 11250 },
+      { itemCode: 'OIL-SUN-03', itemName: '一级精炼葵花籽食用油', qty: 5, unit: 'L', unitPrice: 1000, subtotal: 5000 }
+    ],
+    totalWeightKg: 50,
+    selfPayAmount: 16250,
+    subsidyAmount: 67750,
+    payStatus: 'PAID',
+    status: 'PENDING_DELIVERY',
+    pickupCode: 'AGT101-20261013-1012-7882',
+    createdAt: '2026-10-13 14:20:00'
+  },
+  {
+    orderId: 'PO-20261013-1002',
+    ticketNo: 'PO-20261013-1002',
+    cardNo: 'RC-10029382',
+    headName: '法蒂玛·扎赫拉·侯赛因',
+    phone: '+964 780 882 1109',
+    memberCount: 4,
+    agentId: 'FA-00128',
+    agentName: '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+    centerId: '101',
+    deliveryType: 'PICKUP',
+    deliveryAddress: '巴格达卡尔赫第一代销站（自提）',
+    notes: '预计下午下班后来取',
+    items: [
+      { itemCode: 'RICE-BAS-01', itemName: '一级进口长粒大米', qty: 12, unit: 'kg', unitPrice: 500, subtotal: 6000 },
+      { itemCode: 'SUGAR-WHT-04', itemName: '纯正精制战略白砂糖', qty: 8, unit: 'kg', unitPrice: 500, subtotal: 4000 }
+    ],
+    totalWeightKg: 20,
+    selfPayAmount: 10000,
+    subsidyAmount: 42000,
+    payStatus: 'PAID',
+    status: 'PENDING_PICKUP',
+    pickupCode: 'AGT101-20261013-1012-9021',
+    createdAt: '2026-10-13 15:05:00'
+  },
+  {
+    orderId: 'PO-20261013-1003',
+    ticketNo: 'PO-20261013-1003',
+    cardNo: 'RC-10029383',
+    headName: '穆斯塔法·卡迪米',
+    phone: '+964 771 556 9901',
+    memberCount: 6,
+    agentId: 'FA-00128',
+    agentName: '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+    centerId: '101',
+    deliveryType: 'HOME_DELIVERY',
+    deliveryAddress: '巴格达省卡尔赫区曼苏尔商业街12号 402',
+    notes: '请放置于门口保供安全柜',
+    items: [
+      { itemCode: 'FLOUR-WHT-02', itemName: '战略储备优质小麦面粉', qty: 54, unit: 'kg', unitPrice: 250, subtotal: 13500 },
+      { itemCode: 'RICE-BAS-01', itemName: '一级进口长粒大米', qty: 18, unit: 'kg', unitPrice: 500, subtotal: 9000 }
+    ],
+    totalWeightKg: 72,
+    selfPayAmount: 22500,
+    subsidyAmount: 93500,
+    payStatus: 'PAID',
+    status: 'DISPATCHED',
+    pickupCode: 'AGT101-20261013-1012-3114',
+    dispatchInfo: {
+      deliveryPerson: '哈希姆·阿里 (保供急送专员)',
+      phone: '+964 780 999 8811',
+      vehicleNo: 'BG-78219 (厢式冷链货车)',
+      estimatedTime: '30分钟内送达',
+      dispatchedAt: '2026-10-13 15:45:00'
+    },
+    createdAt: '2026-10-13 13:10:00'
+  }
+];
+
+const INITIAL_CITIZEN_PURCHASE_ORDERS_EN = [
+  {
+    orderId: 'PO-20261013-1001',
+    ticketNo: 'PO-20261013-1001',
+    cardNo: 'RC-10029381',
+    headName: 'Ahmed Hassan Saleh',
+    phone: '+964 780 123 4567',
+    memberCount: 5,
+    agentId: 'FA-00128',
+    agentName: 'Baghdad Karkh 1st Station (Mohammed Jabbar)',
+    centerId: '101',
+    deliveryType: 'HOME_DELIVERY',
+    deliveryAddress: 'Building 3, Apt 201, Haifa St 88, Karkh, Baghdad',
+    notes: 'Please call before arrival',
+    items: [
+      { itemCode: 'FLOUR-WHT-02', itemName: 'Strategic Reserve Wheat Flour', qty: 45, unit: 'kg', unitPrice: 250, subtotal: 11250 },
+      { itemCode: 'OIL-SUN-03', itemName: 'Refined Sunflower Cooking Oil', qty: 5, unit: 'L', unitPrice: 1000, subtotal: 5000 }
+    ],
+    totalWeightKg: 50,
+    selfPayAmount: 16250,
+    subsidyAmount: 67750,
+    payStatus: 'PAID',
+    status: 'PENDING_DELIVERY',
+    pickupCode: 'AGT101-20261013-1012-7882',
+    createdAt: '2026-10-13 14:20:00'
+  },
+  {
+    orderId: 'PO-20261013-1002',
+    ticketNo: 'PO-20261013-1002',
+    cardNo: 'RC-10029382',
+    headName: 'Fatima Al-Zahra',
+    phone: '+964 780 882 1109',
+    memberCount: 4,
+    agentId: 'FA-00128',
+    agentName: 'Baghdad Karkh 1st Station (Mohammed Jabbar)',
+    centerId: '101',
+    deliveryType: 'PICKUP',
+    deliveryAddress: 'Baghdad Karkh 1st Station (Self-Pickup)',
+    notes: 'Will pick up in the afternoon',
+    items: [
+      { itemCode: 'RICE-BAS-01', itemName: 'Grade-1 Long Grain Rice', qty: 12, unit: 'kg', unitPrice: 500, subtotal: 6000 },
+      { itemCode: 'SUGAR-WHT-04', itemName: 'Refined White Sugar', qty: 8, unit: 'kg', unitPrice: 500, subtotal: 4000 }
+    ],
+    totalWeightKg: 20,
+    selfPayAmount: 10000,
+    subsidyAmount: 42000,
+    payStatus: 'PAID',
+    status: 'PENDING_PICKUP',
+    pickupCode: 'AGT101-20261013-1012-9021',
+    createdAt: '2026-10-13 15:05:00'
+  },
+  {
+    orderId: 'PO-20261013-1003',
+    ticketNo: 'PO-20261013-1003',
+    cardNo: 'RC-10029383',
+    headName: 'Mustafa Al-Kadhimi',
+    phone: '+964 771 556 9901',
+    memberCount: 6,
+    agentId: 'FA-00128',
+    agentName: 'Baghdad Karkh 1st Station (Mohammed Jabbar)',
+    centerId: '101',
+    deliveryType: 'HOME_DELIVERY',
+    deliveryAddress: 'Mansour St 12, Apt 402, Karkh, Baghdad',
+    notes: 'Leave at front door if unavailable',
+    items: [
+      { itemCode: 'FLOUR-WHT-02', itemName: 'Strategic Reserve Wheat Flour', qty: 54, unit: 'kg', unitPrice: 250, subtotal: 13500 },
+      { itemCode: 'RICE-BAS-01', itemName: 'Grade-1 Long Grain Rice', qty: 18, unit: 'kg', unitPrice: 500, subtotal: 9000 }
+    ],
+    totalWeightKg: 72,
+    selfPayAmount: 22500,
+    subsidyAmount: 93500,
+    payStatus: 'PAID',
+    status: 'DISPATCHED',
+    pickupCode: 'AGT101-20261013-1012-3114',
+    dispatchInfo: {
+      deliveryPerson: 'Hashim Ali (Delivery Courier)',
+      phone: '+964 780 999 8811',
+      vehicleNo: 'BG-78219 (Van)',
+      estimatedTime: 'Within 30 mins',
+      dispatchedAt: '2026-10-13 15:45:00'
+    },
+    createdAt: '2026-10-13 13:10:00'
+  }
+];
+
 // 多语言内存持久化存储池
 const multiLangStores = {
   zh: {
@@ -67,6 +251,7 @@ const multiLangStores = {
     adminAgentsStore: JSON.parse(JSON.stringify(zhAdmin.MOCK_AGENTS_ADMIN)),
     g2bOrdersStore: JSON.parse(JSON.stringify(zhAgent.MOCK_G2B_PURCHASE_ORDERS || [])),
     b2cReservationsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_B2C_RESERVATIONS || [])),
+    citizenPurchaseOrdersStore: JSON.parse(JSON.stringify(INITIAL_CITIZEN_PURCHASE_ORDERS_ZH)),
     agentTimeSlotsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_TIME_SLOTS || [])),
     agentLocalStocksStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_LOCAL_STOCKS || [])),
     fullTraceChainStore: JSON.parse(JSON.stringify(zhAgent.MOCK_FULL_TRACE_CHAIN || []))
@@ -101,6 +286,7 @@ const multiLangStores = {
     adminAgentsStore: JSON.parse(JSON.stringify(enAdmin.MOCK_AGENTS_ADMIN)),
     g2bOrdersStore: JSON.parse(JSON.stringify(zhAgent.MOCK_G2B_PURCHASE_ORDERS || [])),
     b2cReservationsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_B2C_RESERVATIONS || [])),
+    citizenPurchaseOrdersStore: JSON.parse(JSON.stringify(INITIAL_CITIZEN_PURCHASE_ORDERS_EN)),
     agentTimeSlotsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_TIME_SLOTS || [])),
     agentLocalStocksStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_LOCAL_STOCKS || [])),
     fullTraceChainStore: JSON.parse(JSON.stringify(zhAgent.MOCK_FULL_TRACE_CHAIN || []))
@@ -195,6 +381,7 @@ export async function mockDispatch(config) {
   let adminAgentsStore = activeStores.adminAgentsStore;
   let g2bOrdersStore = activeStores.g2bOrdersStore;
   let b2cReservationsStore = activeStores.b2cReservationsStore;
+  let citizenPurchaseOrdersStore = activeStores.citizenPurchaseOrdersStore;
   let agentTimeSlotsStore = activeStores.agentTimeSlotsStore;
   let agentLocalStocksStore = activeStores.agentLocalStocksStore;
   let fullTraceChainStore = activeStores.fullTraceChainStore;
@@ -337,19 +524,20 @@ export async function mockDispatch(config) {
   // 2. 公民与家庭管理模块 (Citizen & Family)
   // ==========================================
   if (url.includes('/citizen/families') && method === 'GET') {
-    return createResponse(familiesStore);
+    const sharedFams = getSharedFamilies();
+    return createResponse(sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore);
   }
 
   if (url.match(/\/citizen\/family\/([^/]+)/) && method === 'GET') {
     const cardNo = url.split('/').pop();
-    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
-    return createResponse(family);
+    const sharedFam = getSharedFamily(cardNo);
+    return createResponse(sharedFam || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0]);
   }
 
   // 申报添加新家庭成员 (POST)
   if (url.match(/\/citizen\/family\/([^/]+)\/members/) && method === 'POST') {
     const cardNo = url.split('/')[3];
-    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
     const newMember = {
       id: `M-${Date.now().toString().slice(-4)}`,
       name: data.name,
@@ -366,12 +554,21 @@ export async function mockDispatch(config) {
     };
     family.members.push(newMember);
     family.memberCount = family.members.length;
+    updateSharedFamily(family.rationCardNo, { members: family.members, memberCount: family.memberCount });
     return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
   }
 
   // 更新成员信息 (PUT)
   if (url.match(/\/citizen\/members\/([^/]+)/) && method === 'PUT') {
     const memberId = url.split('/').pop();
+    const sharedFams = getSharedFamilies();
+    sharedFams.forEach((f) => {
+      const target = f.members.find((m) => m.id === memberId);
+      if (target) {
+        Object.assign(target, data, { isUpdatedInSystem: true });
+        updateSharedFamily(f.rationCardNo, { members: f.members });
+      }
+    });
     familiesStore.forEach((f) => {
       const target = f.members.find((m) => m.id === memberId);
       if (target) {
@@ -404,6 +601,7 @@ export async function mockDispatch(config) {
       payload: { newHeadId, deathProofNo, cardNo }
     };
     ticketsStore.unshift(newTicket);
+    addSharedTicket(newTicket);
 
     return createResponse({ ticketId }, 200, `户主变更申请已提交！已自动转入【审核工作台】(工单号 ${ticketId})`);
   }
@@ -430,6 +628,7 @@ export async function mockDispatch(config) {
       payload: { unfreezeType, targetMemberId, docName }
     };
     ticketsStore.unshift(newTicket);
+    addSharedTicket(newTicket);
 
     return createResponse({ ticketId }, 200, `解冻申请已受理！已转入【审核工作台】(工单号 ${ticketId})`);
   }
@@ -520,6 +719,7 @@ export async function mockDispatch(config) {
       payload: { splitMemberIds: memberIds }
     };
     ticketsStore.unshift(newTicket);
+    addSharedTicket(newTicket);
 
     return createResponse({ ticketId }, 200, `已成功提交电子审核！工单号【${ticketId}】，等待分部门人员手动审核`);
   }
@@ -554,7 +754,7 @@ export async function mockDispatch(config) {
       return createResponse({}, 400, `所选食品代理【${toFoodAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`);
     }
 
-    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
     const isIntraProvince = fromProvince && toProvince && (fromProvince.split(' ')[0] === toProvince.split(' ')[0]);
 
     if (isIntraProvince) {
@@ -564,6 +764,14 @@ export async function mockDispatch(config) {
       family.agentId = `${toFlourAgent?.id || 'FA'} / ${toFoodAgent?.id || 'FD'}`;
       family.agentName = `${toFlourAgent?.name || ''} ＆ ${toFoodAgent?.name || ''}`;
       family.address = `${toProvince} ${district || ''} ${subDistrict || ''} (地标: ${nearestLandmark || '就近街区'})`;
+
+      updateSharedFamily(family.rationCardNo, {
+        province: family.province,
+        district: family.district,
+        agentId: family.agentId,
+        agentName: family.agentName,
+        address: family.address
+      });
 
       return createResponse({
         autoApproved: true,
@@ -602,6 +810,7 @@ export async function mockDispatch(config) {
         }
       };
       ticketsStore.unshift(newTicket);
+      addSharedTicket(newTicket);
 
       return createResponse({
         autoApproved: false,
@@ -736,6 +945,7 @@ export async function mockDispatch(config) {
 
       currentFamily.members.push(newMember);
       currentFamily.memberCount = currentFamily.members.length;
+      updateSharedFamily(currentFamily.rationCardNo, { members: currentFamily.members, memberCount: currentFamily.memberCount });
 
       // 从候选池移除
       transferableMembersStore = transferableMembersStore.filter((m) => m.nationalId !== member.nationalId); activeStores.transferableMembersStore = transferableMembersStore;
@@ -774,6 +984,7 @@ export async function mockDispatch(config) {
         }
       };
       ticketsStore.unshift(newTicket);
+      addSharedTicket(newTicket);
 
       return createResponse({
         autoApproved: false,
@@ -785,14 +996,288 @@ export async function mockDispatch(config) {
   }
 
   // ==========================================
-  // 3. 审核工作台模块 (Electronic Review)
+  // 公民配给品购买与申领模块 (Citizen Purchase & Quota)
   // ==========================================
+
+  // 1. 查询家庭当月核定配额与剩余额度 (GET)
+  if (url.includes('/citizen/ration/quota-balance') && method === 'GET') {
+    const cardNo = url.split('/').pop() || 'RC-10029381';
+    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const memberCount = family?.memberCount || family?.members?.length || 5;
+
+    // 计算当月已购数量 (从订单历史汇总)
+    const cardOrders = citizenPurchaseOrdersStore.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
+    const consumedMap = {
+      'FLOUR-WHT-02': 0,
+      'RICE-BAS-01': 0,
+      'OIL-SUN-03': 0,
+      'SUGAR-WHT-04': 0
+    };
+    cardOrders.forEach((ord) => {
+      (ord.items || []).forEach((it) => {
+        if (consumedMap[it.itemCode] !== undefined) {
+          consumedMap[it.itemCode] += Number(it.qty) || 0;
+        }
+      });
+    });
+
+    const quotaList = [
+      {
+        itemCode: 'FLOUR-WHT-02',
+        itemName: isEn ? 'Strategic Reserve Wheat Flour' : '战略储备优质小麦面粉',
+        category: '面粉',
+        unit: 'kg',
+        standardPerPerson: 9,
+        totalHouseholdQuota: memberCount * 9,
+        consumedQuota: consumedMap['FLOUR-WHT-02'],
+        remainingQuota: Math.max(0, memberCount * 9 - consumedMap['FLOUR-WHT-02']),
+        guidePriceIQD: 250,
+        marketPriceIQD: 1200,
+        subsidyIQD: 950,
+        packSize: '50kg/袋',
+        origin: '伊拉克中央保供面粉厂',
+        stockStatus: '有现货'
+      },
+      {
+        itemCode: 'RICE-BAS-01',
+        itemName: isEn ? 'Grade-1 Long Grain Rice' : '一级进口长粒大米',
+        category: '大米',
+        unit: 'kg',
+        standardPerPerson: 3,
+        totalHouseholdQuota: memberCount * 3,
+        consumedQuota: consumedMap['RICE-BAS-01'],
+        remainingQuota: Math.max(0, memberCount * 3 - consumedMap['RICE-BAS-01']),
+        guidePriceIQD: 500,
+        marketPriceIQD: 2500,
+        subsidyIQD: 2000,
+        packSize: '25kg/袋',
+        origin: '国家粮食进出口总局',
+        stockStatus: '有现货'
+      },
+      {
+        itemCode: 'OIL-SUN-03',
+        itemName: isEn ? 'Refined Cooking Sunflower Oil' : '精炼强化维生素食用油',
+        category: '食用油',
+        unit: 'L',
+        standardPerPerson: 1,
+        totalHouseholdQuota: memberCount * 1,
+        consumedQuota: consumedMap['OIL-SUN-03'],
+        remainingQuota: Math.max(0, memberCount * 1 - consumedMap['OIL-SUN-03']),
+        guidePriceIQD: 1000,
+        marketPriceIQD: 4500,
+        subsidyIQD: 3500,
+        packSize: '1L/瓶',
+        origin: '底格里斯精炼食用油厂',
+        stockStatus: '有现货'
+      },
+      {
+        itemCode: 'SUGAR-WHT-04',
+        itemName: isEn ? 'National Reserve Refined Sugar' : '国家战略保供精制白糖',
+        category: '白糖',
+        unit: 'kg',
+        standardPerPerson: 2,
+        totalHouseholdQuota: memberCount * 2,
+        consumedQuota: consumedMap['SUGAR-WHT-04'],
+        remainingQuota: Math.max(0, memberCount * 2 - consumedMap['SUGAR-WHT-04']),
+        guidePriceIQD: 500,
+        marketPriceIQD: 2000,
+        subsidyIQD: 1500,
+        packSize: '10kg/袋',
+        origin: '米桑糖业联合储备库',
+        stockStatus: '有现货'
+      }
+    ];
+
+    return createResponse({
+      cardNo,
+      headName: family?.headName || '艾哈迈德·哈桑·萨利赫',
+      memberCount,
+      agentId: family?.agentId || 'FA-00128',
+      agentName: family?.agentName || '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+      province: family?.province || '巴格达省',
+      district: family?.district || '卡尔赫区',
+      defaultAddress: family?.address || '巴格达省卡尔赫区海法街88号 3号楼201',
+      phone: family?.phone || '+964 780 123 4567',
+      quotaPeriod: '2026年10月',
+      quotas: quotaList
+    });
+  }
+
+  // 2. 查询公民购买历史与提货订单列表 (GET)
+  if (url.includes('/citizen/ration/orders') && method === 'GET') {
+    const cardNo = params.cardNo;
+    const sharedOrders = getSharedOrders();
+    let list = sharedOrders && sharedOrders.length > 0 ? [...sharedOrders] : [...citizenPurchaseOrdersStore];
+    if (cardNo) {
+      list = list.filter((o) => o.cardNo === cardNo);
+    }
+    return createResponse(list);
+  }
+
+  // 3. 公民提交购买配给品订单并生成二维码 (POST)
+  if (url.includes('/citizen/ration/purchase') && method === 'POST') {
+    const {
+      cardNo = 'RC-10029381',
+      headName = '艾哈迈德·哈桑·萨利赫',
+      phone = '+964 780 123 4567',
+      deliveryType = 'PICKUP', // 'PICKUP' (自提) | 'HOME_DELIVERY' (送货上门)
+      deliveryAddress = '',
+      notes = '',
+      selectedItems = [],
+      paymentInfo = {}
+    } = data;
+
+    if (!selectedItems || selectedItems.length === 0) {
+      return createResponse({}, 400, '请至少选择一种保供配给口粮物资！');
+    }
+
+    // 校验限额逻辑
+    const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    const memberCount = family?.memberCount || 5;
+
+    // 限额上限字典
+    const maxLimitMap = {
+      'FLOUR-WHT-02': memberCount * 9,
+      'RICE-BAS-01': memberCount * 3,
+      'OIL-SUN-03': memberCount * 1,
+      'SUGAR-WHT-04': memberCount * 2
+    };
+
+    // 累计已购
+    const currentOrdersPool = getSharedOrders() || citizenPurchaseOrdersStore;
+    const cardOrders = currentOrdersPool.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
+    const alreadyConsumedMap = { 'FLOUR-WHT-02': 0, 'RICE-BAS-01': 0, 'OIL-SUN-03': 0, 'SUGAR-WHT-04': 0 };
+    cardOrders.forEach((ord) => {
+      (ord.items || []).forEach((it) => {
+        if (alreadyConsumedMap[it.itemCode] !== undefined) {
+          alreadyConsumedMap[it.itemCode] += Number(it.qty) || 0;
+        }
+      });
+    });
+
+    for (const item of selectedItems) {
+      const allowed = (maxLimitMap[item.itemCode] || 999) - (alreadyConsumedMap[item.itemCode] || 0);
+      if (item.qty > allowed) {
+        return createResponse({}, 400, `【配额超限拦截】：${item.itemName} 申请购买量 (${item.qty}${item.unit}) 已超出本月法定剩余可用额度 (${allowed}${item.unit})！`);
+      }
+    }
+
+    // 结算金额
+    let totalWeight = 0;
+    let goodsAmount = 0;
+    let subsidyAmount = 0;
+
+    const validatedItems = selectedItems.map((it) => {
+      const qty = Number(it.qty);
+      totalWeight += qty;
+      const unitPrice = it.unitPrice || (it.itemCode === 'FLOUR-WHT-02' ? 250 : it.itemCode === 'RICE-BAS-01' ? 500 : it.itemCode === 'OIL-SUN-03' ? 1000 : 500);
+      const marketPrice = it.marketPrice || (it.itemCode === 'FLOUR-WHT-02' ? 1200 : it.itemCode === 'RICE-BAS-01' ? 2500 : it.itemCode === 'OIL-SUN-03' ? 4500 : 2000);
+      const subPrice = marketPrice - unitPrice;
+      goodsAmount += qty * unitPrice;
+      subsidyAmount += qty * subPrice;
+
+      return {
+        itemCode: it.itemCode,
+        itemName: it.itemName,
+        qty,
+        unit: it.unit,
+        unitPrice,
+        marketPrice,
+        subsidyPrice: subPrice,
+        subtotal: qty * unitPrice
+      };
+    });
+
+    const deliveryFee = deliveryType === 'HOME_DELIVERY' ? 1000 : 0;
+    const finalSelfPay = goodsAmount + deliveryFee;
+
+    const timestampNum = Date.now().toString().slice(-4);
+    const orderId = `ORD-202610-${timestampNum}`;
+    const ticketNo = `B2C-RES-20261013-${timestampNum}`;
+    const pickupCode = `AGT101-20261013-1012-${timestampNum}`;
+
+    const newOrder = {
+      orderId,
+      id: orderId,
+      ticketNo,
+      pickupCode,
+      cardNo,
+      headName,
+      phone,
+      memberCount,
+      agentId: family?.agentId || 'FA-00128',
+      agentName: family?.agentName || '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+      centerId: '101',
+      deliveryType, // 'PICKUP' | 'HOME_DELIVERY'
+      deliveryAddress: deliveryAddress || family?.address || '巴格达省卡尔赫区海法街88号 3号楼201',
+      deliveryFee,
+      notes: notes || (deliveryType === 'PICKUP' ? '到店出示二维码提货' : '送货上门出示二维码签收'),
+      items: validatedItems,
+      totalWeight,
+      goodsAmount,
+      amount: finalSelfPay,
+      selfPayAmount: finalSelfPay,
+      subsidyAmount,
+      payStatus: 'PAID',
+      payChannel: paymentInfo.channel || 'Qi Card 电子钱包',
+      txnNo: paymentInfo.txnNo || `TXN-${Math.floor(100000 + Math.random() * 900000)}-CBI`,
+      paidAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      createdAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      status: 'PAID' // 'PAID' | 'DISPATCHED' | 'DELIVERED'
+    };
+
+    citizenPurchaseOrdersStore.unshift(newOrder);
+    addSharedOrder(newOrder);
+
+    // 同步到代理端 B2C 预约/核销流中，让代理商端后续阶段直接看到并能扫码核销
+    const b2cItem = {
+      ticketNo: newOrder.ticketNo,
+      cardNo: newOrder.cardNo,
+      headName: newOrder.headName,
+      nationalId: family?.nationalId || '198004198271',
+      phone: newOrder.phone,
+      familyMemberCount: newOrder.memberCount,
+      agentId: newOrder.agentId,
+      agentName: newOrder.agentName,
+      centerId: newOrder.centerId,
+      reserveDate: '2026-10-13',
+      timeSlot: '10:00-12:00',
+      deliveryType: newOrder.deliveryType,
+      deliveryAddress: newOrder.deliveryAddress,
+      items: newOrder.items.map((i) => ({
+        itemCode: i.itemCode,
+        itemName: i.itemName,
+        qty: i.qty,
+        unit: i.unit,
+        quotaConsumed: i.qty
+      })),
+      selfPayAmount: newOrder.selfPayAmount,
+      payStatus: 'PAID',
+      payChannel: 'QI_CARD',
+      pickupCode: newOrder.pickupCode,
+      smsStatus: 'SENT',
+      smsSentTime: newOrder.paidAt,
+      status: 'PENDING_VERIFY'
+    };
+    b2cReservationsStore.unshift(b2cItem);
+
+    return createResponse({
+      success: true,
+      order: newOrder,
+      pickupCode: newOrder.pickupCode,
+      message: `配给品选购成功并已完成电子支付！已为您生成专属防伪取货二维码 (核验码: ${newOrder.pickupCode})。`
+    });
+  }
+
+  // 4. 审核工单池 (GET)
   if (url.includes('/review/tickets') && method === 'GET') {
+    const sharedTickets = getSharedTickets();
+    const sourcePool = sharedTickets && sharedTickets.length > 0 ? sharedTickets : ticketsStore;
     const source = params.source;
     if (!source || source === '全部') {
-      return createResponse(ticketsStore);
+      return createResponse(sourcePool);
     }
-    const filtered = ticketsStore.filter((t) => t.source === source);
+    const filtered = sourcePool.filter((t) => t.source === source);
     return createResponse(filtered);
   }
 
@@ -814,6 +1299,13 @@ export async function mockDispatch(config) {
         otherTicket.staffReviewedAt = ticket.staffReviewedAt;
       }
     }
+    updateSharedTicket(ticketId, {
+      status: isEn ? 'Pending Manager Review' : '待经理终审',
+      staffOpinion,
+      staffName: ticket?.staffName || staffName,
+      staffReviewedAt: ticket?.staffReviewedAt || new Date().toISOString().replace('T', ' ').slice(0, 16)
+    });
+
     return createResponse(ticket, 200, '初审意见已提交，工单已流转至经理终审阶段');
   }
 
@@ -842,16 +1334,23 @@ export async function mockDispatch(config) {
       if (decision === '接受' && ticket.payload) {
         if (ticket.payload.type === 'transferAgent') {
           // 跨省代理转移终审落地
-          const targetFam = familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
+          const targetFam = getSharedFamily(ticket.payload.cardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
           if (targetFam) {
             targetFam.province = ticket.payload.toProvince;
             targetFam.district = `${ticket.payload.toBranch} · ${ticket.payload.toCenterName}`;
             targetFam.agentId = `${ticket.payload.toFlourAgent?.id || 'FA'} / ${ticket.payload.toFoodAgent?.id || 'FD'}`;
             targetFam.agentName = `${ticket.payload.toFlourAgent?.name || ''} ＆ ${ticket.payload.toFoodAgent?.name || ''}`;
             targetFam.address = ticket.payload.newAddress;
+            updateSharedFamily(targetFam.rationCardNo, {
+              province: targetFam.province,
+              district: targetFam.district,
+              agentId: targetFam.agentId,
+              agentName: targetFam.agentName,
+              address: targetFam.address
+            });
           }
         } else if (ticket.payload.newHeadId) {
-          const family = familiesStore.find((f) => f.rationCardNo === ticket.cardNo);
+          const family = getSharedFamily(ticket.cardNo) || familiesStore.find((f) => f.rationCardNo === ticket.cardNo);
           if (family) {
             const newHead = family.members.find((m) => m.id === ticket.payload.newHeadId);
             if (newHead) {
@@ -860,6 +1359,10 @@ export async function mockDispatch(config) {
                 if (m.id === ticket.payload.newHeadId) m.relation = '户主';
               });
               family.headName = newHead.name;
+              updateSharedFamily(family.rationCardNo, {
+                members: family.members,
+                headName: family.headName
+              });
             }
           }
         } else if (ticket.payload.unfreezeType && ticket.payload.targetMemberId) {
@@ -870,9 +1373,18 @@ export async function mockDispatch(config) {
               m.freezeReason = '';
             }
           });
+          const sharedFams = getSharedFamilies();
+          sharedFams.forEach((f) => {
+            const m = f.members.find((item) => item.id === ticket.payload.targetMemberId);
+            if (m) {
+              m.status = '正常';
+              m.freezeReason = '';
+              updateSharedFamily(f.rationCardNo, { members: f.members });
+            }
+          });
         } else if (ticket.payload.type === 'memberTransfer' && ticket.payload.member) {
           // 成员转移终审落地
-          const targetFam = familiesStore.find((f) => f.rationCardNo === ticket.payload.targetCardNo) || familiesStore[0];
+          const targetFam = getSharedFamily(ticket.payload.targetCardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.targetCardNo) || familiesStore[0];
           if (targetFam) {
             const mem = ticket.payload.member;
             targetFam.members.push({
@@ -890,10 +1402,24 @@ export async function mockDispatch(config) {
               faceVerified: true
             });
             targetFam.memberCount = targetFam.members.length;
+            updateSharedFamily(targetFam.rationCardNo, {
+              members: targetFam.members,
+              memberCount: targetFam.memberCount
+            });
           }
         }
       }
     }
+
+    const isAccept = decision === '接受' || decision === 'Approved';
+    updateSharedTicket(ticketId, {
+      status: isAccept ? (isEn ? 'Approved' : '已批准') : (isEn ? 'Rejected' : '已驳回'),
+      managerDecision: isAccept ? (isEn ? 'Approved' : '接受') : (isEn ? 'Rejected' : '已驳回'),
+      managerNotes: notes,
+      managerName: ticket?.managerName || managerName,
+      managerDecidedAt: ticket?.managerDecidedAt || new Date().toISOString().replace('T', ' ').slice(0, 16)
+    });
+
     return createResponse(ticket, 200, `终审已裁决为【${decision}】！`);
   }
 
@@ -2217,9 +2743,32 @@ export async function mockDispatch(config) {
     );
   }
 
-  // 5.10 兼容旧网点列表查询 (GET)
+  // 5.10 全网格代销网点列表查询 (GET)
   if (url.includes('/agent/list') && method === 'GET') {
-    return createResponse(myAgentCentersStore);
+    const allAgentsSource = isEn ? enAgent.MOCK_AGENTS : zhAgent.MOCK_AGENTS;
+    let list = [...(allAgentsSource || myAgentCentersStore)];
+    if (params.province && params.province !== '全部') {
+      list = list.filter((a) => a.province?.includes(params.province));
+    }
+    if (params.category && params.category !== '全部') {
+      list = list.filter((a) => a.agentType?.includes(params.category));
+    }
+    if (params.status && params.status !== '全部') {
+      list = list.filter((a) => a.status?.includes(params.status));
+    }
+    if (params.keyword) {
+      const kw = params.keyword.toLowerCase();
+      list = list.filter(
+        (a) =>
+          (a.name && a.name.toLowerCase().includes(kw)) ||
+          (a.id && a.id.toLowerCase().includes(kw)) ||
+          (a.ownerName && a.ownerName.toLowerCase().includes(kw)) ||
+          (a.phone && a.phone.includes(kw)) ||
+          (a.centerName && a.centerName.toLowerCase().includes(kw)) ||
+          (a.address && a.address.toLowerCase().includes(kw))
+      );
+    }
+    return createResponse(list);
   }
 
   // 5.11 G2B 集中批发采购订单列表 (SCM)
@@ -2356,6 +2905,185 @@ export async function mockDispatch(config) {
       200,
       `货款 ${targetOrder.totalAmount.toLocaleString()} IQD 已成功入国家粮食专管账户！仓储拣货单【${targetOrder.wmsTaskId}】已生成，提货短信已送达！`
     );
+  }
+
+  // 5.13.1 代理端根据提货码/二维码检索订单 (GET)
+  if (url.includes('/agent/citizen-orders/lookup') && method === 'GET') {
+    const code = (params.code || '').trim().toLowerCase();
+    if (!code) {
+      return createResponse({}, 400, '请输入提货凭证码或扫描二维码');
+    }
+    const sharedOrders = getSharedOrders();
+    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const matched = sourcePool.find((o) =>
+      (o.pickupCode && o.pickupCode.toLowerCase() === code) ||
+      (o.orderId && o.orderId.toLowerCase() === code) ||
+      (o.cardNo && o.cardNo.toLowerCase() === code) ||
+      (o.pickupCode && o.pickupCode.toLowerCase().includes(code)) ||
+      (o.orderId && o.orderId.toLowerCase().includes(code))
+    );
+    if (!matched) {
+      return createResponse({}, 404, `未检索到匹配的提货订单凭证【${code}】，请核对防伪二维码`);
+    }
+    return createResponse(matched);
+  }
+
+  // 5.13.2 代理端查询公民购买配给订单列表 (GET)
+  if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
+    const sharedOrders = getSharedOrders();
+    let result = sharedOrders && sharedOrders.length > 0 ? [...sharedOrders] : [...citizenPurchaseOrdersStore];
+
+    if (params.deliveryType && params.deliveryType !== 'ALL') {
+      result = result.filter((o) => o.deliveryType === params.deliveryType);
+    }
+    if (params.status && params.status !== 'ALL') {
+      result = result.filter((o) => o.status === params.status);
+    }
+    if (params.keyword) {
+      const kw = params.keyword.toLowerCase();
+      result = result.filter((o) =>
+        (o.orderId && o.orderId.toLowerCase().includes(kw)) ||
+        (o.cardNo && o.cardNo.toLowerCase().includes(kw)) ||
+        (o.headName && o.headName.toLowerCase().includes(kw)) ||
+        (o.pickupCode && o.pickupCode.toLowerCase().includes(kw)) ||
+        (o.phone && o.phone.includes(kw))
+      );
+    }
+
+    return createResponse(result);
+  }
+
+  // 5.13.3 代理端安排配送或标记备货就绪 (POST)
+  if (url.includes('/agent/citizen-orders') && url.includes('/dispatch') && method === 'POST') {
+    const parts = url.split('/');
+    const orderId = parts[parts.indexOf('citizen-orders') + 1];
+    const sharedOrders = getSharedOrders();
+    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId);
+
+    if (!targetOrder) {
+      return createResponse({}, 404, `未找到编号为 ${orderId} 的配给订单`);
+    }
+
+    const {
+      deliveryPerson = '默罕默德专属保供车队 (阿里)',
+      phone = '+964 780 999 8811',
+      vehicleNo = 'BG-78219 (厢式冷链保供货车)',
+      estimatedTime = '2小时内送达'
+    } = data || {};
+
+    const isHomeDelivery = targetOrder.deliveryType === 'HOME_DELIVERY';
+    targetOrder.status = isHomeDelivery ? 'DISPATCHED' : 'READY_FOR_PICKUP';
+    targetOrder.dispatchInfo = {
+      deliveryPerson,
+      phone,
+      vehicleNo,
+      estimatedTime,
+      dispatchedAt: new Date().toISOString().replace('T', ' ').slice(0, 19)
+    };
+
+    updateSharedOrder(orderId, {
+      status: targetOrder.status,
+      dispatchInfo: targetOrder.dispatchInfo
+    });
+
+    // 同步到 b2cReservationsStore
+    const b2cItem = b2cReservationsStore.find((r) => r.ticketNo === targetOrder.ticketNo || r.pickupCode === targetOrder.pickupCode);
+    if (b2cItem) {
+      b2cItem.status = isHomeDelivery ? 'DISPATCHED' : 'READY_FOR_PICKUP';
+      b2cItem.dispatchInfo = targetOrder.dispatchInfo;
+    }
+
+    const successMsg = isHomeDelivery
+      ? `已成功安排配送车队出车！配送员【${deliveryPerson}】，送达时请出示提货二维码。`
+      : `已标记网点备货就绪！已通知持卡公民持动态二维码到店领取。`;
+
+    return createResponse(targetOrder, 200, successMsg);
+  }
+
+  // 5.13.4 阶段 4 核心：扫描二维码/输入提货码核验交货并扣减实物库存 (POST)
+  if (url.includes('/agent/citizen-orders') && url.includes('/verify-claim') && method === 'POST') {
+    const parts = url.split('/');
+    const orderId = parts[parts.indexOf('citizen-orders') + 1];
+    const sharedOrders = getSharedOrders();
+    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.pickupCode === orderId || (data && (data.orderId === o.orderId || data.pickupCode === o.pickupCode)));
+
+    if (!targetOrder) {
+      return createResponse({}, 404, `未检索到需核销交割的订单凭据`);
+    }
+
+    if (targetOrder.status === 'DELIVERED') {
+      return createResponse({ order: targetOrder, alreadyDelivered: true }, 200, `【注意】：该订单此前已完成核验交付，提货凭证号【${targetOrder.claimVoucherNo || targetOrder.orderId}】。`);
+    }
+
+    const nowStr = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
+    targetOrder.status = 'DELIVERED';
+    targetOrder.deliveredAt = nowStr;
+    targetOrder.verifier = data?.verifier || '网点核验专员-穆罕默德';
+    targetOrder.verifyMethod = data?.verifyMethod || 'DYNAMIC_QR_CODE';
+    targetOrder.signature = data?.signature || 'CITIZEN_SIGNED';
+    targetOrder.claimVoucherNo = `CLM-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    updateSharedOrder(targetOrder.orderId || orderId, {
+      status: 'DELIVERED',
+      deliveredAt: targetOrder.deliveredAt,
+      verifier: targetOrder.verifier,
+      verifyMethod: targetOrder.verifyMethod,
+      signature: targetOrder.signature,
+      claimVoucherNo: targetOrder.claimVoucherNo
+    });
+
+    // 扣减代理商本地实物现货库存 (agentLocalStocksStore)
+    const deductedItems = [];
+    for (const it of targetOrder.items || []) {
+      const localStock = agentLocalStocksStore.find((s) => s.itemCode === it.itemCode);
+      const qty = Number(it.qty) || 0;
+      if (localStock) {
+        const beforeOnHand = localStock.currentOnHand;
+        localStock.currentOnHand = Math.max(0, localStock.currentOnHand - qty);
+        localStock.b2cTotalSold = (localStock.b2cTotalSold || 0) + qty;
+        deductedItems.push({
+          itemCode: it.itemCode,
+          itemName: it.itemName,
+          qty,
+          unit: it.unit,
+          beforeOnHand,
+          afterOnHand: localStock.currentOnHand
+        });
+      }
+    }
+
+    // 同步 b2cReservationsStore
+    const b2cItem = b2cReservationsStore.find((r) => r.ticketNo === targetOrder.ticketNo || r.pickupCode === targetOrder.pickupCode);
+    if (b2cItem) {
+      b2cItem.status = 'DELIVERED';
+      b2cItem.payStatus = 'VERIFIED';
+    }
+
+    // 写入 citizenClaimsStore (为阶段 5 政府对账提供真实出库与核销账目数据)
+    citizenClaimsStore.unshift({
+      claimVoucherNo: targetOrder.claimVoucherNo,
+      rationCardNo: targetOrder.cardNo,
+      headName: targetOrder.headName,
+      eligiblePersons: targetOrder.memberCount || 5,
+      claimPeriod: '2026年10月份',
+      claimedItems: (targetOrder.items || []).map((i) => ({ itemName: i.itemName, qty: i.qty, unit: i.unit })),
+      agentCenterId: targetOrder.centerId || '101',
+      agentName: targetOrder.agentName || '巴格达卡尔赫第一代销站',
+      claimTime: targetOrder.deliveredAt,
+      securityHash: `CLAIM-SHA256-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      amountPaid: targetOrder.selfPayAmount || 0,
+      subsidyAmount: targetOrder.subsidyAmount || 0,
+      orderId: targetOrder.orderId
+    });
+
+    return createResponse({
+      order: targetOrder,
+      deductedItems,
+      claimVoucherNo: targetOrder.claimVoucherNo,
+      deliveredAt: targetOrder.deliveredAt
+    }, 200, `【交接核销成功】：已完成对户主【${targetOrder.headName}】的配给品交付，代销站现货库存已同步扣减，生成法定凭证【${targetOrder.claimVoucherNo}】！`);
   }
 
   // 5.14 查询 B2C 社区分时零售预约单 (SCM)
@@ -3265,6 +3993,321 @@ export async function mockDispatch(config) {
       item.satisfaction = data.satisfaction || '满意';
     }
     return createResponse(item, 200, '投诉案件已办结');
+  }
+
+  // ========================================================
+  // 11. 阶段 5 核心：政府侧财政对账与清算管理系统 Mock API
+  // (G2B批发货款、B2C销售规费、财政物价补贴结算、进销存100%账实平衡)
+  // ========================================================
+
+  // 11.1 财政对账综合概览指标 (GET)
+  if (url.includes('/admin/reconciliation/overview') && method === 'GET') {
+    const dynamicB2CSum = citizenPurchaseOrdersStore.reduce((acc, o) => acc + (Number(o.selfPayAmount) || 0), 0);
+    const dynamicG2BSum = g2bOrdersStore.filter(o => o.payStatus === 'PAID').reduce((acc, o) => acc + (Number(o.totalAmount) || 0), 0);
+    const deliveredCitizenCount = citizenPurchaseOrdersStore.filter(o => o.status === 'DELIVERED').length;
+
+    const totalG2B = 428500000 + dynamicG2BSum;
+    const totalB2C = 34200000 + dynamicB2CSum;
+    const totalSubsidies = totalG2B - totalB2C;
+
+    return createResponse({
+      totalG2BAmount: totalG2B,
+      totalB2CAmount: totalB2C,
+      totalSubsidyAmount: totalSubsidies,
+      subsidyRatio: ((totalSubsidies / totalG2B) * 100).toFixed(1),
+      balanceRate: '100.00%',
+      varianceRate: '0.00%',
+      totalG2BOrdersCount: 156 + g2bOrdersStore.length,
+      totalB2COrdersCount: 2840 + citizenPurchaseOrdersStore.length,
+      totalDeliveredOrdersCount: 2795 + deliveredCitizenCount,
+      dailyClearingStatus: 'CLEARED_TODAY',
+      lastSettledAt: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
+      treasuryAccount: 'IQ-CBI-PUBLIC-TREASURY-88201',
+      auditStatus: 'AUDIT_PASSED_ZERO_VARIANCE'
+    });
+  }
+
+  // 11.2 G2B 批发进货款交易流水 (GET)
+  if (url.includes('/admin/reconciliation/g2b-transactions') && method === 'GET') {
+    const baselineG2B = [
+      {
+        orderNo: 'ORD-20261012-8812',
+        agentId: 'FA-00128',
+        agentName: '卡尔赫第一配给中心综合代销站',
+        province: '巴格达省',
+        centerName: '卡尔赫第一配给中心 (曼苏尔)',
+        itemsSummary: '优质特级面粉 25,000kg / 进口长粒香米 15,000kg',
+        totalAmount: 18750000,
+        payChannel: 'PUBLIC_TREASURY_ACCOUNT',
+        payStatus: 'PAID',
+        payTime: '2026-10-12 10:15:30',
+        wmsTaskId: 'WMS-TASK-WH01-992182',
+        voucherNo: 'G2B-VCH-20261012-001'
+      },
+      {
+        orderNo: 'ORD-20261011-7734',
+        agentId: 'FA-00129',
+        agentName: '鲁萨法第二配给保障供销社',
+        province: '巴格达省',
+        centerName: '鲁萨法第二粮食供应分部',
+        itemsSummary: '精炼植物油 8,000L / 精制白糖 10,000kg',
+        totalAmount: 14200000,
+        payChannel: 'PUBLIC_TREASURY_ACCOUNT',
+        payStatus: 'PAID',
+        payTime: '2026-10-11 14:22:15',
+        wmsTaskId: 'WMS-TASK-WH01-884102',
+        voucherNo: 'G2B-VCH-20261011-002'
+      },
+      {
+        orderNo: 'ORD-20261010-6621',
+        agentId: 'FA-00130',
+        agentName: '巴士拉港口平价配给便利店',
+        province: '巴士拉省',
+        centerName: '巴士拉港口配给保障站',
+        itemsSummary: '优质特级面粉 30,000kg / 植物油 12,000L',
+        totalAmount: 22600000,
+        payChannel: 'PUBLIC_TREASURY_ACCOUNT',
+        payStatus: 'PAID',
+        payTime: '2026-10-10 09:30:00',
+        wmsTaskId: 'WMS-TASK-WH02-661201',
+        voucherNo: 'G2B-VCH-20261010-003'
+      },
+      {
+        orderNo: 'ORD-20261009-5519',
+        agentId: 'FA-00131',
+        agentName: '摩苏尔老城保供代销中心',
+        province: '尼尼微省',
+        centerName: '摩苏尔老城配给管理中心',
+        itemsSummary: '特级面粉 20,000kg / 纯白砂糖 8,000kg',
+        totalAmount: 13800000,
+        payChannel: 'PUBLIC_TREASURY_ACCOUNT',
+        payStatus: 'PAID',
+        payTime: '2026-10-09 16:45:10',
+        wmsTaskId: 'WMS-TASK-WH03-550192',
+        voucherNo: 'G2B-VCH-20261009-004'
+      }
+    ];
+
+    const dynamicOrders = g2bOrdersStore.map((o, idx) => ({
+      orderNo: o.orderNo,
+      agentId: o.agentId || 'FA-00128',
+      agentName: o.agentName || '卡尔赫第一配给中心综合代销站',
+      province: o.province || '巴格达省',
+      centerName: o.centerName || '卡尔赫第一配给中心',
+      itemsSummary: (o.items || []).map(i => `${i.itemName} ${i.qty}${i.unit}`).join(' / ') || '集中调拨配给物资',
+      totalAmount: o.totalAmount,
+      payChannel: o.payChannel || 'PUBLIC_TREASURY_ACCOUNT',
+      payStatus: o.payStatus || 'PAID',
+      payTime: o.payTime || o.createdAt,
+      wmsTaskId: o.wmsTaskId || `WMS-TASK-${idx + 100}`,
+      voucherNo: `G2B-VCH-${o.orderNo.slice(-6)}`
+    }));
+
+    return createResponse([...dynamicOrders, ...baselineG2B]);
+  }
+
+  // 11.3 B2C 公民购粮规费与核销流水 (GET)
+  if (url.includes('/admin/reconciliation/b2c-transactions') && method === 'GET') {
+    const list = citizenPurchaseOrdersStore.map((o) => ({
+      orderId: o.orderId,
+      cardNo: o.cardNo,
+      headName: o.headName,
+      phone: o.phone,
+      deliveryType: o.deliveryType,
+      agentName: o.agentName,
+      selfPayAmount: o.selfPayAmount || 3700,
+      paymentMethod: o.paymentMethod || 'QI_CARD',
+      status: o.status,
+      paidAt: o.paidAt || o.createdAt,
+      deliveredAt: o.deliveredAt || (o.status === 'DELIVERED' ? o.createdAt : null),
+      pickupCode: o.pickupCode,
+      claimVoucherNo: o.claimVoucherNo || null,
+      itemsSummary: (o.items || []).map(i => `${i.itemName} x${i.qty}`).join(', ')
+    }));
+
+    return createResponse(list);
+  }
+
+  // 11.4 国家物价兜底财政补贴台账 (GET)
+  if (url.includes('/admin/reconciliation/subsidies') && method === 'GET') {
+    const subsidyItems = [
+      {
+        itemCode: 'FLOUR-WHT-02',
+        itemName: '优质特级面粉 (标准白面)',
+        unit: 'KG',
+        marketPrice: 1250,
+        citizenPrice: 150,
+        unitSubsidy: 1100,
+        subsidyRatio: '88.0%',
+        allocatedQty: 120000,
+        totalMarketCost: 150000000,
+        totalCitizenPaid: 18000000,
+        totalGovSubsidy: 132000000,
+        fundingSource: '国家粮食安全战略基金专户',
+        status: '100% 财政全额兑付'
+      },
+      {
+        itemCode: 'RICE-BAS-01',
+        itemName: '进口特级长粒香米 (一级优质大米)',
+        unit: 'KG',
+        marketPrice: 2200,
+        citizenPrice: 250,
+        unitSubsidy: 1950,
+        subsidyRatio: '88.6%',
+        allocatedQty: 75000,
+        totalMarketCost: 165000000,
+        totalCitizenPaid: 18750000,
+        totalGovSubsidy: 146250000,
+        fundingSource: '国家粮食安全战略基金专户',
+        status: '100% 财政全额兑付'
+      },
+      {
+        itemCode: 'OIL-SUN-01',
+        itemName: '纯正压榨葵花籽油 (精炼食用油)',
+        unit: 'L',
+        marketPrice: 3500,
+        citizenPrice: 500,
+        unitSubsidy: 3000,
+        subsidyRatio: '85.7%',
+        allocatedQty: 45000,
+        totalMarketCost: 157500000,
+        totalCitizenPaid: 22500000,
+        totalGovSubsidy: 135000000,
+        fundingSource: '物价平抑与民生兜底专项直补',
+        status: '100% 财政全额兑付'
+      },
+      {
+        itemCode: 'SUGAR-WHT-01',
+        itemName: '精制纯白砂糖 (优级原糖精炼)',
+        unit: 'KG',
+        marketPrice: 1600,
+        citizenPrice: 200,
+        unitSubsidy: 1400,
+        subsidyRatio: '87.5%',
+        allocatedQty: 50000,
+        totalMarketCost: 80000000,
+        totalCitizenPaid: 10000000,
+        totalGovSubsidy: 70000000,
+        fundingSource: '物价平抑与民生兜底专项直补',
+        status: '100% 财政全额兑付'
+      }
+    ];
+
+    return createResponse({
+      items: subsidyItems,
+      grandMarketCost: 552500000,
+      grandCitizenPaid: 69250000,
+      grandTreasurySubsidy: 483250000,
+      overallSubsidyRate: '87.5%',
+      fiscalYear: '2026年度',
+      disbursementBatch: 'DISB-2026-Q4-01'
+    });
+  }
+
+  // 11.5 进销存 100% 账实平衡大屏与穿透审计 (GET)
+  if (url.includes('/admin/reconciliation/inventory-audit') && method === 'GET') {
+    // 动态统计各品类已被公民核销的数量
+    const dynamicClaimMap = {};
+    for (const ord of citizenPurchaseOrdersStore) {
+      if (ord.status === 'DELIVERED') {
+        for (const it of ord.items || []) {
+          dynamicClaimMap[it.itemCode] = (dynamicClaimMap[it.itemCode] || 0) + Number(it.qty || 0);
+        }
+      }
+    }
+
+    const auditLedger = [
+      {
+        itemCode: 'FLOUR-WHT-02',
+        itemName: '优质特级面粉',
+        unit: 'KG',
+        centralOutbound: 120000,
+        agentInbound: 120000,
+        citizenClaimed: 98500 + (dynamicClaimMap['FLOUR-WHT-02'] || 0),
+        agentOnHand: 21500 - (dynamicClaimMap['FLOUR-WHT-02'] || 0),
+        varianceQty: 0,
+        varianceRate: '0.00%',
+        auditResult: 'PERFECT_MATCH',
+        lastAuditTime: new Date().toISOString().slice(0, 10)
+      },
+      {
+        itemCode: 'RICE-BAS-01',
+        itemName: '进口长粒香米',
+        unit: 'KG',
+        centralOutbound: 75000,
+        agentInbound: 75000,
+        citizenClaimed: 61200 + (dynamicClaimMap['RICE-BAS-01'] || 0),
+        agentOnHand: 13800 - (dynamicClaimMap['RICE-BAS-01'] || 0),
+        varianceQty: 0,
+        varianceRate: '0.00%',
+        auditResult: 'PERFECT_MATCH',
+        lastAuditTime: new Date().toISOString().slice(0, 10)
+      },
+      {
+        itemCode: 'OIL-SUN-01',
+        itemName: '精炼食用植物油',
+        unit: 'L',
+        centralOutbound: 45000,
+        agentInbound: 45000,
+        citizenClaimed: 36800 + (dynamicClaimMap['OIL-SUN-01'] || 0),
+        agentOnHand: 8200 - (dynamicClaimMap['OIL-SUN-01'] || 0),
+        varianceQty: 0,
+        varianceRate: '0.00%',
+        auditResult: 'PERFECT_MATCH',
+        lastAuditTime: new Date().toISOString().slice(0, 10)
+      },
+      {
+        itemCode: 'SUGAR-WHT-01',
+        itemName: '精制纯白砂糖',
+        unit: 'KG',
+        centralOutbound: 50000,
+        agentInbound: 50000,
+        citizenClaimed: 41500 + (dynamicClaimMap['SUGAR-WHT-01'] || 0),
+        agentOnHand: 8500 - (dynamicClaimMap['SUGAR-WHT-01'] || 0),
+        varianceQty: 0,
+        varianceRate: '0.00%',
+        auditResult: 'PERFECT_MATCH',
+        lastAuditTime: new Date().toISOString().slice(0, 10)
+      }
+    ];
+
+    return createResponse({
+      records: auditLedger,
+      isBalanced: true,
+      auditCertificateNo: `AUDIT-MOT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-8899`,
+      auditor: '伊拉克贸易部粮食总署 & 中央审计委员会联合审计组'
+    });
+  }
+
+  // 11.6 发起中央日终对账与清算 (POST)
+  if (url.includes('/admin/reconciliation/daily-settlement') && method === 'POST') {
+    const batchNo = `CLR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const hash = `0x${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    
+    return createResponse({
+      clearingBatchNo: batchNo,
+      blockchainAuditHash: hash,
+      settledAt: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
+      treasuryStatus: 'TREASURY_CLEARED_CONFIRMED',
+      summary: {
+        g2bWholesaleOrdersCleared: 158,
+        b2cCitizenOrdersAudited: 2845,
+        subsidySettledAmountIQD: 483250000,
+        varianceCount: 0
+      }
+    }, 200, `【日终清算成功】：清算批次【${batchNo}】已完成中央国库账务划转与区块链存证，账实差额 0.00%！`);
+  }
+
+  // 11.7 导出官方中央对账清算凭单 (GET)
+  if (url.includes('/admin/reconciliation/export-report') && method === 'GET') {
+    return createResponse({
+      reportTitle: '伊拉克共和国贸易部与财政部 · 国家配给系统每日对账审计报告',
+      officialVoucherNo: `GOV-FIN-VOUCH-${Date.now().toString().slice(-8)}`,
+      reportDate: new Date().toISOString().slice(0, 10),
+      authority: 'REPUBLIC OF IRAQ · MINISTRY OF TRADE & MINISTRY OF FINANCE',
+      auditSeal: '100% BALANCED & AUDITED',
+      downloadUrl: '#mock-reconciliation-report.pdf'
+    });
   }
 
   // 默认兜底响应

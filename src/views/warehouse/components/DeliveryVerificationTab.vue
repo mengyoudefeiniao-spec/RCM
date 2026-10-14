@@ -7,9 +7,9 @@
         <el-tag size="small" type="success" effect="plain">{{ $t('warehouse.realtimeSync') || '实时同步' }}</el-tag>
       </div>
       <el-radio-group v-else v-model="activeView" size="small">
-        <el-radio-button label="tracking">{{ $t('warehouse.viewTracking') || '在途配送追踪' }}</el-radio-button>
-        <el-radio-button label="receipt">{{ $t('warehouse.viewReceipt') || '网点扫码核收对账' }}</el-radio-button>
-        <el-radio-button label="discrepancy">{{ $t('warehouse.viewDiscrepancy') || '差异预警与核查工单' }}</el-radio-button>
+        <el-radio-button value="tracking">{{ $t('warehouse.viewTracking') || '在途配送追踪' }}</el-radio-button>
+        <el-radio-button value="receipt">{{ $t('warehouse.viewReceipt') || '网点扫码核收对账' }}</el-radio-button>
+        <el-radio-button value="discrepancy">{{ $t('warehouse.viewDiscrepancy') || '差异预警与核查工单' }}</el-radio-button>
       </el-radio-group>
 
       <div class="flex items-center gap-2">

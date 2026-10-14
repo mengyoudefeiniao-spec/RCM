@@ -13,13 +13,13 @@
       >
         <defs>
           <linearGradient :id="`rcmGrad-${uniqueId}`" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#3b82f6" />
-            <stop offset="50%" stop-color="#1d4ed8" />
-            <stop offset="100%" stop-color="#4338ca" />
+            <stop offset="0%" stop-color="#285447" />
+            <stop offset="50%" stop-color="#1E3F35" />
+            <stop offset="100%" stop-color="#142B24" />
           </linearGradient>
         </defs>
 
-        <!-- 外层圆角卡片底座 (保留 RCM 背景框以及底色) -->
+        <!-- 外层圆角卡片底座 (保留 RCM 背景框以及深墨绿+暖砂金底色) -->
         <rect
           x="1.5"
           y="1.5"
@@ -27,9 +27,9 @@
           height="45"
           rx="12"
           :fill="`url(#rcmGrad-${uniqueId})`"
-          stroke="#93c5fd"
-          stroke-width="1.2"
-          stroke-opacity="0.35"
+          stroke="#C59D5F"
+          stroke-width="1.4"
+          stroke-opacity="0.8"
         />
 
         <!-- 纯粹的核心 RCM 字母造型，完美居中 -->
@@ -38,7 +38,7 @@
           y="24"
           text-anchor="middle"
           dominant-baseline="central"
-          fill="#ffffff"
+          fill="#FFFFFF"
           font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
           font-weight="900"
           font-size="14.5"
@@ -49,27 +49,20 @@
       </svg>
     </div>
 
-    <!-- 文字排印区域 -->
+    <!-- 文字排印区域：全称与缩写不并存，仅呈现品牌名称 -->
     <div v-if="showText" class="logo-text shrink-0" :class="textWrapperClass">
       <div class="flex items-center gap-1.5 leading-none">
         <span
           class="font-black tracking-tight"
-          :class="[titleClass, isDark ? 'text-white' : 'text-slate-900']"
+          :class="[titleClass, isDark ? 'text-white' : 'text-[#1E3F35]']"
         >
-          Ration Card Management
-        </span>
-        <span
-          v-if="showBadge"
-          class="px-1.5 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase shadow-2xs tracking-wider"
-          :class="isDark ? 'bg-blue-500/30 text-blue-300 border border-blue-400/30' : 'bg-blue-100 text-blue-700 border border-blue-200'"
-        >
-          RCM
+          {{ brandTitle || 'RCM' }}
         </span>
       </div>
       <div
         v-if="showSubtitle"
-        class="text-[9px] font-mono tracking-widest mt-1 opacity-80"
-        :class="isDark ? 'text-slate-400' : 'text-slate-500'"
+        class="text-[9px] font-mono tracking-widest mt-1 opacity-85"
+        :class="isDark ? 'text-[#C59D5F]' : 'text-[#8C958F]'"
       >
         {{ subtitleText || 'REPUBLIC OF IRAQ · MINISTRY OF TRADE' }}
       </div>
@@ -100,6 +93,10 @@ const props = defineProps({
   subtitleText: {
     type: String,
     default: ''
+  },
+  brandTitle: {
+    type: String,
+    default: 'RCM'
   },
   theme: {
     type: String,

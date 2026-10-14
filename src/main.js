@@ -8,6 +8,8 @@ import App from './App.vue';
 import router from './router/index.js';
 import { i18n } from './locales/index.js';
 import './style.css';
+import './styles/theme.scss';
+import './styles/mobile-theme.scss';
 
 const app = createApp(App);
 

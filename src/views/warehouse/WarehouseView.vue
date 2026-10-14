@@ -3,31 +3,49 @@
     <!-- 配给管理业务模块选项卡 (去除旧版大标题横幅，列表顶格上移，支持横向平滑响应) -->
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
       <el-tabs v-model="activeTab" class="warehouse-custom-tabs px-3 sm:px-6">
+        <!-- 0. 公民专属：配给品选购与下单提货码 (新增核心模块) -->
+        <el-tab-pane v-if="isCitizen" name="purchase">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1">
+              <el-icon><ShoppingCart /></el-icon>
+              <span class="font-bold">{{ $t('citizenPurchase.moduleTitle') || '配给购买与取货' }}</span>
+              <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono">ONLINE</el-tag>
+            </div>
+          </template>
+          <div class="py-4">
+            <CitizenPurchaseTab />
+          </div>
+        </el-tab-pane>
+
         <!-- 1. 配给计划管理 (月度计划制定与上级/下级三层配额自动排程) -->
         <el-tab-pane name="rationPlan">
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Calendar /></el-icon>
               <span class="font-bold">
-                {{ isAdmin ? ($t('warehouse.adminTitle') || '配给计划管理') : isCitizen ? ($t('warehouse.citizenTitle') || '我的配给份额') : '配给计划管理' }}
+                {{ isAdmin ? ($t('warehouse.adminTitle') || '配给计划管理') : isCitizen ? ($t('warehouse.citizenTitle') || '我的配给份额') : ($t('warehouse.adminTitle') || '配给计划管理') }}
               </span>
             </div>
           </template>
           <div class="py-4">
-            <RationPlanTab ref="rationPlanTabRef" />
+            <RationPlanTab ref="rationPlanTabRef" @go-purchase="activeTab = 'purchase'" />
           </div>
         </el-tab-pane>
 
-        <!-- 2. 配送与交付 (代理网点收货、配送流水追踪、扫码签收) -->
-        <el-tab-pane name="delivery">
+        <!-- 2. 订单统计 (管理角色) 或 订单配送 (代理角色) -->
+        <el-tab-pane v-if="!isCitizen" name="orderStats">
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
-              <el-icon><Checked /></el-icon>
-              <span class="font-bold">配送与交付</span>
+              <el-icon><DataAnalysis v-if="isAdmin" /><Van v-else /></el-icon>
+              <span class="font-bold">
+                {{ isAdmin ? ($t('warehouse.orderStats') || '订单统计') : ($t('agentOrders.tabTitle') || '订单配送') }}
+              </span>
+              <el-tag v-if="!isAdmin" size="small" type="danger" effect="plain" class="scale-90 origin-left">{{ $t('agentOrders.badgeNew') }}</el-tag>
             </div>
           </template>
           <div class="py-4">
-            <DeliveryVerificationTab />
+            <OrderStatsTab v-if="isAdmin" />
+            <OrderDispatchTab v-else />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -40,27 +58,33 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '../../stores/auth.js';
 import {
   Refresh,
-  Checked,
-  Calendar
+  Calendar,
+  ShoppingCart,
+  Van,
+  DataAnalysis
 } from '@element-plus/icons-vue';
 
-// 仅保留配给计划管理与配送交付两个核心子模块
+// 核心子模块
 import RationPlanTab from './components/RationPlanTab.vue';
-import DeliveryVerificationTab from './components/DeliveryVerificationTab.vue';
+import CitizenPurchaseTab from './components/CitizenPurchaseTab.vue';
+import OrderDispatchTab from './components/OrderDispatchTab.vue';
+import OrderStatsTab from './components/OrderStatsTab.vue';
 
 // P1~P5 阶段规则实体验证看板抽屉
 import P1P5VerificationDrawer from './components/P1P5VerificationDrawer.vue';
 
+const route = useRoute();
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.isAdmin);
 const isAgent = computed(() => authStore.currentRole === 'agent');
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
 
-const activeTab = ref('rationPlan');
+const activeTab = ref(route.query.tab || (isCitizen.value ? 'purchase' : 'rationPlan'));
 const verificationDrawerRef = ref(null);
 const rationPlanTabRef = ref(null);
 

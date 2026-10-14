@@ -12,48 +12,48 @@
   >
     <div class="p-2 sm:p-4 space-y-4">
       <!-- 顶部：国家财政与中央银行安全网关标识 -->
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div class="flex items-center justify-between border-b border-[#ECE7DE] pb-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+          <div class="w-9 h-9 rounded-xl bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/40 flex items-center justify-center font-bold shadow-xs">
             <el-icon :size="18"><CreditCard /></el-icon>
           </div>
           <div>
-            <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <div class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
               <span>{{ $t('payment.title') || '统一在线安全支付网关' }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                 CBI-PAY
               </el-tag>
             </div>
-            <div class="text-[11px] text-slate-400">
+            <div class="text-[11px] text-[#8C958F]">
               中央银行规费在线直接清算系统 · SSL 256-bit 加密
             </div>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[11px] text-slate-400 block">支付有效倒计时</span>
-          <span class="font-mono text-xs font-bold text-amber-600">{{ countdownFormatted }}</span>
+          <span class="text-[11px] text-[#8C958F] block">支付有效倒计时</span>
+          <span class="font-mono text-xs font-bold text-[#C59D5F]">{{ countdownFormatted }}</span>
         </div>
       </div>
 
       <!-- 待支付状态 (Pending) -->
       <div v-if="paymentStatus === 'pending'" class="space-y-4">
-        <!-- 账单金额卡片 -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-xs space-y-3">
-          <div class="flex items-center justify-between text-xs text-slate-400">
+        <!-- 账单金额卡片 (深墨绿高奢政务质感底纹) -->
+        <div class="bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142B24] border border-[#C59D5F]/35 text-white p-4 rounded-2xl shadow-md space-y-3">
+          <div class="flex items-center justify-between text-xs text-[#E3D9C8]">
             <span>{{ title || '法定业务公文规费缴交' }}</span>
             <span class="font-mono text-[11px]">单号: {{ orderId }}</span>
           </div>
 
           <div class="flex items-baseline justify-between">
-            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-400 tracking-tight">
-              {{ amount.toLocaleString() }} <span class="text-sm text-slate-300 font-normal">{{ currency }}</span>
+            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-[#E4BA76] tracking-tight">
+              {{ amount.toLocaleString() }} <span class="text-sm text-white/80 font-normal">{{ currency }}</span>
             </div>
             <el-tag size="small" type="warning" effect="dark">
               待扣款
             </el-tag>
           </div>
 
-          <div class="pt-2 border-t border-slate-700/60 text-[11px] text-slate-300 flex flex-wrap justify-between gap-y-1">
+          <div class="pt-2 border-t border-white/15 text-[11px] text-[#E3D9C8] flex flex-wrap justify-between gap-y-1">
             <span>缴费卡号：<strong class="font-mono text-white">{{ businessNo || 'RC-10029381' }}</strong></span>
             <span>申报户主：<strong class="text-white">{{ applicantName || '持卡公民' }}</strong></span>
           </div>
@@ -61,7 +61,7 @@
 
         <!-- 扣款渠道账户选择 -->
         <div class="space-y-1.5">
-          <div class="text-xs font-medium text-slate-600">选择扣款资金账户：</div>
+          <div class="text-xs font-medium text-[#5E6862]">选择扣款资金账户：</div>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="ch in channels"
@@ -70,8 +70,8 @@
               class="p-2 rounded-xl border text-xs text-center transition-all cursor-pointer flex flex-col items-center gap-1"
               :class="
                 selectedChannel === ch.id
-                  ? 'border-emerald-500 bg-emerald-50/60 text-emerald-800 font-bold shadow-2xs'
-                  : 'border-slate-200 hover:border-slate-300 bg-white text-slate-600'
+                  ? 'border-[#C59D5F] bg-[#FAF5ED] text-[#1E3F35] font-bold shadow-2xs ring-1 ring-[#C59D5F]/40'
+                  : 'border-[#ECE7DE] hover:border-[#C59D5F]/50 bg-white text-[#5E6862]'
               "
               @click="selectedChannel = ch.id"
             >
@@ -82,17 +82,17 @@
         </div>
 
         <!-- 真实在线支付核身验证方式 Tab 切换 (密码 / 指纹 / 刷脸) -->
-        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/60 space-y-4">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <el-icon class="text-emerald-600"><Lock /></el-icon>
+        <div class="border border-[#ECE7DE] rounded-2xl p-4 bg-[#FAF8F4] space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-[#ECE7DE]">
+            <span class="text-xs font-bold text-[#18231E] flex items-center gap-1.5">
+              <el-icon class="text-[#1E3F35]"><Lock /></el-icon>
               <span>选择在线支付验证方式</span>
             </span>
-            <div class="flex bg-slate-200/80 p-0.5 rounded-lg text-[11px]">
+            <div class="flex bg-[#EAE5DA] p-0.5 rounded-lg text-[11px]">
               <button
                 type="button"
                 class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
-                :class="verifyMode === 'pin' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                :class="verifyMode === 'pin' ? 'bg-white text-[#1E3F35] font-bold shadow-2xs' : 'text-[#5E6862] hover:text-[#18231E]'"
                 @click="switchVerifyMode('pin')"
               >
                 密码支付
@@ -186,9 +186,10 @@
             </div>
 
             <el-button
-              type="success"
+              type="primary"
               size="large"
-              class="w-full font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500"
+              class="w-full font-bold shadow-md"
+              style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
               :disabled="pinCode.length < 6"
               @click="handleSubmitPinPay"
             >

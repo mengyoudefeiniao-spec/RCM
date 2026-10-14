@@ -234,3 +234,56 @@ export function deleteAdminWarehouse(warehouseId) {
   return apiClient.delete(`/admin/warehouses/${warehouseId}`);
 }
 
+// ==========================================
+// 5. 阶段 5 核心：财政对账与中央清算 API
+// ==========================================
+
+/**
+ * 获取财政对账综合概览指标 (G2B、B2C、补贴、平衡率)
+ */
+export function getReconciliationOverview(params = {}) {
+  return apiClient.get('/admin/reconciliation/overview', { params });
+}
+
+/**
+ * 获取 G2B 批发进货款交易对账流水
+ */
+export function getG2BWholesaleTransactions(params = {}) {
+  return apiClient.get('/admin/reconciliation/g2b-transactions', { params });
+}
+
+/**
+ * 获取 B2C 公民购粮规费与实收流水
+ */
+export function getB2CCitizenSalesTransactions(params = {}) {
+  return apiClient.get('/admin/reconciliation/b2c-transactions', { params });
+}
+
+/**
+ * 获取国家物价兜底财政补贴台账
+ */
+export function getPriceSubsidiesSettlement(params = {}) {
+  return apiClient.get('/admin/reconciliation/subsidies', { params });
+}
+
+/**
+ * 获取进销存 100% 账实平衡大屏数据
+ */
+export function getInventoryBalanceAudit(params = {}) {
+  return apiClient.get('/admin/reconciliation/inventory-audit', { params });
+}
+
+/**
+ * 发起中央日终批量对账与清算
+ */
+export function triggerDailySettlement(data = {}) {
+  return apiClient.post('/admin/reconciliation/daily-settlement', data);
+}
+
+/**
+ * 导出官方中央对账清算凭单
+ */
+export function exportReconciliationReport(params = {}) {
+  return apiClient.get('/admin/reconciliation/export-report', { params });
+}
+

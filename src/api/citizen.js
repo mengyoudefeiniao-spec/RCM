@@ -142,6 +142,39 @@ export function submitMemberTransfer(data) {
   });
 }
 
+/**
+ * 公民提交购买配给品订单 (POST)
+ * 选购配额物资、选择配送方式(自提/送货上门)、完成电子支付后生成订单与提货码
+ */
+export function purchaseRationItems(data) {
+  return request({
+    url: '/citizen/ration/purchase',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 查询公民历史购买配给记录列表 (GET)
+ */
+export function getCitizenPurchaseOrders(params) {
+  return request({
+    url: '/citizen/ration/orders',
+    method: 'GET',
+    params
+  });
+}
+
+/**
+ * 查询家庭当月核定配额及剩余可用配额 (GET)
+ */
+export function getCitizenQuotaBalance(cardNo) {
+  return request({
+    url: `/citizen/ration/quota-balance/${cardNo}`,
+    method: 'GET'
+  });
+}
+
 // 别名兼容导出
 export const queryMemberForTransfer = queryTransferableMember;
 export const getTransferrableMembers = getTransferableMemberList;

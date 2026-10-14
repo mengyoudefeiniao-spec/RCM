@@ -15,9 +15,9 @@
 
       <div class="flex items-center gap-2">
         <el-radio-group v-model="activeSection" size="small">
-          <el-radio-button label="engine">端到端全链路溯源引擎</el-radio-button>
-          <el-radio-button label="report">多维流转报表分析</el-radio-button>
-          <el-radio-button label="lossAudit">三节点损耗与审计分析</el-radio-button>
+          <el-radio-button value="engine">端到端全链路溯源引擎</el-radio-button>
+          <el-radio-button value="report">多维流转报表分析</el-radio-button>
+          <el-radio-button value="lossAudit">三节点损耗与审计分析</el-radio-button>
         </el-radio-group>
         <el-button size="small" @click="loadData">
           <el-icon class="mr-1"><Refresh /></el-icon>
@@ -44,8 +44,8 @@
           <div class="flex items-center gap-2">
             <span class="text-xs text-slate-500">溯源方向：</span>
             <el-radio-group v-model="traceDirection" size="small">
-              <el-radio-button label="forward">正向追溯 (采购批次 → 家庭领取)</el-radio-button>
-              <el-radio-button label="backward">反向倒查 (家庭凭证 → 采购批次)</el-radio-button>
+              <el-radio-button value="forward">正向追溯 (采购批次 → 家庭领取)</el-radio-button>
+              <el-radio-button value="backward">反向倒查 (家庭凭证 → 采购批次)</el-radio-button>
             </el-radio-group>
           </div>
         </div>

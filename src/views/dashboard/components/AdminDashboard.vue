@@ -267,12 +267,109 @@
         <el-table-column prop="time" label="登记日期" width="100" align="center" class-name="font-mono text-slate-400" />
       </el-table>
     </div>
+
+    <!-- ======================================================== -->
+    <!-- 模块 5: 公民配给订单需求统计与 AI 扩容预测看板 (需求 1 联动数据看板) -->
+    <!-- ======================================================== -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <span>{{ $t('dashboard.orderDemandInsightTitle') }}</span>
+            <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('dashboard.demandPenetrationTag') }}</el-tag>
+          </h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">
+            {{ $t('dashboard.orderDemandInsightSub') }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <el-tag size="small" type="success" effect="dark" class="font-mono">
+            {{ $t('dashboard.aiModelActive') }}
+          </el-tag>
+          <el-button size="small" type="primary" plain @click="$router.push('/warehouse?tab=orderStats')">
+            {{ $t('dashboard.drillDownOrderStatsBtn') }}
+          </el-button>
+        </div>
+      </div>
+
+      <!-- 四大核心口粮汇总卡片 -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
+        <div class="p-3 bg-blue-50/60 rounded-xl border border-blue-100 space-y-1">
+          <div class="flex justify-between text-blue-900 text-[11px]">
+            <span>{{ $t('dashboard.flourDemand') }}</span>
+            <span class="font-bold">🌾</span>
+          </div>
+          <div class="text-base sm:text-lg font-bold font-mono text-blue-700">286,500 KG</div>
+          <div class="text-[10px] text-slate-400">{{ $t('dashboard.flourDemandMoM') }}</div>
+        </div>
+        <div class="p-3 bg-teal-50/60 rounded-xl border border-teal-100 space-y-1">
+          <div class="flex justify-between text-teal-900 text-[11px]">
+            <span>{{ $t('dashboard.riceDemand') }}</span>
+            <span class="font-bold">🍚</span>
+          </div>
+          <div class="text-base sm:text-lg font-bold font-mono text-teal-700">118,200 KG</div>
+          <div class="text-[10px] text-slate-400">{{ $t('dashboard.riceDemandMoM') }}</div>
+        </div>
+        <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-100 space-y-1">
+          <div class="flex justify-between text-amber-900 text-[11px]">
+            <span>{{ $t('dashboard.oilDemand') }}</span>
+            <span class="font-bold">🌻</span>
+          </div>
+          <div class="text-base sm:text-lg font-bold font-mono text-amber-700">42,300 L</div>
+          <div class="text-[10px] text-slate-400">{{ $t('dashboard.oilDemandMoM') }}</div>
+        </div>
+        <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-1">
+          <div class="flex justify-between text-indigo-900 text-[11px]">
+            <span>{{ $t('dashboard.sugarDemand') }}</span>
+            <span class="font-bold">🍬</span>
+          </div>
+          <div class="text-base sm:text-lg font-bold font-mono text-indigo-700">49,800 KG</div>
+          <div class="text-[10px] text-slate-400">{{ $t('dashboard.sugarDemandMoM') }}</div>
+        </div>
+      </div>
+
+      <!-- AI 扩容需求决策建议 -->
+      <div class="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 via-blue-50/60 to-slate-50 border border-indigo-100 text-xs space-y-2">
+        <div class="flex items-center gap-2 font-bold text-indigo-950">
+          <span class="text-base">🤖</span>
+          <span>{{ $t('dashboard.aiExpansionConclusionTitle') }}</span>
+        </div>
+        <p class="text-slate-600 leading-relaxed text-[11px]">
+          {{ $t('dashboard.aiExpansionConclusionText') }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 模块 6: 代理商订单统计分析全景看板 (需求 5 联动数据看板) -->
+    <!-- ======================================================== -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span>{{ $t('dashboard.agentOrdersOverviewTitle') }}</span>
+            <el-tag size="small" type="success" effect="plain" class="font-mono">{{ $t('dashboard.wholesaleAnalyticsTag') }}</el-tag>
+          </h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">
+            {{ $t('dashboard.agentOrdersOverviewSub') }}
+          </p>
+        </div>
+        <el-button size="small" type="success" plain @click="$router.push('/agent?tab=orderAnalytics')">
+          {{ $t('dashboard.enterAgentAnalyticsBtn') }}
+        </el-button>
+      </div>
+
+      <AgentOrderStatsChart />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AgentOrderStatsChart from '../../agent/components/AgentOrderStatsChart.vue';
 import * as echarts from 'echarts';
 import { User, House, Shop, Box, Service } from '@element-plus/icons-vue';
 import { getAdminDashboardStats } from '../../../api/dashboard.js';

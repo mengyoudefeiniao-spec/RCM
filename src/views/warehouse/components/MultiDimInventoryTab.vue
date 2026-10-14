@@ -15,9 +15,9 @@
 
       <div class="flex items-center gap-2">
         <el-radio-group v-model="viewMode" size="small">
-          <el-radio-button label="realtime">{{ $t('warehouse.realtimeInventory') || '六维实时库存视图' }}</el-radio-button>
-          <el-radio-button label="ledger">{{ $t('warehouse.ledgerCenter') || '流水台账中心 (三级钩稽)' }}</el-radio-button>
-          <el-radio-button label="snapshot">{{ $t('warehouse.snapshotRollback') || '历史快照时光回溯' }}</el-radio-button>
+          <el-radio-button value="realtime">{{ $t('warehouse.realtimeInventory') || '六维实时库存视图' }}</el-radio-button>
+          <el-radio-button value="ledger">{{ $t('warehouse.ledgerCenter') || '流水台账中心 (三级钩稽)' }}</el-radio-button>
+          <el-radio-button value="snapshot">{{ $t('warehouse.snapshotRollback') || '历史快照时光回溯' }}</el-radio-button>
         </el-radio-group>
         <el-button size="small" @click="loadData">
           <el-icon class="mr-1"><Refresh /></el-icon>

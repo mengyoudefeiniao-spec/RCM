@@ -14,7 +14,7 @@
             <el-icon class="text-amber-500 text-lg"><Unlock /></el-icon>
           </template>
         </ModuleDescTip>
-        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
+        <el-button size="small" plain class="shrink-0" @click="handleGoBack">
           <el-icon class="mr-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
@@ -106,9 +106,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
+import { addSharedTicket } from '../../utils/sharedSession.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
@@ -117,7 +118,16 @@ import { ElMessage } from 'element-plus';
 
 const { t, locale } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const citizenStore = useCitizenStore();
+
+function handleGoBack() {
+  if (route.query.layout === 'app') {
+    router.push({ path: '/citizen', query: { layout: 'app' } });
+  } else {
+    router.push('/citizen');
+  }
+}
 
 const unfreezeType = ref('商业');
 const unfreezeFileUploaded = ref(true);
@@ -305,14 +315,29 @@ async function handlePaymentSuccess(paymentInfo) {
   submitting.value = true;
   try {
     const res = await citizenStore.unfreezeCard({
-      cardNo: citizenStore.currentFamily.rationCardNo,
+      cardNo: citizenStore.currentFamily?.rationCardNo,
       type: unfreezeType.value,
       statement: unfreezeStatement.value,
-      docName: currentDocConfig.value.fileName,
+      docName: currentDocConfig.value?.fileName,
       paymentInfo
     });
+
+    // 跨标签页共享与广播新解冻公文
+    addSharedTicket({
+      source: '配给卡解冻复核申请',
+      sourceCode: 'UNF',
+      categoryType: '异常状态解除类',
+      appType: '配给卡解冻公文',
+      cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
+      applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
+      reason: unfreezeStatement.value || '公民提交配给卡解冻材料及合规陈述，申请撤销冻结状态。',
+      attachments: [
+        { name: currentDocConfig.value?.fileName || '解冻法定证明材料.pdf', type: 'required', verified: true }
+      ]
+    });
+
     ElMessage.success(t('unfreeze.submitSuccess'));
-    router.push('/review');
+    handleGoBack();
   } finally {
     submitting.value = false;
   }

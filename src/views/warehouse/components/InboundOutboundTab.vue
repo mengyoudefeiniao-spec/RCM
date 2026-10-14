@@ -3,10 +3,10 @@
     <!-- 标头与子分类切换 (已去除冗余介绍) -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
       <el-radio-group v-model="subSection" size="small">
-        <el-radio-button label="inbound">{{ $t('warehouse.subInbound') || '入库质检与建档' }}</el-radio-button>
-        <el-radio-button label="outbound">{{ $t('warehouse.subOutbound') || '出库波次与交付' }}</el-radio-button>
-        <el-radio-button label="transfer">{{ $t('warehouse.subTransfer') || '跨库调拨(三段式)' }}</el-radio-button>
-        <el-radio-button label="stocktake">{{ $t('warehouse.subStocktake') || '盘点与存证报损' }}</el-radio-button>
+        <el-radio-button value="inbound">{{ $t('warehouse.subInbound') || '入库质检与建档' }}</el-radio-button>
+        <el-radio-button value="outbound">{{ $t('warehouse.subOutbound') || '出库波次与交付' }}</el-radio-button>
+        <el-radio-button value="transfer">{{ $t('warehouse.subTransfer') || '跨库调拨(三段式)' }}</el-radio-button>
+        <el-radio-button value="stocktake">{{ $t('warehouse.subStocktake') || '盘点与存证报损' }}</el-radio-button>
       </el-radio-group>
 
       <div class="flex items-center gap-2">

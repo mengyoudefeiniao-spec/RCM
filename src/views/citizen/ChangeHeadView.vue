@@ -14,7 +14,7 @@
             <el-icon class="text-blue-600 text-lg"><UserFilled /></el-icon>
           </template>
         </ModuleDescTip>
-        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
+        <el-button size="small" plain class="shrink-0" @click="handleGoBack">
           <el-icon class="mr-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
@@ -118,9 +118,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
+import { addSharedTicket } from '../../utils/sharedSession.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
@@ -129,7 +130,16 @@ import { ElMessage } from 'element-plus';
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const citizenStore = useCitizenStore();
+
+function handleGoBack() {
+  if (route.query.layout === 'app') {
+    router.push({ path: '/citizen', query: { layout: 'app' } });
+  } else {
+    router.push('/citizen');
+  }
+}
 
 const deathProofNo = ref('DTH-BAG-2026-90182');
 const deathProofUploaded = ref(true);
@@ -197,8 +207,25 @@ async function handlePaymentSuccess(paymentInfo) {
       deathProofNo: deathProofNo.value,
       paymentInfo
     });
+
+    // 跨标签页数据同步与广播：政府端工作台将实时收到该申办公文
+    addSharedTicket({
+      source: '变更户主',
+      sourceCode: 'HED',
+      appType: '法定户主更替申办 (继承轮替)',
+      cardNo: citizenStore.currentFamily?.rationCardNo,
+      applicantName: currentCandidateName.value || '艾哈迈德·哈桑·萨利赫',
+      targetMemberName: currentCandidateName.value,
+      reason: `原户主亡故注销，依据死亡证明 #${deathProofNo.value} 申办户主继承轮替。`,
+      payload: {
+        newHeadId: replacementHeadId.value,
+        deathProofNo: deathProofNo.value,
+        paymentInfo
+      }
+    });
+
     ElMessage.success(t('changeHead.submitSuccess'));
-    router.push('/review');
+    handleGoBack();
   } finally {
     submitting.value = false;
   }

@@ -13,7 +13,7 @@
             <el-icon class="text-indigo-600 text-lg"><User /></el-icon>
           </template>
         </ModuleDescTip>
-        <el-button size="small" plain class="shrink-0" @click="$router.push('/citizen')">
+        <el-button size="small" plain class="shrink-0" @click="handleGoBack">
           <el-icon class="mr-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
@@ -558,7 +558,7 @@
               </div>
 
               <div class="flex items-center justify-center gap-3 pt-2">
-                <el-button type="primary" size="large" class="px-8 font-bold" @click="$router.push('/citizen')">
+                <el-button type="primary" size="large" class="px-8 font-bold" @click="handleGoBack">
                   {{ $t('transfer.backToFamily') }}
                 </el-button>
               </div>
@@ -612,9 +612,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
+import { addSharedTicket } from '../../utils/sharedSession.js';
 import { queryMemberForTransfer, submitMemberTransfer, getTransferrableMembers } from '../../api/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
@@ -641,7 +642,16 @@ import { ElMessage } from 'element-plus';
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 const router = useRouter();
+const route = useRoute();
 const citizenStore = useCitizenStore();
+
+function handleGoBack() {
+  if (route.query.layout === 'app') {
+    router.push({ path: '/citizen', query: { layout: 'app' } });
+  } else {
+    router.push('/citizen');
+  }
+}
 
 // 纯模块主标题
 const cleanMemberTransferTitle = computed(() => {
@@ -850,6 +860,22 @@ async function handlePaymentSuccess(paymentInfo) {
     transferMemberResult.value = res;
     currentStep.value = 5;
     await citizenStore.fetchFamilies();
+
+    // 跨标签页共享与广播新成员转移公文
+    addSharedTicket({
+      source: '家庭成员关系转移公文',
+      sourceCode: 'TRM',
+      categoryType: '成员户籍转移',
+      appType: '跨户成员合并/转移',
+      cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
+      applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
+      targetMemberName: selectedMember.value?.name || '家庭成员',
+      reason: `办理成员 [${selectedMember.value?.name || '申请人'}] 跨户转移，事由：${getReasonLabel(transferReasonType.value)}`,
+      attachments: [
+        { name: payload.proofDoc || '法定关系证明公文_2026.pdf', type: 'required', verified: true }
+      ]
+    });
+
     ElMessage.success(t('memberTransfer.submitSuccessMsg'));
   } catch (err) {
     // handled by axios

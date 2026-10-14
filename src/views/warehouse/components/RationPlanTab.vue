@@ -13,18 +13,18 @@
           }}
         </span>
         <el-tag size="small" type="primary" effect="plain">
-          {{ isCitizen ? '个人月度份额' : '三级代理自动核算' }}
+          {{ isCitizen ? ($t('warehouse.personalMonthlyShare') || '个人月度份额') : ($t('warehouse.threeTierAutoCalculation') || '三级代理自动核算') }}
         </el-tag>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
         <!-- 上级代理根据贸易部计划生成自己和下级代理的月度配给计划 (省级/区域/街道三层，按户数自动分配，不能手动分配) -->
         <el-button v-if="!isCitizen" type="success" size="small" @click="openDecomposeDialog">
           <el-icon class="mr-1"><Share /></el-icon>
-          <span>依据贸易部计划生成月度排程</span>
+          <span>{{ $t('warehouse.generateMonthlySchedule') || '依据贸易部计划生成月度排程' }}</span>
         </el-button>
         <el-button v-if="isAdmin" type="primary" size="small" @click="openCreatePlanDialog">
           <el-icon class="mr-1"><Plus /></el-icon>
-          <span>制定贸易部总计划</span>
+          <span>{{ $t('warehouse.makePlan') || '制定计划' }}</span>
         </el-button>
         <el-button size="small" @click="loadData">
           <el-icon class="mr-1"><Refresh /></el-icon>
@@ -154,12 +154,18 @@
 
         <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="space-y-0.5">
-            <span class="font-bold block">核销提货指引：</span>
-            <span>请户主或代领人持本人配给卡（实体卡或电子卡凭证）至签约代销站扫码核销即可全额领取。</span>
+            <span class="font-bold block">{{ $t('warehouse.claimPickGuide') || '核销提货与申领指引：' }}</span>
+            <span>{{ $t('warehouse.claimPickDesc') || '请户主或代领人在本模块选购所需配额并完成自付规费结算，生成二维码后至签约代销站扫码核销即可全额领取。' }}</span>
           </div>
-          <el-button type="warning" size="small" class="shrink-0 font-bold" @click="$router.push('/citizen')">
-            出示我的配给卡
-          </el-button>
+          <div class="flex items-center gap-2 shrink-0">
+            <el-button type="primary" size="small" class="font-bold" @click="emit('go-purchase')">
+              <el-icon class="mr-1"><ShoppingCart /></el-icon>
+              {{ $t('warehouse.buyThisMonthRation') || '立即选购本月配给品' }}
+            </el-button>
+            <el-button type="warning" plain size="small" class="font-bold" @click="$router.push('/citizen')">
+              {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
+            </el-button>
+          </div>
         </div>
       </div>
     </div>
@@ -688,24 +694,41 @@
       </template>
     </el-dialog>
 
-    <!-- 制定贸易部配给新总计划对话框 (管理角色专属) -->
-    <el-dialog v-model="createDialogVisible" title="制定并下发贸易部物资配给月度总计划 (SCM / BPM)" width="640px" destroy-on-close>
+    <!-- 制定配给计划对话框 (管理角色专属) -->
+    <el-dialog v-model="createDialogVisible" :title="$t('warehouse.makePlanTitle') || '制定计划 (SCM / BPM)'" width="640px" destroy-on-close>
       <el-form :model="newPlanForm" label-width="130px" class="space-y-3 text-xs">
-        <el-form-item label="计划编号" required>
+        <el-form-item :label="$t('warehouse.planNo') || '计划编号'" required>
           <el-input v-model="newPlanForm.planNo" placeholder="如 PLAN-2026-11-001" />
         </el-form-item>
-        <el-form-item label="计划标题名称" required>
-          <el-input v-model="newPlanForm.title" placeholder="如 2026年11月全国战略口粮保供计划" />
+        <el-form-item :label="$t('warehouse.planTitle') || '计划标题名称'" required>
+          <el-input v-model="newPlanForm.title" placeholder="如 2026年11月全国战略口粮月度配给计划" />
         </el-form-item>
-        <el-form-item label="月度周期起止" required>
+        <el-form-item :label="$t('warehouse.cyclePeriod') || '月度周期起止'" required>
           <div class="flex items-center gap-2 w-full">
             <el-date-picker v-model="newPlanForm.startDate" type="date" value-format="YYYY-MM-DD" placeholder="开始日期" class="w-full" />
             <span class="text-slate-400">至</span>
             <el-date-picker v-model="newPlanForm.endDate" type="date" value-format="YYYY-MM-DD" placeholder="截止日期" class="w-full" />
           </div>
         </el-form-item>
-        <el-form-item label="保供对象范围" required>
-          <el-input v-model="newPlanForm.scope" placeholder="如 全国18省全域 (重点倾斜第140号决议区)" />
+        <el-form-item :label="$t('warehouse.targetScope') || '供应对象范围'" required>
+          <el-select
+            v-model="newPlanForm.provinces"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            :placeholder="$t('warehouse.selectProvinces') || '请选择供应省市 (支持多选，制定每月配给计划)'"
+            class="w-full"
+          >
+            <el-option label="全国所有省份 (全境统筹)" value="全国所有省市" />
+            <el-option label="巴格达省 (Baghdad)" value="巴格达省" />
+            <el-option label="巴士拉省 (Basra)" value="巴士拉省" />
+            <el-option label="尼尼微省 (Nineveh)" value="尼尼微省" />
+            <el-option label="迪亚拉省 (Diyala)" value="迪亚拉省" />
+            <el-option label="基尔库克省 (Kirkuk)" value="基尔库克省" />
+            <el-option label="安巴尔省 (Anbar)" value="安巴尔省" />
+            <el-option label="埃尔比勒省 (Erbil)" value="埃尔比勒省" />
+            <el-option label="苏莱曼尼亚省 (Sulaymaniyah)" value="苏莱曼尼亚省" />
+          </el-select>
         </el-form-item>
         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70 space-y-2">
           <div class="flex justify-between items-center">
@@ -853,7 +876,9 @@ import {
 } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check } from '@element-plus/icons-vue';
+import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart } from '@element-plus/icons-vue';
+
+const emit = defineEmits(['go-purchase']);
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
@@ -948,7 +973,8 @@ const newPlanForm = ref({
   title: '',
   startDate: '2026-11-01',
   endDate: '2026-11-30',
-  scope: '全国18省全域 (重点倾斜覆盖第140号决议区与受损安置点)',
+  provinces: ['巴格达省', '巴士拉省', '尼尼微省', '迪亚拉省', '基尔库克省'],
+  scope: '巴格达省、巴士拉省、尼尼微省、迪亚拉省、基尔库克省',
   riceQuota: 3.0,
   flourQuota: 9.0,
   oilQuota: 1.0,
@@ -1097,10 +1123,13 @@ async function submitCreatePlan() {
     ElMessage.warning('请填写计划名称');
     return;
   }
+  newPlanForm.value.scope = newPlanForm.value.provinces?.length
+    ? newPlanForm.value.provinces.join('、')
+    : '全国所有省市';
   submitting.value = true;
   try {
     await createRationPlan({ ...newPlanForm.value });
-    ElMessage.success('成功签署并下发贸易部月度物资配给总计划！');
+    ElMessage.success('成功签署并下发月度物资配给计划！');
     createDialogVisible.value = false;
     await loadData();
   } catch (err) {

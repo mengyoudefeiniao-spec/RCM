@@ -1,39 +1,39 @@
 <template>
-  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40 w-full">
+  <header class="bg-[#1E3F35] text-white border-b border-[#295447] shadow-md sticky top-0 z-40 w-full">
     <!-- 全宽顶栏：针对 Google Pixel 9 手机优化高度与右侧控件排列 -->
     <div class="w-full px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->
       <div class="flex items-center gap-2 sm:gap-3 lg:gap-5 min-w-0">
         <!-- 平台标识与名称 (固定左上角) -->
-        <div class="flex items-center gap-2 cursor-pointer shrink-0" @click="handleLogoClick">
+        <div class="flex items-center gap-2.5 cursor-pointer shrink-0" @click="handleLogoClick">
           <!-- App 移动端模式：仅显示 Logo 方块图标，去除文字，节省宝贵视口宽度 -->
           <AppLogo size="sm" class="sm:hidden" />
           <!-- 桌面端模式：显示中号 Logo 方块图标 -->
           <AppLogo size="md" class="hidden sm:flex" />
 
-          <!-- 文字排印：在 App 移动端隐藏，在桌面端正常展示 -->
-          <div class="shrink-0 hidden sm:block">
-            <div class="text-xs sm:text-sm font-bold tracking-wide flex items-center gap-1.5">
-              <span class="font-semibold">Ration Card Management</span>
-              <el-tag size="small" effect="dark" type="primary" class="font-mono font-bold scale-90 origin-left">RCM</el-tag>
+          <!-- 文字排印：在 App 移动端隐藏，在桌面端仅显示单一名词 RCM 与金色部委标识，全称与缩写不并存 -->
+          <!-- 文字排印：在 App 移动端或 APP 仿真模式下隐藏，桌面 Web 端显示 RCM 标识 -->
+          <div v-if="!isAppMode" class="shrink-0 hidden sm:block">
+            <div class="text-xs sm:text-sm font-black tracking-wider flex items-center gap-1.5 text-white">
+              <span>RCM</span>
             </div>
-            <div class="text-[9px] text-slate-400 font-mono">
+            <div class="text-[9px] text-[#C59D5F] font-mono tracking-wider font-semibold">
               REPUBLIC OF IRAQ · MINISTRY OF TRADE
             </div>
           </div>
         </div>
 
         <!-- 分隔浅竖线 -->
-        <div class="hidden xl:block h-5 w-px bg-slate-800 shrink-0"></div>
+        <div v-if="!isAppMode" class="hidden xl:block h-5 w-px bg-[#2E5E50] shrink-0"></div>
 
-        <!-- 核心系统快捷导航 (桌面端) -->
-        <nav class="hidden md:flex items-center gap-1 text-xs shrink-0">
+        <!-- 核心系统快捷导航 (桌面端且非 APP 模式) -->
+        <nav v-if="!isAppMode" class="hidden md:flex items-center gap-1 text-xs shrink-0">
           <!-- 1. 数据看板：配给代理或管理角色可见 -->
           <router-link
             v-if="canViewDashboard"
             to="/dashboard"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/dashboard' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path === '/dashboard' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><DataAnalysis /></el-icon>
             <span>{{ $t('nav.dashboard') }}</span>
@@ -44,7 +44,7 @@
             v-if="authStore.currentRole === 'citizen'"
             to="/citizen"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/citizen') ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path.startsWith('/citizen') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><User /></el-icon>
             <span>{{ $t('nav.citizen') }}</span>
@@ -55,7 +55,7 @@
             v-if="authStore.isAdmin"
             to="/review"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/review' ? 'bg-amber-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path === '/review' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><Stamp /></el-icon>
             <span>{{ $t('nav.review') }}</span>
@@ -69,20 +69,20 @@
             v-if="authStore.isAdmin"
             to="/complaint"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/complaint') ? 'bg-rose-600 text-white font-bold' : 'text-rose-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path.startsWith('/complaint') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><Service /></el-icon>
             <span>{{ $t('nav.complaint') }}</span>
           </router-link>
 
-          <!-- 5. 配给管理 (公民与配给代理角色均显示为配给管理，管理角色显示为仓储管理) -->
+          <!-- 5. 配给管理 (统一显示为配给管理) -->
           <router-link
             to="/warehouse"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/warehouse' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path === '/warehouse' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><Box /></el-icon>
-            <span>{{ (authStore.currentRole === 'citizen' || authStore.currentRole === 'agent') ? ($t('nav.rationMgmt') || '配给管理') : $t('nav.warehouse') }}</span>
+            <span>{{ $t('nav.rationMgmt') || '配给管理' }}</span>
           </router-link>
 
           <!-- 6. 代理管理：管理角色与 Agent 配给代理可见 -->
@@ -90,7 +90,7 @@
             v-if="authStore.isAdmin || authStore.currentRole === 'agent'"
             to="/agent"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/agent' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path === '/agent' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><Shop /></el-icon>
             <span>{{ $t('nav.agent') }}</span>
@@ -101,7 +101,7 @@
             v-if="authStore.isAdmin"
             to="/admin"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/admin') ? 'bg-indigo-600 text-white font-bold' : 'text-indigo-300 hover:text-white hover:bg-slate-800'"
+            :class="$route.path.startsWith('/admin') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
           >
             <el-icon><Setting /></el-icon>
             <span>{{ $t('nav.admin') }}</span>
@@ -116,36 +116,52 @@
 
         <!-- 角色身份切换下拉 -->
         <el-dropdown trigger="click" @command="handleRoleCommand">
-          <span class="flex items-center gap-1 text-[11px] sm:text-xs text-slate-300 hover:text-white cursor-pointer px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800 border border-slate-700">
+          <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
+          <span
+            v-if="!isAppMode"
+            class="hidden sm:flex items-center gap-1 text-xs text-[#DFE8E3] hover:text-white cursor-pointer px-2.5 py-1.5 rounded-lg bg-[#16332B] border border-[#295447]"
+          >
             <span class="w-2 h-2 rounded-full shrink-0" :class="roleDotColor"></span>
-            <span class="whitespace-nowrap font-medium max-w-[72px] sm:max-w-none truncate">{{ roleLabel }}</span>
+            <span class="whitespace-nowrap font-medium">{{ roleLabel }}</span>
             <el-icon class="text-[10px]"><ArrowDown /></el-icon>
           </span>
+
+          <!-- APP 模式或移动端小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
+          <button
+            type="button"
+            class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative cursor-pointer"
+            :class="{ 'sm:hidden': !isAppMode }"
+            :title="roleLabel"
+          >
+            <el-icon :size="15"><UserFilled /></el-icon>
+            <!-- 角色小圆点徽标 -->
+            <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#16332B]" :class="roleDotColor"></span>
+          </button>
           <template #dropdown>
             <el-dropdown-menu>
               <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-100">
                 {{ $t('roles.adminRoles') }}
               </div>
               <el-dropdown-item command="minister_center">
-                <span class="font-bold text-indigo-600">● {{ $t('roles.ministerCenter') }}</span>
+                <span class="font-bold text-[#1E3F35]">● {{ $t('roles.ministerCenter') }}</span>
                 <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.ministerDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="deputy_minister">
-                <span class="font-bold text-rose-600">● {{ $t('roles.deputyMinister') }}</span>
+                <span class="font-bold text-[#D34545]">● {{ $t('roles.deputyMinister') }}</span>
                 <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.deputyDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="director_planning">
-                <span class="font-bold text-amber-600">● {{ $t('roles.directorPlanning') }}</span>
+                <span class="font-bold text-[#C59D5F]">● {{ $t('roles.directorPlanning') }}</span>
                 <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.directorDuty') }}</span>
               </el-dropdown-item>
               <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-t border-b border-slate-100 mt-1">
                 {{ $t('roles.businessRoles') }}
               </div>
               <el-dropdown-item command="citizen">
-                <span class="text-blue-600">● {{ $t('roles.citizen') }}</span>
+                <span class="text-[#2C6E49]">● {{ $t('roles.citizen') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="agent">
-                <span class="text-emerald-600">● {{ $t('roles.agent') }}</span>
+                <span class="text-[#1E3F35] font-bold">● {{ $t('roles.agent') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -159,86 +175,6 @@
         </el-tooltip>
       </div>
     </div>
-
-    <!-- 移动端底部原生级导航栏 (适配 Google Pixel 9 412x924px 视口与 Android 底部手势栏) -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1 flex items-center justify-around safe-area-bottom shadow-2xl">
-      <!-- 1. 看板 (代理与管理可见) -->
-      <router-link
-        v-if="canViewDashboard"
-        to="/dashboard"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/dashboard' ? 'text-blue-400 font-bold bg-blue-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><DataAnalysis /></el-icon>
-        <span>看板</span>
-      </router-link>
-
-      <!-- 2. 公民 (仅公民可见) -->
-      <router-link
-        v-if="authStore.currentRole === 'citizen'"
-        to="/citizen"
-        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path.startsWith('/citizen') ? 'text-blue-400 font-bold bg-blue-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><User /></el-icon>
-        <span>公民</span>
-      </router-link>
-
-      <!-- 3. 审核 (仅管理可见) -->
-      <router-link
-        v-if="authStore.isAdmin"
-        to="/review"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] relative transition-all"
-        :class="$route.path === '/review' ? 'text-amber-400 font-bold bg-amber-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><Stamp /></el-icon>
-        <span>审核</span>
-        <span v-if="pendingReviewCount > 0" class="absolute 0 top-0.5 right-1.5 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
-      </router-link>
-
-      <!-- 4. 投诉 (仅管理可见) -->
-      <router-link
-        v-if="authStore.isAdmin"
-        to="/complaint"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path.startsWith('/complaint') ? 'text-rose-400 font-bold bg-rose-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><Service /></el-icon>
-        <span>投诉</span>
-      </router-link>
-
-      <!-- 5. 配给/仓储 (公民与代理均显示为配给) -->
-      <router-link
-        to="/warehouse"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/warehouse' ? 'text-blue-400 font-bold bg-blue-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><Box /></el-icon>
-        <span>{{ (authStore.currentRole === 'citizen' || authStore.currentRole === 'agent') ? '配给' : '仓储' }}</span>
-      </router-link>
-
-      <!-- 6. 代理 (管理与代理可见) -->
-      <router-link
-        v-if="authStore.isAdmin || authStore.currentRole === 'agent'"
-        to="/agent"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/agent' ? 'text-blue-400 font-bold bg-blue-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><Shop /></el-icon>
-        <span>代理</span>
-      </router-link>
-
-      <!-- 7. 后台管理 (仅管理可见) -->
-      <router-link
-        v-if="authStore.isAdmin"
-        to="/admin"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path.startsWith('/admin') ? 'text-indigo-400 font-bold bg-indigo-950/60' : 'text-slate-400 active:scale-95'"
-      >
-        <el-icon :size="19"><Setting /></el-icon>
-        <span>管理</span>
-      </router-link>
-    </nav>
   </header>
 </template>
 
@@ -254,13 +190,18 @@ import AppLogo from '../common/AppLogo.vue';
 import {
   DataAnalysis,
   User,
+  UserFilled,
   Stamp,
   Box,
   Shop,
   Setting,
   ArrowDown,
   SwitchButton,
-  Service
+  Service,
+  Compass,
+  ShoppingCart,
+  Van,
+  FullScreen
 } from '@element-plus/icons-vue';
 
 const router = useRouter();
@@ -268,6 +209,15 @@ const route = useRoute();
 const { t } = useI18n();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
+
+const isAppMode = computed(() => route.query.layout === 'app');
+
+function getNavTarget(path) {
+  if (isAppMode.value) {
+    return { path, query: { layout: 'app' } };
+  }
+  return path;
+}
 
 onMounted(() => {
   if (authStore.isAdmin) {

@@ -1,80 +1,120 @@
 <template>
-  <div class="dashboard-view space-y-4">
-    <!-- ======================================================== -->
-    <!-- 顶部控制栏 (简洁干练介绍词，支持根据时间范围联动切换查询) -->
-    <!-- ======================================================== -->
-    <div class="bg-white px-4 py-3 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" :class="isAgentRole ? 'bg-teal-600' : 'bg-blue-600'">
-          <el-icon class="text-base"><DataAnalysis /></el-icon>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 class="text-sm font-bold text-slate-900">
-              {{ isAgentRole ? ($t('dashboard.agentTitle') || '配给代理保供大盘') : ($t('dashboard.adminTitle') || '全国配给综合数据看板') }}
-            </h2>
-            <el-tag size="small" :type="isAgentRole ? 'success' : 'primary'" effect="plain" class="font-medium text-[11px]">
-              {{ roleTitle }}
-            </el-tag>
-          </div>
-          <span class="text-[11px] text-slate-400">
-            {{ isAgentRole ? ($t('dashboard.agentSubtitle') || '战略物资在库余量与供应链全链路履约监控') : ($t('dashboard.adminSubtitle') || '涵盖公民、家庭、各地区代理商、实际配给及投诉处置') }}
+  <div class="dashboard-view space-y-3 sm:space-y-6">
+    <!-- 顶部高层选项卡切换：桌面端全量排印，移动端紧凑自适应 (仅在非独立 APP 布局下展示) -->
+    <div
+      v-if="!isAppMode"
+      class="flex items-center justify-between bg-white px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-[#ECE7DE] shadow-2xs gap-2"
+    >
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#1E3F35]"></span>
+        <!-- 桌面端标题 -->
+        <span class="hidden sm:inline text-xs sm:text-sm font-bold text-[#1E3F35]">
+          伊拉克国家配给综合运行中心 (RCM Central Hub)
+        </span>
+        <!-- 移动端精简标题 -->
+        <span class="sm:hidden text-xs font-bold text-[#1E3F35]">
+          RCM 调度中心
+        </span>
+      </div>
+
+      <el-radio-group v-model="dashboardMode" size="small" class="shrink-0">
+        <el-radio-button value="overview">
+          <span class="flex items-center gap-1">
+            <el-icon><DataAnalysis /></el-icon>
+            <span class="hidden sm:inline">战略大盘 (政务全景)</span>
+            <span class="sm:hidden text-[11px]">大盘</span>
           </span>
+        </el-radio-button>
+        <el-radio-button value="mobile">
+          <span class="flex items-center gap-1">
+            <el-icon><Cellphone /></el-icon>
+            <span class="hidden sm:inline">现场核销 (Pixel 9 APP)</span>
+            <span class="sm:hidden text-[11px]">APP</span>
+          </span>
+        </el-radio-button>
+        <el-radio-button value="operational">
+          <span class="flex items-center gap-1">
+            <el-icon><Operation /></el-icon>
+            <span class="hidden sm:inline">{{ isAgentRole ? '网点保供流转' : '管理业务深维' }}</span>
+            <span class="sm:hidden text-[11px]">业务</span>
+          </span>
+        </el-radio-button>
+      </el-radio-group>
+    </div>
+
+    <!-- 模式 1: 现代中东高端政务质感看板 (参考图风格 100% 还原) -->
+    <div v-show="dashboardMode === 'overview'" class="animate-fadeIn">
+      <DashboardOverview />
+    </div>
+
+    <!-- 模式 2: 现场核销作业 APP (基于 Google Pixel 9 深度适配) -->
+    <div v-show="dashboardMode === 'mobile'" class="animate-fadeIn">
+      <MobileAgentDashboard @switch-mode="dashboardMode = $event" />
+    </div>
+
+    <!-- 模式 2: 原角色专属细化业务大盘 (保供/管理) -->
+    <div v-show="dashboardMode === 'operational'" class="space-y-4 animate-fadeIn">
+      <!-- 原顶部控制栏 -->
+      <div class="bg-white px-4 py-3 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" :class="isAgentRole ? 'bg-teal-600' : 'bg-blue-600'">
+            <el-icon class="text-base"><DataAnalysis /></el-icon>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-slate-900">
+                {{ isAgentRole ? ($t('dashboard.agentTitle') || '配给代理保供大盘') : ($t('dashboard.adminTitle') || '全国配给综合数据看板') }}
+              </h2>
+              <el-tag size="small" :type="isAgentRole ? 'success' : 'primary'" effect="plain" class="font-medium text-[11px]">
+                {{ roleTitle }}
+              </el-tag>
+            </div>
+            <span class="text-[11px] text-slate-400">
+              {{ isAgentRole ? ($t('dashboard.agentSubtitle') || '战略物资在库余量与供应链全链路履约监控') : ($t('dashboard.adminSubtitle') || '涵盖公民、家庭、各地区代理商、实际配给及投诉处置') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- 时间范围单选器 -->
+          <el-radio-group v-model="selectedTimeRange" size="small" @change="handleTimeRangeChange">
+            <el-radio-button value="quarter">{{ $t('dashboard.quarter') || '本季度' }}</el-radio-button>
+            <el-radio-button value="month">{{ $t('dashboard.month') || '近30天' }}</el-radio-button>
+            <el-radio-button value="week">{{ $t('dashboard.week') || '近7天' }}</el-radio-button>
+            <el-radio-button value="day">{{ $t('dashboard.day') || '近1天' }}</el-radio-button>
+          </el-radio-group>
+
+          <!-- 刷新按钮 -->
+          <el-button size="small" @click="handleRefresh" :loading="refreshing">
+            <el-icon class="mr-1"><Refresh /></el-icon>
+            {{ $t('dashboard.refresh') || '刷新数据' }}
+          </el-button>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- 时间范围单选器 -->
-        <el-radio-group v-model="selectedTimeRange" size="small" @change="handleTimeRangeChange">
-          <el-radio-button label="quarter">{{ $t('dashboard.quarter') || '本季度' }}</el-radio-button>
-          <el-radio-button label="month">{{ $t('dashboard.month') || '近30天' }}</el-radio-button>
-          <el-radio-button label="week">{{ $t('dashboard.week') || '近7天' }}</el-radio-button>
-          <el-radio-button label="day">{{ $t('dashboard.day') || '近1天' }}</el-radio-button>
-        </el-radio-group>
-
-        <!-- 配给代理专属：P1 ~ P5 规则实体验证抽屉入口 -->
-        <el-button v-if="isAgentRole" type="success" size="small" @click="openVerificationDrawer">
-          <el-icon class="mr-1"><Checked /></el-icon>
-          {{ $t('dashboard.p1p5Verify') || 'P1 ~ P5 规则验证' }}
-        </el-button>
-
-        <!-- 刷新按钮 -->
-        <el-button size="small" @click="handleRefresh" :loading="refreshing">
-          <el-icon class="mr-1"><Refresh /></el-icon>
-          {{ $t('dashboard.refresh') || '刷新数据' }}
-        </el-button>
+      <!-- 业务视角分发 -->
+      <div v-if="isAgentRole">
+        <AgentDashboard ref="agentDashboardRef" :timeRange="selectedTimeRange" />
       </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- 业务视角分发 -->
-    <!-- 1. 配给代理：保持原有保供与仓储流转大盘 (介绍词已精简) -->
-    <!-- 2. 管理角色：针对于 公民、家庭、各地区代理商、实际配给情况、投诉和处理 -->
-    <!-- 3. 非授权角色 (如公民)：友好提示引导 -->
-    <!-- ======================================================== -->
-    <div v-if="isAgentRole">
-      <AgentDashboard ref="agentDashboardRef" :timeRange="selectedTimeRange" />
-    </div>
-
-    <div v-else-if="isAdminRole">
-      <AdminDashboard ref="adminDashboardRef" :timeRange="selectedTimeRange" />
-    </div>
-
-    <div v-else class="bg-white rounded-xl border border-slate-200 p-8 text-center space-y-3">
-      <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 text-xl">
-        <el-icon><Lock /></el-icon>
+      <div v-else-if="isAdminRole">
+        <AdminDashboard ref="adminDashboardRef" :timeRange="selectedTimeRange" />
       </div>
-      <h3 class="text-sm font-bold text-slate-800">{{ $t('dashboard.accessRestricted') || '数据看板访问受限' }}</h3>
-      <p class="text-xs text-slate-500 max-w-md mx-auto">
-        {{ $t('dashboard.restrictedTip', { role: authStore.userProfile?.title || '普通公民' }) || `当前为【${authStore.userProfile?.title || '普通公民'}】角色。数据看板仅对配给代理网点或管理监督官开放查看。` }}
-      </p>
-      <div class="pt-2 flex justify-center gap-2">
-        <el-button size="small" type="primary" @click="$router.push('/citizen')">
-          {{ $t('dashboard.goToCitizen') || '前往公民服务' }}
-        </el-button>
-        <el-button size="small" @click="authStore.switchRole('agent')">
-          {{ $t('dashboard.switchToAgent') || '切换至配给代理' }}
-        </el-button>
+      <div v-else class="bg-white rounded-xl border border-slate-200 p-8 text-center space-y-3">
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 text-xl">
+          <el-icon><Lock /></el-icon>
+        </div>
+        <h3 class="text-sm font-bold text-slate-800">{{ $t('dashboard.accessRestricted') || '数据看板访问受限' }}</h3>
+        <p class="text-xs text-slate-500 max-w-md mx-auto">
+          {{ $t('dashboard.restrictedTip', { role: authStore.userProfile?.title || '普通公民' }) || `当前为【${authStore.userProfile?.title || '普通公民'}】角色。数据看板仅对配给代理网点或管理监督官开放查看。` }}
+        </p>
+        <div class="pt-2 flex justify-center gap-2">
+          <el-button size="small" type="primary" @click="$router.push('/citizen')">
+            {{ $t('dashboard.goToCitizen') || '前往公民服务' }}
+          </el-button>
+          <el-button size="small" @click="authStore.switchRole('agent')">
+            {{ $t('dashboard.switchToAgent') || '切换至配给代理' }}
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -84,17 +124,53 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useAuthStore } from '../../stores/auth.js';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { DataAnalysis, Checked, Refresh, Lock } from '@element-plus/icons-vue';
+import { DataAnalysis, Checked, Refresh, Lock, Operation, Cellphone } from '@element-plus/icons-vue';
+import { useAuthStore } from '../../stores/auth.js';
+import DashboardOverview from './components/DashboardOverview.vue';
+import MobileAgentDashboard from './components/MobileAgentDashboard.vue';
 import AgentDashboard from './components/AgentDashboard.vue';
 import AdminDashboard from './components/AdminDashboard.vue';
 import P1P5VerificationDrawer from '../warehouse/components/P1P5VerificationDrawer.vue';
 
+const route = useRoute();
 const authStore = useAuthStore();
+const dashboardMode = ref('overview'); // 默认展示现代中东高端政务风格看板
 const selectedTimeRange = ref('quarter');
 const refreshing = ref(false);
+
+const isAppMode = computed(() => route.query.layout === 'app');
+
+// 模式初始化：优先读取 URL query.mode (支持门户新标签页直达)，其次根据视口自适应或角色自适应
+onMounted(() => {
+  if (route.query.mode) {
+    dashboardMode.value = String(route.query.mode);
+  } else if (isAppMode.value && authStore.currentRole === 'agent') {
+    dashboardMode.value = 'mobile';
+  } else if (window.innerWidth <= 768) {
+    dashboardMode.value = 'mobile';
+  }
+});
+
+watch(
+  () => route.query.mode,
+  (mode) => {
+    if (mode) {
+      dashboardMode.value = String(mode);
+    }
+  }
+);
+
+// 保持移动端原生全局底栏常驻显示，各端协同呈现
+onMounted(() => {
+  authStore.setMobileVerificationActive(false);
+});
+
+onUnmounted(() => {
+  authStore.setMobileVerificationActive(false);
+});
 
 const agentDashboardRef = ref(null);
 const adminDashboardRef = ref(null);

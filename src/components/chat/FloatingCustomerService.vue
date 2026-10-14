@@ -1,35 +1,35 @@
 <template>
   <div class="rcm-customer-service-root font-sans">
-    <!-- 1. 悬浮触发球 (Floating Action Button) - APP模式下精简缩小降低占比，悬浮在底部操作栏上方 -->
+    <!-- 1. 悬浮触发球 (Floating Action Button) - APP模式下严格放在 412px 手机视口区域内 -->
     <transition name="pop">
       <div
         v-if="!isOpen"
         class="fixed z-50 flex items-center group cursor-pointer select-none transition-all duration-300"
         :class="[
           isAppMode
-            ? 'right-3 bottom-20 opacity-85 hover:opacity-100 active:scale-95'
+            ? 'opacity-90 hover:opacity-100 active:scale-95'
             : 'right-3.5 bottom-20 sm:right-6 sm:bottom-6'
         ]"
-        :style="{ bottom: isAppMode ? 'calc(68px + env(safe-area-inset-bottom, 8px))' : undefined }"
+        :style="isAppMode ? fabAppStyle : undefined"
         @click="openChatWindow"
       >
         <!-- 悬浮提示气泡 (仅宽屏桌面模式显示，APP模式下隐藏避免横向遮挡) -->
         <div
           v-if="!isAppMode"
-          class="hidden sm:flex items-center mr-3 px-3.5 py-1.5 rounded-full bg-slate-900/90 text-white text-xs font-medium shadow-xl backdrop-blur-md border border-slate-700/60 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300"
+          class="hidden sm:flex items-center mr-3 px-3.5 py-1.5 rounded-full bg-[#1E3F35]/95 text-white text-xs font-medium shadow-xl backdrop-blur-md border border-[#C59D5F]/40 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300"
         >
-          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+          <span class="inline-block w-2 h-2 rounded-full bg-[#D3A757] mr-2 animate-pulse"></span>
           <span>{{ $t('chat.fabTitle') }}</span>
         </div>
 
-        <!-- 悬浮球体主体 (APP模式下缩小至 38px，大幅降低屏幕占比) -->
+        <!-- 悬浮球体主体 (深墨绿+暖砂金高端政务质感) -->
         <button
           type="button"
-          class="relative rounded-full bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 text-white flex items-center justify-center transition-all duration-300"
+          class="relative rounded-full bg-gradient-to-tr from-[#142D25] via-[#1E3F35] to-[#C59D5F] text-white flex items-center justify-center transition-all duration-300"
           :class="[
             isAppMode
-              ? 'w-9.5 h-9.5 shadow-md border border-white/50 ring-1 ring-blue-500/20 active:scale-90'
-              : 'w-10 h-10 sm:w-13 sm:h-13 shadow-xl hover:scale-105 active:scale-95 border-2 border-white/40 ring-2 sm:ring-4 ring-blue-500/20'
+              ? 'w-9.5 h-9.5 shadow-md border border-[#C59D5F]/50 ring-1 ring-[#C59D5F]/20 active:scale-90'
+              : 'w-10 h-10 sm:w-13 sm:h-13 shadow-xl hover:scale-105 active:scale-95 border-2 border-[#C59D5F]/50 ring-2 sm:ring-4 ring-[#C59D5F]/20'
           ]"
           :title="$t('chat.fabTooltip')"
         >
@@ -42,9 +42,9 @@
             class="absolute flex"
             :class="isAppMode ? '-top-0.5 -right-0.5 h-2.5 w-2.5' : '-top-1 -right-1 h-3.5 w-3.5'"
           >
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D3A757] opacity-75"></span>
             <span
-              class="relative inline-flex rounded-full bg-emerald-500 border border-white text-white font-bold items-center justify-center"
+              class="relative inline-flex rounded-full bg-[#2C6E49] border border-white text-white font-bold items-center justify-center"
               :class="isAppMode ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5 text-[8px]'"
             >
               <span v-if="!isAppMode" class="scale-75">●</span>
@@ -54,33 +54,30 @@
       </div>
     </transition>
 
-    <!-- 2. 对话主窗口 (Floating Chat Window) - APP模式下位置上移，不挡住下方模块条 -->
+    <!-- 2. 对话主窗口 (Floating Chat Window) - APP模式下严格居中限制在视口区域内部 -->
     <transition name="chat-window">
       <div
         v-if="isOpen"
-        class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-200/90 backdrop-blur-md transition-all duration-300"
+        class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-2xl overflow-hidden border border-[#ECE7DE] backdrop-blur-md transition-all duration-300"
         :class="[
           isExpanded
             ? 'right-2 bottom-2 sm:right-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[740px] h-[90vh] sm:h-[88vh] max-h-[820px]'
             : (isAppMode
-                ? 'right-2.5 left-2.5 sm:left-auto w-[calc(100vw-20px)] sm:w-[480px] h-[75vh]'
+                ? 'h-[72vh]'
                 : 'right-2 bottom-2 sm:right-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[480px] h-[86vh] sm:h-[84vh] max-h-[720px]')
         ]"
-        :style="isAppMode ? {
-          bottom: 'calc(74px + env(safe-area-inset-bottom, 8px))',
-          maxHeight: 'calc(100vh - 120px - env(safe-area-inset-bottom, 8px))'
-        } : {}"
+        :style="isAppMode ? chatWindowAppStyle : undefined"
       >
-        <!-- 2.1 顶部栏 (Header) - 干净宽敞，重点突出，跟随语言切换 -->
+        <!-- 2.1 顶部栏 (Header) - 深墨绿与暖砂金高奢质感 -->
         <header
-          class="px-4 py-3 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 text-white flex items-center justify-between border-b border-white/10 select-none shadow-sm"
+          class="px-4 py-3 bg-gradient-to-r from-[#142D25] via-[#1E3F35] to-[#18392F] text-white flex items-center justify-between border-b border-[#C59D5F]/30 select-none shadow-sm"
         >
           <!-- 左侧：头像与客服状态 -->
           <div class="flex items-center space-x-3">
             <div class="relative">
               <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-inner"
-                :class="serviceMode === 'HUMAN' ? 'bg-gradient-to-tr from-amber-600 to-orange-500' : 'bg-gradient-to-tr from-blue-600 to-indigo-500'"
+                class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-inner"
+                :class="serviceMode === 'HUMAN' ? 'bg-gradient-to-tr from-amber-600 to-orange-500 text-white' : 'bg-gradient-to-tr from-[#C59D5F] to-[#DFC187] text-[#1E3F35] border border-white/20'"
               >
                 <el-icon class="text-xl">
                   <Headset v-if="serviceMode === 'HUMAN'" />
@@ -88,8 +85,8 @@
                 </el-icon>
               </div>
               <span
-                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-900"
-                :class="serviceMode === 'HUMAN' ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'"
+                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#1E3F35]"
+                :class="serviceMode === 'HUMAN' ? 'bg-amber-400' : 'bg-[#D3A757] animate-pulse'"
               ></span>
             </div>
 
@@ -170,27 +167,27 @@
         <!-- 2.2 消息对话滚动视窗 -->
         <div
           ref="messagesContainerRef"
-          class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/70"
+          class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8F7F3]"
         >
-          <!-- 欢迎卡片与热门业务推荐 (简洁专业，多语言自适应) -->
-          <div class="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+          <!-- 欢迎卡片与热门业务推荐 (深墨绿+暖砂金高质感) -->
+          <div class="p-4 rounded-xl bg-white border border-[#ECE7DE] shadow-xs space-y-3">
             <div class="flex items-start space-x-3">
-              <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div class="w-8 h-8 rounded-lg bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/30 flex items-center justify-center shrink-0 shadow-xs">
                 <el-icon class="text-base"><ChatDotRound /></el-icon>
               </div>
               <div class="flex-1">
-                <h4 class="font-semibold text-slate-900 text-xs sm:text-sm">
+                <h4 class="font-bold text-[#18231E] text-xs sm:text-sm">
                   {{ $t('chat.welcomeTitle') }}
                 </h4>
-                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                <p class="text-xs text-[#5E6862] mt-1 leading-relaxed">
                   {{ $t('chat.welcomeDesc') }}
                 </p>
               </div>
             </div>
 
             <!-- 热门业务常见问题快捷标签 (跟随系统语言动态切换) -->
-            <div class="pt-2 border-t border-slate-100">
-              <span class="text-xs font-medium text-slate-600 block mb-2">
+            <div class="pt-2 border-t border-[#F4EFE6]">
+              <span class="text-xs font-semibold text-[#18231E] block mb-2">
                 {{ $t('chat.faqTitle') }}
               </span>
               <div class="flex flex-wrap gap-2">
@@ -198,10 +195,10 @@
                   v-for="(item, idx) in currentPrompts"
                   :key="idx"
                   type="button"
-                  class="px-3 py-1.5 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-700 border border-slate-200 rounded-lg text-xs transition duration-150 cursor-pointer text-left"
+                  class="px-3 py-1.5 bg-[#FAF8F4] hover:bg-[#FAF5ED] hover:text-[#1E3F35] hover:border-[#C59D5F] text-[#5E6862] border border-[#ECE7DE] rounded-lg text-xs transition duration-150 cursor-pointer text-left"
                   @click="handleQuickQuestion(item.question)"
                 >
-                  <span class="text-blue-500 mr-1 font-medium">#{{ item.tag }}</span>
+                  <span class="text-[#C59D5F] mr-1 font-bold">#{{ item.tag }}</span>
                   <span>{{ item.question }}</span>
                 </button>
               </div>
@@ -214,18 +211,18 @@
             :key="msg.id || index"
             class="space-y-2"
           >
-            <!-- 1. 用户提问消息 -->
+            <!-- 1. 用户提问消息 (深墨绿高奢渐变气泡) -->
             <div
               v-if="msg.role === 'user'"
               class="flex justify-end items-start space-x-2.5"
             >
-              <div class="max-w-[82%] rounded-2xl rounded-tr-xs bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
+              <div class="max-w-[82%] rounded-2xl rounded-tr-xs bg-gradient-to-r from-[#1E3F35] to-[#2B5448] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
                 {{ msg.content }}
-                <div class="text-[10px] text-blue-200/80 text-right mt-1 font-mono">
+                <div class="text-[10px] text-[#C8D7D2] text-right mt-1 font-mono">
                   {{ formatTime(msg.timestamp) }}
                 </div>
               </div>
-              <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 font-bold text-xs border border-white shadow-2xs">
+              <div class="w-8 h-8 rounded-full bg-[#FAF5ED] text-[#1E3F35] flex items-center justify-center shrink-0 font-bold text-xs border border-[#C59D5F]/30 shadow-2xs">
                 {{ (currentUserContext.name || '我').slice(0, 1) }}
               </div>
             </div>
@@ -235,7 +232,7 @@
               v-else-if="msg.role === 'assistant'"
               class="flex justify-start items-start space-x-2.5"
             >
-              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs text-sm">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1E3F35] to-[#2B5448] text-[#C59D5F] border border-[#C59D5F]/30 flex items-center justify-center shrink-0 shadow-xs text-sm">
                 <el-icon><ChatDotRound /></el-icon>
               </div>
 
@@ -447,8 +444,8 @@
         </div>
 
         <!-- 2.4 底部输入区域 (一体化卡片，宽松舒展) -->
-        <footer class="p-3.5 bg-white border-t border-slate-200/90">
-          <div class="relative bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
+        <footer class="p-3.5 bg-white border-t border-[#ECE7DE]">
+          <div class="relative bg-[#FAF8F4] border border-[#ECE7DE] rounded-xl p-2.5 focus-within:border-[#C59D5F] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#C59D5F]/15 transition-all duration-200">
             <el-input
               ref="inputRef"
               v-model="inputQuery"
@@ -462,26 +459,26 @@
             />
 
             <!-- 输入框底部工具与操作栏 -->
-            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 mt-1">
-              <div class="flex items-center space-x-3 text-[11px] text-slate-400">
+            <div class="flex items-center justify-between pt-2 border-t border-[#ECE7DE]/60 mt-1">
+              <div class="flex items-center space-x-3 text-[11px] text-[#8C958F]">
                 <span>
                   {{ $t('chat.enterToSend') }}
                 </span>
                 <span
                   v-if="serviceMode === 'AI'"
-                  class="text-blue-600 hover:underline cursor-pointer hidden sm:inline"
+                  class="text-[#C59D5F] hover:underline cursor-pointer hidden sm:inline font-medium"
                   @click="triggerHumanHandoff('USER_FOOTER_CLICK')"
                 >
                   {{ $t('chat.needHumanTip') }}
                 </span>
               </div>
 
-              <!-- 发送按钮 (胶囊按钮，横向排布更舒展) -->
+              <!-- 发送按钮 (深墨绿主品牌按钮) -->
               <button
                 type="button"
                 class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
                 :class="inputQuery.trim() && !isThinking
-                  ? (serviceMode === 'HUMAN' ? 'bg-amber-600 hover:bg-amber-700 active:scale-95' : 'bg-blue-600 hover:bg-blue-700 active:scale-95')
+                  ? (serviceMode === 'HUMAN' ? 'bg-amber-600 hover:bg-amber-700 active:scale-95' : 'bg-[#1E3F35] hover:bg-[#152E27] active:scale-95')
                   : 'bg-slate-300 cursor-not-allowed'"
                 :disabled="!inputQuery.trim() || isThinking"
                 @click="handleSendMessage"
@@ -646,18 +643,24 @@ const isExpanded = ref(false);
 const isThinking = ref(false);
 const thinkingText = ref(t('chat.retrieving') || '正在检索政策依据...');
 
-// APP 模式侦测 (支持移动端视口、WebView容器、PWA standalone、以及 URL 参数 ?mode=app 等)
+// APP 模式侦测 (支持移动端视口、WebView容器、PWA standalone、以及 URL 参数 ?layout=app 等)
 const isAppMode = ref(false);
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
 function detectAppMode() {
   if (typeof window === 'undefined') return;
+  windowWidth.value = window.innerWidth;
   const urlParams = new URLSearchParams(window.location.search);
   const hash = window.location.hash || '';
   const hasAppParam =
     urlParams.get('mode') === 'app' ||
     urlParams.get('app') === 'true' ||
     urlParams.get('client') === 'app' ||
-    hash.includes('mode=app');
+    urlParams.get('layout') === 'app' ||
+    hash.includes('mode=app') ||
+    hash.includes('layout=app') ||
+    hash.includes('mode=mobile') ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
   const isStandalone =
     window.matchMedia?.('(display-mode: standalone)')?.matches ||
     window.navigator?.standalone === true;
@@ -668,6 +671,43 @@ function detectAppMode() {
 
   isAppMode.value = hasAppParam || isStandalone || isMobileUA || isNarrowScreen;
 }
+
+// 悬浮球精准限制在 412px 视口内部右下角
+const fabAppStyle = computed(() => {
+  if (!isAppMode.value) return {};
+  if (windowWidth.value < 640) {
+    return {
+      right: '12px',
+      bottom: '68px'
+    };
+  }
+  // 桌面端 Pixel 9 仿真视口预览：手机视口居中宽 412px，浮窗严格固定在手机视口右内侧
+  return {
+    right: 'calc(50vw - 192px)',
+    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 46px)) / 2) + 68px)'
+  };
+});
+
+// 对话窗口精准限制在 412px 视口内部正中
+const chatWindowAppStyle = computed(() => {
+  if (!isAppMode.value) return {};
+  if (windowWidth.value < 640) {
+    return {
+      left: '10px',
+      right: '10px',
+      bottom: '64px',
+      maxHeight: 'calc(100vh - 120px)'
+    };
+  }
+  // 桌面端 Pixel 9 仿真视口预览：居中严密包裹在 412px 视口内
+  return {
+    width: '388px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 46px)) / 2) + 64px)',
+    maxHeight: 'calc(min(924px, 100vh - 46px) - 100px)'
+  };
+});
 
 // 服务模式: 'AI' (智能问答) | 'HUMAN' (7x24 人工客服专席)
 const serviceMode = ref('AI');
@@ -1199,6 +1239,13 @@ async function initKnowledgeBases() {
     console.warn('Load Knowledge Bases failed:', e);
   }
 }
+
+watch(
+  () => route.fullPath,
+  () => {
+    detectAppMode();
+  }
+);
 
 onMounted(() => {
   detectAppMode();

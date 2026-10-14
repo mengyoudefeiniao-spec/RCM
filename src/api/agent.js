@@ -258,3 +258,51 @@ export function getAgentFamilies(agentId, params) {
   });
 }
 
+/**
+ * 23. 代理端查询辖区公民配给购买订单列表 (GET)
+ * 支撑查看自提/送货上门订单明细、履约状态及物资摘要
+ */
+export function getAgentCitizenOrders(params) {
+  return request({
+    url: '/agent/citizen-orders',
+    method: 'GET',
+    params
+  });
+}
+
+/**
+ * 24. 代理端安排配送或标记备货就绪 (POST)
+ * 针对送货上门分配派送员和车辆出车，针对到店自提标记网点备货就绪
+ */
+export function dispatchCitizenOrder(orderId, data) {
+  return request({
+    url: `/agent/citizen-orders/${orderId}/dispatch`,
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 25. 代理端根据提货二维码/提货码检索待交付订单 (GET)
+ * 支撑扫码枪识别或手动录入提货码检索
+ */
+export function lookupCitizenOrderByCode(code) {
+  return request({
+    url: '/agent/citizen-orders/lookup',
+    method: 'GET',
+    params: { code }
+  });
+}
+
+/**
+ * 26. 代理端核验扫码提货并完成物资交接扣减库存 (POST)
+ * 阶段 4 核心：核验公民身份与二维码，扣减本地网点实物库存，生成交接凭证
+ */
+export function verifyAndClaimCitizenOrder(orderId, data) {
+  return request({
+    url: `/agent/citizen-orders/${orderId}/verify-claim`,
+    method: 'POST',
+    data
+  });
+}
+

@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import AppLayout from '../components/layout/AppLayout.vue';
+import { createProfileByRole, useAuthStore } from '../stores/auth.js';
 
 /**
  * 角色说明：
@@ -16,13 +17,19 @@ const routes = [
     meta: { title: '用户登录', public: true }
   },
   {
+    path: '/portal',
+    name: 'PortalHub',
+    component: () => import('../views/portal/PortalView.vue'),
+    meta: { title: '国家物资配给综合调度门户', public: true }
+  },
+  {
     path: '/',
     component: AppLayout,
     children: [
       {
         path: '',
         redirect: () => {
-          const profile = JSON.parse(localStorage.getItem('rcm_user_profile') || '{}');
+          const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
           return profile.role === 'citizen' ? '/citizen' : '/dashboard';
         }
       },
@@ -84,7 +91,7 @@ const routes = [
         path: 'warehouse',
         name: 'Warehouse',
         component: () => import('../views/warehouse/WarehouseView.vue'),
-        meta: { title: '仓储管理', roles: ['admin', 'agent', 'citizen'] }
+        meta: { title: '配给管理', roles: ['admin', 'agent', 'citizen'] }
       },
       {
         path: 'agent',
@@ -97,13 +104,19 @@ const routes = [
         name: 'AdminManagement',
         component: () => import('../views/admin/AdminManagementView.vue'),
         meta: { title: '后台管理', roles: ['admin'] }
+      },
+      {
+        path: 'mobile-agent',
+        name: 'MobileAgentDashboard',
+        component: () => import('../views/dashboard/components/MobileAgentDashboard.vue'),
+        meta: { title: '现场核销作业 (Pixel 9)', roles: ['admin', 'agent'] }
       }
     ]
   },
   {
     path: '/:pathMatch(.*)*',
     redirect: () => {
-      const profile = JSON.parse(localStorage.getItem('rcm_user_profile') || '{}');
+      const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
       return profile.role === 'citizen' ? '/citizen' : '/dashboard';
     }
   }
@@ -123,12 +136,33 @@ export function getDefaultPathByRole(role) {
 // 统一管理员角色集合
 const ALL_ADMIN_ROLES = ['admin', 'minister_center', 'deputy_minister', 'director_planning'];
 
-// 全局路由导航守卫：统一 Token 验证与基于角色的 RBAC 鉴权
+// 全局路由导航守卫：统一 Token 验证与基于角色的 RBAC 鉴权 (单标签页专属会话隔离)
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('rcm_auth_token');
+  // 优先从当前标签页私有的 sessionStorage 读取，实现多标签页角色隔离
+  let token = sessionStorage.getItem('rcm_auth_token') || localStorage.getItem('rcm_auth_token');
   const isPublic = to.meta?.public;
-  const userProfile = JSON.parse(localStorage.getItem('rcm_user_profile') || '{}');
-  const currentRole = userProfile.role || 'citizen';
+  let userProfile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
+  let currentRole = userProfile.role || 'citizen';
+
+  // 0. 自动识别 URL 查询参数中的目标角色身份并无缝同步至当前标签页专属 sessionStorage (Portal 新开标签页直达)
+  if (to.query.role) {
+    const targetRole = String(to.query.role);
+    const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
+    if (validRoles.includes(targetRole)) {
+      userProfile = createProfileByRole(targetRole);
+      currentRole = targetRole;
+      token = 'mock-token-' + targetRole;
+      sessionStorage.setItem('rcm_user_profile', JSON.stringify(userProfile));
+      sessionStorage.setItem('rcm_auth_token', token);
+
+      try {
+        const authStore = useAuthStore();
+        authStore.setSessionUser(userProfile, token);
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
 
   if (to.meta?.title) {
     const pageTitle = (to.path === '/warehouse' && (currentRole === 'citizen' || currentRole === 'agent')) ? '配给管理' : to.meta.title;
