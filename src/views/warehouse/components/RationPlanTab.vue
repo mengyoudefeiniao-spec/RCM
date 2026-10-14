@@ -166,19 +166,48 @@
           </div>
         </div>
 
-        <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="space-y-0.5">
-            <span class="font-bold block">{{ $t('warehouse.claimPickGuide') || '核销提货与申领指引：' }}</span>
-            <span>{{ $t('warehouse.claimPickDesc') || '请户主或代领人在本模块选购所需配额并完成自付规费结算，生成二维码后至签约代销站扫码核销即可全额领取。' }}</span>
+        <div
+          class="bg-amber-50/70 rounded-xl border border-amber-200 text-xs text-amber-900 transition-all"
+          :class="isAppMode ? 'p-3 flex flex-col gap-2.5 shadow-xs' : 'p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3'"
+        >
+          <div class="space-y-1">
+            <div class="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
+              <el-icon class="text-amber-600 shrink-0"><InfoFilled /></el-icon>
+              <span>{{ $t('warehouse.claimPickGuide') || '核销提货与申领指引：' }}</span>
+            </div>
+            <p class="text-[11px] text-amber-900/85 leading-relaxed text-left">
+              {{ $t('warehouse.claimPickDesc') || '请户主或代领人在本模块选购所需配额并完成自付规费结算，生成二维码后至签约代销站扫码核销即可全额领取。' }}
+            </p>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <el-button type="primary" size="small" class="font-bold" @click="emit('go-purchase')">
-              <el-icon class="mr-1"><ShoppingCart /></el-icon>
-              {{ $t('warehouse.buyThisMonthRation') || '立即选购本月配给品' }}
+
+          <div
+            :class="isAppMode ? 'grid grid-cols-2 gap-2 pt-2 border-t border-amber-200/60' : 'flex items-center gap-2 shrink-0'"
+          >
+            <el-button
+              type="primary"
+              size="small"
+              class="font-bold !m-0 !h-8 rounded-lg flex items-center justify-center shadow-xs"
+              :class="isAppMode ? '!w-full' : ''"
+              style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+              :title="$t('warehouse.buyThisMonthRation')"
+              @click="emit('go-purchase')"
+            >
+              <el-icon class="mr-1 text-sm"><ShoppingCart /></el-icon>
+              <span class="text-xs truncate">{{ isAppMode ? ($t('warehouse.buyThisMonthRationShort') || '选购配额') : ($t('warehouse.buyThisMonthRation') || '立即选购本月配给品') }}</span>
             </el-button>
-            <el-button type="warning" plain size="small" class="font-bold shadow-xs" @click="openRationCardModal">
-              <el-icon class="mr-1"><Tickets /></el-icon>
-              {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
+
+            <el-button
+              type="warning"
+              plain
+              size="small"
+              class="font-bold shadow-xs !m-0 !h-8 rounded-lg flex items-center justify-center bg-white"
+              :class="isAppMode ? '!w-full' : ''"
+              style="color: #B45309; border-color: #FCD34D;"
+              :title="$t('warehouse.showMyCard')"
+              @click="openRationCardModal"
+            >
+              <el-icon class="mr-1 text-sm"><Tickets /></el-icon>
+              <span class="text-xs truncate">{{ isAppMode ? ($t('warehouse.showMyCardShort') || '出示卡片') : ($t('warehouse.showMyCard') || '出示我的配给卡') }}</span>
             </el-button>
           </div>
         </div>
@@ -1080,7 +1109,7 @@ import {
 } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets } from '@element-plus/icons-vue';
+import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['go-purchase']);
 

@@ -36,7 +36,7 @@
         class="flex-1 w-full mx-auto overflow-y-auto overflow-x-hidden min-h-0 custom-pixel-scrollbar"
         :class="[
           isAppMode
-            ? 'px-0 py-0 pb-2'
+            ? 'px-0 py-0 pb-16'
             : (isWideLayout ? 'max-w-[1720px] px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8' : 'max-w-7xl px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8')
         ]"
       >

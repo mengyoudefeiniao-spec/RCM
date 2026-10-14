@@ -322,14 +322,14 @@
           >
             <!-- 头部：图标、标题与费用标签 -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <div
                   class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
                   :class="deliveryType === 'PICKUP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'"
                 >
                   <el-icon><Shop /></el-icon>
                 </div>
-                <span class="text-xs sm:text-sm font-bold text-slate-900">{{ $t('citizenPurchase.pickupTitle') }}</span>
+                <span class="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap">{{ $t('citizenPurchase.pickupTitle') }}</span>
               </div>
               <el-tag size="small" type="success" effect="dark" class="font-bold shrink-0">
                 {{ $t('citizenPurchase.pickupFree') }}
@@ -342,12 +342,13 @@
             </p>
 
             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
-              <div class="flex justify-between">
-                <span class="text-slate-400">{{ $t('citizenPurchase.pickupStationLabel') }}:</span>
-                <span class="font-bold text-slate-800">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.pickupStationLabel') }}:</span>
+                <span class="font-bold text-slate-800 truncate text-right">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">{{ $t('citizenPurchase.pickupHours') }}</span>
+              <div class="flex items-center justify-between gap-2 text-slate-500">
+                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.pickupHoursLabel') }}:</span>
+                <span class="text-slate-600 text-right font-medium">{{ $t('citizenPurchase.pickupHoursVal') }}</span>
               </div>
             </div>
           </div>
@@ -362,16 +363,16 @@
             "
             @click="deliveryType = 'HOME_DELIVERY'"
           >
-            <!-- 头部：图标、标题与费用标签 -->
+            <!-- 头部：图标、标题与费用标签 (左右两侧均防换行和溢出) -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <div
                   class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
                   :class="deliveryType === 'HOME_DELIVERY' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'"
                 >
                   <el-icon><Van /></el-icon>
                 </div>
-                <span class="text-xs sm:text-sm font-bold text-slate-900">{{ $t('citizenPurchase.deliveryTitle') }}</span>
+                <span class="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap">{{ $t('citizenPurchase.deliveryTitle') }}</span>
               </div>
               <el-tag size="small" type="warning" effect="dark" class="font-bold font-mono shrink-0">
                 {{ $t('citizenPurchase.deliveryFee') }}
@@ -384,13 +385,13 @@
             </p>
 
             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
-              <div class="flex justify-between">
-                <span class="text-slate-400">{{ isEn ? 'Delivery Commitment:' : '配送时效承诺:' }}</span>
-                <span class="font-bold text-indigo-700">{{ isEn ? 'Within 24 hours of order' : '下单后 24 小时内送达' }}</span>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.deliverySlaLabel') }}</span>
+                <span class="font-bold text-indigo-700 text-right">{{ $t('citizenPurchase.deliverySlaValue') }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">{{ $t('citizenPurchase.verifyHandover') }}</span>
-                <span>{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.verifyHandover') }}</span>
+                <span class="font-medium text-slate-700 text-right">{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
               </div>
             </div>
           </div>
@@ -401,7 +402,7 @@
           <div class="flex items-center justify-between text-indigo-900 font-bold">
             <span class="flex items-center gap-1.5">
               <el-icon><LocationFilled /></el-icon>
-              <span>{{ $t('citizenPurchase.deliveryAddress') }}</span>
+              <span>{{ $t('citizenPurchase.deliveryInfoTitle') }}</span>
             </span>
           </div>
 
@@ -410,7 +411,7 @@
             :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'grid-cols-1 sm:grid-cols-2 gap-3'"
           >
             <div>
-              <span class="text-slate-500 mb-1 block">{{ $t('citizenPurchase.deliveryAddress') }}:</span>
+              <span class="text-slate-500 mb-1 block">{{ $t('citizenPurchase.deliveryStreet') }}:</span>
               <el-input v-model="deliveryAddress" :placeholder="$t('citizenPurchase.addressPlaceholder')" size="small" />
             </div>
             <div>
@@ -426,7 +427,7 @@
         </div>
 
         <!-- 步骤 2 底部操作栏 (等宽自适应网格防挤压) -->
-        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2" :class="isAppMode ? 'pb-2' : ''">
           <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 1; scrollToTop()">
             <el-icon class="mr-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
