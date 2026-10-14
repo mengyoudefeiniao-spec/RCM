@@ -560,6 +560,20 @@ export async function mockDispatch(config) {
     family.members.push(newMember);
     family.memberCount = family.members.length;
     updateSharedFamily(family.rationCardNo, { members: family.members, memberCount: family.memberCount });
+
+    // 同步更新管理员配给卡管理中的对应配给卡记录
+    const targetAdminCard = adminCardsStore.find((c) => c.cardNo === cardNo || c.cardNo === family.rationCardNo);
+    if (targetAdminCard) {
+      targetAdminCard.memberCount = family.memberCount;
+      targetAdminCard.members = family.members;
+      targetAdminCard.quotas = {
+        flour: family.memberCount * 9,
+        rice: family.memberCount * 3,
+        oil: family.memberCount * 1,
+        sugar: family.memberCount * 2
+      };
+    }
+
     return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
   }
 
@@ -1265,6 +1279,9 @@ export async function mockDispatch(config) {
       status: 'PENDING_VERIFY'
     };
     b2cReservationsStore.unshift(b2cItem);
+
+    // 跨标签页广播新订单产生事件，通知代理APP与管理端订单大盘
+    broadcastTabMessage('ORDER_PURCHASED', newOrder);
 
     return createResponse({
       success: true,
@@ -2935,8 +2952,24 @@ export async function mockDispatch(config) {
 
   // 5.13.2 代理端查询公民购买配给订单列表 (GET)
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
-    const sharedOrders = getSharedOrders();
-    let result = sharedOrders && sharedOrders.length > 0 ? [...sharedOrders] : [...citizenPurchaseOrdersStore];
+    const sharedOrders = getSharedOrders() || [];
+    const map = new Map();
+    // 优先读取共享持久化订单
+    sharedOrders.forEach((o) => {
+      const key = o.orderId || o.id;
+      if (key) map.set(key, o);
+    });
+    // 合并初始/内存订单池
+    (citizenPurchaseOrdersStore || []).forEach((o) => {
+      const key = o.orderId || o.id;
+      if (key && !map.has(key)) {
+        map.set(key, o);
+      }
+    });
+
+    let result = Array.from(map.values());
+    // 按时间倒序排序
+    result.sort((a, b) => new Date(b.createdAt || b.paidAt || 0) - new Date(a.createdAt || a.paidAt || 0));
 
     if (params.deliveryType && params.deliveryType !== 'ALL') {
       result = result.filter((o) => o.deliveryType === params.deliveryType);
@@ -2992,6 +3025,9 @@ export async function mockDispatch(config) {
       dispatchInfo: targetOrder.dispatchInfo
     });
 
+    // 跨标签页广播订单状态变更
+    broadcastTabMessage('ORDER_UPDATED', targetOrder);
+
     // 同步到 b2cReservationsStore
     const b2cItem = b2cReservationsStore.find((r) => r.ticketNo === targetOrder.ticketNo || r.pickupCode === targetOrder.pickupCode);
     if (b2cItem) {
@@ -3038,6 +3074,9 @@ export async function mockDispatch(config) {
       signature: targetOrder.signature,
       claimVoucherNo: targetOrder.claimVoucherNo
     });
+
+    // 跨标签页广播订单状态变更 (已核销交付)
+    broadcastTabMessage('ORDER_UPDATED', targetOrder);
 
     // 扣减代理商本地实物现货库存 (agentLocalStocksStore)
     const deductedItems = [];
@@ -3303,6 +3342,51 @@ export async function mockDispatch(config) {
   // ==========================================
   // 7.1 公民配给卡列表
   if (url.includes('/admin/citizen-cards') && method === 'GET') {
+    // 动态融合最新共享家庭档案数据 (包含公民APP新申报的成员数与配额)
+    const sharedFams = getSharedFamilies();
+    if (sharedFams && sharedFams.length > 0) {
+      sharedFams.forEach((fam) => {
+        const found = adminCardsStore.find((c) => c.cardNo === fam.rationCardNo || c.id === fam.id);
+        const mCount = fam.memberCount || fam.members?.length || 5;
+        if (found) {
+          found.headName = fam.headName || found.headName;
+          found.memberCount = mCount;
+          found.members = fam.members || found.members;
+          found.province = fam.province || found.province;
+          found.district = fam.district || found.district;
+          found.status = fam.status || found.status;
+          found.quotas = {
+            flour: mCount * 9,
+            rice: mCount * 3,
+            oil: mCount * 1,
+            sugar: mCount * 2
+          };
+        } else if (fam.rationCardNo) {
+          adminCardsStore.unshift({
+            id: `CARD-${Date.now().toString().slice(-4)}`,
+            cardNo: fam.rationCardNo,
+            oldPaperCardNo: fam.oldPaperCardNo || 'IQ-P-1994-082194',
+            familyCode: fam.familyCode || 'FAM-BG-2024-0091',
+            headName: fam.headName || '持卡户主',
+            nationalId: fam.nationalId || '198004198271',
+            memberCount: mCount,
+            members: fam.members || [],
+            province: fam.province || '巴格达省',
+            district: fam.district || '卡尔赫第一粮食供应分部',
+            status: fam.status || '正常',
+            issueDate: new Date().toISOString().slice(0, 10),
+            rfidChipUid: `NFC-IQ-${Math.floor(1000000 + Math.random() * 8999999)}X`,
+            quotas: {
+              flour: mCount * 9,
+              rice: mCount * 3,
+              oil: mCount * 1,
+              sugar: mCount * 2
+            }
+          });
+        }
+      });
+    }
+
     let result = [...adminCardsStore];
     if (params.cardNo) {
       result = result.filter((c) => c.cardNo.toLowerCase().includes(params.cardNo.toLowerCase()));

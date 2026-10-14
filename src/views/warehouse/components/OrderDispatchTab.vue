@@ -257,7 +257,7 @@
           <div class="pt-1">
             <!-- 送货上门 待处理 -> 安排配送 -->
             <el-button
-              v-if="order.deliveryType === 'HOME_DELIVERY' && order.status === 'PENDING_DELIVERY'"
+              v-if="order.deliveryType === 'HOME_DELIVERY' && (order.status === 'PENDING_DELIVERY' || order.status === 'PAID')"
               type="primary"
               class="w-full font-bold shadow-xs rounded-xl"
               @click="openDispatchModal(order)"

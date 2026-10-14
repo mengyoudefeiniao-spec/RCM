@@ -1,5 +1,5 @@
 <template>
-  <div class="document-uploader w-full space-y-2">
+  <div class="document-uploader w-full max-w-full overflow-hidden box-border space-y-2">
     <!-- 隐藏式文件选择框 -->
     <input
       ref="fileInputRef"
@@ -10,7 +10,7 @@
     />
 
     <!-- 顶部标题、必需标记与机构信息 -->
-    <div class="flex items-center justify-between gap-2 flex-wrap text-xs">
+    <div class="flex items-center justify-between gap-1.5 flex-wrap text-xs">
       <div class="flex items-center gap-1.5 flex-wrap">
         <span class="font-bold text-slate-800">{{ title }}</span>
         <!-- 感叹号+圆圈新图层提示图标 (不挤压卡片框体) -->
@@ -18,7 +18,7 @@
           v-if="subtitle"
           trigger="click"
           placement="bottom-start"
-          :width="300"
+          :width="280"
           :teleported="true"
           :show-arrow="true"
           popper-class="module-desc-layer-popover"
@@ -26,39 +26,39 @@
           <template #reference>
             <button
               type="button"
-              class="inline-flex items-center justify-center w-5 h-5 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer select-none"
-              title="查看材料规范与要求说明"
+              class="inline-flex items-center justify-center w-4 h-4 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer select-none"
+              title="查看材料规范说明"
             >
-              <el-icon :size="13"><InfoFilled /></el-icon>
+              <el-icon :size="12"><InfoFilled /></el-icon>
             </button>
           </template>
           <div class="p-1 space-y-1.5 text-xs">
             <div class="font-bold text-slate-800 flex items-center gap-1 text-[11px] pb-1 border-b border-slate-100">
               <el-icon class="text-blue-500" :size="12"><InfoFilled /></el-icon>
-              <span>材料提交与核验规范</span>
+              <span>{{ $t('uploader.specTitle') }}</span>
             </div>
             <div class="bg-slate-50 border border-slate-200/90 text-slate-600 rounded-lg p-2 text-xs leading-relaxed break-words font-normal">
               {{ subtitle }}
             </div>
           </div>
         </el-popover>
-        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-95">
-          必需材料 ★
+        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-90 origin-left">
+          {{ $t('uploader.required') }}
         </el-tag>
-        <el-tag v-else type="info" size="small" effect="plain" class="scale-95">
-          可选材料
+        <el-tag v-else type="info" size="small" effect="plain" class="scale-90 origin-left">
+          {{ $t('uploader.optional') }}
         </el-tag>
-        <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-95">
+        <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-90 origin-left">
           {{ categoryBadge }}
         </el-tag>
       </div>
-      <span v-if="issuer" class="text-[11px] text-slate-400 font-mono">
-        颁发：{{ issuer }}
+      <span v-if="issuer" class="text-[10px] text-slate-400 font-mono truncate max-w-[140px]">
+        {{ $t('uploader.issuer') }} {{ issuer }}
       </span>
     </div>
 
     <!-- 1. 上传进度中状态 -->
-    <div v-if="isUploading" class="p-4 rounded-xl border border-[#D6E6DC] bg-[#EBF3EE] space-y-2">
+    <div v-if="isUploading" class="p-3 sm:p-4 rounded-xl border border-[#D6E6DC] bg-[#EBF3EE] space-y-2">
       <div class="flex items-center justify-between text-xs text-[#1E3F35] font-bold">
         <span>{{ uploadStage }}</span>
         <span class="font-mono font-bold">{{ uploadProgress }}%</span>
@@ -66,56 +66,56 @@
       <el-progress :percentage="uploadProgress" :show-text="false" color="#1E3F35" />
     </div>
 
-    <!-- 2. 已上传完成状态 -->
+    <!-- 2. 已上传完成状态 (极致防溢出布局) -->
     <div
       v-else-if="currentFile"
-      class="p-4 rounded-xl border border-[#ECE7DE] bg-white shadow-xs transition-all hover:border-[#C59D5F]"
+      class="p-3 sm:p-4 rounded-xl border border-[#ECE7DE] bg-white shadow-xs transition-all hover:border-[#C59D5F] overflow-hidden"
     >
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-start gap-3">
-          <div class="p-2.5 rounded-lg bg-[#FAF5ED] text-[#C59D5F] border border-[#E8D9BF] shrink-0">
-            <el-icon :size="22"><Document /></el-icon>
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-start gap-2.5 min-w-0">
+          <div class="p-2 rounded-lg bg-[#FAF5ED] text-[#C59D5F] border border-[#E8D9BF] shrink-0">
+            <el-icon :size="20"><Document /></el-icon>
           </div>
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold text-[#18231E] font-mono break-all">
+          <div class="space-y-1 min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs font-bold text-[#18231E] font-mono truncate max-w-[190px] sm:max-w-none block">
                 {{ currentFile.fileName }}
               </span>
-              <el-tag type="success" size="small" effect="light" class="font-bold">
-                已核验防伪通过 ✓
+              <el-tag type="success" size="small" effect="light" class="font-bold scale-90 origin-left shrink-0">
+                {{ $t('uploader.verifiedBadge') }}
               </el-tag>
             </div>
-            <div class="text-[11px] text-[#5E6862] flex flex-wrap items-center gap-2 font-mono">
+            <div class="text-[10px] sm:text-[11px] text-[#5E6862] flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono">
               <span>{{ currentFile.fileSize }}</span>
               <span>•</span>
-              <span>备案编号：{{ currentFile.referenceNo }}</span>
+              <span class="truncate max-w-[120px] sm:max-w-none">REF: {{ currentFile.referenceNo }}</span>
               <span>•</span>
-              <span class="text-[#2C6E49] font-semibold">OCR 置信度：99.6%</span>
+              <span class="text-[#2C6E49] font-semibold">{{ $t('uploader.confidence') }}</span>
             </div>
-            <div class="p-1.5 px-2 bg-[#FAF8F4] rounded border border-[#ECE7DE] text-[11px] text-[#5E6862]">
-              <span class="font-semibold text-[#18231E]">防伪核验：</span>
+            <div class="p-1 px-2 bg-[#FAF8F4] rounded border border-[#ECE7DE] text-[10px] text-[#5E6862] line-clamp-1">
+              <span class="font-semibold text-[#18231E]">{{ $t('uploader.antiCounterfeit') }}</span>
               <span>{{ currentFile.ocrSummary }}</span>
             </div>
           </div>
         </div>
 
-        <!-- 显式操作按钮栏：优化按钮排版、尺寸与图标，自适应小容器与换行 -->
-        <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#ECE7DE]">
-          <el-button size="small" type="primary" plain @click="previewModalVisible = true">
-            <el-icon class="mr-1"><ZoomIn /></el-icon>
-            预览
+        <!-- 显式操作按钮栏：移动端 4 按钮网格等分排列，绝不超界 -->
+        <div class="grid grid-cols-4 gap-1 pt-2 border-t border-[#ECE7DE] w-full">
+          <el-button size="small" type="primary" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="previewModalVisible = true">
+            <el-icon class="mr-0.5"><ZoomIn /></el-icon>
+            {{ $t('uploader.btnPreview') }}
           </el-button>
-          <el-button size="small" plain @click="triggerOpenLocalFile">
-            <el-icon class="mr-1"><UploadFilled /></el-icon>
-            重传
+          <el-button size="small" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="triggerOpenLocalFile">
+            <el-icon class="mr-0.5"><UploadFilled /></el-icon>
+            {{ $t('uploader.btnReupload') }}
           </el-button>
-          <el-button size="small" text type="info" @click="triggerReloadTemplate">
-            <el-icon class="mr-1"><RefreshRight /></el-icon>
-            重载样本
+          <el-button size="small" text type="info" class="!px-1 !m-0 w-full text-center text-xs justify-center bg-slate-50 border border-slate-200" @click="triggerReloadTemplate">
+            <el-icon class="mr-0.5"><RefreshRight /></el-icon>
+            {{ $t('uploader.btnReloadTemplate') }}
           </el-button>
-          <el-button size="small" type="danger" plain @click="handleRemoveFile">
-            <el-icon class="mr-1"><DeleteFilled /></el-icon>
-            删除
+          <el-button size="small" type="danger" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="handleRemoveFile">
+            <el-icon class="mr-0.5"><DeleteFilled /></el-icon>
+            {{ $t('uploader.btnDelete') }}
           </el-button>
         </div>
       </div>
@@ -124,26 +124,27 @@
     <!-- 3. 未上传 / 已删除空状态 -->
     <div
       v-else
-      class="border-2 border-dashed border-[#DFD9CE] rounded-xl p-5 text-center bg-[#FAF8F4] hover:border-[#C59D5F] transition-colors"
+      class="border-2 border-dashed border-[#DFD9CE] rounded-xl p-3.5 sm:p-5 text-center bg-[#FAF8F4] hover:border-[#C59D5F] transition-colors overflow-hidden"
     >
-      <div class="flex flex-col items-center justify-center gap-2">
-        <div class="p-2.5 bg-white rounded-full text-[#C59D5F] border border-[#ECE7DE] shadow-2xs">
-          <el-icon :size="24"><UploadFilled /></el-icon>
+      <div class="flex flex-col items-center justify-center gap-1.5">
+        <div class="p-2 bg-white rounded-full text-[#C59D5F] border border-[#ECE7DE] shadow-2xs">
+          <el-icon :size="20"><UploadFilled /></el-icon>
         </div>
         <div class="text-xs font-semibold text-[#18231E]">
-          {{ isRequired ? '请上传必需的官方公文证明文件' : '暂未上传辅助证明材料 (支持本地文件或预设样本)' }}
+          {{ isRequired ? $t('uploader.emptyRequired') : $t('uploader.emptyOptional') }}
         </div>
-        <div class="text-[11px] text-[#8C958F]">
-          支持 PDF、JPG、PNG 格式 · 最大 15MB · 自动提取 OCR 防伪条码与公章印鉴
+        <div class="text-[10px] text-[#8C958F] line-clamp-1">
+          {{ $t('uploader.emptyTip') }}
         </div>
-        <div class="flex items-center gap-3 mt-2 flex-wrap justify-center">
-          <el-button type="primary" size="small" class="font-medium" @click="triggerOpenLocalFile">
+        <!-- 移动端并排按钮网格化防溢出 -->
+        <div class="grid grid-cols-2 gap-2 mt-1.5 w-full max-w-[280px]">
+          <el-button type="primary" size="small" class="!m-0 w-full font-medium justify-center" @click="triggerOpenLocalFile">
             <el-icon class="mr-1"><UploadFilled /></el-icon>
-            选择文件上传
+            {{ $t('uploader.btnUploadFile') }}
           </el-button>
-          <el-button size="small" plain @click="triggerReloadTemplate">
+          <el-button size="small" plain class="!m-0 w-full justify-center" @click="triggerReloadTemplate">
             <el-icon class="mr-1"><DocumentCopy /></el-icon>
-            载入公文样本
+            {{ $t('uploader.btnLoadSample') }}
           </el-button>
         </div>
       </div>
@@ -152,12 +153,13 @@
     <!-- 官方公文原件数字化预览弹窗 -->
     <el-dialog
       v-model="previewModalVisible"
-      title="官方数字化证明公文原件预览"
-      width="640px"
+      :title="$t('uploader.specTitle')"
+      :width="'min(92vw, 560px)'"
       align-center
+      append-to-body
     >
       <div v-if="currentFile" class="space-y-4 text-xs">
-        <div class="p-5 bg-amber-50/40 rounded-xl border border-amber-200/60 relative overflow-hidden">
+        <div class="p-4 sm:p-5 bg-amber-50/40 rounded-xl border border-amber-200/60 relative overflow-hidden">
           <div class="text-center pb-3 border-b border-amber-200/60 space-y-1">
             <div class="text-xs font-bold tracking-widest text-slate-800">
               جمهورية العراق · وزارة التجارة / وزارة العدل / وزارة الصحة
@@ -170,34 +172,34 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-3 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 text-xs">
             <div>
-              <span class="text-slate-400 block text-[11px]">颁发核准机构：</span>
+              <span class="text-slate-400 block text-[11px]">{{ $t('uploader.issuer') }}</span>
               <span class="font-bold text-slate-800">{{ issuer }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">公文备案存根编号：</span>
+              <span class="text-slate-400 block text-[11px]">REF NO:</span>
               <span class="font-mono font-bold text-slate-800">{{ currentFile.referenceNo }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">数字化核验时间：</span>
+              <span class="text-slate-400 block text-[11px]">VERIFIED AT:</span>
               <span class="font-mono text-slate-800">2026-03-12 10:30:00</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">电子防伪戳记状态：</span>
-              <span class="text-emerald-600 font-bold">国家公证印鉴签名验签通过 ✓</span>
+              <span class="text-slate-400 block text-[11px]">STATUS:</span>
+              <span class="text-emerald-600 font-bold">{{ $t('uploader.verifiedBadge') }}</span>
             </div>
           </div>
 
           <div class="mt-4 p-3 bg-white/90 rounded-lg border border-amber-200/80 text-[11px] text-slate-700">
-            <span class="font-bold text-slate-900">公文摘要：</span>
+            <span class="font-bold text-slate-900">{{ $t('uploader.antiCounterfeit') }}</span>
             {{ currentFile.ocrSummary }}
           </div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="previewModalVisible = false">关闭</el-button>
-        <el-button type="primary" @click="handleDownloadStub">下载存根文件</el-button>
+        <el-button @click="previewModalVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleDownloadStub">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -205,6 +207,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
   Document,
@@ -217,6 +220,7 @@ import {
   Close
 } from '@element-plus/icons-vue';
 
+const { t } = useI18n();
 const showSubtitle = ref(false);
 
 const props = defineProps({

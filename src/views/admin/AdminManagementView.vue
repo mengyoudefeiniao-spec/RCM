@@ -848,11 +848,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
 import ReconciliationTab from './components/ReconciliationTab.vue';
+import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
@@ -1769,11 +1770,24 @@ async function handleDeleteWarehouse(row) {
   });
 }
 
+let offFamilyUpdated = null;
 onMounted(() => {
   if (route.query.tab) {
     activeTab.value = route.query.tab;
   }
   loadCards();
+  offFamilyUpdated = onTabMessage('FAMILY_UPDATED', () => {
+    loadCards();
+    if (typeof loadFamilies === 'function') {
+      loadFamilies();
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (offFamilyUpdated) {
+    offFamilyUpdated();
+  }
 });
 </script>
 
