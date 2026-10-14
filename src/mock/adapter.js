@@ -564,18 +564,20 @@ export async function mockDispatch(config) {
     family.memberCount = family.members.length;
     updateSharedFamily(family.rationCardNo, { members: family.members, memberCount: family.memberCount });
 
-    // 同步更新管理员配给卡管理中的对应配给卡记录
-    const targetAdminCard = adminCardsStore.find((c) => c.cardNo === cardNo || c.cardNo === family.rationCardNo);
-    if (targetAdminCard) {
-      targetAdminCard.memberCount = family.memberCount;
-      targetAdminCard.members = family.members;
-      targetAdminCard.quotas = {
-        flour: family.memberCount * 9,
-        rice: family.memberCount * 3,
-        oil: family.memberCount * 1,
-        sugar: family.memberCount * 2
-      };
-    }
+    // 同步更新管理员配给卡管理中的对应配给卡记录 (覆盖所有语言内存池)
+    Object.values(multiLangStores).forEach((stores) => {
+      const targetCard = (stores.adminCardsStore || []).find((c) => c.cardNo === cardNo || c.cardNo === family.rationCardNo);
+      if (targetCard) {
+        targetCard.memberCount = family.memberCount;
+        targetCard.members = family.members;
+        targetCard.quotas = {
+          flour: family.memberCount * 9,
+          rice: family.memberCount * 3,
+          oil: family.memberCount * 1,
+          sugar: family.memberCount * 2
+        };
+      }
+    });
 
     return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
   }
@@ -3366,15 +3368,49 @@ export async function mockDispatch(config) {
     // 动态融合最新共享家庭档案数据 (包含公民APP新申报的成员数与配额)
     const sharedFams = getSharedFamilies();
     if (sharedFams && sharedFams.length > 0) {
+      const nameEnMap = {
+        '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
+        '海德尔·阿卜杜勒·拉赫曼': 'Haider Abdul-Rahman',
+        '海德尔·阿卜杜勒-拉赫曼': 'Haider Abdul-Rahman',
+        '法蒂玛·扎赫拉·穆罕默德': 'Fatima Zahra Mohammed',
+        '奥马尔·法鲁克·哈利勒': 'Omar Farooq Khalil',
+        '优素福·易卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
+        '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
+        '海德尔·卡西姆·纳赛尔': 'Haider Qasim Nasser'
+      };
+      const districtEnMap = {
+        '卡尔赫第一配给中心 (#04)': 'Karkh 1st Ration Center (#04)',
+        '卡尔赫第一粮食供应分部': 'Karkh 1st Food Supply Branch',
+        '卡尔赫区 (Al-Karkh)': 'Al-Karkh District',
+        '鲁萨法区 (Al-Rusafa)': 'Al-Rusafa District',
+        '鲁萨法区 (Al Rusafa)': 'Al-Rusafa District',
+        '鲁萨法第二粮食供应分部': 'Al-Rusafa 2nd Food Supply Branch',
+        '阿沙尔区 (Al-Ashar)': 'Al-Ashar District',
+        '摩苏尔老城区 (Old Mosul)': 'Old Mosul District',
+        '安卡瓦区 (Ainkawa)': 'Ainkawa District'
+      };
+
       sharedFams.forEach((fam) => {
         const found = adminCardsStore.find((c) => c.cardNo === fam.rationCardNo || c.id === fam.id);
         const mCount = fam.memberCount || fam.members?.length || 5;
+        let displayName = fam.headName;
+        let displayDistrict = fam.district;
+        let displayProvince = fam.province;
+        if (reqLang === 'en') {
+          if (nameEnMap[displayName]) displayName = nameEnMap[displayName];
+          if (districtEnMap[displayDistrict]) displayDistrict = districtEnMap[displayDistrict];
+          if (displayProvince && displayProvince.includes('巴格达')) displayProvince = 'Baghdad Province';
+          if (displayProvince && displayProvince.includes('巴士拉')) displayProvince = 'Basra Province';
+          if (displayProvince && displayProvince.includes('尼尼微')) displayProvince = 'Nineveh Province';
+          if (displayProvince && displayProvince.includes('埃尔比勒')) displayProvince = 'Erbil Province';
+        }
+
         if (found) {
-          found.headName = fam.headName || found.headName;
+          found.headName = displayName || found.headName;
           found.memberCount = mCount;
           found.members = fam.members || found.members;
-          found.province = fam.province || found.province;
-          found.district = fam.district || found.district;
+          found.province = displayProvince || found.province;
+          found.district = displayDistrict || found.district;
           found.status = fam.status || found.status;
           found.quotas = {
             flour: mCount * 9,
@@ -3388,13 +3424,13 @@ export async function mockDispatch(config) {
             cardNo: fam.rationCardNo,
             oldPaperCardNo: fam.oldPaperCardNo || 'IQ-P-1994-082194',
             familyCode: fam.familyCode || 'FAM-BG-2024-0091',
-            headName: fam.headName || '持卡户主',
+            headName: displayName || (reqLang === 'en' ? 'Household Head' : '持卡户主'),
             nationalId: fam.nationalId || '198004198271',
             memberCount: mCount,
             members: fam.members || [],
-            province: fam.province || '巴格达省',
-            district: fam.district || '卡尔赫第一粮食供应分部',
-            status: fam.status || '正常',
+            province: displayProvince || (reqLang === 'en' ? 'Baghdad Province' : '巴格达省'),
+            district: displayDistrict || (reqLang === 'en' ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
+            status: fam.status || (reqLang === 'en' ? 'Active' : '正常'),
             issueDate: new Date().toISOString().slice(0, 10),
             rfidChipUid: `NFC-IQ-${Math.floor(1000000 + Math.random() * 8999999)}X`,
             quotas: {

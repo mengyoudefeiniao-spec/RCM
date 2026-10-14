@@ -350,28 +350,41 @@ export function getSharedFamily(cardNo, langOverride) {
 }
 
 export function updateSharedFamily(cardNo, updater, langOverride) {
-  const lang = langOverride || getActiveLanguage();
-  const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
-  const list = getSharedFamilies(lang);
-  const index = list.findIndex((f) => f.rationCardNo === cardNo);
+  const currentLang = langOverride || getActiveLanguage();
+  const langs = ['zh', 'en', 'ar', 'ku'];
+  let currentResult = null;
 
-  if (index !== -1) {
-    if (typeof updater === 'function') {
-      list[index] = updater(list[index]);
-    } else {
-      list[index] = { ...list[index], ...updater };
+  langs.forEach((lang) => {
+    const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
+    const list = getSharedFamilies(lang);
+    const index = list.findIndex((f) => f.rationCardNo === cardNo);
+
+    if (index !== -1) {
+      if (typeof updater === 'function') {
+        list[index] = updater(list[index]);
+      } else {
+        list[index] = { ...list[index], ...updater };
+      }
+
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(list));
+      } catch (e) {
+        // ignore
+      }
+
+      if (lang === currentLang) {
+        currentResult = list[index];
+      }
     }
+  });
 
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(list));
-    } catch (e) {
-      // ignore
-    }
+  safeBroadcast('FAMILY_UPDATED', currentResult || { cardNo });
 
-    safeBroadcast('FAMILY_UPDATED', list[index]);
-    return list[index];
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('rcm-family-updated', { detail: { cardNo } }));
   }
-  return null;
+
+  return currentResult;
 }
 
 export function addSharedFamily(newFamily, langOverride) {
