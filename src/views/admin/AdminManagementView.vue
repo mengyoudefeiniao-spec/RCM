@@ -104,14 +104,14 @@
               </el-table-column>
               <el-table-column :label="$t('admin.headInfo') || '户主信息'" min-width="190">
                 <template #default="{ row }">
-                  <div class="font-medium text-slate-800">{{ row.headName }}</div>
+                  <div class="font-medium text-slate-800">{{ formatHeadName(row.headName) }}</div>
                   <div class="text-[11px] text-slate-400 font-mono">{{ row.nationalId }}</div>
                 </template>
               </el-table-column>
               <el-table-column :label="$t('admin.regionInfo') || '所属行政省市/基层区'" min-width="220">
                 <template #default="{ row }">
-                  <div class="text-xs text-slate-700 font-medium">{{ row.province }}</div>
-                  <div class="text-[11px] text-slate-400">{{ row.district }}</div>
+                  <div class="text-xs text-slate-700 font-medium">{{ formatProvince(row.province) }}</div>
+                  <div class="text-[11px] text-slate-400">{{ formatDistrict(row.district) }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="80" align="center">
@@ -130,25 +130,77 @@
               </el-table-column>
               <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
                 <template #default="{ row }">
-                  <el-tag v-if="row.status === '正常'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
-                  <el-tag v-else-if="row.status === '已冻结'" type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
-                  <el-tag v-else-if="row.status === '审核中'" type="warning" size="small">{{ formatCardStatus('审核中') }}</el-tag>
+                  <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                  <el-tag v-else-if="row.status === '已冻结' || row.status === 'Frozen'" type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                  <el-tag v-else-if="row.status === '审核中' || row.status === 'Under Review'" type="warning" size="small">{{ formatCardStatus('审核中') }}</el-tag>
                   <el-tag v-else type="warning" size="small">{{ formatCardStatus(row.status) }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('admin.actions') || '操作'" width="230" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="170" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="primary" plain @click="openQuotaDialog(row)">{{ $t('admin.adjustQuota') || '调额' }}</el-button>
-                    <el-button
-                      size="small"
-                      :type="row.status === '已冻结' ? 'success' : 'danger'"
-                      plain
-                      @click="handleToggleCardStatus(row)"
+                    <!-- 查看家庭成员存根 (与公民端 Family Members 完全联动) -->
+                    <el-tooltip :content="$t('admin.viewFamilyMembers') || '查看家庭成员清单'" placement="top" :show-after="200">
+                      <el-button
+                        circle
+                        size="small"
+                        type="info"
+                        plain
+                        class="hover:scale-110 transition-transform shadow-2xs"
+                        @click="openCardMembersDrawer(row)"
+                      >
+                        <el-icon><User /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+
+                    <!-- 调额图标按钮 -->
+                    <el-tooltip :content="$t('admin.adjustQuota') || '调整配额外核'" placement="top" :show-after="200">
+                      <el-button
+                        circle
+                        size="small"
+                        type="primary"
+                        plain
+                        class="hover:scale-110 transition-transform shadow-2xs"
+                        @click="openQuotaDialog(row)"
+                      >
+                        <el-icon><Operation /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+
+                    <!-- 冻结 / 解冻图标按钮 -->
+                    <el-tooltip
+                      :content="isFrozenCard(row) ? ($t('admin.unfreezeCard') || '解除冻结') : ($t('admin.freezeCard') || '冻结卡片')"
+                      placement="top"
+                      :show-after="200"
                     >
-                      {{ row.status === '已冻结' ? ($t('admin.unfreezeCard') || '解冻') : ($t('admin.freezeCard') || '冻结') }}
-                    </el-button>
-                    <el-button size="small" type="info" plain @click="handleReissueCard(row)">{{ $t('admin.reissue') || '换发' }}</el-button>
+                      <el-button
+                        circle
+                        size="small"
+                        :type="isFrozenCard(row) ? 'success' : 'danger'"
+                        plain
+                        class="hover:scale-110 transition-transform shadow-2xs"
+                        @click="handleToggleCardStatus(row)"
+                      >
+                        <el-icon>
+                          <Unlock v-if="isFrozenCard(row)" />
+                          <Lock v-else />
+                        </el-icon>
+                      </el-button>
+                    </el-tooltip>
+
+                    <!-- 换发图标按钮 -->
+                    <el-tooltip :content="$t('admin.reissue') || '换发新卡 / 重置NFC'" placement="top" :show-after="200">
+                      <el-button
+                        circle
+                        size="small"
+                        type="warning"
+                        plain
+                        class="hover:scale-110 transition-transform shadow-2xs"
+                        @click="handleReissueCard(row)"
+                      >
+                        <el-icon><RefreshRight /></el-icon>
+                      </el-button>
+                    </el-tooltip>
                   </div>
                 </template>
               </el-table-column>
@@ -721,22 +773,22 @@
       </template>
     </el-dialog>
 
-    <!-- 3.5 家庭成员明细抽屉 -->
-    <el-dialog v-model="membersDialogVisible" title="家庭成员户籍存根明细" width="650px" align-center destroy-on-close>
+    <!-- 3.5 家庭成员明细抽屉 (与公民端 Family Members 保持一致) -->
+    <el-dialog v-model="membersDialogVisible" :title="$t('admin.familyMembersDetail') || '家庭在册成员存根档案'" width="650px" align-center destroy-on-close>
       <div v-if="selectedFamilyForMembers" class="space-y-3 text-xs">
         <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-          <div>户籍编号：<span class="font-mono font-bold">{{ selectedFamilyForMembers.familyCode }}</span></div>
-          <div>户主：<span class="font-bold">{{ selectedFamilyForMembers.headName }}</span></div>
+          <div>{{ $t('admin.familyCode') || '户籍编号' }}：<span class="font-mono font-bold text-slate-800">{{ selectedFamilyForMembers.familyCode }}</span></div>
+          <div>{{ $t('admin.headInfo') || '法定户主' }}：<span class="font-bold text-blue-600">{{ formatHeadName(selectedFamilyForMembers.headName) }}</span></div>
         </div>
-        <el-table :data="selectedFamilyForMembers.members || []" border size="small">
-          <el-table-column prop="name" label="姓名" min-width="130" />
-          <el-table-column prop="relation" label="关系" width="90" align="center" />
-          <el-table-column prop="gender" label="性别" width="60" align="center" />
-          <el-table-column prop="birthDate" label="出生日期" width="110" />
-          <el-table-column prop="nationalId" label="国民卡号" min-width="160" />
+        <el-table :data="selectedFamilyForMembers.members || []" border stripe size="small">
+          <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="140" />
+          <el-table-column prop="relation" :label="$t('admin.relation') || '关系'" width="90" align="center" />
+          <el-table-column prop="gender" :label="$t('admin.gender') || '性别'" width="70" align="center" />
+          <el-table-column prop="birthDate" :label="$t('admin.birthDate') || '出生日期'" width="110" align="center" />
+          <el-table-column prop="nationalId" :label="$t('admin.nationalId') || '国民卡号'" min-width="160" />
         </el-table>
       </div>
-      <template #footer><el-button @click="membersDialogVisible = false">关闭</el-button></template>
+      <template #footer><el-button @click="membersDialogVisible = false">{{ $t('common.close') || '关闭' }}</el-button></template>
     </el-dialog>
 
     <!-- 3.6 新增/编辑家庭对话框 -->
@@ -859,6 +911,73 @@ import { onTabMessage } from '../../utils/crossTabBus.js';
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 
+const nameZhToEnMap = {
+  '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
+  '海德尔·阿卜杜勒·拉赫曼': 'Haider Abdul-Rahman',
+  '海德尔·阿卜杜勒-拉赫曼': 'Haider Abdul-Rahman',
+  '法蒂玛·扎赫拉·穆罕默德': 'Fatima Zahra Mohammed',
+  '奥马尔·法鲁克·哈利勒': 'Omar Farooq Khalil',
+  '优素福·易卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
+  '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
+  '海德尔·卡西姆·纳赛尔': 'Haider Qasim Nasser'
+};
+
+const districtZhToEnMap = {
+  '卡尔赫第一配给中心 (#04)': 'Karkh 1st Ration Center (#04)',
+  '卡尔赫第一粮食供应分部': 'Karkh 1st Food Supply Branch',
+  '卡尔赫区 (Al-Karkh)': 'Al-Karkh District',
+  '鲁萨法区 (Al-Rusafa)': 'Al-Rusafa District',
+  '鲁萨法区 (Al Rusafa)': 'Al-Rusafa District',
+  '鲁萨法第二粮食供应分部': 'Al-Rusafa 2nd Food Supply Branch',
+  '阿沙尔区 (Al-Ashar)': 'Al-Ashar District',
+  '摩苏尔老城区 (Old Mosul)': 'Old Mosul District',
+  '安卡瓦区 (Ainkawa)': 'Ainkawa District'
+};
+
+const provinceZhToEnMap = {
+  '巴格达省': 'Baghdad Province',
+  '巴士拉省': 'Basra Province',
+  '尼尼微省': 'Nineveh Province',
+  '迪亚拉省': 'Diyala Province',
+  '基尔库克省': 'Kirkuk Province',
+  '安巴尔省': 'Anbar Province',
+  '埃尔比勒省': 'Erbil Province',
+  '苏莱曼尼亚省': 'Sulaymaniyah Province'
+};
+
+function formatHeadName(name) {
+  if (!name) return '';
+  if (isEn.value && nameZhToEnMap[name]) return nameZhToEnMap[name];
+  return name;
+}
+
+function formatDistrict(dist) {
+  if (!dist) return '';
+  if (isEn.value && districtZhToEnMap[dist]) return districtZhToEnMap[dist];
+  return dist;
+}
+
+function formatProvince(prov) {
+  if (!prov) return '';
+  if (isEn.value && provinceZhToEnMap[prov]) return provinceZhToEnMap[prov];
+  return prov;
+}
+
+function isFrozenCard(row) {
+  return row?.status === '已冻结' || row?.status === 'Frozen';
+}
+
+function openCardMembersDrawer(row) {
+  const matchedFam = familiesList.value.find(f => f.cardNo === row.cardNo || f.familyCode === row.familyCode);
+  const memList = (matchedFam?.members && matchedFam.members.length > 0) ? matchedFam.members : (row.members || []);
+  selectedFamilyForMembers.value = {
+    familyCode: matchedFam?.familyCode || row.familyCode || row.cardNo,
+    headName: formatHeadName(row.headName),
+    members: memList
+  };
+  membersDialogVisible.value = true;
+}
+
 const currentRoleTitle = computed(() => {
   switch (authStore.currentRole) {
     case 'minister_center':
@@ -879,9 +998,9 @@ const currentRoleTitle = computed(() => {
 });
 
 function formatCardStatus(status) {
-  if (status === '正常') return t('admin.statusNormal') || (isEn.value ? 'Normal' : '正常');
-  if (status === '已冻结') return t('admin.statusFrozen') || (isEn.value ? 'Frozen' : '已冻结');
-  if (status === '审核中') return t('admin.statusReviewing') || (isEn.value ? 'Under Review' : '审核中');
+  if (status === '正常' || status === 'Active') return t('admin.statusNormal') || (isEn.value ? 'Normal' : '正常');
+  if (status === '已冻结' || status === 'Frozen') return t('admin.statusFrozen') || (isEn.value ? 'Frozen' : '已冻结');
+  if (status === '审核中' || status === 'Under Review') return t('admin.statusReviewing') || (isEn.value ? 'Under Review' : '审核中');
   return status;
 }
 
@@ -915,7 +1034,18 @@ import {
   deleteAdminWarehouse
 } from '../../api/admin.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Refresh, Plus, Check, Tools } from '@element-plus/icons-vue';
+import {
+  Search,
+  Refresh,
+  Plus,
+  Check,
+  Tools,
+  Operation,
+  Lock,
+  Unlock,
+  RefreshRight,
+  User
+} from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
 const authStore = useAuthStore();
@@ -1799,23 +1929,38 @@ async function handleDeleteWarehouse(row) {
 }
 
 let offFamilyUpdated = null;
+
+function handleFamilyUpdateEvent() {
+  loadCards();
+  if (typeof loadFamilies === 'function') {
+    loadFamilies();
+  }
+}
+
+watch(locale, () => {
+  loadCards();
+  loadFamilies();
+  loadAgents();
+  loadWarehouses();
+});
+
 onMounted(() => {
   if (route.query.tab) {
     activeTab.value = route.query.tab;
   }
   loadCards();
-  offFamilyUpdated = onTabMessage('FAMILY_UPDATED', () => {
-    loadCards();
-    if (typeof loadFamilies === 'function') {
-      loadFamilies();
-    }
-  });
+  loadFamilies();
+  offFamilyUpdated = onTabMessage('FAMILY_UPDATED', handleFamilyUpdateEvent);
+  window.addEventListener('rcm-family-updated', handleFamilyUpdateEvent);
+  window.addEventListener('rcm-language-changed', handleFamilyUpdateEvent);
 });
 
 onUnmounted(() => {
   if (offFamilyUpdated) {
     offFamilyUpdated();
   }
+  window.removeEventListener('rcm-family-updated', handleFamilyUpdateEvent);
+  window.removeEventListener('rcm-language-changed', handleFamilyUpdateEvent);
 });
 </script>
 

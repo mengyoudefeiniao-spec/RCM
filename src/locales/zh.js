@@ -882,7 +882,14 @@ export default {
     "warehouseCode": "仓库编号",
     "warehouseName": "储备仓库名称",
     "warehouseType": "仓库功能类型",
-    "createWarehouse": "新建储备仓库"
+    "createWarehouse": "新建储备仓库",
+    "viewFamilyMembers": "查看家庭在册成员",
+    "familyMembersDetail": "家庭在册成员存根档案",
+    "name": "姓名",
+    "relation": "关系",
+    "gender": "性别",
+    "birthDate": "出生日期",
+    "nationalId": "国民卡号"
   },
   "memberTransfer": {
     "title": "申请配给卡成员转移 (跨卡移入)",
@@ -1562,6 +1569,7 @@ export default {
     "historyLedgerBar": "历史分发台账",
     "inventoryLedgerTitle": "本期库存台账",
     "periodInventoryTitle": "本期库存台账",
+    "balanceFormulaTitle": "台账平衡稽查公式",
     "balanceFormulaBadge": "平衡公式",
     "formulaBadge": "平衡公式",
     "balanceFormulaDesc": "理论应存 = 期初在库 + 调拨入库 - 累计已发放。实盘与理论不一致即触发损益差异预警。",

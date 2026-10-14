@@ -862,7 +862,14 @@ export default {
     "warehouseCode": "کۆدی کۆگا",
     "warehouseName": "ناوی کۆگای ستراتیژی",
     "warehouseType": "جۆری کۆگا",
-    "createWarehouse": "دروستکردنی کۆگای ستراتیژی"
+    "createWarehouse": "دروستکردنی کۆگای ستراتیژی",
+    "viewFamilyMembers": "بینینی ئەندامانی خێزان",
+    "familyMembersDetail": "تۆماری ئەندامانی خێزان",
+    "name": "ناوی تەواو",
+    "relation": "خزمایەتی",
+    "gender": "ڕەگەز",
+    "birthDate": "بەرواری لەدایکبوون",
+    "nationalId": "ژمارەی نیشتمانی"
   },
   "memberTransfer": {
     "title": "داواکاری گواستنەوەی ئەندامانی کارتی بەشەخۆراک (گواستنەوەی نێوان کارتەکان)",
@@ -1499,6 +1506,10 @@ export default {
     "scanVerifyBtn": "سکاکردن و پشتڕاستکردنەوە",
     "historyLedger": "تۆماری دابەشکردن",
     "inventoryLedgerTitle": "تۆماری کۆگای خول",
+    "periodInventoryTitle": "تۆماری کۆگای خول",
+    "balanceFormulaTitle": "هاوکێشەی وردبینی هاوسەنگی تۆمار",
+    "balanceFormulaBadge": "هاوکێشەی هاوسەنگی",
+    "balanceFormulaDesc": "پێشبینیکراو = سەرەتایی + هاتووە - دابەشکراو. هەر جیاوازییەک لەنێوان کردەیی و تیۆری هۆشداری جیاوازی دروست دەکات.",
     "formulaBadge": "هاوکێشەی هاوسەنگی",
     "formulaTip": "هاوکێشەی هاوسەنگی کۆگا: پێشبینیکراو = سەرەتایی + هاتووە - دابەشکراو",
     "statusMatch": "هاوسەنگە",

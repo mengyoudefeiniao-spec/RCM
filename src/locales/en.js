@@ -882,7 +882,14 @@ export default {
     "warehouseCode": "Warehouse Code",
     "warehouseName": "Reserve Warehouse Name",
     "warehouseType": "Warehouse Type",
-    "createWarehouse": "Create Strategic Warehouse"
+    "createWarehouse": "Create Strategic Warehouse",
+    "viewFamilyMembers": "View Family Members",
+    "familyMembersDetail": "Registered Family Members Roster",
+    "name": "Full Name",
+    "relation": "Relation",
+    "gender": "Gender",
+    "birthDate": "Date of Birth",
+    "nationalId": "National ID"
   },
   "memberTransfer": {
     "title": "Apply to Transfer Family Member (Card-to-Card Inward Transfer)",
@@ -1562,6 +1569,7 @@ export default {
     "historyLedgerBar": "Distribution Log",
     "inventoryLedgerTitle": "Inventory Ledger",
     "periodInventoryTitle": "Inventory Ledger",
+    "balanceFormulaTitle": "Ledger Balance Audit Formula",
     "balanceFormulaBadge": "Formula",
     "formulaBadge": "Formula",
     "balanceFormulaDesc": "Expected = Opening + Transferred - Dispatched.",

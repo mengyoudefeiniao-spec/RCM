@@ -862,7 +862,14 @@ export default {
     "warehouseCode": "رمز المستودع",
     "warehouseName": "اسم المستودع الاستراتيجي",
     "warehouseType": "نوع المستودع",
-    "createWarehouse": "إنشاء مستودع استراتيجي"
+    "createWarehouse": "إنشاء مستودع استراتيجي",
+    "viewFamilyMembers": "عرض أفراد الأسرة المسجلين",
+    "familyMembersDetail": "سجل أفراد الأسرة المسجلين",
+    "name": "الاسم الكامل",
+    "relation": "صلة القرابة",
+    "gender": "الجنس",
+    "birthDate": "تاريخ الميلاد",
+    "nationalId": "الرقم الوطني"
   },
   "memberTransfer": {
     "title": "طلب نقل أفراد البطاقة التموينية (نقل داخلي بين البطاقات)",
@@ -1499,6 +1506,10 @@ export default {
     "scanVerifyBtn": "مسح وتحقق",
     "historyLedger": "سجل التوزيع",
     "inventoryLedgerTitle": "سجل المخزون للدورة",
+    "periodInventoryTitle": "سجل المخزون للدورة",
+    "balanceFormulaTitle": "معادلة تدقيق توازن السجل",
+    "balanceFormulaBadge": "معادلة التوازن",
+    "balanceFormulaDesc": "المتوقع = الرصيد الافتتاحي + الوارد - الموزع. أي اختلاف بين الفعلي والنظري يؤدي إلى تنبيه بفرق في الجرد.",
     "formulaBadge": "معادلة التوازن",
     "formulaTip": "معادلة تدقيق المخزون: المتوقع = الرصيد الافتتاحي + الوارد - الموزع",
     "statusMatch": "مطابق",

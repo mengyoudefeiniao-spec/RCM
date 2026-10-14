@@ -125,41 +125,19 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 4. 跳转操作栏：历史分发记录 (带利落方向箭头) -->
-      <!-- ======================================================== -->
-      <div
-        class="rcm-list-card rcm-stagger-item flex items-center justify-between py-3 px-4 cursor-pointer hover:bg-[#FAF8F4] active:scale-[0.99] transition-all"
-        @click="showHistoryDrawer = true"
-      >
-        <!-- 左侧指示箭头 -->
-        <div class="w-7 h-7 rounded-full bg-[#F4F1EA] flex items-center justify-center text-[#1E3F35]">
-          <el-icon :size="14"><Back /></el-icon>
-        </div>
-
-        <!-- 右侧操作栏名称 -->
-        <div class="flex items-center gap-2 text-right">
-          <span class="text-sm font-bold text-[#18231E]">{{ $t('mobileAgent.historyLedgerBar') }}</span>
-          <el-icon class="text-[#D3A757]"><Document /></el-icon>
-        </div>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- 5. 周期台账核验卡片 (本期库存台账) -->
+      <!-- 4. 周期台账核验卡片 (本期库存台账) -->
       <!-- ======================================================== -->
       <div class="rcm-list-card rcm-stagger-item space-y-3.5">
         <!-- 头部标题区：左侧辅助公式说明，右侧主标题 -->
         <div class="flex items-center justify-between border-b border-[#F4EFE6] pb-2.5">
-          <!-- 左侧公式说明：期初+调入-已发=理论应存 -->
+          <!-- 左侧公式说明：台账平衡稽查公式 -->
           <div class="flex items-center gap-1">
             <ModuleDescTip
-              title="台账平衡稽查公式"
+              :title="$t('mobileAgent.balanceFormulaTitle')"
               :desc="$t('mobileAgent.balanceFormulaDesc')"
               :badge="$t('mobileAgent.balanceFormulaBadge')"
               badge-type="warning"
             />
-            <span class="text-[10px] font-mono text-[#8C958F]">
-              {{ $t('mobileAgent.formulaShort') }}
-            </span>
           </div>
 
           <!-- 右侧标题 -->
