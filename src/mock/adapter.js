@@ -3508,6 +3508,16 @@ export async function mockDispatch(config) {
 
   // 7.5 家庭户籍档案列表
   if (url.includes('/admin/families') && method === 'GET') {
+    const sharedFams = getSharedFamilies();
+    if (sharedFams && sharedFams.length > 0) {
+      sharedFams.forEach((fam) => {
+        const found = adminFamiliesStore.find((f) => f.cardNo === fam.rationCardNo || f.familyCode === fam.familyCode);
+        if (found) {
+          found.memberCount = fam.memberCount || fam.members?.length || found.memberCount;
+          found.members = fam.members || found.members;
+        }
+      });
+    }
     let result = [...adminFamiliesStore];
     if (params.familyCode) {
       result = result.filter((f) => f.familyCode.toLowerCase().includes(params.familyCode.toLowerCase()));
