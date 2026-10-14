@@ -93,53 +93,5 @@ export const MOCK_FAMILIES = [
         faceVerified: true
       }
     ]
-  },
-  {
-    rationCardNo: 'RC-10034592',
-    oldPaperCardNo: 'BSR-02-33419',
-    familyCode: 'FAM-BSR-11902',
-    province: 'Basra Province',
-    district: 'Ashar Center Ration Station (#02)',
-    headName: 'Haider Qasim Nasser',
-    phone: '07801122334',
-    memberCount: 4,
-    status: 'Active',
-    agentId: 'FA-00210',
-    agentName: 'Ashar 1st Food Agent Outlet',
-    address: 'No. 77, Ashar Port Avenue, Basra',
-    createdDate: '2026-02-01',
-    lastSelfCheckDate: '2026-03-25',
-    members: [
-      {
-        id: 'M-101',
-        name: 'Haider Qasim Nasser',
-        nationalId: '197211029381',
-        familyCode: 'FAM-BSR-11902',
-        relation: 'Head',
-        birthDate: '1972-04-14',
-        gender: 'Male',
-        status: 'Active',
-        phone: '07801122334',
-        residenceInfo: 'No. 77, Ashar Port Avenue, Basra',
-        monthlyIncome: 800000,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      },
-      {
-        id: 'M-102',
-        name: 'Maryam Jassim',
-        nationalId: '197611029382',
-        familyCode: 'FAM-BSR-11902',
-        relation: 'Spouse',
-        birthDate: '1976-12-08',
-        gender: 'Female',
-        status: 'Active',
-        phone: '07801122335',
-        residenceInfo: 'No. 77, Ashar Port Avenue, Basra',
-        monthlyIncome: 0,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      }
-    ]
   }
 ];

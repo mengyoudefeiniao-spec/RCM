@@ -3365,6 +3365,9 @@ export async function mockDispatch(config) {
   // ==========================================
   // 7.1 公民配给卡列表
   if (url.includes('/admin/citizen-cards') && method === 'GET') {
+    // 确保过滤掉废弃的冗余家庭卡号，基准精确对齐为 5 张卡
+    adminCardsStore = adminCardsStore.filter((c) => c.cardNo !== 'RC-10034592');
+
     // 动态融合最新共享家庭档案数据 (包含公民APP新申报的成员数与配额)
     const sharedFams = getSharedFamilies();
     if (sharedFams && sharedFams.length > 0) {
@@ -3375,8 +3378,7 @@ export async function mockDispatch(config) {
         '法蒂玛·扎赫拉·穆罕默德': 'Fatima Zahra Mohammed',
         '奥马尔·法鲁克·哈利勒': 'Omar Farooq Khalil',
         '优素福·易卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
-        '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
-        '海德尔·卡西姆·纳赛尔': 'Haider Qasim Nasser'
+        '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim'
       };
       const districtEnMap = {
         '卡尔赫第一配给中心 (#04)': 'Karkh 1st Ration Center (#04)',
@@ -3391,6 +3393,7 @@ export async function mockDispatch(config) {
       };
 
       sharedFams.forEach((fam) => {
+        if (!fam || fam.rationCardNo === 'RC-10034592') return;
         const found = adminCardsStore.find((c) => c.cardNo === fam.rationCardNo || c.id === fam.id);
         const mCount = fam.memberCount || fam.members?.length || 5;
         let displayName = fam.headName;
@@ -3418,33 +3421,41 @@ export async function mockDispatch(config) {
             oil: mCount * 1,
             sugar: mCount * 2
           };
-        } else if (fam.rationCardNo) {
-          adminCardsStore.unshift({
-            id: `CARD-${Date.now().toString().slice(-4)}`,
-            cardNo: fam.rationCardNo,
-            oldPaperCardNo: fam.oldPaperCardNo || 'IQ-P-1994-082194',
-            familyCode: fam.familyCode || 'FAM-BG-2024-0091',
-            headName: displayName || (reqLang === 'en' ? 'Household Head' : '持卡户主'),
-            nationalId: fam.nationalId || '198004198271',
-            memberCount: mCount,
-            members: fam.members || [],
-            province: displayProvince || (reqLang === 'en' ? 'Baghdad Province' : '巴格达省'),
-            district: displayDistrict || (reqLang === 'en' ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
-            status: fam.status || (reqLang === 'en' ? 'Active' : '正常'),
-            issueDate: new Date().toISOString().slice(0, 10),
-            rfidChipUid: `NFC-IQ-${Math.floor(1000000 + Math.random() * 8999999)}X`,
-            quotas: {
-              flour: mCount * 9,
-              rice: mCount * 3,
-              oil: mCount * 1,
-              sugar: mCount * 2
-            }
-          });
         }
       });
     }
 
     let result = [...adminCardsStore];
+    if (reqLang === 'en') {
+      const nameEnMap = {
+        '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
+        '海德尔·阿卜杜勒·拉赫曼': 'Haider Abdul-Rahman',
+        '海德尔·阿卜杜勒-拉赫曼': 'Haider Abdul-Rahman',
+        '法蒂玛·扎赫拉·穆罕默德': 'Fatima Zahra Mohammed',
+        '奥马尔·法鲁克·哈利勒': 'Omar Farooq Khalil',
+        '优素福·易卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
+        '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim'
+      };
+      const districtEnMap = {
+        '卡尔赫第一配给中心 (#04)': 'Karkh 1st Ration Center (#04)',
+        '卡尔赫第一粮食供应分部': 'Karkh 1st Food Supply Branch',
+        '卡尔赫区 (Al-Karkh)': 'Al-Karkh District',
+        '鲁萨法区 (Al-Rusafa)': 'Al-Rusafa District',
+        '鲁萨法区 (Al Rusafa)': 'Al-Rusafa District',
+        '鲁萨法第二粮食供应分部': 'Al-Rusafa 2nd Food Supply Branch',
+        '阿沙尔区 (Al-Ashar)': 'Al-Ashar District',
+        '摩苏尔老城区 (Old Mosul)': 'Old Mosul District',
+        '安卡瓦区 (Ainkawa)': 'Ainkawa District'
+      };
+      result.forEach((c) => {
+        if (nameEnMap[c.headName]) c.headName = nameEnMap[c.headName];
+        if (districtEnMap[c.district]) c.district = districtEnMap[c.district];
+        if (c.province && c.province.includes('巴格达')) c.province = 'Baghdad Province';
+        if (c.province && c.province.includes('巴士拉')) c.province = 'Basra Province';
+        if (c.province && c.province.includes('尼尼微')) c.province = 'Nineveh Province';
+        if (c.province && c.province.includes('埃尔比勒')) c.province = 'Erbil Province';
+      });
+    }
     if (params.cardNo) {
       result = result.filter((c) => c.cardNo.toLowerCase().includes(params.cardNo.toLowerCase()));
     }

@@ -330,7 +330,17 @@ export function getSharedFamilies(langOverride) {
   const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
   try {
     const raw = localStorage.getItem(storageKey);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      let parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        // 自动净化历史脏缓存：剔除已被废弃的冗余家庭 RC-10034592
+        const cleaned = parsed.filter((f) => f && f.rationCardNo !== 'RC-10034592');
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(storageKey, JSON.stringify(cleaned));
+        }
+        if (cleaned.length > 0) return cleaned;
+      }
+    }
   } catch (e) {
     // ignore
   }
