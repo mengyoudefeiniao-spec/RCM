@@ -178,7 +178,7 @@
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="familyQuery.familyCode"
-                  placeholder="户籍编码 (FAM-...)"
+                  :placeholder="$t('admin.familyCodePlaceholder') || '户籍编码 (FAM-...)'"
                   style="width: 170px"
                   size="small"
                   clearable
@@ -186,64 +186,64 @@
                 />
                 <el-input
                   v-model="familyQuery.headName"
-                  placeholder="户主姓名"
+                  :placeholder="$t('admin.headNamePlaceholder') || '户主姓名'"
                   style="width: 150px"
                   size="small"
                   clearable
                   @keyup.enter="handleFamilySearch"
                 />
                 <!-- 省市筛选 -->
-                <el-select v-model="familyQuery.province" placeholder="所属省市" style="width: 130px" size="small" @change="handleFamilyProvinceChange">
-                  <el-option label="全部省市" value="全部" />
+                <el-select v-model="familyQuery.province" :placeholder="$t('admin.provincePlaceholder') || '所属省市'" style="width: 130px" size="small" @change="handleFamilyProvinceChange">
+                  <el-option :label="$t('admin.allProvinces') || '全部省市'" value="全部" />
                   <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
                 </el-select>
                 <!-- 中心筛选 -->
-                <el-select v-model="familyQuery.center" placeholder="保障分部/中心" style="width: 170px" size="small" @change="handleFamilySearch">
-                  <el-option label="全部中心" value="全部" />
+                <el-select v-model="familyQuery.center" :placeholder="$t('admin.centerPlaceholder') || '保障分部/中心'" style="width: 170px" size="small" @change="handleFamilySearch">
+                  <el-option :label="$t('admin.allCenters') || '全部中心'" value="全部" />
                   <el-option v-for="c in currentFamilyCenterOptions" :key="c" :label="c" :value="c" />
                 </el-select>
 
-                <el-button type="primary" size="small" :icon="Search" @click="handleFamilySearch">查询</el-button>
-                <el-button size="small" :icon="Refresh" @click="resetFamilyQuery">重置</el-button>
+                <el-button type="primary" size="small" :icon="Search" @click="handleFamilySearch">{{ $t('admin.searchQuery') || '查询' }}</el-button>
+                <el-button size="small" :icon="Refresh" @click="resetFamilyQuery">{{ $t('admin.resetQuery') || '重置' }}</el-button>
               </div>
 
               <div>
                 <el-button type="primary" size="small" :icon="Plus" @click="openCreateFamilyDialog">
-                  新增家庭建档
+                  {{ $t('admin.addFamily') || '新增家庭建档' }}
                 </el-button>
               </div>
             </div>
 
             <!-- 家庭档案表格 (自适应占比优化) -->
             <el-table :data="paginatedFamilies" v-loading="familiesLoading" border stripe style="width: 100%" size="small" class="text-xs">
-              <el-table-column prop="familyCode" label="户籍档案编号" width="160" fixed>
+              <el-table-column prop="familyCode" :label="$t('admin.familyCode') || '户籍档案编号'" width="160" fixed>
                 <template #default="{ row }">
                   <span class="font-mono font-bold text-slate-800">{{ row.familyCode }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="headName" label="法定户主" min-width="160" />
-              <el-table-column prop="memberCount" label="人口" width="90" align="center">
+              <el-table-column prop="headName" :label="$t('admin.headInfo') || '法定户主'" min-width="160" />
+              <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="90" align="center">
                 <template #default="{ row }">
-                  <span class="font-bold font-mono">{{ row.memberCount }}</span> 人
+                  <span class="font-bold font-mono">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
                 </template>
               </el-table-column>
-              <el-table-column prop="category" label="保障类型" width="130" align="center">
+              <el-table-column prop="category" :label="$t('admin.category') || '保障类型'" width="130" align="center">
                 <template #default="{ row }">
                   <el-tag size="small" type="info">{{ row.category }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="所属省市与分部" min-width="320">
+              <el-table-column :label="$t('admin.regionInfo') || '所属省市与分部'" min-width="320">
                 <template #default="{ row }">
                   <div class="text-slate-800 font-medium">{{ row.adminBranch || '供应分部' }}</div>
                   <div class="text-[11px] text-slate-400">{{ row.address }}</div>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="220" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="220" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="info" plain @click="openMembersDrawer(row)">成员 ({{ row.memberCount }})</el-button>
-                    <el-button size="small" type="primary" plain @click="openEditFamilyDialog(row)">编辑</el-button>
-                    <el-button size="small" type="danger" plain @click="handleDeleteFamily(row)">注销</el-button>
+                    <el-button size="small" type="info" plain @click="openMembersDrawer(row)">{{ $t('admin.membersCountBtn', { count: row.memberCount }) }}</el-button>
+                    <el-button size="small" type="primary" plain @click="openEditFamilyDialog(row)">{{ $t('common.edit') || '编辑' }}</el-button>
+                    <el-button size="small" type="danger" plain @click="handleDeleteFamily(row)">{{ $t('common.delete') || '注销' }}</el-button>
                   </div>
                 </template>
               </el-table-column>
@@ -251,7 +251,7 @@
 
             <!-- 分页 -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-              <span>共 {{ filteredFamilies.length }} 笔记录</span>
+              <span>{{ $t('admin.totalRecords', { count: filteredFamilies.length }) }}</span>
               <el-pagination
                 v-model:current-page="familyPage"
                 v-model:page-size="familyPageSize"
@@ -339,12 +339,12 @@
 
             <!-- 代理网点表格 (自适应占比优化) -->
             <el-table :data="paginatedAgents" v-loading="agentsLoading" border stripe style="width: 100%" size="small" class="text-xs">
-              <el-table-column prop="code" label="网点代号" width="120" fixed>
+              <el-table-column prop="code" :label="$t('admin.agentCode') || '网点代号'" width="120" fixed>
                 <template #default="{ row }">
                   <span class="font-mono font-bold text-amber-700">{{ row.code }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="name" label="网点名称与片区" min-width="260">
+              <el-table-column prop="name" :label="$t('admin.agentNameArea') || '网点名称与片区'" min-width="260">
                 <template #default="{ row }">
                   <div class="font-bold text-slate-800">{{ row.name }}</div>
                   <div class="text-[11px] text-slate-400">{{ row.province }} · {{ row.district || row.address }}</div>
@@ -353,13 +353,13 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column label="负责人" min-width="160">
+              <el-table-column :label="$t('admin.manager') || '负责人'" min-width="160">
                 <template #default="{ row }">
                   <div class="font-medium text-slate-700">{{ row.manager }}</div>
                   <div class="text-[10px] text-slate-400 font-mono">{{ row.phone }}</div>
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="运营状态" width="110" align="center">
+              <el-table-column prop="status" :label="$t('admin.opStatus') || '运营状态'" width="110" align="center">
                 <template #default="{ row }">
                   <el-tag v-if="row.status === '正常营业'" type="success" size="small">正常营业</el-tag>
                   <el-tag v-else-if="row.status === '停业整顿'" type="warning" size="small">停业整顿</el-tag>
@@ -367,7 +367,7 @@
                   <el-tag v-else type="danger" size="small">{{ row.status }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="服务户数 / 法定承载" min-width="180" align="center">
+              <el-table-column :label="$t('admin.servedHouseholdsCap') || '服务户数 / 法定承载'" min-width="180" align="center">
                 <template #default="{ row }">
                   <div class="space-y-0.5">
                     <span class="font-mono font-bold" :class="row.servedHouseholds > 1500 ? 'text-rose-600' : 'text-slate-700'">
@@ -384,7 +384,7 @@
               </el-table-column>
 
               <!-- 代理网点专属管辖职权操作列 (直接根据当前角色动态融入操作栏) -->
-              <el-table-column label="专属管辖职权操作" width="320" fixed="right" align="center">
+              <el-table-column :label="$t('admin.governanceActions') || '专属管辖职权操作'" width="320" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1 flex-wrap">
                     <!-- 1. 【配给中心部长专属】：拆分大网点 + 授予代理权 -->
