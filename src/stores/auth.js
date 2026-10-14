@@ -216,6 +216,8 @@ export const useAuthStore = defineStore('auth', () => {
     userProfile.value = null;
     sessionStorage.removeItem('rcm_auth_token');
     sessionStorage.removeItem('rcm_user_profile');
+    localStorage.removeItem('rcm_auth_token');
+    localStorage.removeItem('rcm_user_profile');
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('rcm-close-chat'));

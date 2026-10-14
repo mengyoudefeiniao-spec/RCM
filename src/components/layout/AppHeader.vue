@@ -302,6 +302,14 @@ function handleRoleCommand(role) {
 async function handleLogout() {
   const wasAppMode = isAppMode.value;
   await authStore.logout();
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('rcm_auth_token');
+    localStorage.removeItem('rcm_user_profile');
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.removeItem('rcm_auth_token');
+    sessionStorage.removeItem('rcm_user_profile');
+  }
   if (wasAppMode) {
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('rcm_layout_mode', 'app');
     await router.replace({ path: '/login', query: { layout: 'app' } });

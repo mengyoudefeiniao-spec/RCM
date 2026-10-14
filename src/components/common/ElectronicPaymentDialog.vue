@@ -10,185 +10,183 @@
     :class="['electronic-payment-dialog', { 'electronic-payment-dialog--app': isAppMode }]"
     @update:model-value="(val) => $emit('update:modelValue', val)"
   >
-    <div :class="['space-y-3.5', isAppMode ? 'p-1' : 'p-2 sm:p-4 space-y-4']">
-      <!-- 顶部：国家财政与中央银行安全网关标识 -->
-      <div class="flex items-center justify-between border-b border-[#ECE7DE] pb-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/40 flex items-center justify-center font-bold shadow-xs">
-            <el-icon :size="18"><CreditCard /></el-icon>
+    <div :class="['space-y-2.5', isAppMode ? 'p-0.5' : 'p-2 sm:p-4 space-y-4']">
+      <!-- 顶部：国家财政与中央银行安全网关标识 (APP 模式紧凑化) -->
+      <div class="flex items-center justify-between border-b border-[#ECE7DE]" :class="isAppMode ? 'pb-1.5' : 'pb-3'">
+        <div class="flex items-center gap-2">
+          <div :class="isAppMode ? 'w-6 h-6 rounded-md text-xs' : 'w-9 h-9 rounded-xl'" class="bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/40 flex items-center justify-center font-bold shadow-xs shrink-0">
+            <el-icon :size="isAppMode ? 13 : 18"><CreditCard /></el-icon>
           </div>
           <div>
-            <div class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
+            <div class="font-bold text-[#18231E] flex items-center gap-1.5" :class="isAppMode ? 'text-xs' : 'text-sm'">
               <span>{{ $t('payment.title') || '统一在线安全支付网关' }}</span>
-              <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
+              <el-tag size="small" type="success" effect="plain" class="scale-75 origin-left font-mono">
                 CBI-PAY
               </el-tag>
             </div>
-            <div class="text-[11px] text-[#8C958F]">
+            <div v-if="!isAppMode" class="text-[11px] text-[#8C958F]">
               中央银行规费在线直接清算系统 · SSL 256-bit 加密
             </div>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[11px] text-[#8C958F] block">支付有效倒计时</span>
+          <span class="text-[9px] text-[#8C958F] block">倒计时</span>
           <span class="font-mono text-xs font-bold text-[#C59D5F]">{{ countdownFormatted }}</span>
         </div>
       </div>
 
       <!-- 待支付状态 (Pending) -->
-      <div v-if="paymentStatus === 'pending'" class="space-y-4">
-        <!-- 账单金额卡片 (深墨绿高奢政务质感底纹) -->
-        <div class="bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142B24] border border-[#C59D5F]/35 text-white p-4 rounded-2xl shadow-md space-y-3">
-          <div class="flex items-center justify-between text-xs text-[#E3D9C8]">
-            <span>{{ title || '法定业务公文规费缴交' }}</span>
-            <span class="font-mono text-[11px]">单号: {{ orderId }}</span>
-          </div>
-
-          <div class="flex items-baseline justify-between">
-            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-[#E4BA76] tracking-tight">
-              {{ amount.toLocaleString() }} <span class="text-sm text-white/80 font-normal">{{ currency }}</span>
+      <div v-if="paymentStatus === 'pending'" :class="isAppMode ? 'space-y-2' : 'space-y-4'">
+        <!-- 账单金额卡片 (APP 模式横向极致扁平化，高度仅约 46px) -->
+        <div
+          class="bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142B24] border border-[#C59D5F]/35 text-white rounded-xl shadow-xs"
+          :class="isAppMode ? 'p-2.5' : 'p-4 rounded-2xl space-y-3'"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div class="space-y-0.5 truncate">
+              <div class="text-xs font-bold text-[#E3D9C8] truncate">{{ title || '法定业务公文规费' }}</div>
+              <div class="text-[10px] text-white/60 font-mono">单号: {{ orderId }}</div>
             </div>
-            <el-tag size="small" type="warning" effect="dark">
-              待扣款
-            </el-tag>
-          </div>
-
-          <div class="pt-2 border-t border-white/15 text-[11px] text-[#E3D9C8] flex flex-wrap justify-between gap-y-1">
-            <span>缴费卡号：<strong class="font-mono text-white">{{ businessNo || 'RC-10029381' }}</strong></span>
-            <span>申报户主：<strong class="text-white">{{ applicantName || '持卡公民' }}</strong></span>
+            <div class="text-right shrink-0">
+              <div class="text-lg font-black font-mono text-[#E4BA76] tracking-tight leading-none">
+                {{ amount.toLocaleString() }} <span class="text-[10px] text-white/80 font-normal">{{ currency }}</span>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">待扣款</span>
+            </div>
           </div>
         </div>
 
-        <!-- 扣款渠道账户选择 -->
-        <div class="space-y-1.5">
-          <div class="text-xs font-medium text-[#5E6862]">选择扣款资金账户：</div>
-          <div class="grid grid-cols-3 gap-2">
+        <!-- 扣款渠道账户选择 (APP 模式紧凑单行) -->
+        <div :class="isAppMode ? 'space-y-0.5' : 'space-y-1.5'">
+          <div class="text-[10px] font-medium text-[#5E6862]">资金账户：</div>
+          <div class="grid grid-cols-3 gap-1.5">
             <button
               v-for="ch in channels"
               :key="ch.id"
               type="button"
-              class="p-2 rounded-xl border text-xs text-center transition-all cursor-pointer flex flex-col items-center gap-1"
-              :class="
+              class="rounded-lg border text-center transition-all cursor-pointer flex items-center justify-center gap-1"
+              :class="[
+                isAppMode ? 'py-1 px-1 text-[10px]' : 'p-2 text-xs flex-col',
                 selectedChannel === ch.id
                   ? 'border-[#C59D5F] bg-[#FAF5ED] text-[#1E3F35] font-bold shadow-2xs ring-1 ring-[#C59D5F]/40'
                   : 'border-[#ECE7DE] hover:border-[#C59D5F]/50 bg-white text-[#5E6862]'
-              "
+              ]"
               @click="selectedChannel = ch.id"
             >
-              <span class="text-base">{{ ch.icon }}</span>
-              <span class="text-[11px]">{{ ch.name }}</span>
+              <span :class="isAppMode ? 'text-xs' : 'text-base'">{{ ch.icon }}</span>
+              <span class="truncate">{{ ch.name.split(' ')[0] }}</span>
             </button>
           </div>
         </div>
 
         <!-- 真实在线支付核身验证方式 Tab 切换 (密码 / 指纹 / 刷脸) -->
-        <div class="border border-[#ECE7DE] rounded-2xl p-4 bg-[#FAF8F4] space-y-4">
-          <div class="flex items-center justify-between pb-2 border-b border-[#ECE7DE]">
-            <span class="text-xs font-bold text-[#18231E] flex items-center gap-1.5">
+        <div class="border border-[#ECE7DE] rounded-xl bg-[#FAF8F4]" :class="isAppMode ? 'p-2 space-y-2' : 'p-4 rounded-2xl space-y-4'">
+          <div class="flex items-center justify-between pb-1 border-b border-[#ECE7DE]">
+            <span class="text-[10px] font-bold text-[#18231E] flex items-center gap-1">
               <el-icon class="text-[#1E3F35]"><Lock /></el-icon>
-              <span>选择在线支付验证方式</span>
+              <span>核身验签方式</span>
             </span>
-            <div class="flex bg-[#EAE5DA] p-0.5 rounded-lg text-[11px]">
+            <div class="flex bg-[#EAE5DA] p-0.5 rounded-lg text-[10px]">
               <button
                 type="button"
-                class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
                 :class="verifyMode === 'pin' ? 'bg-white text-[#1E3F35] font-bold shadow-2xs' : 'text-[#5E6862] hover:text-[#18231E]'"
                 @click="switchVerifyMode('pin')"
               >
-                密码支付
+                密码
               </button>
               <button
                 type="button"
-                class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
                 :class="verifyMode === 'fingerprint' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 @click="switchVerifyMode('fingerprint')"
               >
-                指纹验证
+                指纹
               </button>
               <button
                 type="button"
-                class="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
                 :class="verifyMode === 'face' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
                 @click="switchVerifyMode('face')"
               >
-                刷脸支付
+                刷脸
               </button>
             </div>
           </div>
 
           <!-- ======================================================== -->
-          <!-- 验证模式 1: 输入 6 位安全支付密码 (PIN 码) -->
+          <!-- 验证模式 1: 输入 6 位安全支付密码 (PIN 码) (APP 模式紧凑化) -->
           <!-- ======================================================== -->
-          <div v-if="verifyMode === 'pin'" class="space-y-4 py-1">
-            <div class="text-center space-y-1">
-              <div class="text-xs font-semibold text-slate-700">请输入 6 位数字支付密码</div>
-              <div class="text-[11px] text-slate-400">已启用国家清算中心防按键劫持键盘</div>
-            </div>
-
+          <div v-if="verifyMode === 'pin'" :class="isAppMode ? 'space-y-1.5' : 'space-y-4 py-1'">
             <!-- 6 个独立方格输入框展示 (暗文圆点) -->
-            <div class="flex justify-center gap-2 sm:gap-3 py-1">
+            <div class="flex justify-center gap-1.5 sm:gap-3 py-0.5">
               <div
                 v-for="idx in 6"
                 :key="idx"
-                class="w-10 h-12 sm:w-11 sm:h-13 rounded-xl border-2 flex items-center justify-center transition-all text-xl font-bold font-mono"
-                :class="
+                class="rounded-lg border-2 flex items-center justify-center transition-all font-bold font-mono"
+                :class="[
+                  isAppMode ? 'w-8 h-9 text-base' : 'w-10 h-12 sm:w-11 sm:h-13 text-xl',
                   pinCode.length >= idx
                     ? 'border-emerald-500 bg-emerald-50/40 text-emerald-700'
                     : pinCode.length === idx - 1
                     ? 'border-indigo-500 bg-white ring-2 ring-indigo-200'
                     : 'border-slate-200 bg-white'
-                "
+                ]"
               >
-                <span v-if="pinCode.length >= idx" class="w-3 h-3 rounded-full bg-slate-800"></span>
-                <span v-else-if="pinCode.length === idx - 1" class="w-0.5 h-5 bg-indigo-500 animate-pulse"></span>
+                <span v-if="pinCode.length >= idx" class="w-2.5 h-2.5 rounded-full bg-slate-800"></span>
+                <span v-else-if="pinCode.length === idx - 1" class="w-0.5 h-4 bg-indigo-500 animate-pulse"></span>
               </div>
             </div>
 
-            <!-- 虚拟防窥数字安全小键盘 -->
-            <div class="max-w-xs mx-auto grid grid-cols-3 gap-2 pt-1">
+            <!-- 虚拟防窥数字安全小键盘 (按键高度紧凑化) -->
+            <div class="max-w-xs mx-auto grid grid-cols-3 gap-1 pt-0.5">
               <button
                 v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
                 :key="num"
                 type="button"
-                class="h-10 rounded-xl bg-white border border-slate-200 font-bold font-mono text-base text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                class="rounded-lg bg-white border border-slate-200 font-bold font-mono text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                :class="isAppMode ? 'h-7.5 text-sm' : 'h-10 text-base'"
                 @click="handleInputPin(num)"
               >
                 {{ num }}
               </button>
               <button
                 type="button"
-                class="h-10 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                class="rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                :class="isAppMode ? 'h-7.5 text-[10px]' : 'h-10 text-xs'"
                 @click="pinCode = ''"
               >
                 清空
               </button>
               <button
                 type="button"
-                class="h-10 rounded-xl bg-white border border-slate-200 font-bold font-mono text-base text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                class="rounded-lg bg-white border border-slate-200 font-bold font-mono text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                :class="isAppMode ? 'h-7.5 text-sm' : 'h-10 text-base'"
                 @click="handleInputPin(0)"
               >
                 0
               </button>
               <button
                 type="button"
-                class="h-10 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center"
+                class="rounded-lg bg-slate-100 border border-slate-200 font-semibold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center"
+                :class="isAppMode ? 'h-7.5 text-xs' : 'h-10 text-xs'"
                 @click="handleDeletePin"
               >
                 <el-icon><Back /></el-icon>
               </button>
             </div>
 
-            <div class="flex items-center justify-between text-[11px] pt-1">
-              <span class="text-slate-400">支持直接输入物理数字键</span>
-              <el-button type="primary" link size="small" @click="handleFastFillPin">
-                一键填入默认支付密码 (666888)
-              </el-button>
+            <div class="flex items-center justify-between text-[10px] pt-0.5">
+              <span class="text-slate-400">支持键盘输入</span>
+              <button type="button" class="text-emerald-700 font-bold hover:underline cursor-pointer" @click="handleFastFillPin">
+                一键填入 (666888)
+              </button>
             </div>
 
             <el-button
               type="primary"
-              size="large"
-              class="w-full font-bold shadow-md"
+              class="w-full font-bold shadow-sm !rounded-xl"
+              :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
               style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
               :disabled="pinCode.length < 6"
               @click="handleSubmitPinPay"
@@ -199,16 +197,16 @@
           </div>
 
           <!-- ======================================================== -->
-          <!-- 验证模式 2: 生物指纹核身支付 (Touch ID) -->
+          <!-- 验证模式 2: 生物指纹核身支付 (Touch ID) (紧凑化) -->
           <!-- ======================================================== -->
-          <div v-else-if="verifyMode === 'fingerprint'" class="space-y-4 py-3 text-center">
-            <div class="space-y-1">
-              <div class="text-xs font-semibold text-slate-800">轻触或长按指纹传感器</div>
-              <div class="text-[11px] text-slate-400">调用设备安全芯片生物认证 · 免密极速扣款</div>
+          <div v-else-if="verifyMode === 'fingerprint'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-3'" class="text-center">
+            <div class="space-y-0.5">
+              <div class="text-xs font-semibold text-slate-800">轻触指纹传感器</div>
+              <div class="text-[10px] text-slate-400">安全芯片生物认证 · 免密极速扣款</div>
             </div>
 
-            <!-- 指纹感应高科技传感器按钮 -->
-            <div class="relative w-28 h-28 mx-auto flex items-center justify-center">
+            <!-- 指纹感应传感器按钮 -->
+            <div class="relative mx-auto flex items-center justify-center" :class="isAppMode ? 'w-20 h-20' : 'w-28 h-28'">
               <!-- 外圈呼吸光环 -->
               <div
                 class="absolute inset-0 rounded-full border-2 transition-all duration-700"
@@ -218,7 +216,8 @@
               <!-- 指纹按钮核心 -->
               <button
                 type="button"
-                class="relative w-24 h-24 rounded-full bg-gradient-to-b from-slate-900 to-slate-950 text-emerald-400 flex flex-col items-center justify-center shadow-lg border border-slate-700 cursor-pointer hover:border-emerald-400 transition-all active:scale-95 group overflow-hidden"
+                class="relative rounded-full bg-gradient-to-b from-slate-900 to-slate-950 text-emerald-400 flex flex-col items-center justify-center shadow-lg border border-slate-700 cursor-pointer hover:border-emerald-400 transition-all active:scale-95 group overflow-hidden"
+                :class="isAppMode ? 'w-18 h-18' : 'w-24 h-24'"
                 @click="triggerFingerprintScan"
               >
                 <!-- 动态激光波纹 (扫描时) -->
@@ -229,8 +228,8 @@
 
                 <!-- 指纹 SVG 图案 -->
                 <svg
-                  class="w-12 h-12 transition-transform duration-300"
-                  :class="fingerScanning ? 'scale-110 text-emerald-300' : 'group-hover:scale-105'"
+                  class="transition-transform duration-300"
+                  :class="[isAppMode ? 'w-9 h-9' : 'w-12 h-12', fingerScanning ? 'scale-110 text-emerald-300' : 'group-hover:scale-105']"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -249,26 +248,16 @@
                   <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
                 </svg>
 
-                <span class="text-[10px] font-mono text-emerald-300/80 mt-1">
-                  {{ fingerScanning ? '读取比对中...' : 'TOUCH ID' }}
+                <span class="text-[9px] font-mono text-emerald-300/80 mt-0.5">
+                  {{ fingerScanning ? '比对中...' : 'TOUCH ID' }}
                 </span>
               </button>
             </div>
 
-            <div class="text-xs text-slate-500">
-              <span v-if="fingerScanning" class="text-emerald-600 font-bold flex items-center justify-center gap-1.5">
-                <el-icon class="is-loading"><Loading /></el-icon>
-                <span>正在校验生物指纹哈希令牌...</span>
-              </span>
-              <span v-else class="text-slate-400">
-                点击上方传感器模拟指纹按下识别
-              </span>
-            </div>
-
             <el-button
               type="primary"
-              size="large"
-              class="w-full font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500"
+              class="w-full font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500 !rounded-xl"
+              :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
               :loading="fingerScanning"
               @click="triggerFingerprintScan"
             >
@@ -277,16 +266,19 @@
           </div>
 
           <!-- ======================================================== -->
-          <!-- 验证模式 3: 摄像头识别人脸 (Face ID 刷脸扣款) -->
+          <!-- 验证模式 3: 摄像头识别人脸 (Face ID 刷脸扣款) (紧凑化) -->
           <!-- ======================================================== -->
-          <div v-else-if="verifyMode === 'face'" class="space-y-4 py-2 text-center">
-            <div class="space-y-1">
-              <div class="text-xs font-semibold text-slate-800">注视屏幕进行 Face ID 刷脸支付</div>
-              <div class="text-[11px] text-slate-400">由国家身份中心生物数字证书提供免密支付验签</div>
+          <div v-else-if="verifyMode === 'face'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-2'" class="text-center">
+            <div class="space-y-0.5">
+              <div class="text-xs font-semibold text-slate-800">注视屏幕进行 Face ID 支付</div>
+              <div class="text-[10px] text-slate-400">身份中心生物证书免密验签</div>
             </div>
 
             <!-- 微型刷脸取景扫描圆框 -->
-            <div class="relative w-32 h-32 mx-auto rounded-full bg-slate-900 border-2 border-indigo-400/80 overflow-hidden flex items-center justify-center shadow-lg">
+            <div
+              class="relative mx-auto rounded-full bg-slate-900 border-2 border-indigo-400/80 overflow-hidden flex items-center justify-center shadow-lg"
+              :class="isAppMode ? 'w-22 h-22' : 'w-32 h-32'"
+            >
               <!-- 激光环绕光环 -->
               <div
                 class="absolute inset-0 rounded-full border-2 border-indigo-400/30"
@@ -295,8 +287,8 @@
 
               <!-- 仿真面孔剪影 -->
               <div class="text-indigo-400/80 flex flex-col items-center">
-                <el-icon :size="48"><User /></el-icon>
-                <div class="text-[9px] font-mono text-indigo-300 mt-1">
+                <el-icon :size="isAppMode ? 32 : 48"><User /></el-icon>
+                <div class="text-[8px] font-mono text-indigo-300 mt-0.5">
                   {{ faceScanning ? 'SCANNING' : 'FACE ID' }}
                 </div>
               </div>
@@ -308,20 +300,10 @@
               ></div>
             </div>
 
-            <div class="text-xs text-slate-500">
-              <span v-if="faceScanning" class="text-emerald-600 font-bold flex items-center justify-center gap-1.5">
-                <el-icon class="is-loading"><Loading /></el-icon>
-                <span>正在匹配央行面部支付授权证书...</span>
-              </span>
-              <span v-else class="text-slate-400">
-                请正对摄像头，确认为【{{ applicantName || '持卡人' }}】本人
-              </span>
-            </div>
-
             <el-button
               type="primary"
-              size="large"
-              class="w-full font-bold shadow-md bg-indigo-600 border-indigo-600 hover:bg-indigo-500"
+              class="w-full font-bold shadow-md bg-indigo-600 border-indigo-600 hover:bg-indigo-500 !rounded-xl"
+              :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
               :loading="faceScanning"
               @click="triggerFacePayScan"
             >
@@ -331,8 +313,8 @@
           </div>
         </div>
 
-        <!-- 返回取消按钮 -->
-        <div class="flex items-center justify-end pt-1">
+        <!-- 返回取消按钮 (桌面端显示，APP模式下直接通过右上角关闭按钮操作) -->
+        <div v-if="!isAppMode" class="flex items-center justify-end pt-1">
           <el-button size="default" @click="handleCancel">
             返回修改申请资料
           </el-button>

@@ -1396,6 +1396,7 @@ export default {
     "title": "جمهورية العراق · البطاقة التموينية الإلكترونية",
     "statusActive": "ساري المفعول",
     "statusFrozen": "مجمد",
+    "showCardQr": "عرض رمز الاستجابة",
     "cardNoLabel": "رقم البطاقة التموينية",
     "paperCardPrefix": "سجل الورقي المرتبط: ",
     "legalHeadName": "اسم رب الأسرة القانوني",

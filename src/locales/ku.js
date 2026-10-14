@@ -1396,6 +1396,7 @@ export default {
     "title": "کۆماری عێراق · کارتی ئەلیکترۆنی خۆراک",
     "statusActive": "چالاکە",
     "statusFrozen": "بەستووە",
+    "showCardQr": "نیشاندانی کۆدی QR",
     "cardNoLabel": "ژمارەی کارتی خۆراک",
     "paperCardPrefix": "تۆماری کاغەزی پەیوەندیدار: ",
     "legalHeadName": "ناوی سەرۆکی خێزان",
