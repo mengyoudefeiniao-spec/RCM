@@ -45,7 +45,7 @@
         :class="$route.path === '/dashboard' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
       >
         <el-icon :size="20"><FullScreen /></el-icon>
-        <span>现场核销</span>
+        <span>{{ $t('nav.agentScanVerify') || '现场核销' }}</span>
       </router-link>
 
       <!-- 2. 配给配送 (物资排程与计划) -->
@@ -55,7 +55,7 @@
         :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
       >
         <el-icon :size="20"><Van /></el-icon>
-        <span>配给配送</span>
+        <span>{{ $t('nav.agentDistribution') || '配给配送' }}</span>
       </router-link>
 
       <!-- 3. 网点档案 (签约家庭与资质档案) -->
@@ -65,7 +65,7 @@
         :class="$route.path === '/agent' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
       >
         <el-icon :size="20"><Shop /></el-icon>
-        <span>网点档案</span>
+        <span>{{ $t('nav.agentProfile') || '网点档案' }}</span>
       </router-link>
     </template>
 

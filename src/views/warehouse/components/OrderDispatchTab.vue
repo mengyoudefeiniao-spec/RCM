@@ -783,7 +783,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -818,15 +818,42 @@ const isEn = computed(() => locale.value === 'en');
 
 function formatItemName(name) {
   if (!name) return '';
-  if (!isEn.value) return name;
-  if (name.includes('面粉')) return 'Wheat Flour (Grade 1)';
-  if (name.includes('米')) return 'Long-Grain Rice (Imported)';
-  if (name.includes('油')) return 'Vegetable Oil';
-  if (name.includes('糖')) return 'White Sugar';
-  if (name.includes('奶')) return 'Milk Powder';
-  if (name.includes('茶')) return 'Black Tea';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'Wheat Flour (Grade 1)';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'Long-Grain Rice (Imported)';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'Vegetable Oil';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'White Sugar';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'Milk Powder';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'Black Tea';
+  } else if (lang === 'ar') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'طحين قمح ممتاز (درجة 1)';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'أرز بسمتي مستورد';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'زيت نباتي مكرر';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود';
+  } else if (lang === 'ku') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'شەکری سپی';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'شیری وشککراو';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'چای ڕەش';
+  } else {
+    if (name.includes('Flour') || name.includes('طحين') || name.includes('ئارد')) return '战略储备优质小麦面粉';
+    if (name.includes('Rice') || name.includes('أرز') || name.includes('برنج')) return '一级进口长粒大米';
+    if (name.includes('Oil') || name.includes('زيت') || name.includes('ڕۆن')) return '一级精炼食用油';
+    if (name.includes('Sugar') || name.includes('سكر') || name.includes('شەکر')) return '纯正战略白砂糖';
+    if (name.includes('Milk') || name.includes('حليب') || name.includes('شیر')) return '全脂强化配方奶粉';
+    if (name.includes('Tea') || name.includes('شاي') || name.includes('چای')) return '特选高山红茶';
+  }
   return name;
 }
+
+watch(locale, () => {
+  loadOrders();
+});
 
 // 数据状态
 const loading = ref(false);

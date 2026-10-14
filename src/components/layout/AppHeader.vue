@@ -4,14 +4,17 @@
     <div class="w-full px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->
       <div class="flex items-center gap-2 sm:gap-3 lg:gap-5 min-w-0">
-        <!-- 平台标识与名称 (固定左上角) -->
-        <div class="flex items-center gap-2.5 cursor-pointer shrink-0" @click="handleLogoClick">
+        <!-- 平台标识与名称 (固定左上角，APP 视口内禁用点击跳转) -->
+        <div
+          class="flex items-center gap-2.5 shrink-0"
+          :class="isAppMode ? 'cursor-default select-none' : 'cursor-pointer'"
+          @click="handleLogoClick"
+        >
           <!-- App 移动端模式：仅显示 Logo 方块图标，去除文字，节省宝贵视口宽度 -->
           <AppLogo size="sm" class="sm:hidden" />
           <!-- 桌面端模式：显示中号 Logo 方块图标 -->
           <AppLogo size="md" class="hidden sm:flex" />
 
-          <!-- 文字排印：在 App 移动端隐藏，在桌面端仅显示单一名词 RCM 与金色部委标识，全称与缩写不并存 -->
           <!-- 文字排印：在 App 移动端或 APP 仿真模式下隐藏，桌面 Web 端显示 RCM 标识 -->
           <div v-if="!isAppMode" class="shrink-0 hidden sm:block">
             <div class="text-xs sm:text-sm font-black tracking-wider flex items-center gap-1.5 text-white">
@@ -114,11 +117,10 @@
         <!-- 国际化语言切换选择器 -->
         <LanguageSwitcher />
 
-        <!-- 角色身份切换下拉 -->
-        <el-dropdown trigger="click" @command="handleRoleCommand">
+        <!-- 角色身份切换下拉 (公民app和代理app视口内彻底隐藏) -->
+        <el-dropdown v-if="!isAppMode" trigger="click" @command="handleRoleCommand">
           <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
           <span
-            v-if="!isAppMode"
             class="hidden sm:flex items-center gap-1 text-xs text-[#DFE8E3] hover:text-white cursor-pointer px-2.5 py-1.5 rounded-lg bg-[#16332B] border border-[#295447]"
           >
             <span class="w-2 h-2 rounded-full shrink-0" :class="roleDotColor"></span>
@@ -126,11 +128,10 @@
             <el-icon class="text-[10px]"><ArrowDown /></el-icon>
           </span>
 
-          <!-- APP 模式或移动端小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
+          <!-- 移动端非APP小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
           <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative cursor-pointer"
-            :class="{ 'sm:hidden': !isAppMode }"
+            class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative cursor-pointer"
             :title="roleLabel"
           >
             <el-icon :size="15"><UserFilled /></el-icon>
@@ -210,7 +211,11 @@ const { t } = useI18n();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
 
-const isAppMode = computed(() => route.query.layout === 'app');
+const isAppMode = computed(() => {
+  if (route.query.layout === 'app' || route.query.mode === 'mobile') return true;
+  if (route.query.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
 
 function getNavTarget(path) {
   if (isAppMode.value) {
@@ -283,6 +288,7 @@ function hasAccess(roles) {
 }
 
 function handleLogoClick() {
+  if (isAppMode.value) return; // APP 视口内 logo 禁用点击
   const defaultPath = getDefaultPathByRole(authStore.currentRole);
   router.push(defaultPath);
 }
@@ -294,8 +300,15 @@ function handleRoleCommand(role) {
 }
 
 async function handleLogout() {
+  const wasAppMode = isAppMode.value;
   await authStore.logout();
-  await router.replace('/login');
+  if (wasAppMode) {
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('rcm_layout_mode', 'app');
+    await router.replace({ path: '/login', query: { layout: 'app' } });
+  } else {
+    if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('rcm_layout_mode');
+    await router.replace('/login');
+  }
 }
 </script>
 

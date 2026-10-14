@@ -1,191 +1,236 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans"
-    style="background: radial-gradient(circle at 15% 20%, rgba(197, 157, 95, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(197, 157, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0D201A 0%, #1E3F35 50%, #122821 100%);"
+    class="font-sans text-slate-800 transition-all duration-300"
+    :class="[
+      isAppMode
+        ? 'h-screen max-h-screen overflow-hidden bg-slate-900/10 py-1 sm:py-2.5 justify-center items-center flex flex-col'
+        : 'min-h-screen flex items-center justify-center p-4 relative overflow-hidden'
+    ]"
+    :style="!isAppMode ? loginBgStyle : {}"
   >
-    <!-- 国际化语言切换选择器 (右上角浮动) -->
-    <div class="absolute top-4 right-4 z-20">
+    <!-- 国际化语言切换选择器 (Web 桌面端右上角浮动) -->
+    <div v-if="!isAppMode" class="absolute top-4 right-4 z-20">
       <LanguageSwitcher />
     </div>
 
-    <!-- 背景暖砂金与翡翠墨绿光影装饰 -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#C59D5F]/15 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#1E3F35]/40 blur-3xl pointer-events-none"></div>
+    <!-- 背景暖砂金与翡翠墨绿光影装饰 (Web 桌面端) -->
+    <template v-if="!isAppMode">
+      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#C59D5F]/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#1E3F35]/40 blur-3xl pointer-events-none"></div>
+    </template>
 
+    <!-- 当以 APP 模式打开或退出到 APP 登录页时，桌面端顶部提供轻量 Pixel 9 仿真视口控制条 -->
     <div
-      class="max-w-md w-full bg-white rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#ECE7DE]"
-      style="box-shadow: 0 20px 50px -10px rgba(15, 35, 29, 0.35);"
+      v-if="isAppMode"
+      class="hidden sm:flex max-w-[412px] mx-auto w-full items-center justify-center px-3 py-1 mb-1.5 bg-[#1E3F35] text-white rounded-lg text-xs shadow-md select-none shrink-0"
     >
-      <!-- 官方徽标与标题 (只保留 Ration Card Management 描述) -->
-      <div class="text-center space-y-2">
-        <div class="flex justify-center">
-          <AppLogo size="lg" theme="light" />
-        </div>
-        <div>
-          <h2 class="text-base sm:text-lg font-bold text-[#18231E] tracking-normal">
-            Ration Card Management
-          </h2>
-        </div>
+      <div class="flex items-center gap-1.5 font-medium">
+        <span class="w-2 h-2 rounded-full bg-[#C59D5F] animate-pulse"></span>
+        <span>{{ $t('login.appViewportTitle') || 'Google Pixel 9 (412 × 924) 移动 APP 视口' }}</span>
       </div>
+    </div>
 
-      <!-- 新设备终端安全状态条 -->
-      <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#EDF6F1] border-[#C8D7D2] text-[#2C6E49]' : 'bg-[#FAF6EE] border-[#E8DCC6] text-[#966C2E]'">
-        <div class="flex items-center gap-1.5">
-          <el-icon><Monitor /></el-icon>
-          <span>终端状态：<strong class="font-mono">{{ isTrustedDevice ? '已受信任授信设备' : '未授信新设备终端' }}</strong></span>
-        </div>
-        <el-button type="info" text size="small" @click="toggleDeviceTrust">
-          {{ isTrustedDevice ? '模拟新设备' : '恢复授信' }}
-        </el-button>
-      </div>
-
-      <!-- 登录表单 -->
-      <el-form
-        ref="formRef"
-        :model="loginForm"
-        :rules="loginRules"
-        label-position="top"
-        @keyup.enter="handleLogin"
-      >
-        <el-form-item label="配给卡号 / 手机号 / 账号" prop="username">
-          <el-input
-            v-model="loginForm.username"
-            placeholder="例如：admin 或 RC-10029381"
-            size="large"
-            :prefix-icon="User"
-            clearable
-          />
-        </el-form-item>
-
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="请输入登录密码"
-            size="large"
-            :prefix-icon="Lock"
-            show-password
-          />
-        </el-form-item>
-
-        <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-          <el-checkbox v-model="rememberMe">记住当前设备</el-checkbox>
-          <span class="text-[#C59D5F] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
-            生物特征 / NFC 免密认证
-          </span>
-        </div>
-
-        <el-button
-          type="primary"
-          size="large"
-          class="w-full font-bold shadow-md tracking-wide"
-          style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
-          :loading="loading"
-          @click="handleLogin"
-        >
-          {{ $t('login.loginBtn') }}
-        </el-button>
-      </el-form>
-
-      <!-- 纸质配给卡数字化注册通道入口 -->
-      <div class="bg-[#FAF6EE] border border-[#E8DCC6] rounded-xl p-2.5 flex items-center justify-between text-xs">
-        <span class="text-[#5E6862] font-medium">首次使用持纸质配给卡？</span>
-        <el-button
-          type="primary"
-          plain
-          size="small"
-          class="font-bold px-4"
-          style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
-          @click="registerDialogVisible = true"
-        >
-          {{ $t('login.registerBtn') }}
-        </el-button>
-      </div>
-
-      <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
+    <!-- 登录主视口容器：APP 模式下自适应 Pixel 9 手机视口 (412px 宽，最大 924px 高，内部滚动)；Web 模式下居中居宽 -->
+    <div
+      class="w-full transition-all duration-300 relative min-h-0 bg-white"
+      :class="[
+        isAppMode
+          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE] flex flex-col'
+          : 'max-w-md w-full rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#ECE7DE] shadow-2xl'
+      ]"
+      :style="isAppMode ? { height: 'min(924px, calc(100vh - 46px))', maxHeight: 'calc(100vh - 46px)' } : { boxShadow: '0 20px 50px -10px rgba(15, 35, 29, 0.35)' }"
+    >
+      <!-- APP 模式手机顶部微型顶栏 (固定在手机内部顶部，含 Logo 与语言选择器) -->
       <div
-        class="rounded-xl border border-[#D4AA6A]/60 bg-gradient-to-r from-[#FAF6EE] to-[#F5ECE0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D4AA6A] hover:shadow-2xs transition-all select-none"
-        @click="$router.push('/portal')"
+        v-if="isAppMode"
+        class="w-full px-3 h-12 bg-[#1E3F35] text-white flex items-center justify-between shrink-0 shadow-xs border-b border-[#295447]"
       >
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-[#C59D5F] text-white flex items-center justify-center shrink-0 shadow-2xs">
-            <el-icon :size="16"><Compass /></el-icon>
-          </div>
-          <div>
-            <div class="font-bold text-[#1E3F35]">国家食品保障总门户 (Portal)</div>
-            <div class="text-[10px] text-[#8C958F]">跨端终端导航：公民APP · 代理APP · 管理Web</div>
-          </div>
+          <AppLogo size="sm" />
+          <span class="text-xs font-bold text-white tracking-wider">RCM</span>
         </div>
-        <div class="flex items-center text-[#966C2E] font-bold text-[11px] gap-0.5">
-          <span>进入</span>
-          <el-icon><Right /></el-icon>
-        </div>
+        <LanguageSwitcher />
       </div>
 
-      <!-- 快速演示预设身份与模式切换 (3个图标对应: 1.公民B2C APP模式; 2.代理C2B APP模式; 3.管理员Web模式) -->
-      <div class="pt-3 border-t border-[#ECE7DE] space-y-2">
-        <div class="text-[11px] text-[#8C958F] font-semibold text-center flex items-center justify-center gap-1">
-          <span>快速演示预设身份切换</span>
-          <span class="text-[10px] text-[#8C958F] font-normal">（点击图标切换模式）</span>
+      <!-- 登录表单内容区域 (APP 模式在手机内部滚动) -->
+      <div
+        :class="[
+          isAppMode
+            ? 'flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 custom-pixel-scrollbar'
+            : 'space-y-4 sm:space-y-5'
+        ]"
+      >
+        <!-- 官方徽标与标题 (只保留 Ration Card Management 描述) -->
+        <div class="text-center space-y-2">
+          <div class="flex justify-center">
+            <AppLogo size="lg" theme="light" />
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-[#18231E] tracking-normal">
+              Ration Card Management
+            </h2>
+          </div>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <!-- 1. 公民角色登录的B2C APP模式 -->
-          <div
-            class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'citizen_b2c' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
-            @click="handleSelectPreset('citizen_b2c')"
-          >
-            <div
-              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'citizen_b2c' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
-            >
-              <el-icon :size="18"><Iphone /></el-icon>
-            </div>
-            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
-              公民角色
-            </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E4F2E9] text-[#275A3E]">
-              B2C APP模式
-            </div>
+
+        <!-- 新设备终端安全状态条 -->
+        <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#EDF6F1] border-[#C8D7D2] text-[#2C6E49]' : 'bg-[#FAF6EE] border-[#E8DCC6] text-[#966C2E]'">
+          <div class="flex items-center gap-1.5">
+            <el-icon><Monitor /></el-icon>
+            <span>{{ $t('login.deviceStatus') || '终端状态：' }}<strong class="font-mono">{{ isTrustedDevice ? ($t('login.trustedDevice') || '已受信任授信设备') : ($t('login.untrustedDevice') || '未授信新设备终端') }}</strong></span>
+          </div>
+          <el-button type="info" text size="small" @click="toggleDeviceTrust">
+            {{ isTrustedDevice ? ($t('login.simulateNewDevice') || '模拟新设备') : ($t('login.restoreTrust') || '恢复授信') }}
+          </el-button>
+        </div>
+
+        <!-- 登录表单 -->
+        <el-form
+          ref="formRef"
+          :model="loginForm"
+          :rules="loginRules"
+          label-position="top"
+          @keyup.enter="handleLogin"
+        >
+          <el-form-item :label="$t('login.usernameLabel') || '配给卡号 / 手机号 / 账号'" prop="username">
+            <el-input
+              v-model="loginForm.username"
+              :placeholder="$t('login.usernamePlaceholder') || '例如：admin 或 RC-10029381'"
+              size="large"
+              :prefix-icon="User"
+              clearable
+            />
+          </el-form-item>
+
+          <el-form-item :label="$t('login.passwordLabel') || '密码'" prop="password">
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              :placeholder="$t('login.passwordPlaceholder') || '请输入登录密码'"
+              size="large"
+              :prefix-icon="Lock"
+              show-password
+            />
+          </el-form-item>
+
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <el-checkbox v-model="rememberMe">{{ $t('login.rememberDevice') || '记住当前设备' }}</el-checkbox>
+            <span class="text-[#C59D5F] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
+              {{ $t('login.nfcAuth') || '生物特征 / NFC 免密认证' }}
+            </span>
           </div>
 
-          <!-- 2. 代理登录的C2B APP模式 -->
-          <div
-            class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'agent_c2b' ? 'border-[#C59D5F] bg-[#FAF5ED] shadow-sm ring-1 ring-[#C59D5F]/50' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#C59D5F]/60 hover:bg-[#FAF5ED]/50'"
-            @click="handleSelectPreset('agent_c2b')"
+          <el-button
+            type="primary"
+            size="large"
+            class="w-full font-bold shadow-md tracking-wide"
+            style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+            :loading="loading"
+            @click="handleLogin"
           >
-            <div
-              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'agent_c2b' ? 'bg-[#C59D5F] text-white shadow-xs' : 'bg-[#FAF5ED] text-[#966C2E]'"
-            >
-              <el-icon :size="18"><Shop /></el-icon>
+            {{ $t('login.loginBtn') }}
+          </el-button>
+        </el-form>
+
+        <!-- 纸质配给卡数字化注册通道入口 -->
+        <div class="bg-[#FAF6EE] border border-[#E8DCC6] rounded-xl p-2.5 flex items-center justify-between text-xs">
+          <span class="text-[#5E6862] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
+          <el-button
+            type="primary"
+            plain
+            size="small"
+            class="font-bold px-4"
+            style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
+            @click="registerDialogVisible = true"
+          >
+            {{ $t('login.registerBtn') }}
+          </el-button>
+        </div>
+
+        <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
+        <div
+          class="rounded-xl border border-[#D4AA6A]/60 bg-gradient-to-r from-[#FAF6EE] to-[#F5ECE0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D4AA6A] hover:shadow-2xs transition-all select-none"
+          @click="$router.push('/portal')"
+        >
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-[#C59D5F] text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <el-icon :size="16"><Compass /></el-icon>
             </div>
-            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#C59D5F] transition-colors">
-              代理角色
-            </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FAF3E6] text-[#966C2E]">
-              C2B APP模式
+            <div>
+              <div class="font-bold text-[#1E3F35]">{{ $t('login.portalCardTitle') || '国家食品保障总门户 (Portal)' }}</div>
+              <div class="text-[10px] text-[#8C958F]">{{ $t('login.portalCardDesc') || '跨端终端导航：公民APP · 代理APP · 管理Web' }}</div>
             </div>
           </div>
+          <div class="flex items-center text-[#966C2E] font-bold text-[11px] gap-0.5">
+            <span>{{ $t('login.portalCardEnter') || '进入' }}</span>
+            <el-icon><Right /></el-icon>
+          </div>
+        </div>
 
-          <!-- 3. 管理员角色登录的web模式 -->
-          <div
-            class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-            :class="activeMode === 'admin_web' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
-            @click="handleSelectPreset('admin_web')"
-          >
+        <!-- 快速演示预设身份与模式切换 (3个图标对应: 1.公民B2C APP模式; 2.代理C2B APP模式; 3.管理员Web模式) -->
+        <div class="pt-3 border-t border-[#ECE7DE] space-y-2">
+          <div class="text-[11px] text-[#8C958F] font-semibold text-center flex items-center justify-center gap-1">
+            <span>{{ $t('login.quickPresetTitle') || '快速演示预设身份切换' }}</span>
+            <span class="text-[10px] text-[#8C958F] font-normal">{{ $t('login.quickPresetHint') || '（点击图标切换模式）' }}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <!-- 1. 公民角色登录的B2C APP模式 -->
             <div
-              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-              :class="activeMode === 'admin_web' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'citizen_b2c' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
+              @click="handleSelectPreset('citizen_b2c')"
             >
-              <el-icon :size="18"><Monitor /></el-icon>
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+                :class="activeMode === 'citizen_b2c' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+              >
+                <el-icon :size="18"><Iphone /></el-icon>
+              </div>
+              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
+                {{ $t('login.presetCitizenRole') || '公民角色' }}
+              </div>
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E4F2E9] text-[#275A3E]">
+                {{ $t('login.presetCitizenMode') || 'B2C APP模式' }}
+              </div>
             </div>
-            <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
-              管理员
+
+            <!-- 2. 代理登录的C2B APP模式 -->
+            <div
+              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'agent_c2b' ? 'border-[#C59D5F] bg-[#FAF5ED] shadow-sm ring-1 ring-[#C59D5F]/50' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#C59D5F]/60 hover:bg-[#FAF5ED]/50'"
+              @click="handleSelectPreset('agent_c2b')"
+            >
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+                :class="activeMode === 'agent_c2b' ? 'bg-[#C59D5F] text-white shadow-xs' : 'bg-[#FAF5ED] text-[#966C2E]'"
+              >
+                <el-icon :size="18"><Shop /></el-icon>
+              </div>
+              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#C59D5F] transition-colors">
+                {{ $t('login.presetAgentRole') || '代理角色' }}
+              </div>
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FAF3E6] text-[#966C2E]">
+                {{ $t('login.presetAgentMode') || 'C2B APP模式' }}
+              </div>
             </div>
-            <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#EBF3EE] text-[#1E3F35]">
-              Web模式
+
+            <!-- 3. 管理员角色登录的web模式 -->
+            <div
+              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'admin_web' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
+              @click="handleSelectPreset('admin_web')"
+            >
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+                :class="activeMode === 'admin_web' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+              >
+                <el-icon :size="18"><Monitor /></el-icon>
+              </div>
+              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
+                {{ $t('login.presetAdminRole') || '管理员' }}
+              </div>
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#EBF3EE] text-[#1E3F35]">
+                {{ $t('login.presetAdminMode') || 'Web模式' }}
+              </div>
             </div>
           </div>
         </div>
@@ -280,8 +325,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
@@ -304,11 +349,27 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
+
+const isAppMode = computed(() => {
+  if (route.query.layout === 'app' || route.query.mode === 'mobile') return true;
+  if (route.query.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
+
+const loginBgStyle = "background: radial-gradient(circle at 15% 20%, rgba(197, 157, 95, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(197, 157, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0D201A 0%, #1E3F35 50%, #122821 100%);";
 
 const formRef = ref(null);
 const loading = ref(false);
 const rememberMe = ref(true);
+
+onMounted(() => {
+  if (isAppMode.value) {
+    loginForm.username = 'RC-10029381';
+    loginForm.password = 'iq-pass-2026';
+  }
+});
 
 // 检测是否为移动端 / 手机环境
 function checkIsMobile() {
@@ -456,15 +517,19 @@ async function executeDirectLogin() {
         localStorage.setItem('rcm_trusted_device', 'true');
       }
       // 根据选中的预设演示身份自动重定向至适配视口
-      if (activeMode.value === 'agent_c2b') {
+      if (activeMode.value === 'agent_c2b' || (isAppMode.value && authStore.currentRole === 'agent')) {
         router.push('/dashboard?role=agent&mode=mobile&layout=app');
-      } else if (activeMode.value === 'citizen_b2c') {
+      } else if (activeMode.value === 'citizen_b2c' || (isAppMode.value && authStore.currentRole === 'citizen')) {
         router.push('/citizen?role=citizen&layout=app');
       } else if (activeMode.value === 'admin_web') {
         router.push('/dashboard?role=admin&mode=overview&layout=web');
       } else {
         const target = getDefaultPathByRole(authStore.currentRole);
-        router.push(target);
+        if (isAppMode.value) {
+          router.push({ path: target, query: { layout: 'app' } });
+        } else {
+          router.push(target);
+        }
       }
     }
   } finally {
@@ -498,8 +563,25 @@ async function simulateQuickNfcPass() {
     ElMessage.success('统一国民卡 NFC 读取成功，活体人脸比对一致 ✓');
     await authStore.login('RC-10029381', 'iq-pass-2026');
     localStorage.setItem('rcm_trusted_device', 'true');
-    const target = getDefaultPathByRole(authStore.currentRole);
-    router.push(target);
+    if (isAppMode.value) {
+      router.push('/citizen?role=citizen&layout=app');
+    } else {
+      const target = getDefaultPathByRole(authStore.currentRole);
+      router.push(target);
+    }
   }, 600);
 }
 </script>
+
+<style scoped>
+.custom-pixel-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-pixel-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(30, 63, 53, 0.2);
+  border-radius: 4px;
+}
+.custom-pixel-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>

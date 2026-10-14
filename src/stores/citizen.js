@@ -24,7 +24,10 @@ export const useCitizenStore = defineStore('citizen', () => {
     try {
       const data = await getFamilyList();
       families.value = data;
-      if (!currentFamily.value && data.length > 0) {
+      if (currentFamily.value && data.length > 0) {
+        const found = data.find((f) => f.rationCardNo === currentFamily.value.rationCardNo);
+        currentFamily.value = found || data[0];
+      } else if (data.length > 0) {
         currentFamily.value = data[0];
       }
     } finally {

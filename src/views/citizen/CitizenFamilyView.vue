@@ -17,30 +17,30 @@
           <div class="flex items-center justify-between pb-3 border-b border-white/10">
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span>
-              <span class="text-xs font-semibold text-[#D4AA6A] tracking-wider uppercase">Republic of Iraq · Digital Ration Card</span>
+              <span class="text-xs font-semibold text-[#D4AA6A] tracking-wider uppercase">{{ $t('citizenCard.cardTitle') }}</span>
             </div>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C59D5F]/20 text-[#D4AA6A] border border-[#C59D5F]/40">
-              {{ citizenStore.currentFamily.status || '正常生效' }}
+              {{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}
             </span>
           </div>
 
           <div class="py-3.5 space-y-1">
-            <span class="text-[10px] text-white/60 tracking-wider">配给卡号 (RATION CARD NO.)</span>
+            <span class="text-[10px] text-white/60 tracking-wider">{{ $t('citizenCard.rationCardNoLabel') }}</span>
             <div class="text-xl font-extrabold tracking-widest font-mono text-[#FAF7F2]">
               {{ citizenStore.currentFamily.rationCardNo }}
             </div>
             <div class="text-[11px] text-[#C59D5F] font-mono">
-              关联纸质底册：{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}
+              {{ $t('citizenCard.linkedPaperBook') }}：{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
             <div>
-              <span class="text-[10px] text-white/50 block">法定户主姓名</span>
+              <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.legalHeadName') }}</span>
               <span class="font-bold text-white text-sm">{{ citizenStore.currentFamily.headName }}</span>
             </div>
             <div class="text-right">
-              <span class="text-[10px] text-white/50 block">保供签约网点</span>
+              <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.agentStore') }}</span>
               <span class="text-xs text-[#E8D9BF] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
             </div>
           </div>
@@ -52,9 +52,9 @@
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
           <span class="text-xs font-bold text-[#1E3F35] flex items-center gap-1.5">
             <span class="w-1.5 h-3.5 bg-[#C59D5F] rounded-full"></span>
-            <span>公民自主申办直通车</span>
+            <span>{{ $t('citizenCard.fastTrackTitle') }}</span>
           </span>
-          <span class="text-[11px] text-[#8C958F]">跨端秒级同步</span>
+          <span class="text-[11px] text-[#8C958F]">{{ $t('citizenCard.fastTrackSubtitle') }}</span>
         </div>
 
         <div class="grid grid-cols-5 gap-1.5 text-center select-none">
@@ -66,7 +66,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-lg border border-[#D1E7DA] shadow-xs">
               <el-icon><Switch /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">申请代理转移</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyAgentTransfer') }}</span>
           </div>
 
           <!-- 2. 申请成员转移 -->
@@ -77,7 +77,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-lg border border-[#E4D8F7] shadow-xs">
               <el-icon><User /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">申请成员转移</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyMemberTransfer') }}</span>
           </div>
 
           <!-- 3. 申请分户 -->
@@ -88,7 +88,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#F0F2FA] text-[#4F46E5] flex items-center justify-center text-lg border border-[#D9DCF2] shadow-xs">
               <el-icon><Share /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">申请分户</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applySplitHousehold') }}</span>
           </div>
 
           <!-- 4. 变更户主 -->
@@ -99,7 +99,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-lg border border-[#F2E3C6] shadow-xs">
               <el-icon><UserFilled /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">变更户主</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyChangeHead') }}</span>
           </div>
 
           <!-- 5. 申请解冻 -->
@@ -110,7 +110,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#FEECEC] text-[#D34545] flex items-center justify-center text-lg border border-[#FCD5D5] shadow-xs">
               <el-icon><Unlock /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">申请解冻</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyUnfreeze') }}</span>
           </div>
         </div>
       </div>
@@ -120,14 +120,14 @@
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <div class="flex items-center gap-1.5">
             <span class="w-1.5 h-3.5 bg-[#1E3F35] rounded-full"></span>
-            <span class="text-xs font-bold text-[#18231E]">在册家庭成员清单</span>
+            <span class="text-xs font-bold text-[#18231E]">{{ $t('citizenCard.registeredMemberList') }}</span>
             <span class="px-2 py-0.5 rounded-full bg-[#FAF5ED] text-[#C59D5F] font-bold text-[10px]">
-              {{ citizenStore.currentFamily?.members?.length || 0 }} 人
+              {{ citizenStore.currentFamily?.members?.length || 0 }} {{ $t('citizenCard.unitPerson') }}
             </span>
           </div>
           <el-button type="primary" size="small" class="!px-2.5 !py-1 text-xs font-bold" @click="openAddMemberDialog">
             <el-icon class="mr-1"><Plus /></el-icon>
-            登记新成员
+            {{ $t('citizenCard.registerNewMember') }}
           </el-button>
         </div>
 
@@ -141,22 +141,22 @@
             <div class="flex items-center gap-3">
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
-                :class="member.relation === '户主' || member.relation === 'Head' ? 'bg-[#1E3F35] text-[#C59D5F]' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+                :class="isHeadRelation(member.relation) ? 'bg-[#1E3F35] text-[#C59D5F]' : 'bg-[#EBF3EE] text-[#1E3F35]'"
               >
-                {{ member.name?.slice(0, 1) || '成' }}
+                {{ member.name?.slice(0, 1) || '·' }}
               </div>
               <div class="space-y-0.5 text-xs">
                 <div class="flex items-center gap-1.5">
                   <span class="font-bold text-slate-900">{{ member.name }}</span>
                   <span
                     class="px-1.5 py-0.2 rounded text-[10px]"
-                    :class="member.relation === '户主' || member.relation === 'Head' ? 'bg-[#FAF3E6] text-[#966C2E] font-bold' : 'bg-slate-100 text-slate-600'"
+                    :class="isHeadRelation(member.relation) ? 'bg-[#FAF3E6] text-[#966C2E] font-bold' : 'bg-slate-100 text-slate-600'"
                   >
-                    {{ member.relation }}
+                    {{ formatRelation(member.relation) }}
                   </span>
                 </div>
                 <div class="text-[11px] font-mono text-slate-400">
-                  UID: {{ member.nationalId }} · {{ member.gender }}
+                  UID: {{ member.nationalId }} · {{ formatGender(member.gender) }}
                 </div>
               </div>
             </div>
@@ -164,16 +164,16 @@
             <div class="flex flex-col items-end gap-1 shrink-0">
               <span
                 class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                :class="member.status === '正常' || member.status === 'Active' ? 'bg-[#E4F2E9] text-[#275A3E]' : 'bg-[#FEECEC] text-[#D34545]'"
+                :class="member.status === '正常' || member.status === 'Active' || member.status === 'نشط' ? 'bg-[#E4F2E9] text-[#275A3E]' : 'bg-[#FEECEC] text-[#D34545]'"
               >
-                {{ member.status }}
+                {{ member.status || $t('citizenCard.statusNormal') }}
               </span>
               <button
                 type="button"
                 class="text-[11px] text-[#C59D5F] hover:text-[#1E3F35] underline cursor-pointer"
                 @click="openEditModal(member)"
               >
-                更新
+                {{ $t('citizenCard.actionUpdate') }}
               </button>
             </div>
           </div>
@@ -596,7 +596,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
@@ -627,6 +627,32 @@ const isAppMode = computed(() => {
   return route.query.layout === 'app';
 });
 
+function isHeadRelation(relation) {
+  if (!relation) return false;
+  const rel = String(relation).toLowerCase();
+  return rel === '户主' || rel === 'head' || rel === 'رب الأسرة' || rel === 'سەروکی خێزان';
+}
+
+function formatRelation(relation) {
+  if (!relation) return '';
+  const rel = String(relation).toLowerCase();
+  if (rel === '户主' || rel === 'head' || rel === 'رب الأسرة' || rel === 'سەروکی خێزان') return t('citizenCard.relationHead');
+  if (rel === '配偶' || rel === 'spouse' || rel === 'wife' || rel === 'husband' || rel === 'زوج / زوجة' || rel === 'هاوسەر') return t('citizenCard.relationSpouse');
+  if (rel === '子女' || rel === 'child' || rel === 'son' || rel === 'daughter' || rel === 'ابن / ابنة' || rel === 'منداڵ') return t('citizenCard.relationChild');
+  if (rel === '父亲' || rel === 'father' || rel === 'أب' || rel === 'باوک') return t('citizenCard.relationFather');
+  if (rel === '母亲' || rel === 'mother' || rel === 'أم' || rel === 'دایک') return t('citizenCard.relationMother');
+  if (rel === '受抚养人' || rel === 'dependent' || rel === 'معال' || rel === 'بژێویپێدراو') return t('citizenCard.relationDependent');
+  return relation;
+}
+
+function formatGender(gender) {
+  if (!gender) return '';
+  const g = String(gender).toLowerCase();
+  if (g === '男' || g === 'male' || g === 'ذكر' || g === 'نێر') return t('citizenCard.genderMale');
+  if (g === '女' || g === 'female' || g === 'أنثى' || g === 'مێ') return t('citizenCard.genderFemale');
+  return gender;
+}
+
 function navigateToService(path) {
   if (isAppMode.value) {
     router.push({ path, query: { layout: 'app' } });
@@ -645,6 +671,10 @@ const editForm = reactive({
 function handleLanguageChange() {
   citizenStore.fetchFamilies();
 }
+
+watch(locale, () => {
+  citizenStore.fetchFamilies();
+});
 
 onMounted(() => {
   citizenStore.fetchFamilies();

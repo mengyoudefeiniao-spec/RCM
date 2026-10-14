@@ -4,11 +4,78 @@
  */
 import { broadcastTabMessage } from './crossTabBus.js';
 import { MOCK_REVIEW_TICKETS } from '../mock/data/reviewData.js';
-import { MOCK_FAMILIES } from '../mock/data/citizenData.js';
+import { MOCK_FAMILIES as MOCK_FAMILIES_ZH } from '../mock/data/citizenData.js';
+import { MOCK_FAMILIES as MOCK_FAMILIES_EN } from '../mock/data/en/citizenData.js';
 
 const STORAGE_KEY_TICKETS = 'rcm_shared_tickets';
 const STORAGE_KEY_ORDERS = 'rcm_shared_orders';
 const STORAGE_KEY_FAMILIES = 'rcm_shared_families';
+
+function getActiveLanguage() {
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('rcm_language') || 'zh';
+  }
+  return 'zh';
+}
+
+function getArabicFamilies() {
+  const base = JSON.parse(JSON.stringify(MOCK_FAMILIES_ZH));
+  const fam1 = base[0];
+  if (fam1) {
+    fam1.province = 'محافظة بغداد';
+    fam1.district = 'مركز تموين الكرخ الأول (#04)';
+    fam1.headName = 'أحمد حسن صالح';
+    fam1.agentName = 'محطة توزيع الكرخ الأولى (محمد جبار)';
+    fam1.address = 'رقم 14، شارع المنصور، حي الكرخ، بغداد';
+    fam1.status = 'ساري المفعول';
+    const arMembers = [
+      { name: 'أحمد حسن صالح', relation: 'رب الأسرة', gender: 'ذكر', status: 'ساري المفعول' },
+      { name: 'فاطمة علي محمد', relation: 'الزوجة', gender: 'أنثى', status: 'ساري المفعول' },
+      { name: 'عمر أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'ساري المفعول' },
+      { name: 'زينب أحمد حسن', relation: 'ابنة', gender: 'أنثى', status: 'ساري المفعول' },
+      { name: 'يوسف أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'ساري المفعول' }
+    ];
+    fam1.members = fam1.members.map((m, idx) => ({
+      ...m,
+      ...(arMembers[idx] || {}),
+      residenceInfo: fam1.address
+    }));
+  }
+  return base;
+}
+
+function getKurdishFamilies() {
+  const base = JSON.parse(JSON.stringify(MOCK_FAMILIES_ZH));
+  const fam1 = base[0];
+  if (fam1) {
+    fam1.province = 'پارێزگای بەغدا';
+    fam1.district = 'مەڵبەندی یەکەمی کەرخ (#04)';
+    fam1.headName = 'ئەحمەد حەسەن ساڵح';
+    fam1.agentName = 'بنکەی دابەشکردنی کەرخی یەکەم (محەمەد جەبار)';
+    fam1.address = 'ژمارە 14، شەقامی مه‌نسوور، کەرخ، بەغدا';
+    fam1.status = 'چالاکە';
+    const kuMembers = [
+      { name: 'ئەحمەد حەسەن ساڵح', relation: 'سەرۆکی خێزان', gender: 'نێر', status: 'چالاکە' },
+      { name: 'فاتیمە عەلی محەمەد', relation: 'هاوسەر', gender: 'مێ', status: 'چالاکە' },
+      { name: 'عومەر ئەحمەد حەسەن', relation: 'منداڵ', gender: 'نێر', status: 'چالاکە' },
+      { name: 'زەینەب ئەحمەد حەسەن', relation: 'منداڵ', gender: 'مێ', status: 'چالاکە' },
+      { name: 'یووسف ئەحمەد حەسەن', relation: 'منداڵ', gender: 'نێر', status: 'چالاکە' }
+    ];
+    fam1.members = fam1.members.map((m, idx) => ({
+      ...m,
+      ...(kuMembers[idx] || {}),
+      residenceInfo: fam1.address
+    }));
+  }
+  return base;
+}
+
+function getInitialFamilies(lang) {
+  if (lang === 'en') return JSON.parse(JSON.stringify(MOCK_FAMILIES_EN));
+  if (lang === 'ar') return getArabicFamilies();
+  if (lang === 'ku') return getKurdishFamilies();
+  return JSON.parse(JSON.stringify(MOCK_FAMILIES_ZH));
+}
 
 /**
  * 格式化当前时间为 YYYY-MM-DD HH:mm
@@ -246,30 +313,34 @@ export function updateSharedOrder(orderId, updates) {
 // 3. 家庭配给卡档案共享池 (Families)
 // =====================================================================
 
-export function getSharedFamilies() {
+export function getSharedFamilies(langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_FAMILIES);
+    const raw = localStorage.getItem(storageKey);
     if (raw) return JSON.parse(raw);
   } catch (e) {
     // ignore
   }
 
-  const initial = JSON.parse(JSON.stringify(MOCK_FAMILIES));
+  const initial = getInitialFamilies(lang);
   try {
-    localStorage.setItem(STORAGE_KEY_FAMILIES, JSON.stringify(initial));
+    localStorage.setItem(storageKey, JSON.stringify(initial));
   } catch (e) {
     // ignore
   }
   return initial;
 }
 
-export function getSharedFamily(cardNo) {
-  const list = getSharedFamilies();
+export function getSharedFamily(cardNo, langOverride) {
+  const list = getSharedFamilies(langOverride);
   return list.find((f) => f.rationCardNo === cardNo) || list[0];
 }
 
-export function updateSharedFamily(cardNo, updater) {
-  const list = getSharedFamilies();
+export function updateSharedFamily(cardNo, updater, langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
+  const list = getSharedFamilies(lang);
   const index = list.findIndex((f) => f.rationCardNo === cardNo);
 
   if (index !== -1) {
@@ -280,7 +351,7 @@ export function updateSharedFamily(cardNo, updater) {
     }
 
     try {
-      localStorage.setItem(STORAGE_KEY_FAMILIES, JSON.stringify(list));
+      localStorage.setItem(storageKey, JSON.stringify(list));
     } catch (e) {
       // ignore
     }
@@ -291,12 +362,14 @@ export function updateSharedFamily(cardNo, updater) {
   return null;
 }
 
-export function addSharedFamily(newFamily) {
-  const list = getSharedFamilies();
+export function addSharedFamily(newFamily, langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
+  const list = getSharedFamilies(lang);
   list.unshift(newFamily);
 
   try {
-    localStorage.setItem(STORAGE_KEY_FAMILIES, JSON.stringify(list));
+    localStorage.setItem(storageKey, JSON.stringify(list));
   } catch (e) {
     // ignore
   }

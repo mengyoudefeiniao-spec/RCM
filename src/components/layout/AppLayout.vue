@@ -2,38 +2,31 @@
   <div
     class="bg-[#F8F7F3] flex flex-col font-sans text-slate-800"
     :class="[
-      isAppMode && !forceFullWidth
+      isAppMode
         ? 'h-screen max-h-screen overflow-hidden bg-slate-900/10 py-1 sm:py-2.5 justify-center items-center'
         : 'min-h-screen'
     ]"
   >
-    <!-- 当在大屏幕以 APP 模式打开时，顶部提供轻量 Pixel 9 仿真视口控制条 -->
+    <!-- 当在大屏幕以 APP 模式打开时，顶部提供轻量 Pixel 9 仿真视口控制条 (已移除展开全宽) -->
     <div
-      v-if="isAppMode && !forceFullWidth"
-      class="hidden sm:flex max-w-[412px] mx-auto w-full items-center justify-between px-3 py-1 mb-1.5 bg-[#1E3F35] text-white rounded-lg text-xs shadow-md select-none shrink-0"
+      v-if="isAppMode"
+      class="hidden sm:flex max-w-[412px] mx-auto w-full items-center justify-center px-3 py-1 mb-1.5 bg-[#1E3F35] text-white rounded-lg text-xs shadow-md select-none shrink-0"
     >
       <div class="flex items-center gap-1.5 font-medium">
         <span class="w-2 h-2 rounded-full bg-[#C59D5F] animate-pulse"></span>
-        <span>Google Pixel 9 (412 × 924) 移动 APP 视口</span>
+        <span>{{ $t('login.appViewportTitle') || 'Google Pixel 9 (412 × 924) 移动 APP 视口' }}</span>
       </div>
-      <button
-        type="button"
-        class="text-[11px] text-[#C59D5F] hover:text-white underline cursor-pointer"
-        @click="toggleFullWidth"
-      >
-        {{ forceFullWidth ? '恢复 412px' : '展开全宽' }}
-      </button>
     </div>
 
     <!-- 仿真视口容器：APP 模式下桌面端自动限制在浏览器窗口内 (自适应高度不超过 924px)，全量在 app 内下滑 -->
     <div
       class="w-full flex flex-col transition-all duration-300 relative min-h-0"
       :class="[
-        isAppMode && !forceFullWidth
+        isAppMode
           ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:bg-white sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE]'
           : 'flex-1 w-full'
       ]"
-      :style="isAppMode && !forceFullWidth ? { height: 'min(924px, calc(100vh - 46px))', maxHeight: 'calc(100vh - 46px)' } : {}"
+      :style="isAppMode ? { height: 'min(924px, calc(100vh - 46px))', maxHeight: 'calc(100vh - 46px)' } : {}"
     >
       <!-- 1. 全局顶部导航 (固定在手机顶部) -->
       <AppHeader class="shrink-0" />
@@ -88,8 +81,6 @@ import AppMobileNav from './AppMobileNav.vue';
 const route = useRoute();
 const router = useRouter();
 
-const forceFullWidth = ref(false);
-
 const isAppMode = computed(() => {
   if (route.query.layout === 'app') {
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('rcm_layout_mode', 'app');
@@ -105,10 +96,6 @@ const isAppMode = computed(() => {
 const isWideLayout = computed(() => {
   return ['/admin', '/dashboard', '/warehouse', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
 });
-
-function toggleFullWidth() {
-  forceFullWidth.value = !forceFullWidth.value;
-}
 </script>
 
 <style scoped>

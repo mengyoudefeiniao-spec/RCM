@@ -741,13 +741,36 @@ const isEn = computed(() => locale.value === 'en');
 
 function formatItemName(name) {
   if (!name) return '';
-  if (!isEn.value) return name;
-  if (name.includes('面粉')) return 'Special Wheat Flour (Grade 1)';
-  if (name.includes('米')) return 'Long-Grain Rice (Imported)';
-  if (name.includes('油')) return 'Pure Refined Vegetable Oil';
-  if (name.includes('糖')) return 'Refined Pure White Sugar';
-  if (name.includes('奶')) return 'Full Cream Milk Powder';
-  if (name.includes('茶')) return 'Selected Black Tea';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'Special Wheat Flour (Grade 1)';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'Long-Grain Rice (Imported)';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'Pure Refined Vegetable Oil';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'Refined Pure White Sugar';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'Full Cream Milk Powder';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'Selected Black Tea';
+  } else if (lang === 'ar') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'طحين قمح ممتاز (درجة 1)';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'أرز بسمتي طويل الحبة';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'زيت نباتي مكرر نقي';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي مكرر';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف كامل الدسم';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود فاخر';
+  } else if (lang === 'ku') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'شەکری سپی پاڵاوتە';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'شیری وشککراوی پڕ چەوری';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'چای ڕەشی هەڵبژێردراو';
+  } else {
+    if (name.includes('Flour') || name.includes('طحين') || name.includes('ئارد')) return '特级小麦面粉 (一等粉)';
+    if (name.includes('Rice') || name.includes('أرز') || name.includes('برنج')) return '进口长粒大米';
+    if (name.includes('Oil') || name.includes('زيت') || name.includes('ڕۆن')) return '精炼食用植物油';
+    if (name.includes('Sugar') || name.includes('سكر') || name.includes('شەکر')) return '精制纯白细砂糖';
+    if (name.includes('Milk') || name.includes('حليب') || name.includes('شیر')) return '全脂强化配方奶粉';
+    if (name.includes('Tea') || name.includes('شاي') || name.includes('چای')) return '特选高山红茶';
+  }
   return name;
 }
 
@@ -782,17 +805,31 @@ const deliveryAddress = ref('巴格达省卡尔赫区海法街88号 3号楼201')
 const contactPhone = ref('+964 780 123 4567');
 const orderNotes = ref('');
 
-watch(isEn, (val) => {
-  if (val) {
+watch(locale, (val) => {
+  if (val === 'en') {
     quotaInfo.headName = 'Ahmed Hassan Saleh';
     quotaInfo.agentName = 'Baghdad Karkh 1st Station (Mohammed Jabbar)';
     quotaInfo.province = 'Baghdad';
     quotaInfo.district = 'Karkh';
     quotaInfo.defaultAddress = 'Bldg 3, Apt 201, Haifa St 88, Karkh, Baghdad';
     quotaInfo.quotaPeriod = 'Oct 2026';
-    if (!deliveryAddress.value || deliveryAddress.value.includes('巴格达')) {
-      deliveryAddress.value = 'Bldg 3, Apt 201, Haifa St 88, Karkh, Baghdad';
-    }
+    deliveryAddress.value = 'Bldg 3, Apt 201, Haifa St 88, Karkh, Baghdad';
+  } else if (val === 'ar') {
+    quotaInfo.headName = 'أحمد حسن صالح';
+    quotaInfo.agentName = 'محطة الكرخ الأولى ببغداد (محمد جبار)';
+    quotaInfo.province = 'محافظة بغداد';
+    quotaInfo.district = 'قضاء الكرخ';
+    quotaInfo.defaultAddress = 'عمارة 3، شقة 201، شارع حيفا 88، الكرخ، بغداد';
+    quotaInfo.quotaPeriod = 'أكتوبر 2026';
+    deliveryAddress.value = 'عمارة 3، شقة 201، شارع حيفا 88، الكرخ، بغداد';
+  } else if (val === 'ku') {
+    quotaInfo.headName = 'ئەحمەد حەسەن ساڵح';
+    quotaInfo.agentName = 'وێستگەی یەکەمی کەرخی بەغدا (محەممەد جەبار)';
+    quotaInfo.province = 'پارێزگای بەغدا';
+    quotaInfo.district = 'قەزای کەرخ';
+    quotaInfo.defaultAddress = 'باڵەخانەی 3، شوقەی 201، شەقامی حەیفا 88، کەرخ، بەغدا';
+    quotaInfo.quotaPeriod = 'تشرینی یەکەمی 2026';
+    deliveryAddress.value = 'باڵەخانەی 3، شوقەی 201، شەقامی حەیفا 88، کەرخ، بەغدا';
   } else {
     quotaInfo.headName = '艾哈迈德·哈桑·萨利赫';
     quotaInfo.agentName = '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)';
@@ -800,10 +837,10 @@ watch(isEn, (val) => {
     quotaInfo.district = '卡尔赫区';
     quotaInfo.defaultAddress = '巴格达省卡尔赫区海法街88号 3号楼201';
     quotaInfo.quotaPeriod = '2026年10月';
-    if (!deliveryAddress.value || deliveryAddress.value.includes('Baghdad')) {
-      deliveryAddress.value = '巴格达省卡尔赫区海法街88号 3号楼201';
-    }
+    deliveryAddress.value = '巴格达省卡尔赫区海法街88号 3号楼201';
   }
+  loadQuotaData();
+  loadOrders();
 }, { immediate: true });
 
 

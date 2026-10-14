@@ -26,18 +26,16 @@
       <div class="relative z-10 h-full p-4 flex flex-col justify-between items-end text-right">
         <!-- 右上角小副标签与安全盾牌小图标 -->
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E5DAC8] shadow-xs">
-          <span class="text-[11px] font-bold text-[#966C2E] font-sans">
-            خدمات الدعم الغذائي
+          <span class="text-xs font-bold text-[#966C2E] font-sans">
+            {{ $t('mobileAgent.foodSupportService') }}
           </span>
-          <span class="text-xs text-[#966C2E] font-medium font-sans">· 保供服务</span>
           <el-icon :size="13" class="text-[#966C2E]"><CircleCheck /></el-icon>
         </div>
 
-        <!-- 主标题：今日配给发放 (توزيع اليوم) -->
+        <!-- 主标题：今日配给发放 -->
         <div class="pb-1">
-          <h1 class="text-2xl sm:text-3xl font-black text-[#1E3F35] tracking-tight flex items-center justify-end gap-2">
-            <span class="text-xs sm:text-sm font-semibold text-[#5E6862]">今日发放 /</span>
-            <span>توزيع اليوم</span>
+          <h1 class="text-2xl sm:text-3xl font-black text-[#1E3F35] tracking-tight">
+            {{ $t('mobileAgent.todayDistribution') }}
           </h1>
         </div>
       </div>
@@ -55,51 +53,48 @@
         <!-- 卡片右上角网点标识与浮层规则说明 -->
         <div class="flex items-center justify-between text-xs">
           <ModuleDescTip
-            title="网点今日执行概览"
-            desc="现场配给代理网点今日核销配发、待领户数与异常告警总揽。"
-            badge="网点监控"
+            :title="$t('mobileAgent.siteOverviewTitle')"
+            :desc="$t('mobileAgent.siteOverviewDesc')"
+            :badge="$t('mobileAgent.siteMonitoring')"
             badge-type="success"
           />
           
           <div class="flex items-center gap-1 text-[#275A3E] font-medium font-sans">
             <span class="font-mono text-xs font-bold text-[#1E3F35]">AG-0217#</span>
             <span>·</span>
-            <span>وكيل النور (努尔网点)</span>
+            <span>{{ $t('mobileAgent.siteBadgeName') }}</span>
           </div>
         </div>
 
-        <!-- 3 列核心统计数字 (从右往左按参考图排布：今日发放 128 | 剩余户数 342 | 待办预警 2) -->
+        <!-- 3 列核心统计数字 -->
         <div class="grid grid-cols-3 gap-2 text-center pt-1">
-          <!-- 列 1: 今日发放 (توزيع اليوم) -->
+          <!-- 列 1: 今日发放 -->
           <div class="space-y-1">
             <div class="text-2xl sm:text-3xl font-black font-mono text-[#1E3F35] tracking-tight">
               {{ countDispatched.displayValue.value }}
             </div>
-            <div class="text-[11px] font-bold text-[#5E6862] leading-tight">
-              <div>توزيع اليوم</div>
-              <div class="text-[10px] font-normal text-[#8C958F]">今日发放</div>
+            <div class="text-xs font-bold text-[#5E6862] leading-tight">
+              {{ $t('mobileAgent.todayDistribution') }}
             </div>
           </div>
 
-          <!-- 列 2: 剩余户数 (أسر متبقية) -->
+          <!-- 列 2: 剩余户数 -->
           <div class="space-y-1 border-x border-[#D6E6DC]/80">
             <div class="text-2xl sm:text-3xl font-black font-mono text-[#1E3F35] tracking-tight">
               {{ countRemaining.displayValue.value }}
             </div>
-            <div class="text-[11px] font-bold text-[#5E6862] leading-tight">
-              <div>أسر متبقية</div>
-              <div class="text-[10px] font-normal text-[#8C958F]">剩余户数</div>
+            <div class="text-xs font-bold text-[#5E6862] leading-tight">
+              {{ $t('mobileAgent.remainingHouseholds') }}
             </div>
           </div>
 
-          <!-- 列 3: 待办预警 (تنبيهات) -->
+          <!-- 列 3: 待办预警 -->
           <div class="space-y-1">
             <div class="text-2xl sm:text-3xl font-black font-mono text-[#D04343] tracking-tight">
               {{ countAlerts.displayValue.value }}
             </div>
-            <div class="text-[11px] font-bold text-[#5E6862] leading-tight">
-              <div>تنبيهات</div>
-              <div class="text-[10px] font-normal text-[#8C958F]">待办预警</div>
+            <div class="text-xs font-bold text-[#D04343] leading-tight">
+              {{ $t('mobileAgent.pendingAlerts') }}
             </div>
           </div>
         </div>
@@ -124,7 +119,7 @@
               <el-icon :size="22"><FullScreen /></el-icon>
             </span>
             <!-- 文本 -->
-            <span class="tracking-wide">مسح وتحقق (扫码核销)</span>
+            <span class="tracking-wide">{{ $t('mobileAgent.scanVerifyBtn') }}</span>
           </div>
         </button>
       </div>
@@ -143,54 +138,51 @@
 
         <!-- 右侧操作栏名称 -->
         <div class="flex items-center gap-2 text-right">
-          <span class="text-xs text-[#8C958F] font-normal font-sans">/ 历史分发台账</span>
-          <span class="text-sm font-bold text-[#18231E]">سجل التوزيع</span>
+          <span class="text-sm font-bold text-[#18231E]">{{ $t('mobileAgent.historyLedgerBar') }}</span>
           <el-icon class="text-[#D3A757]"><Document /></el-icon>
         </div>
       </div>
 
       <!-- ======================================================== -->
-      <!-- 5. 周期台账核验卡片 (سجل المخزون للدورة) -->
+      <!-- 5. 周期台账核验卡片 (本期库存台账) -->
       <!-- ======================================================== -->
       <div class="rcm-list-card rcm-stagger-item space-y-3.5">
         <!-- 头部标题区：左侧辅助公式说明，右侧主标题 -->
         <div class="flex items-center justify-between border-b border-[#F4EFE6] pb-2.5">
-          <!-- 左侧公式说明：افتتاحي+وارد-موزّع=متوقع (期初+调入-已发=理论应存) -->
+          <!-- 左侧公式说明：期初+调入-已发=理论应存 -->
           <div class="flex items-center gap-1">
             <ModuleDescTip
               title="台账平衡稽查公式"
-              desc="理论应存 = 期初在库 + 调拨入库 - 累计已发放。实盘与理论不一致即触发损益差异预警。"
-              badge="平衡公式"
+              :desc="$t('mobileAgent.balanceFormulaDesc')"
+              :badge="$t('mobileAgent.balanceFormulaBadge')"
               badge-type="warning"
             />
             <span class="text-[10px] font-mono text-[#8C958F]">
-              افتتاحي+وارد-موزّع=متوقع
+              {{ $t('mobileAgent.formulaShort') }}
             </span>
           </div>
 
           <!-- 右侧标题 -->
           <div class="flex items-center gap-1.5 text-right">
-            <span class="text-[11px] text-[#8C958F]">本期库存台账 /</span>
-            <h3 class="text-sm font-bold text-[#18231E]">سجل المخزون للدورة</h3>
+            <h3 class="text-sm font-bold text-[#18231E]">{{ $t('mobileAgent.periodInventoryTitle') }}</h3>
           </div>
         </div>
 
         <!-- 物料明细子卡片列表 -->
         <div class="space-y-3" ref="materialsListRef">
           
-          <!-- 物料 1: 面粉 (طحين) - 状态胶囊：● مطابق (平账) -->
+          <!-- 物料 1: 面粉 -->
           <div class="p-3 rounded-xl border border-[#ECE7DE] bg-[#FCFBF8] space-y-2 hover:border-[#D4AA6A]/60 transition-colors">
             <div class="flex items-center justify-between">
-              <!-- 状态胶囊：平账 (مطابق) -->
+              <!-- 状态胶囊：平账 -->
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
-                <span>مطابق · 账实相符</span>
+                <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
 
               <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#18231E] flex items-center gap-1">
-                <span>طحين</span>
-                <span class="text-xs font-normal text-[#8C958F]">(面粉)</span>
+              <span class="font-bold text-sm text-[#18231E]">
+                {{ $t('mobileAgent.materialFlour') }}
               </span>
             </div>
 
@@ -198,36 +190,35 @@
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">2,000</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">调拨 (وارد)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">1,240</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">已发 (موزّع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">760</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">理论 (متوقع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1E3F35]">760</div>
-                <div class="text-[9px] text-[#275A3E] font-bold font-sans">实盘 (فعلي)</div>
+                <div class="text-[9px] text-[#275A3E] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
-          <!-- 物料 2: 大米 (أرز) - 状态胶囊：● فرق 20 كغ- (差异 -20kg) -->
+          <!-- 物料 2: 大米 -->
           <div class="p-3 rounded-xl border border-[#FAD8D8] bg-[#FFFBFB] space-y-2 hover:border-[#D04343]/60 transition-colors">
             <div class="flex items-center justify-between">
-              <!-- 状态胶囊：损益差异 (فرق 20 كغ-) -->
+              <!-- 状态胶囊：损益差异 -->
               <span class="rcm-pill-badge rcm-pill-danger">
                 <span class="rcm-badge-dot"></span>
-                <span>فرق 20 كغ- · 亏损20KG</span>
+                <span>{{ $t('mobileAgent.deficitStatus') }}</span>
               </span>
 
               <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#18231E] flex items-center gap-1">
-                <span>أرز</span>
-                <span class="text-xs font-normal text-[#8C958F]">(大米)</span>
+              <span class="font-bold text-sm text-[#18231E]">
+                {{ $t('mobileAgent.materialRice') }}
               </span>
             </div>
 
@@ -235,53 +226,52 @@
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">900</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">调拨 (وارد)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">720</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">已发 (موزّع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#8C958F]">180</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">理论 (متوقع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#D04343]">160</div>
-                <div class="text-[9px] text-[#D04343] font-bold font-sans">实盘 (فعلي)</div>
+                <div class="text-[9px] text-[#D04343] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
-          <!-- 物料 3: 食用油 (زيت طعام) -->
+          <!-- 物料 3: 食用油 -->
           <div class="p-3 rounded-xl border border-[#ECE7DE] bg-[#FCFBF8] space-y-2 hover:border-[#D4AA6A]/60 transition-colors">
             <div class="flex items-center justify-between">
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
-                <span>مطابق · 账实相符</span>
+                <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
 
-              <span class="font-bold text-sm text-[#18231E] flex items-center gap-1">
-                <span>زيت طعام</span>
-                <span class="text-xs font-normal text-[#8C958F]">(食用油)</span>
+              <span class="font-bold text-sm text-[#18231E]">
+                {{ $t('mobileAgent.materialOil') }}
               </span>
             </div>
 
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">800</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">调拨 (وارد)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">490</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">已发 (موزّع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#18231E]">310</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">理论 (متوقع)</div>
+                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1E3F35]">310</div>
-                <div class="text-[9px] text-[#275A3E] font-bold font-sans">实盘 (فعلي)</div>
+                <div class="text-[9px] text-[#275A3E] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
@@ -309,7 +299,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-lg border border-[#D1E7DA] shadow-xs">
               <el-icon><FullScreen /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('dashboard.quickServices.scanVerify') || '现场智能核销' }}</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
           </div>
 
           <!-- 2. 物资配给履约 (跳转配给配送) -->
@@ -320,7 +310,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-lg border border-[#E4D8F7] shadow-xs">
               <el-icon><Van /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('dashboard.quickServices.rationDelivery') || '物资配给履约' }}</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
           </div>
 
           <!-- 3. 签约网点档案 (跳转代理档案) -->
@@ -331,7 +321,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-lg border border-[#F2E3C6] shadow-xs">
               <el-icon><Shop /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('dashboard.quickServices.agentProfile') || '签约网点档案' }}</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
           </div>
 
           <!-- 4. 核销分发流水 (历史流水抽屉) -->
@@ -342,7 +332,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#F0F2FA] text-[#4F46E5] flex items-center justify-center text-lg border border-[#D9DCF2] shadow-xs">
               <el-icon><Document /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('dashboard.quickServices.ledgerRecords') || '核销分发流水' }}</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickLedgerRecords') }}</span>
           </div>
 
           <!-- 5. 库存台账稽查 (平衡公式与实体验证) -->
@@ -353,7 +343,7 @@
             <div class="w-11 h-11 rounded-2xl bg-[#FEECEC] text-[#D34545] flex items-center justify-center text-lg border border-[#FCD5D5] shadow-xs">
               <el-icon><Check /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('dashboard.quickServices.auditBalance') || '库存台账稽查' }}</span>
+            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAuditBalance') }}</span>
           </div>
         </div>
       </div>
@@ -367,7 +357,7 @@
     <!-- 模拟现场扫码核销仿真弹窗 (严控宽度不超过 412px 视口，居中展示) -->
     <el-dialog
       v-model="scanDialogVisible"
-      title="现场智能扫码核验 (Scan & Verify)"
+      :title="$t('mobileAgent.scanModalTitle')"
       width="350px"
       align-center
       append-to-body
@@ -387,18 +377,18 @@
 
           <div class="text-white/70 text-xs font-mono space-y-1">
             <el-icon :size="28" class="text-[#D3A757] animate-pulse"><FullScreen /></el-icon>
-            <div class="text-[11px]">对准公民卡二维码 / 智能识别</div>
+            <div class="text-[11px]">{{ $t('mobileAgent.scanModalAlignQr') }}</div>
           </div>
         </div>
 
         <div class="text-[11px] text-slate-500">
-          支持配给电子卡、纸质条码及国家统一身份凭证。
+          {{ $t('mobileAgent.scanModalTips') }}
         </div>
 
         <div class="pt-1 flex items-center justify-center gap-2">
-          <el-button size="small" @click="scanDialogVisible = false">取消</el-button>
+          <el-button size="small" @click="scanDialogVisible = false">{{ $t('common.cancel') }}</el-button>
           <el-button size="small" type="primary" color="#1E3F35" class="font-bold" @click="handleConfirmSimulatedScan">
-            模拟识别成功 (#RC-9082)
+            {{ $t('mobileAgent.simulateSuccessBtn') }}
           </el-button>
         </div>
       </div>
@@ -409,15 +399,15 @@
     <!-- ======================================================== -->
     <el-drawer
       v-model="showHistoryDrawer"
-      title="今日现场分发台账 (سجل التوزيع)"
+      :title="$t('mobileAgent.historyDrawerTitle')"
       direction="btt"
       size="65%"
       append-to-body
     >
       <div class="space-y-3 p-1">
         <div class="text-xs text-[#5E6862] flex justify-between items-center pb-2 border-b">
-          <span>努尔网点 (AG-0217#) 今日实时核销流水</span>
-          <span class="font-bold text-[#1E3F35]">已成功发放 128 户</span>
+          <span>{{ $t('mobileAgent.historyDrawerSiteTitle') }}</span>
+          <span class="font-bold text-[#1E3F35]">{{ $t('mobileAgent.historyDrawerDispatchedCount') }}</span>
         </div>
 
         <div class="space-y-2 max-h-[360px] overflow-y-auto">
@@ -427,11 +417,11 @@
             class="p-2.5 rounded-lg border border-[#ECE7DE] bg-white flex items-center justify-between text-xs"
           >
             <div>
-              <div class="font-bold text-[#18231E]">{{ item.name }} (卡号: {{ item.cardNo }})</div>
-              <div class="text-[11px] text-[#8C958F]">{{ item.time }} · 面粉 {{ item.flour }}kg · 大米 {{ item.rice }}kg</div>
+              <div class="font-bold text-[#18231E]">{{ item.name }} ({{ $t('mobileAgent.unitCardNo') }}: {{ item.cardNo }})</div>
+              <div class="text-[11px] text-[#8C958F]">{{ item.time }} · {{ $t('mobileAgent.flourShort') }} {{ item.flour }}kg · {{ $t('mobileAgent.riceShort') }} {{ item.rice }}kg</div>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E4F2E9] text-[#275A3E]">
-              已核销
+              {{ $t('mobileAgent.statusVerified') }}
             </span>
           </div>
         </div>
@@ -439,11 +429,11 @@
     </el-drawer>
 
     <!-- ======================================================== -->
-    <!-- 网点与操作员信息抽屉 (حسابي 我的) -->
+    <!-- 网点与操作员信息抽屉 (我的) -->
     <!-- ======================================================== -->
     <el-drawer
       v-model="showProfileDrawer"
-      title="网点工作台设置 (حسابي)"
+      :title="$t('mobileAgent.profileDrawerTitle')"
       direction="btt"
       size="55%"
       append-to-body
@@ -454,34 +444,34 @@
             AG
           </div>
           <div class="flex-1">
-            <div class="font-bold text-sm text-[#18231E]">巴格达第4区努尔配给网点</div>
-            <div class="text-[#8C958F] font-mono">网点编码: AG-0217# · 主管负责人: 阿卜杜勒</div>
+            <div class="font-bold text-sm text-[#18231E]">{{ $t('mobileAgent.profileSiteName') }}</div>
+            <div class="text-[#8C958F] font-mono">{{ $t('mobileAgent.profileSiteDesc') }}</div>
           </div>
           <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E4F2E9] text-[#275A3E]">
-            营业中
+            {{ $t('mobileAgent.statusOperating') }}
           </span>
         </div>
 
         <div class="space-y-2">
-          <div class="text-[11px] font-bold text-[#8C958F]">业务统计</div>
+          <div class="text-[11px] font-bold text-[#8C958F]">{{ $t('mobileAgent.sectionBizStats') }}</div>
           <div class="grid grid-cols-2 gap-2 text-center">
             <div class="p-2.5 rounded-lg bg-white border border-[#ECE7DE]">
-              <div class="text-base font-bold text-[#1E3F35] font-mono">1,480 户</div>
-              <div class="text-[10px] text-[#5E6862]">服务辖区总户数</div>
+              <div class="text-base font-bold text-[#1E3F35] font-mono">1,480 {{ $t('mobileAgent.unitHousehold') }}</div>
+              <div class="text-[10px] text-[#5E6862]">{{ $t('mobileAgent.totalServiceHouseholds') }}</div>
             </div>
             <div class="p-2.5 rounded-lg bg-white border border-[#ECE7DE]">
               <div class="text-base font-bold text-[#D3A757] font-mono">92.4%</div>
-              <div class="text-[10px] text-[#5E6862]">本月物资履约率</div>
+              <div class="text-[10px] text-[#5E6862]">{{ $t('mobileAgent.monthFulfillmentRate') }}</div>
             </div>
           </div>
         </div>
 
         <div class="pt-2 flex flex-col gap-2">
           <el-button type="primary" class="!bg-[#1E3F35] !border-[#1E3F35]" @click="goToOverview">
-            切换至国家战略大盘 (政务全景)
+            {{ $t('mobileAgent.btnSwitchOverview') }}
           </el-button>
           <el-button @click="showProfileDrawer = false">
-            关闭
+            {{ $t('common.cancel') }}
           </el-button>
         </div>
       </div>
@@ -492,6 +482,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
   CircleCheck,
@@ -509,6 +500,7 @@ import {
 import gsap from 'gsap';
 import ModuleDescTip from '../../../components/common/ModuleDescTip.vue';
 
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
@@ -537,7 +529,7 @@ let stopTabListener = null;
 onMounted(() => {
   stopTabListener = onTabMessage('ORDER_PURCHASED', (newOrder) => {
     // 跨标签页收到公民新下的配给订单，自动追加到今日核销台账列表
-    distributionRecords.value.unshift({
+    newlyAddedOrders.value.unshift({
       name: newOrder.headName || '公民户主',
       cardNo: newOrder.cardNo || 'RC-10029381',
       time: new Date().toTimeString().slice(0, 5),
@@ -549,7 +541,7 @@ onMounted(() => {
     countDispatched.animateTo(129);
     countRemaining.animateTo(341);
 
-    ElMessage.success(`【跨标签页联动】网点收到新订单 [#${newOrder.id}]，公民【${newOrder.headName}】已线上申领！`);
+    ElMessage.success(`${t('mobileAgent.toastOrderReceived')} [#${newOrder.id}]，${newOrder.headName} ${t('mobileAgent.toastCitizenClaimed')}`);
   });
 });
 
@@ -588,14 +580,44 @@ useStaggerListEnter(contentContainerRef, '.rcm-stagger-item', {
   y: 18
 });
 
-// 模拟发放记录
-const distributionRecords = ref([
-  { name: '穆斯塔法·哈桑', cardNo: 'RC-9081', time: '10:42', flour: 10, rice: 5 },
-  { name: '法蒂玛·阿里', cardNo: 'RC-9079', time: '10:35', flour: 15, rice: 8 },
-  { name: '艾哈迈德·萨利赫', cardNo: 'RC-9076', time: '10:28', flour: 20, rice: 10 },
-  { name: '奥马尔·哈立德', cardNo: 'RC-9071', time: '10:15', flour: 10, rice: 5 },
-  { name: '宰纳卜·卡西姆', cardNo: 'RC-9065', time: '09:58', flour: 25, rice: 12 },
-]);
+// 动态发放记录字典 (随全局国际化语言切换)
+const newlyAddedOrders = ref([]);
+
+const distributionRecordsMap = {
+  zh: [
+    { name: '穆斯塔法·哈桑', cardNo: 'RC-9081', time: '10:42', flour: 10, rice: 5 },
+    { name: '法蒂玛·阿里', cardNo: 'RC-9079', time: '10:35', flour: 15, rice: 8 },
+    { name: '艾哈迈德·萨利赫', cardNo: 'RC-9076', time: '10:28', flour: 20, rice: 10 },
+    { name: '奥马尔·哈立德', cardNo: 'RC-9071', time: '10:15', flour: 10, rice: 5 },
+    { name: '宰纳卜·卡西姆', cardNo: 'RC-9065', time: '09:58', flour: 25, rice: 12 },
+  ],
+  en: [
+    { name: 'Mustafa Hassan', cardNo: 'RC-9081', time: '10:42', flour: 10, rice: 5 },
+    { name: 'Fatima Ali', cardNo: 'RC-9079', time: '10:35', flour: 15, rice: 8 },
+    { name: 'Ahmed Saleh', cardNo: 'RC-9076', time: '10:28', flour: 20, rice: 10 },
+    { name: 'Omar Khalid', cardNo: 'RC-9071', time: '10:15', flour: 10, rice: 5 },
+    { name: 'Zainab Qasim', cardNo: 'RC-9065', time: '09:58', flour: 25, rice: 12 },
+  ],
+  ar: [
+    { name: 'مصطفى حسن', cardNo: 'RC-9081', time: '10:42', flour: 10, rice: 5 },
+    { name: 'فاطمة علي', cardNo: 'RC-9079', time: '10:35', flour: 15, rice: 8 },
+    { name: 'أحمد صالح', cardNo: 'RC-9076', time: '10:28', flour: 20, rice: 10 },
+    { name: 'عمر خالد', cardNo: 'RC-9071', time: '10:15', flour: 10, rice: 5 },
+    { name: 'زينب قاسم', cardNo: 'RC-9065', time: '09:58', flour: 25, rice: 12 },
+  ],
+  ku: [
+    { name: 'مستەفا حەسەن', cardNo: 'RC-9081', time: '10:42', flour: 10, rice: 5 },
+    { name: 'فاتیمە عەلی', cardNo: 'RC-9079', time: '10:35', flour: 15, rice: 8 },
+    { name: 'ئەحمەد ساڵح', cardNo: 'RC-9076', time: '10:28', flour: 20, rice: 10 },
+    { name: 'عومەر خالید', cardNo: 'RC-9071', time: '10:15', flour: 10, rice: 5 },
+    { name: 'زەینەب قاسم', cardNo: 'RC-9065', time: '09:58', flour: 25, rice: 12 },
+  ]
+};
+
+const distributionRecords = computed(() => {
+  const baseList = distributionRecordsMap[locale.value] || distributionRecordsMap.zh;
+  return [...newlyAddedOrders.value, ...baseList];
+});
 
 function handleTriggerScan() {
   triggerPressEffect();
@@ -604,7 +626,7 @@ function handleTriggerScan() {
 
 function handleConfirmSimulatedScan() {
   scanDialogVisible.value = false;
-  ElMessage.success('公民电子卡 [#RC-9082] 验证通过！本月配给物资已成功核销出库。');
+  ElMessage.success(t('mobileAgent.toastVerifySuccess'));
   // 动效增加发放数
   countDispatched.animateTo(129);
   countRemaining.animateTo(341);
@@ -613,7 +635,7 @@ function handleConfirmSimulatedScan() {
 function goToOverview() {
   showProfileDrawer.value = false;
   emit('switch-mode', 'overview');
-  ElMessage.success('已切换至国家配给战略全景大盘');
+  ElMessage.success(t('mobileAgent.toastSwitchOverview'));
 }
 
 function selectTab(tabKey) {
@@ -636,7 +658,6 @@ function selectTab(tabKey) {
     if (materialsListRef.value) {
       materialsListRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    ElMessage.warning('已定位到库存核验差异物料：大米实盘与理论差异 -60kg');
   } else if (tabKey === 'profile') {
     showProfileDrawer.value = true;
   }
@@ -656,7 +677,7 @@ function openInventoryAudit() {
   if (materialsListRef.value) {
     materialsListRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  ElMessage.info('已定位至【本期库存台账】稽查专区，理论应存与实盘已对账。');
+  ElMessage.info(t('mobileAgent.toastAuditLocated'));
 }
 </script>
 

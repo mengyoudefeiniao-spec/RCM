@@ -293,12 +293,17 @@ const multiLangStores = {
   }
 };
 
+multiLangStores.ar = multiLangStores.en;
+multiLangStores.ku = multiLangStores.en;
+
 export function getActiveLang(config) {
   if (config && config.headers && config.headers['Accept-Language']) {
-    return config.headers['Accept-Language'] === 'en' ? 'en' : 'zh';
+    const l = config.headers['Accept-Language'];
+    if (['zh', 'en', 'ar', 'ku'].includes(l)) return l;
   }
   if (typeof localStorage !== 'undefined') {
-    return localStorage.getItem('rcm_language') === 'en' ? 'en' : 'zh';
+    const l = localStorage.getItem('rcm_language');
+    if (['zh', 'en', 'ar', 'ku'].includes(l)) return l;
   }
   return 'zh';
 }
@@ -349,7 +354,7 @@ export async function mockDispatch(config) {
 
   const reqLang = getActiveLang(config);
   const isEn = reqLang === 'en';
-  const activeStores = multiLangStores[reqLang];
+  const activeStores = multiLangStores[reqLang] || multiLangStores.en || multiLangStores.zh;
 
   // 解构当前语言环境下对应的测试数据
   let complaintsStore = activeStores.complaintsStore;
