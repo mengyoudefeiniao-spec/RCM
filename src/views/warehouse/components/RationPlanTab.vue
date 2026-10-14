@@ -243,9 +243,9 @@
             <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
               <div>
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-slate-900 text-sm">{{ plan.title }}</span>
+                  <span class="font-bold text-slate-900 text-sm">{{ formatPlanTitle(plan.title) }}</span>
                   <el-tag size="small" :type="plan.status === '执行中' ? 'success' : plan.status === '已完成' ? 'info' : 'warning'" effect="dark">
-                    {{ plan.status }}
+                    {{ formatPlanStatus(plan.status) }}
                   </el-tag>
                 </div>
                 <div class="text-[11px] text-slate-500 font-mono mt-0.5 flex items-center gap-2">
@@ -255,7 +255,7 @@
                 </div>
               </div>
               <el-tag size="small" type="primary" effect="plain" class="shrink-0 text-[10px]">
-                {{ plan.allocationStatus }}
+                {{ formatPlanStatus(plan.allocationStatus) }}
               </el-tag>
             </div>
 
@@ -445,10 +445,10 @@
               </div>
             </div>
 
-            <!-- 网点名称与负责人 -->
+            <!-- 网点名称与负责人 (国际化绑定) -->
             <div class="space-y-0.5">
               <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5 flex-wrap">
-                <span>{{ task.centerName }}</span>
+                <span>{{ formatTaskCenterName(task.centerName) }}</span>
                 <span v-if="task.isSelf" class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
                   {{ $t('warehouse.isSelfDirect') || '本人直营' }}
                 </span>
@@ -457,7 +457,7 @@
                 </span>
               </div>
               <div class="text-[10px] text-slate-500">
-                {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ task.responsiblePerson || task.ownerName || '代销主管' }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ task.agentCenterId }}
+                {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ formatTaskResponsible(task.responsiblePerson || task.ownerName) }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ task.agentCenterId }}
               </div>
             </div>
 
@@ -533,9 +533,9 @@
                     {{ $t('warehouse.isArticle140Zone') || '第140号争议区' }}
                   </span>
                 </div>
-                <div class="font-bold text-slate-800 text-xs">{{ row.centerName }}</div>
+                <div class="font-bold text-slate-800 text-xs">{{ formatTaskCenterName(row.centerName) }}</div>
                 <div class="text-[10px] text-slate-400">
-                  {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ row.responsiblePerson || row.ownerName || '代销主管' }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ row.agentCenterId }}
+                  {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ formatTaskResponsible(row.responsiblePerson || row.ownerName) }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ row.agentCenterId }}
                 </div>
               </template>
             </el-table-column>
@@ -1270,7 +1270,147 @@ function formatItemName(name) {
   return name;
 }
 
-// 公民电子配给卡弹窗与动态防伪凭证
+function formatTaskCenterName(name) {
+  if (!name) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('巴格达省配给运营总代理')) return 'Baghdad Provincial Ration General Operations Agency';
+    if (name.includes('卡尔赫区区域代理运营部')) return 'Karkh District Regional Ration Operations Dept';
+    if (name.includes('鲁萨法区区域代理运营部')) return 'Rusafa District Regional Ration Operations Dept';
+    if (name.includes('卡尔赫第一配给中心综合代销站')) return 'Karkh 1st Ration Center Comprehensive Store (Mansour)';
+    if (name.includes('亚尔穆克第3街道')) return 'Yarmouk 3rd Street Ration Service Station';
+    if (name.includes('多拉区第12配给便民站')) return 'Dora 12th District Ration Station (Full Load)';
+    if (name.includes('萨德尔城中央第5面粉代销网点')) return 'Sadr City Central 5th Flour Agency Outlet';
+    if (name.includes('哈奈根第一边境综合代销保供站')) return 'Khanaqin 1st Border Supply Station (Art. 140)';
+    if (name.includes('基尔库克城堡区第2保供代销中心')) return 'Kirkuk Citadel 2nd Ration Center (Art. 140)';
+    if (name.includes('摩苏尔老城区区域代理配给调度中心')) return 'Mosul Old City Regional Ration Dispatch Center';
+    if (name.includes('祖拜尔自贸港区便民配给保供网点')) return 'Zubair Free Port Community Supply Station';
+    if (name.includes('曼苏尔商业区便民第6配给代销站')) return 'Mansour Commercial 6th Ration Agency';
+    if (name.includes('费卢杰第1战略保供便民服务网点')) return 'Fallujah 1st Strategic Supply Service Station';
+    if (name.includes('巴士拉阿舒尔港口直营代销联络处')) return 'Basra Ashur Port Direct Agency Office';
+  } else if (lang === 'ar') {
+    if (name.includes('巴格达省配给运营总代理')) return 'وكالة العمليات العامة للتموين بمحافظة بغداد';
+    if (name.includes('卡尔赫区区域代理运营部')) return 'إدارة العمليات التموينية لمنطقة الكرخ';
+    if (name.includes('鲁萨法区区域代理运营部')) return 'إدارة العمليات التموينية لمنطقة الرصافة';
+    if (name.includes('卡尔赫第一配给中心综合代销站')) return 'منفذ الكرخ الأول لتوزيع التموين (المنصور)';
+    if (name.includes('亚尔穆克第3街道')) return 'محطة تموين شارع اليرموك الثالثة';
+    if (name.includes('多拉区第12配给便民站')) return 'محطة الدورة التموينية الثانية عشرة';
+    if (name.includes('萨德尔城中央第5面粉代销网点')) return 'منفذ مدينة الصدر المركزي الخامس للطحين';
+    if (name.includes('哈奈根第一边境综合代销保供站')) return 'محطة خانقين الأولى الحدودية (المادة 140)';
+    if (name.includes('基尔库克城堡区第2保供代销中心')) return 'مركز قلعة كركوك الثاني للتموين (المادة 140)';
+    if (name.includes('摩苏尔老城区区域代理配给调度中心')) return 'مركز توزيع تموين منطقة الموصل القديمة';
+    if (name.includes('祖拜尔自贸港区便民配给保供网点')) return 'منفذ ميناء الزبير الحر للسلع التموينية';
+    if (name.includes('曼苏尔商业区便民第6配给代销站')) return 'منفذ المنصور التجاري السادس للتموين';
+    if (name.includes('费卢杰第1战略保供便民服务网点')) return 'منفذ الفلوجة الاستراتيجي الأول للتموين';
+    if (name.includes('巴士拉阿舒尔港口直营代销联络处')) return 'مكتب الارتباط المباشر للتموين بميناء البصرة';
+  } else if (lang === 'ku') {
+    if (name.includes('巴格达省配给运营总代理')) return 'ئاژانسی گشتی ئۆپەراسیۆنەکانی پارێزگای بەغدا';
+    if (name.includes('卡尔赫区区域代理运营部')) return 'بەشی ئۆپەراسیۆنی ناوچەیی کەرخ';
+    if (name.includes('鲁萨法区区域代理运营部')) return 'بەشی ئۆپەراسیۆنی ناوچەیی ڕەسافە';
+    if (name.includes('卡尔赫第一配给中心综合代销站')) return 'بنکەی یەکەمی دابەشکردنی کەرخ (مەنسوور)';
+    if (name.includes('亚尔穆克第3街道')) return 'بنکەی گەڕەکی یەرموک ٣';
+    if (name.includes('多拉区第12配给便民站')) return 'بنکەی دەورە ١٢';
+    if (name.includes('萨德尔城中央第5面粉代销网点')) return 'بنکەی ئاردی شاری سەدر ٥';
+    if (name.includes('哈奈根第一边境综合代销保供站')) return 'بنکەی سنووری خانەقین ١ (ماددەی ١٤٠)';
+    if (name.includes('基尔库克城堡区第2保供代销中心')) return 'بنکەی قەڵای کەرکووک ٢ (ماددەی ١٤٠)';
+    if (name.includes('摩苏尔老城区区域代理配给调度中心')) return 'ناوەندی بەشەخۆراکی کۆنەشاری موسڵ';
+    if (name.includes('祖拜尔自贸港区便民配给保供网点')) return 'بنکەی بەندەری زوبەیر';
+    if (name.includes('曼苏尔商业区便民第6配给代销站')) return 'بنکەی بازرگانی مەنسوور ٦';
+    if (name.includes('费卢杰第1战略保供便民服务网点')) return 'بنکەی ستراتیژی فەلووجە ١';
+    if (name.includes('巴士拉阿舒尔港口直营代销联络处')) return 'نووسینگەی بەندەری بەسرە';
+  }
+  return name;
+}
+
+function formatTaskResponsible(name) {
+  if (!name) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('穆罕默德·贾巴尔')) return name.includes('运营总监') ? 'Mohammed Jabbar Al-Rasheed (Director)' : 'Mohammed Jabbar Al-Rasheed (Owner)';
+    if (name.includes('海德尔')) return 'Haider Fatih Najim (Regional Mgr)';
+    if (name.includes('扎伊德')) return 'Zaid Qasim Al-Saadi (Regional Mgr)';
+    if (name.includes('奥马尔')) return 'Omar Sabah Al-Nasir';
+    if (name.includes('哈立德·瓦利德')) return 'Khalid Waleed Al-Dulaimi';
+    if (name.includes('哈桑·阿里')) return 'Hassan Ali Al-Mousawi';
+    if (name.includes('卡里姆')) return 'Karim Sadiq Kurdi';
+    if (name.includes('阿兰·卡迪尔')) return 'Alan Qadir Barzanji';
+    if (name.includes('尤尼斯')) return 'Younis Mahmoud Mousuli';
+    if (name.includes('哈立德·阿卜杜勒')) return 'Khalid Abdul Rahman';
+    if (name.includes('萨米·易卜拉欣')) return 'Sami Ibrahim Hashimi';
+    if (name.includes('马尔万')) return 'Marwan Qasim Falluji';
+    if (name.includes('贾西姆')) return 'Jasim Mohammed Basrawi';
+  } else if (lang === 'ar') {
+    if (name.includes('穆罕默德·贾巴尔')) return name.includes('运营总监') ? 'محمد جبار الرشيد (مدير العمليات)' : 'محمد جبار الرشيد (الوكيل المعتمد)';
+    if (name.includes('海德尔')) return 'حيدر فالح نجم (مدير المنطقة)';
+    if (name.includes('扎伊德')) return 'زيد قاسم السعدي (مدير المنطقة)';
+    if (name.includes('奥马尔')) return 'عمر صباح الناصر';
+    if (name.includes('哈立德·瓦利德')) return 'خالد وليد الدليمي';
+    if (name.includes('哈桑·阿里')) return 'حسن علي الموسوي';
+    if (name.includes('卡里姆')) return 'كريم صادق الكردي';
+    if (name.includes('阿兰·卡迪尔')) return 'آلان قادر البرزنجي';
+    if (name.includes('尤尼斯')) return 'يونس محمود الموصلي';
+    if (name.includes('哈立德·阿卜杜勒')) return 'خالد عبد الرحمن';
+    if (name.includes('萨米·易卜拉欣')) return 'سامي إبراهيم الهاشمي';
+    if (name.includes('马尔万')) return 'مروان قاسم الفلوجي';
+    if (name.includes('贾西姆')) return 'جاسم محمد البصراوي';
+  } else if (lang === 'ku') {
+    if (name.includes('穆罕默德·贾巴尔')) return name.includes('运营总监') ? 'محەممەد جەبار ڕەشید (بەڕێوەبەری ئۆپەراسیۆن)' : 'محەممەد جەبار ڕەشید';
+    if (name.includes('海德尔')) return 'حەیدەر فاتیح نەجم';
+    if (name.includes('扎伊德')) return 'زەید قاسم سەعدی';
+    if (name.includes('奥马尔')) return 'عومەر سەباح ناسر';
+    if (name.includes('哈立德·瓦利德')) return 'خالید وەلید دلێمی';
+    if (name.includes('哈桑·阿里')) return 'حەسەن عەلی مووسەوی';
+    if (name.includes('卡里姆')) return 'کەریم سادق کوردی';
+    if (name.includes('阿兰·卡迪尔')) return 'ئالان قادر بەرزنجی';
+    if (name.includes('尤尼斯')) return 'یونس مەحموود مووسڵی';
+    if (name.includes('哈立德·阿卜杜勒')) return 'خالید عەبدولڕەحمان';
+    if (name.includes('萨米·易卜拉欣')) return 'سامی ئیبراهیم هاشمی';
+    if (name.includes('马尔万')) return 'مەروان قاسم فەلووجی';
+    if (name.includes('贾西姆')) return 'جاسم محەممەد بەسراوی';
+  }
+  return name;
+}
+
+function formatPlanTitle(title) {
+  if (!title) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (title.includes('2026年10月')) return 'October 2026 National Strategic Ration Plan';
+    if (title.includes('2026年09月')) return 'September 2026 National Strategic Ration Plan';
+    if (title.includes('2026年11月')) return 'November 2026 National Strategic Ration Plan';
+  } else if (lang === 'ar') {
+    if (title.includes('2026年10月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر تشرين الأول 2026';
+    if (title.includes('2026年09月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر أيلول 2026';
+    if (title.includes('2026年11月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر تشرين الثاني 2026';
+  } else if (lang === 'ku') {
+    if (title.includes('2026年10月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ تشرینی یەکەمی ٢٠٢٦';
+    if (title.includes('2026年09月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ ئەیلوولی ٢٠٢٦';
+    if (title.includes('2026年11月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ تشرینی دووەمی ٢٠٢٦';
+  }
+  return title;
+}
+
+function formatPlanStatus(st) {
+  if (!st) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (st === '执行中' || st === 'ACTIVE') return 'Active / In Progress';
+    if (st === '已完结' || st === 'COMPLETED') return 'Completed';
+    if (st === '已排程') return 'Scheduled';
+    if (st === '待排程') return 'Pending Schedule';
+  } else if (lang === 'ar') {
+    if (st === '执行中' || st === 'ACTIVE') return 'قيد التنفيذ';
+    if (st === '已完结' || st === 'COMPLETED') return 'مكتمل';
+    if (st === '已排程') return 'تمت الجدولة';
+    if (st === '待排程') return 'بانتظار الجدولة';
+  } else if (lang === 'ku') {
+    if (st === '执行中' || st === 'ACTIVE') return 'لە جێبەجێکردندا';
+    if (st === '已完结' || st === 'COMPLETED') return 'تەواوکراو';
+    if (st === '已排程') return 'خشتەکراو';
+    if (st === '待排程') return 'چاوەڕوانی خشتەکردن';
+  }
+  return st;
+}
 const cardModalVisible = ref(false);
 const liveCardClock = ref('');
 let cardClockTimer = null;

@@ -23,23 +23,22 @@
       <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center items-start md:items-end text-left md:text-right">
         <!-- 顶部金色服务标识 -->
         <div class="text-[#B58542] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-1.5">
-          <span>خدمات الدعم الغذائي</span>
-          <span class="text-[10px] text-[#CBB28A]">· 国家食品支持服务</span>
+          <span>{{ $t('dashboardOverview.serviceTag') }}</span>
         </div>
 
-        <!-- 核心大标题：阿拉伯语国家食品支持平台 -->
+        <!-- 核心大标题 -->
         <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-black text-[#1E3F35] tracking-tight leading-tight">
-          منصة الدعم الغذائي الوطنية
+          {{ $t('dashboardOverview.mainTitle') }}
         </h1>
 
-        <!-- 战略大盘双语副标题 -->
+        <!-- 战略大盘副标题 -->
         <div class="text-xs sm:text-sm font-bold text-[#3D6357] mt-1 font-sans">
-          配给综合战略监控大盘 (RCM Operations Dashboard)
+          {{ $t('dashboardOverview.subTitle') }}
         </div>
 
-        <!-- 底部说明文案：每一份口粮精准送达 -->
+        <!-- 底部说明文案 -->
         <p class="text-xs text-[#62706A] mt-2 max-w-md font-medium leading-relaxed">
-          كل حصة غذائية تصل إلى مستحقيها · 伊拉克贸易部数字化配给流转监测中枢：保障全国每一份战略口粮精准直达。
+          {{ $t('dashboardOverview.bannerDescription') }}
         </p>
       </div>
     </div>
@@ -50,8 +49,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
       <div>
         <h2 class="text-lg sm:text-xl font-bold text-[#18231E] flex items-center gap-2">
-          <span>نظرة عامة على العمليات</span>
-          <span class="text-xs font-medium text-[#5E6862] font-mono">/ 业务运行与配给履约总览</span>
+          <span>{{ $t('dashboardOverview.operationsOverview') }}</span>
         </h2>
       </div>
 
@@ -59,7 +57,7 @@
         <!-- 伊斯兰与公历日期指示胶囊 -->
         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#ECE7DE] text-xs text-[#5E6862] shadow-2xs font-mono">
           <el-icon class="text-[#C59D5F]"><Calendar /></el-icon>
-          <span>1448 ربيع الأول · 2026-10-14</span>
+          <span>{{ $t('dashboardOverview.hijriCalendarDate') }}</span>
         </div>
 
         <!-- 刷新数据按钮 (带加载动画与触发效果) -->
@@ -71,7 +69,7 @@
           @click="handleManualRefresh"
         >
           <el-icon class="mr-1"><Refresh /></el-icon>
-          <span>刷新数据</span>
+          <span>{{ $t('dashboardOverview.refreshData') }}</span>
         </el-button>
       </div>
     </div>
@@ -84,7 +82,7 @@
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
     >
       <!-- ======================================================== -->
-      <!-- 卡片 1: الطلبات (配给申请与审核事项) -->
+      <!-- 卡片 1: 申请与审核事项 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -95,8 +93,7 @@
         <!-- 卡片头部：小标题与浅砂金底线性图标 -->
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>الطلبات</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 申请与待办事项</span>
+            <span>{{ $t('dashboardOverview.cardOrdersTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Document /></el-icon>
@@ -105,41 +102,42 @@
 
         <!-- 键值对数据行清单 (平滑数字滚动 + 右侧标签) -->
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: إجمالي الطلبات (申请总量) -->
+          <!-- 行 1: 申请总量 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">إجمالي الطلبات (申请总量)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalOrders') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
               {{ countTotalOrders.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: قيد المراجعة (审核中事项) -->
+          <!-- 行 2: 在审待办 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">قيد المراجعة (在审待办)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.underReview') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countUnderReview.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 3: بانتظار الاستكمال (待补充材料) -->
+          <!-- 行 3: 待补公文 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">بانتظار الاستكمال (待补公文)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.waitingDocs') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countWaitingDocs.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 4: متوسط المعالجة (平均办结用时) -->
+          <!-- 行 4: 平均办结用时 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">متوسط المعالجة (平均办结)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.avgProcessingDays') }}</span>
             <span class="font-mono font-semibold text-sm text-[#18231E]">
               {{ countAvgProcessingDays.displayValue.value }}
+              <span class="text-xs font-normal text-[#5E6862] ml-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
             </span>
           </div>
 
-          <!-- 行 5: متأخرة > 7 أيام (超时滞后 > 7 天，带告警粉红胶囊与呼吸红点) -->
+          <!-- 行 5: 超时滞后 > 7 天 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">متأخرة > 7 أيام (超时预警)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.overdueOrders') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
               <span>{{ countOverdueOrders.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
@@ -149,7 +147,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 卡片 2: المواطنون والأسر (保障家庭与受益公民) -->
+      <!-- 卡片 2: 受益公民与家庭 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -159,8 +157,7 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>المواطنون والأسر</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 受益公民与家庭</span>
+            <span>{{ $t('dashboardOverview.cardCitizensTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><House /></el-icon>
@@ -168,33 +165,33 @@
         </div>
 
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: المسجلون (在保受益公民数) -->
+          <!-- 行 1: 在保公民总数 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">المسجلون (在保公民总数)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledCitizens') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
               {{ countEnrolledCitizens.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: الأسر المسجلة (登记保障家庭) -->
+          <!-- 行 2: 纳保登记家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">الأسر المسجلة (纳保登记家庭)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countEnrolledFamilies.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 3: الأسر المستفيدة (本期已配给受惠家庭) -->
+          <!-- 行 3: 已配给受惠家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">الأسر المستفيدة (已配给受惠家庭)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.benefitedFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countBenefitedFamilies.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 4: تغييرات الشهر (当月变动申报备案) -->
+          <!-- 行 4: 当月变动申报 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">تغييرات الشهر (当月变动申报)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.monthlyChanges') }}</span>
             <span class="font-mono font-bold text-sm text-[#2C6E49] bg-[#EDF6F1] px-2 py-0.5 rounded-md">
               +{{ countMonthlyChanges.displayValue.value }}
             </span>
@@ -203,7 +200,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 卡片 3: التحقق من الهوية (身份核验与生物识别) -->
+      <!-- 卡片 3: 身份与生物核验 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -213,8 +210,7 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>التحقق من الهوية</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 身份与生物核验</span>
+            <span>{{ $t('dashboardOverview.cardVerificationTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Avatar /></el-icon>
@@ -222,33 +218,33 @@
         </div>
 
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: عمليات التحقق (核验操作总批次) -->
+          <!-- 行 1: 核验总批次 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">عمليات التحقق (核验总批次)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalVerifications') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
               {{ countTotalVerifications.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: نسبة النجاح (人脸/活体核验通过率) -->
+          <!-- 行 2: 活体核验通过率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">نسبة النجاح (活体核验通过率)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.successRate') }}</span>
             <span class="font-mono font-bold text-sm text-[#1E3F35]">
               {{ countSuccessRate.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 3: أبرز سبب فشل (主要复验原因说明) -->
+          <!-- 行 3: 主要重核原因 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">أبرز سبب فشل (主要重核原因)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.topFailureReason') }}</span>
             <span class="text-xs font-semibold text-[#8C958F] bg-[#FAF7F2] px-2 py-0.5 rounded">
-              إضاءة ضعيفة / 环境弱光
+              {{ $t('dashboardOverview.weakLightReason') }}
             </span>
           </div>
 
-          <!-- 行 4: مراجعة يدوية (需人工兜底复核胶囊) -->
+          <!-- 行 4: 待人工兜底复核 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">مراجعة يدوية (待人工复核)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.manualReview') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
               <span>{{ countManualReviews.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
@@ -258,7 +254,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 卡片 4: توزيع الغذاء (战略物资配给交付) -->
+      <!-- 卡片 4: 战略物资配给履约 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -268,8 +264,7 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>توزيع الغذاء</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 战略物资配给履约</span>
+            <span>{{ $t('dashboardOverview.cardDistributionTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Box /></el-icon>
@@ -277,33 +272,33 @@
         </div>
 
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: الأسر المستحقة (应保家庭户额) -->
+          <!-- 行 1: 当期应保家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">الأسر المستحقة (当期应保家庭)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.eligibleFamilies') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
               {{ countEligibleFamilies.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: الأسر المستلمة (已签收领讫家庭) -->
+          <!-- 行 2: 已签收领讫家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">الأسر المستلمة (已签收领讫家庭)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.receivedFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countReceivedFamilies.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 3: نسبة الإنجاز (全国配给兑付率) -->
+          <!-- 行 3: 物资兑付履约率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">نسبة الإنجاز (物资兑付履约率)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.completionRate') }}</span>
             <span class="font-mono font-bold text-sm text-[#1E3F35]">
               {{ countCompletionRate.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 4: لم تستلم (尚未提货家庭胶囊) -->
+          <!-- 行 4: 尚未提货家庭 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">لم تستلم (尚未提货家庭)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingClaims') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
               <span>{{ countPendingClaims.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
@@ -313,7 +308,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 卡片 5: عمليات الوكلاء (基层代销网点运行) -->
+      <!-- 卡片 5: 签约网点保供运行 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -323,8 +318,7 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>عمليات الوكلاء</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 签约网点保供运行</span>
+            <span>{{ $t('dashboardOverview.cardAgentsTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Shop /></el-icon>
@@ -332,33 +326,33 @@
         </div>
 
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: الوكلاء النشطون (在任活跃代销点) -->
+          <!-- 行 1: 在任活跃网点 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">الوكلاء النشطون (在任活跃网点)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.activeAgents') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
               {{ countActiveAgents.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: توزيع اليوم (今日提货派发单) -->
+          <!-- 行 2: 今日物资发货单 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">توزيع اليوم (今日物资发货单)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.todayDispatches') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
               {{ countTodayDispatches.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 3: تغطية المناطق (全域行政网格覆盖) -->
+          <!-- 行 3: 行政网格覆盖 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">تغطية المناطق (行政网格覆盖)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.coverageAreas') }}</span>
             <span class="font-mono font-semibold text-sm text-[#18231E]">
-              18/18 省区
+              18/18 {{ $t('dashboardOverview.provincesUnit') }}
             </span>
           </div>
 
-          <!-- 行 4: سجلات استثنائية (异常履约稽查记录，带告警粉红胶囊) -->
+          <!-- 行 4: 异常履约稽查 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">سجلات استثنائية (异常稽查)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.exceptionCases') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
               <span>{{ countExceptionCases.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
@@ -368,7 +362,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- 卡片 6: النظام والربط (中枢联网与接口同步) -->
+      <!-- 卡片 6: 中枢底账联网同步 -->
       <!-- ======================================================== -->
       <div
         class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
@@ -378,8 +372,7 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>النظام والربط</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ 中枢底账联网同步</span>
+            <span>{{ $t('dashboardOverview.cardSystemTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Connection /></el-icon>
@@ -387,34 +380,34 @@
         </div>
 
         <div class="space-y-3 pt-4 text-xs">
-          <!-- 行 1: نجاح الواجهات (网关 API 成功率) -->
+          <!-- 行 1: 接口调用成功率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">نجاح الواجهات (接口调用成功率)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.apiSuccessRate') }}</span>
             <span class="font-mono font-bold text-base text-[#1E3F35]">
               {{ countApiSuccessRate.displayValue.value }}
             </span>
           </div>
 
-          <!-- 行 2: حالة المزامنة (实时底账同频状态) -->
+          <!-- 行 2: 实时底账同频状态 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">حالة المزامنة (实时底账状态)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.syncStatus') }}</span>
             <span class="font-semibold text-xs text-[#2C6E49] bg-[#EDF6F1] px-2 py-0.5 rounded">
-              منتظمة 3/4 · 正常同频
+              {{ $t('dashboardOverview.syncStatusValue') }}
             </span>
           </div>
 
-          <!-- 行 3: مهام فاشلة (接口阻断重试) -->
+          <!-- 行 3: 阻断重试队列 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">مهام فاشلة (阻断重试队列)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.failedTasks') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
               <span>{{ countFailedTasks.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
             </span>
           </div>
 
-          <!-- 行 4: فروقات معلقة (待对账挂账单据) -->
+          <!-- 行 4: 待对账差额单据 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">فروقات معلقة (待对账差额)</span>
+            <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingDiscrepancies') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
               <span>{{ countPendingDiscrepancies.displayValue.value }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
@@ -428,7 +421,8 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { ElLoading, ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { ElLoading, ElMessage, ElNotification } from 'element-plus';
 import {
   Document,
   House,
@@ -443,7 +437,8 @@ import {
 import gsap from 'gsap';
 import { useNumberCounter } from '../../../composables/useNumberCounter.js';
 import { onTabMessage } from '../../../utils/crossTabBus.js';
-import { ElNotification } from 'element-plus';
+
+const { t } = useI18n();
 
 // DOM 元素引用
 const overviewRootRef = ref(null);
@@ -456,36 +451,36 @@ const isRefreshing = ref(false);
 // 使用 useNumberCounter 初始化参考图中的 6 大核心卡片动态滚动数值
 // ====================================================================
 
-// 卡片 1: الطلبات
+// 卡片 1: 申请与审核事项
 const countTotalOrders = useNumberCounter(48210, { duration: 1.6, delay: 0.1 });
 const countUnderReview = useNumberCounter(3920, { duration: 1.4, delay: 0.15 });
 const countWaitingDocs = useNumberCounter(1145, { duration: 1.5, delay: 0.2 });
-const countAvgProcessingDays = useNumberCounter(2.4, { duration: 1.2, delay: 0.25, decimals: 1, suffix: ' 天' });
+const countAvgProcessingDays = useNumberCounter(2.4, { duration: 1.2, delay: 0.25, decimals: 1 });
 const countOverdueOrders = useNumberCounter(312, { duration: 1.3, delay: 0.3 });
 
-// 卡片 2: المواطنون والأسر
+// 卡片 2: 受益公民与家庭
 const countEnrolledCitizens = useNumberCounter(5902114, { duration: 1.8, delay: 0.15 });
 const countEnrolledFamilies = useNumberCounter(1284302, { duration: 1.6, delay: 0.2 });
 const countBenefitedFamilies = useNumberCounter(1196480, { duration: 1.7, delay: 0.25 });
 const countMonthlyChanges = useNumberCounter(8731, { duration: 1.4, delay: 0.3 });
 
-// 卡片 3: التحقق من الهوية
+// 卡片 3: 身份与生物核验
 const countTotalVerifications = useNumberCounter(412880, { duration: 1.6, delay: 0.2 });
 const countSuccessRate = useNumberCounter(96.8, { duration: 1.5, delay: 0.25, decimals: 1, suffix: '%' });
 const countManualReviews = useNumberCounter(1904, { duration: 1.4, delay: 0.3 });
 
-// 卡片 4: توزيع الغذاء
+// 卡片 4: 战略物资配给履约
 const countEligibleFamilies = useNumberCounter(1196480, { duration: 1.7, delay: 0.25 });
 const countReceivedFamilies = useNumberCounter(938040, { duration: 1.6, delay: 0.3 });
 const countCompletionRate = useNumberCounter(78.4, { duration: 1.5, delay: 0.35, decimals: 1, suffix: '%' });
 const countPendingClaims = useNumberCounter(258440, { duration: 1.6, delay: 0.4 });
 
-// 卡片 5: عمليات الوكلاء
+// 卡片 5: 签约网点保供运行
 const countActiveAgents = useNumberCounter(4817, { duration: 1.5, delay: 0.3 });
 const countTodayDispatches = useNumberCounter(62310, { duration: 1.6, delay: 0.35 });
 const countExceptionCases = useNumberCounter(47, { duration: 1.2, delay: 0.4 });
 
-// 卡片 6: النظام والربط
+// 卡片 6: 中枢底账联网同步
 const countApiSuccessRate = useNumberCounter(99.2, { duration: 1.4, delay: 0.35, decimals: 1, suffix: '%' });
 const countFailedTasks = useNumberCounter(1, { duration: 1.0, delay: 0.4 });
 const countPendingDiscrepancies = useNumberCounter(2, { duration: 1.0, delay: 0.45 });
@@ -535,8 +530,8 @@ onMounted(async () => {
 
     // 优雅通知提醒
     ElNotification({
-      title: '跨端实时业务提醒 (Cross-Tab Sync)',
-      message: `检测到公民新提交申请 [${ticket.source || '业务公文'}]，单号: ${ticket.id}，监控大盘指标已实时同步递增。`,
+      title: t('dashboardOverview.crossTabTicketTitle'),
+      message: t('dashboardOverview.crossTabTicketMsg', { source: ticket.source || 'RCM', id: ticket.id }),
       type: 'info',
       duration: 4000,
       position: 'bottom-right'
@@ -550,8 +545,8 @@ onMounted(async () => {
     countReceivedFamilies.animateTo(countReceivedFamilies.currentValue.value + 1);
 
     ElNotification({
-      title: '跨端实时配给核销通知',
-      message: `公民 [${order.cardNo || '家庭'}] 已完成当月配给物资兑付，金额: ${order.amount} IQD，大盘今日发放流水已动态更新。`,
+      title: t('dashboardOverview.crossTabOrderTitle'),
+      message: t('dashboardOverview.crossTabOrderMsg', { cardNo: order.cardNo || 'Card', amount: order.amount }),
       type: 'success',
       duration: 4000,
       position: 'bottom-right'
@@ -606,7 +601,7 @@ async function handleManualRefresh() {
 
   const loadingInstance = ElLoading.service({
     target: overviewRootRef.value || document.body,
-    text: '正在同步伊拉克贸易部与内政部国家底账实时数据...',
+    text: t('dashboardOverview.refreshLoadingText'),
     background: 'rgba(248, 247, 243, 0.85)',
     customClass: 'rcm-government-loading'
   });
@@ -630,13 +625,13 @@ async function handleManualRefresh() {
 
     ElMessage.closeAll();
     ElMessage({
-      message: '国家食品配给底账数据同步完成，指标大盘已更新至最新状态',
+      message: t('dashboardOverview.refreshSuccess'),
       type: 'success',
       duration: 1800,
       showClose: true
     });
   } catch (err) {
-    ElMessage.error('数据同步失败，请检查网关连接');
+    ElMessage.error(t('dashboardOverview.refreshError'));
   } finally {
     loadingInstance.close();
     isRefreshing.value = false;

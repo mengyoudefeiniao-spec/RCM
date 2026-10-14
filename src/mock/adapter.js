@@ -267,7 +267,7 @@ const multiLangStores = {
     ticketsStore: JSON.parse(JSON.stringify(enReview.MOCK_REVIEW_TICKETS)),
     stocksStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_STOCKS)),
     rationPlansStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_RATION_PLANS)),
-    agentAllocationTasksStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_AGENT_ALLOCATION_TASKS)),
+    agentAllocationTasksStore: JSON.parse(JSON.stringify(zhWarehouse.MOCK_AGENT_ALLOCATION_TASKS)),
     inboundOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_INBOUND_ORDERS)),
     outboundOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_OUTBOUND_ORDERS)),
     transferOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_TRANSFER_ORDERS)),

@@ -158,34 +158,35 @@
         <div
           v-for="order in filteredOrders"
           :key="order.orderId"
-          class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+          class="bg-white border border-slate-200/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5"
+          :class="isAppMode ? 'p-3 rounded-xl' : 'p-4 rounded-2xl'"
         >
-          <!-- 卡片头部：订单单号与状态标签 -->
-          <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-            <div class="flex items-center gap-2">
-              <span class="font-mono font-bold text-slate-900 text-sm">#{{ (order.orderId || '').slice(-8) }}</span>
-              <span class="text-[11px] text-slate-400 font-mono">{{ (order.createdAt || '').slice(5, 16) }}</span>
+          <!-- 卡片头部：订单单号与状态标签 (移动端优雅排列) -->
+          <div class="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono font-bold text-slate-900 text-xs sm:text-sm">#{{ (order.orderId || '').slice(-8) }}</span>
+              <span class="text-[10px] sm:text-[11px] text-slate-400 font-mono">{{ (order.createdAt || '').slice(5, 16) }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1">
               <!-- 履约方式胶囊 -->
               <span
                 v-if="order.deliveryType === 'HOME_DELIVERY'"
-                class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center gap-1"
+                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center gap-1"
               >
-                🚚 {{ $t('agentOrders.typeDelivery') }}
+                🚚 <span class="truncate">{{ $t('agentOrders.typeDelivery') }}</span>
               </span>
               <span
                 v-else
-                class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1"
+                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1"
               >
-                🏬 {{ $t('agentOrders.typePickup') }}
+                🏬 <span class="truncate">{{ $t('agentOrders.typePickup') }}</span>
               </span>
 
               <!-- 状态胶囊 -->
               <span
                 :class="[
-                  'px-2 py-0.5 rounded-full text-[11px] font-bold',
+                  'px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold truncate',
                   getStatusBadgeClass(order.status)
                 ]"
               >
@@ -196,13 +197,13 @@
 
           <!-- 户主核心信息 (极简化提炼，支持一键复制电话) -->
           <div class="space-y-1.5 text-xs">
-            <div class="flex items-center justify-between text-slate-700">
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-slate-900 text-sm">{{ order.headName }}</span>
-                <span class="text-[11px] font-mono text-slate-400">({{ order.cardNo }})</span>
+            <div class="flex items-center justify-between text-slate-700 gap-1">
+              <div class="flex items-center gap-1.5 truncate">
+                <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">{{ formatHeadName(order.headName) }}</span>
+                <span class="text-[10px] sm:text-[11px] font-mono text-slate-400 shrink-0">({{ order.cardNo }})</span>
               </div>
-              <div class="flex items-center gap-1 text-slate-600 font-mono">
-                <span>{{ order.phone }}</span>
+              <div class="flex items-center gap-1 text-slate-600 font-mono shrink-0">
+                <span class="text-[11px]">{{ order.phone }}</span>
                 <el-button size="small" text class="p-0.5" @click="copyText(order.phone)">
                   <el-icon class="text-xs text-blue-600"><CopyDocument /></el-icon>
                 </el-button>
@@ -212,26 +213,26 @@
             <!-- 送货住址或自提网点 -->
             <div class="flex items-start gap-1 text-[11px] text-slate-500">
               <el-icon class="text-xs text-slate-400 mt-0.5 shrink-0"><Location /></el-icon>
-              <span class="truncate">{{ order.deliveryType === 'HOME_DELIVERY' ? order.deliveryAddress : order.agentName }}</span>
+              <span class="truncate leading-tight">{{ order.deliveryType === 'HOME_DELIVERY' ? formatDeliveryAddress(order.deliveryAddress) : formatAgentName(order.agentName) }}</span>
             </div>
 
             <!-- 物资品类胶囊清单 (微型化展示，不占用大版面) -->
-            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+            <div class="flex flex-wrap items-center gap-1 pt-0.5">
               <span
                 v-for="(it, idx) in order.items"
                 :key="idx"
-                class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200/60"
+                class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] sm:text-[11px] font-medium border border-slate-200/60"
               >
-                {{ formatItemName(it.itemName) }} <b class="font-mono text-slate-900 font-bold">×{{ it.qty }}{{ it.unit }}</b>
+                {{ formatItemName(it.itemName) }} <b class="font-mono text-slate-900 font-bold">×{{ it.qty }}{{ formatUnit(it.unit) }}</b>
               </span>
             </div>
           </div>
 
           <!-- 结算金额与核验提货码栏 -->
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+          <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
             <div>
               <span class="text-[10px] text-slate-400 block">{{ $t('agentOrders.orderCardPaid') }}</span>
-              <span class="font-mono font-bold text-amber-600 text-sm">IQD {{ (order.selfPayAmount || 0).toLocaleString() }}</span>
+              <span class="font-mono font-bold text-amber-600 text-xs sm:text-sm">IQD {{ (order.selfPayAmount || 0).toLocaleString() }}</span>
             </div>
 
             <div class="text-right">
@@ -250,14 +251,14 @@
           <!-- 若已派单，展示车队指派信息微条 -->
           <div
             v-if="order.dispatchInfo && order.dispatchInfo.deliveryPerson"
-            class="p-2 rounded-xl bg-sky-50/70 border border-sky-100 text-[11px] text-sky-800 flex items-center justify-between"
+            class="p-2 rounded-xl bg-sky-50/70 border border-sky-100 text-[11px] text-sky-800 flex items-center justify-between gap-1"
           >
             <div class="flex items-center gap-1.5 truncate">
               <span>🚚</span>
-              <span class="font-bold">{{ order.dispatchInfo.deliveryPerson }}</span>
+              <span class="font-bold truncate">{{ formatDeliveryPerson(order.dispatchInfo.deliveryPerson) }}</span>
               <span class="font-mono text-sky-600 truncate">[{{ order.dispatchInfo.vehicleNo }}]</span>
             </div>
-            <span class="font-mono font-semibold shrink-0 text-sky-700">{{ order.dispatchInfo.estimatedTime }}</span>
+            <span class="font-mono font-semibold shrink-0 text-sky-700 text-[10px] sm:text-[11px]">{{ formatEstimatedTime(order.dispatchInfo.estimatedTime) }}</span>
           </div>
 
           <!-- 卡片底部操作大按钮 (极简触控交互) -->
@@ -266,7 +267,7 @@
             <el-button
               v-if="order.deliveryType === 'HOME_DELIVERY' && (order.status === 'PENDING_DELIVERY' || order.status === 'PAID')"
               type="primary"
-              class="w-full font-bold shadow-xs rounded-xl"
+              class="w-full font-bold shadow-xs rounded-xl !h-8 sm:!h-9 text-xs"
               @click="openDispatchModal(order)"
             >
               <el-icon class="mr-1"><Van /></el-icon>
@@ -277,7 +278,7 @@
             <el-button
               v-else-if="order.deliveryType === 'PICKUP' && (order.status === 'PENDING_PICKUP' || order.status === 'PAID')"
               type="warning"
-              class="w-full font-bold shadow-xs rounded-xl"
+              class="w-full font-bold shadow-xs rounded-xl !h-8 sm:!h-9 text-xs"
               @click="handleMarkReady(order)"
             >
               <el-icon class="mr-1"><CircleCheck /></el-icon>
@@ -288,34 +289,34 @@
             <el-button
               v-else-if="order.status === 'DISPATCHED'"
               type="success"
-              class="w-full font-bold shadow-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center justify-center gap-1"
+              class="w-full font-bold shadow-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
-              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ $t('agentOrders.deliveryPhotoVerify') || '送达拍照核验' }}）</span>
+              <span>{{ isAppMode ? $t('orderClaim.scanVerifyBtn') : ($t('orderClaim.scanVerifyBtn') + '（' + ($t('agentOrders.deliveryPhotoVerify') || '送达拍照核验') + '）') }}</span>
             </el-button>
 
             <!-- 阶段 4 核心：备货就绪状态 -> 打开摄像头扫码核验 (先拍照扫码，再出确认单) -->
             <el-button
               v-else-if="order.status === 'READY_FOR_PICKUP'"
               type="success"
-              class="w-full font-bold shadow-xs rounded-xl bg-purple-600 hover:bg-purple-700 border-none text-white flex items-center justify-center gap-1"
+              class="w-full font-bold shadow-xs rounded-xl bg-purple-600 hover:bg-purple-700 border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
-              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ $t('agentOrders.pickupPhotoVerify') || '到店拍照核验' }}）</span>
+              <span>{{ isAppMode ? $t('orderClaim.scanVerifyBtn') : ($t('orderClaim.scanVerifyBtn') + '（' + ($t('agentOrders.pickupPhotoVerify') || '到店拍照核验') + '）') }}</span>
             </el-button>
 
             <!-- 已交付完结 -->
             <div
               v-else-if="order.status === 'DELIVERED'"
-              class="w-full py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-center text-xs font-bold flex items-center justify-between"
+              class="w-full py-1.5 px-2.5 sm:py-2 sm:px-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-center text-xs font-bold flex items-center justify-between"
             >
-              <div class="flex items-center gap-1.5">
-                <el-icon class="text-emerald-600 text-sm"><SuccessFilled /></el-icon>
-                <span>{{ $t('agentOrders.filterDelivered') }} · {{ $t('agentOrders.deliveredStockDeducted') }}</span>
+              <div class="flex items-center gap-1.5 truncate">
+                <el-icon class="text-emerald-600 text-sm shrink-0"><SuccessFilled /></el-icon>
+                <span class="truncate">{{ $t('agentOrders.filterDelivered') }} · {{ $t('agentOrders.deliveredStockDeducted') }}</span>
               </div>
-              <span class="font-mono text-[11px] text-emerald-700 font-semibold">{{ order.deliveredAt?.slice(5, 16) || '' }}</span>
+              <span class="font-mono text-[10px] sm:text-[11px] text-emerald-700 font-semibold shrink-0">{{ order.deliveredAt?.slice(5, 16) || '' }}</span>
             </div>
           </div>
         </div>
@@ -856,6 +857,127 @@ function formatItemName(name) {
     if (name.includes('Tea') || name.includes('شاي') || name.includes('چای')) return '特选高山红茶';
   }
   return name;
+}
+
+function formatHeadName(name) {
+  if (!name) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('艾哈迈德')) return 'Ahmed Hassan Saleh';
+    if (name.includes('阿里')) return 'Ali Hussein Al-Bayati';
+    if (name.includes('穆罕默德')) return 'Mohammed Jabbar Al-Rasheed';
+    if (name.includes('法蒂玛')) return 'Fatima Zahra Al-Kinani';
+    if (name.includes('扎伊德')) return 'Zaid Qasim Al-Saadi';
+  } else if (lang === 'ar') {
+    if (name.includes('艾哈迈德')) return 'أحمد حسن صالح';
+    if (name.includes('阿里')) return 'علي حسين البياتي';
+    if (name.includes('穆罕默德')) return 'محمد جبار الرشيد';
+    if (name.includes('法蒂玛')) return 'فاطمة الزهراء الكناني';
+    if (name.includes('扎伊德')) return 'زيد قاسم السعدي';
+  } else if (lang === 'ku') {
+    if (name.includes('艾哈迈德')) return 'ئەحمەد حەسەن ساڵح';
+    if (name.includes('阿里')) return 'عەلی حوسێن بەیاتی';
+    if (name.includes('穆罕默德')) return 'محەممەد جەبار ڕەشید';
+    if (name.includes('法蒂玛')) return 'فاتمە زەهرا کینانی';
+    if (name.includes('扎伊德')) return 'زەید قاسم سەعدی';
+  }
+  return name;
+}
+
+function formatDeliveryAddress(addr) {
+  if (!addr) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (addr.includes('卡尔赫') || addr.includes('曼苏尔')) return 'Baghdad · Karkh Dist · Mansour 14th St No. 8';
+    if (addr.includes('鲁萨法') || addr.includes('卡拉达')) return 'Baghdad · Rusafa Dist · Karrada Inner St No. 22';
+    if (addr.includes('巴格达')) return addr.replace('巴格达省', 'Baghdad Prov, ').replace('号院', ', No. ').replace('街道', ' St');
+  } else if (lang === 'ar') {
+    if (addr.includes('卡尔赫') || addr.includes('曼苏尔')) return 'بغداد · قاطع الكرخ · المنصور زقاق 14 دار 8';
+    if (addr.includes('鲁萨法') || addr.includes('卡拉达')) return 'بغداد · قاطع الرصافة · الكرادة داخل دار 22';
+  } else if (lang === 'ku') {
+    if (addr.includes('卡尔赫') || addr.includes('曼苏尔')) return 'بەغدا · کەرخ · مەنسوور کۆڵانی ١٤ خانووی ٨';
+    if (addr.includes('鲁萨法') || addr.includes('卡拉达')) return 'بەغدا · ڕەسافە · کەڕادە ناوەوە خانووی ٢٢';
+  }
+  return addr;
+}
+
+function formatAgentName(name) {
+  if (!name) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('卡尔赫第一')) return 'Karkh 1st Central Ration Station (Mansour)';
+    if (name.includes('卡拉达')) return 'Karrada 1st Community Distribution Point';
+    if (name.includes('鲁萨法')) return 'Rusafa 2nd Food Security Co-op';
+  } else if (lang === 'ar') {
+    if (name.includes('卡尔赫第一')) return 'منفذ الكرخ الأول لتوزيع التموين (المنصور)';
+    if (name.includes('卡拉达')) return 'منفذ الكرادة الأول للسلع التموينية';
+    if (name.includes('鲁萨法')) return 'جمعية الرصافة الثانية للأمن الغذائي';
+  } else if (lang === 'ku') {
+    if (name.includes('卡尔赫第一')) return 'بنکەی یەکەمی دابەشکردنی کەرخ (مەنسوور)';
+    if (name.includes('卡拉达')) return 'بنکەی یەکەمی کەڕادە';
+    if (name.includes('鲁萨法')) return 'کۆمەڵەی دووەمی ئاسایشی خۆراکی ڕەسافە';
+  }
+  return name;
+}
+
+function formatDeliveryPerson(person) {
+  if (!person) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (person.includes('前台备货员') || person.includes('备货员')) return 'Store Inventory Clerk';
+    if (person.includes('哈希姆·阿里') || person.includes('哈希姆')) return 'Hashim Ali (Express Van)';
+    if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'Samir Qasim (Cold-chain)';
+  } else if (lang === 'ar') {
+    if (person.includes('前台备货员') || person.includes('备货员')) return 'موظف تجهيز البضائع بالمنفذ';
+    if (person.includes('哈希姆·阿里') || person.includes('哈希姆')) return 'هاشم علي (شاحنة سريعة)';
+    if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'سمير قاسم (شاحنة مبردة)';
+  } else if (lang === 'ku') {
+    if (person.includes('前台备货员') || person.includes('备货员')) return 'کارمەندی ئامادەکردنی کاڵا';
+    if (person.includes('哈希姆·阿里') || person.includes('哈希姆')) return 'هاشم عەلی (بارهەڵگری خێرا)';
+    if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'سەمیر قاسم (ساردکەرەوە)';
+  }
+  return person;
+}
+
+function formatEstimatedTime(time) {
+  if (!time) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (time.includes('30分钟')) return 'Within 30 mins';
+    if (time.includes('1小时')) return 'Within 1 hour';
+    if (time.includes('2小时')) return 'Within 2 hours';
+    if (time.includes('随时到店可提') || time.includes('可提')) return 'Ready for pickup anytime';
+  } else if (lang === 'ar') {
+    if (time.includes('30分钟')) return 'خلال 30 دقيقة';
+    if (time.includes('1小时')) return 'خلال ساعة واحدة';
+    if (time.includes('2小时')) return 'خلال ساعتين';
+    if (time.includes('随时到店可提') || time.includes('可提')) return 'جاهز للاستلام في أي وقت';
+  } else if (lang === 'ku') {
+    if (time.includes('30分钟')) return 'لە ماوەی ٣٠ خولەکدا';
+    if (time.includes('1小时')) return 'لە ماوەی یەک کاتژمێردا';
+    if (time.includes('2小时')) return 'لە ماوەی ٢ کاتژمێردا';
+    if (time.includes('随时到店可提') || time.includes('可提')) return 'ئامادەیە بۆ وەرگرتن';
+  }
+  return time;
+}
+
+function formatUnit(unit) {
+  if (!unit) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (unit === '公斤' || unit === 'KG') return 'KG';
+    if (unit === '升' || unit === 'L') return 'L';
+    if (unit === '包' || unit === '袋') return 'pkts';
+  } else if (lang === 'ar') {
+    if (unit === '公斤' || unit === 'KG') return 'كجم';
+    if (unit === '升' || unit === 'L') return 'لتر';
+    if (unit === '包' || unit === '袋') return 'كيس';
+  } else if (lang === 'ku') {
+    if (unit === '公斤' || unit === 'KG') return 'کگم';
+    if (unit === '升' || unit === 'L') return 'لیتر';
+    if (unit === '包' || unit === '袋') return 'دانە';
+  }
+  return unit;
 }
 
 watch(locale, () => {

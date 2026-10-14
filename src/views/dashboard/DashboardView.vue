@@ -1,47 +1,5 @@
 <template>
   <div class="dashboard-view space-y-3 sm:space-y-6">
-    <!-- 顶部高层选项卡切换：桌面端全量排印，移动端紧凑自适应 (仅在非独立 APP 布局下展示) -->
-    <div
-      v-if="!isAppMode"
-      class="flex items-center justify-between bg-white px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-[#ECE7DE] shadow-2xs gap-2"
-    >
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#1E3F35]"></span>
-        <!-- 桌面端标题 -->
-        <span class="hidden sm:inline text-xs sm:text-sm font-bold text-[#1E3F35]">
-          伊拉克国家配给综合运行中心 (RCM Central Hub)
-        </span>
-        <!-- 移动端精简标题 -->
-        <span class="sm:hidden text-xs font-bold text-[#1E3F35]">
-          RCM 调度中心
-        </span>
-      </div>
-
-      <el-radio-group v-model="dashboardMode" size="small" class="shrink-0">
-        <el-radio-button value="overview">
-          <span class="flex items-center gap-1">
-            <el-icon><DataAnalysis /></el-icon>
-            <span class="hidden sm:inline">战略大盘 (政务全景)</span>
-            <span class="sm:hidden text-[11px]">大盘</span>
-          </span>
-        </el-radio-button>
-        <el-radio-button value="mobile">
-          <span class="flex items-center gap-1">
-            <el-icon><Cellphone /></el-icon>
-            <span class="hidden sm:inline">现场核销 (Pixel 9 APP)</span>
-            <span class="sm:hidden text-[11px]">APP</span>
-          </span>
-        </el-radio-button>
-        <el-radio-button value="operational">
-          <span class="flex items-center gap-1">
-            <el-icon><Operation /></el-icon>
-            <span class="hidden sm:inline">{{ isAgentRole ? '网点保供流转' : '管理业务深维' }}</span>
-            <span class="sm:hidden text-[11px]">业务</span>
-          </span>
-        </el-radio-button>
-      </el-radio-group>
-    </div>
-
     <!-- 模式 1: 现代中东高端政务质感看板 (参考图风格 100% 还原) -->
     <div v-show="dashboardMode === 'overview'" class="animate-fadeIn">
       <DashboardOverview />
@@ -148,8 +106,6 @@ onMounted(() => {
   if (route.query.mode) {
     dashboardMode.value = String(route.query.mode);
   } else if (isAppMode.value && authStore.currentRole === 'agent') {
-    dashboardMode.value = 'mobile';
-  } else if (window.innerWidth <= 768) {
     dashboardMode.value = 'mobile';
   }
 });

@@ -1,14 +1,14 @@
 <template>
-  <div class="agent-order-stats-chart" :class="isAppMode ? 'space-y-3' : 'space-y-4 text-xs'">
-    <!-- 指标卡片行 -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-      <div class="p-2.5 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+  <div class="agent-order-stats-chart" :class="isAppMode ? 'space-y-2.5' : 'space-y-4 text-xs'">
+    <!-- 指标卡片行 (针对 Pixel 9 412px 视口微调内边距与字体阶梯) -->
+    <div class="grid" :class="isAppMode ? 'grid-cols-2 gap-2' : 'grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4'">
+      <div class="p-2 sm:p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1">
         <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-[11px]">
           <span class="truncate">{{ $t('agentOrderAnalytics.totalWholesaleAmount') }}</span>
           <span class="text-blue-600 font-bold shrink-0">🏦</span>
         </div>
-        <div class="text-sm sm:text-xl font-bold font-mono text-slate-900 truncate">
-          IQD 428,500,000
+        <div class="text-xs sm:text-xl font-bold font-mono text-slate-900 truncate">
+          IQD 428.5M
         </div>
         <div class="text-[9px] sm:text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100">
           <span>{{ $t('agentOrderAnalytics.cumulativeOrders') }} <b class="text-slate-700 font-mono">158</b> {{ $t('reconciliation.unitsOrder') }}</span>
@@ -16,13 +16,13 @@
         </div>
       </div>
 
-      <div class="p-2.5 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+      <div class="p-2 sm:p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1">
         <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-[11px]">
           <span class="truncate">{{ $t('agentOrderAnalytics.totalStrategicTransfer') }}</span>
           <span class="text-amber-600 font-bold shrink-0">📦</span>
         </div>
-        <div class="text-sm sm:text-xl font-bold font-mono text-amber-700 truncate">
-          290,000 <span class="text-[10px] sm:text-xs font-normal">KG/L</span>
+        <div class="text-xs sm:text-xl font-bold font-mono text-amber-700 truncate">
+          290,000 <span class="text-[9px] sm:text-xs font-normal">KG/L</span>
         </div>
         <div class="text-[9px] sm:text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100">
           <span>{{ $t('agentOrderAnalytics.coveredAgentsCount') }} <b class="text-slate-700 font-mono">32</b> {{ $t('agentOrderAnalytics.unitStations') }}</span>
@@ -30,12 +30,12 @@
         </div>
       </div>
 
-      <div class="p-2.5 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+      <div class="p-2 sm:p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1">
         <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-[11px]">
           <span class="truncate">{{ $t('agentOrderAnalytics.fulfillmentRate') }}</span>
           <span class="text-emerald-600 font-bold shrink-0">⚡</span>
         </div>
-        <div class="text-sm sm:text-xl font-bold font-mono text-emerald-700 truncate">
+        <div class="text-xs sm:text-xl font-bold font-mono text-emerald-700 truncate">
           98.6%
         </div>
         <div class="text-[9px] sm:text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100">
@@ -44,13 +44,13 @@
         </div>
       </div>
 
-      <div class="p-2.5 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+      <div class="p-2 sm:p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1">
         <div class="flex items-center justify-between text-slate-500 text-[10px] sm:text-[11px]">
           <span class="truncate">{{ $t('agentOrderAnalytics.inventoryTurnover') }}</span>
           <span class="text-indigo-600 font-bold shrink-0">🔄</span>
         </div>
-        <div class="text-sm sm:text-xl font-bold font-mono text-indigo-700 truncate">
-          7.2 <span class="text-[10px] sm:text-xs font-normal">{{ $t('agentOrderAnalytics.daysPerRound') }}</span>
+        <div class="text-xs sm:text-xl font-bold font-mono text-indigo-700 truncate">
+          7.2 <span class="text-[9px] sm:text-xs font-normal">{{ $t('agentOrderAnalytics.daysPerRound') }}</span>
         </div>
         <div class="text-[9px] sm:text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100">
           <span>{{ $t('agentOrderAnalytics.stockHealth') }}</span>
@@ -62,7 +62,7 @@
     <!-- 可视化图表网格 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
       <!-- 图表 1: 各重点代销网点批发订货规模对比 -->
-      <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-blue-600"></span>
@@ -71,18 +71,19 @@
           <span class="text-[10px] text-slate-400 font-mono">{{ $t('agentOrderAnalytics.settlementWanUnit') }}</span>
         </div>
 
-        <div class="space-y-3 pt-1">
-          <div v-for="agent in agentRankingData" :key="agent.name" class="space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-700 gap-2">
-              <span class="font-medium truncate flex-1">{{ agent.name }}</span>
-              <div class="font-mono flex items-center gap-1.5 shrink-0">
-                <span class="font-bold text-slate-900">IQD {{ agent.amountWan }}{{ $t('agentOrderAnalytics.tenThousandUnit') }}</span>
+        <div class="space-y-2.5 pt-1">
+          <div v-for="agent in agentRankingData" :key="agent.name" class="space-y-1 text-xs bg-slate-50/60 p-2 rounded-lg border border-slate-100/80">
+            <!-- APP 模式下网点名单独成行展示完整名称，避免省略号截断 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-slate-700 gap-1">
+              <span class="font-bold text-slate-800 text-[11px] sm:text-xs leading-tight">{{ agent.name }}</span>
+              <div class="font-mono flex items-center gap-1.5 shrink-0 text-[10px] sm:text-xs self-end sm:self-auto">
+                <span class="font-bold text-blue-700">IQD {{ agent.amountWan }}{{ $t('agentOrderAnalytics.tenThousandUnit') }}</span>
                 <span class="text-[10px] text-slate-400">({{ agent.orders }} {{ $t('reconciliation.unitsOrder') }})</span>
               </div>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div class="w-full bg-slate-200/60 rounded-full h-1.5 sm:h-2 overflow-hidden">
               <div
-                class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                class="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
                 :style="{ width: `${agent.barWidth}%` }"
               ></div>
             </div>
@@ -91,7 +92,7 @@
       </div>
 
       <!-- 图表 2: 代理采购品类结构与履约指标 -->
-      <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+      <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
@@ -101,45 +102,45 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 sm:gap-2.5 pt-1">
-          <div class="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+          <div class="p-2 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
             <div class="flex justify-between text-slate-500 text-[10px] sm:text-[11px]">
-              <span>{{ $t('dashboard.flourDemand') }}</span>
+              <span class="font-semibold">{{ $t('dashboard.flourDemand') }}</span>
               <span class="font-bold text-blue-700 font-mono">41.4%</span>
             </div>
-            <div class="text-sm sm:text-base font-bold font-mono text-slate-900">120,000 KG</div>
+            <div class="text-xs sm:text-base font-bold font-mono text-slate-900">120,000 KG</div>
             <div class="text-[9px] sm:text-[10px] text-slate-400 truncate">{{ $t('agentOrderAnalytics.avgOrdersPerWk') }}</div>
           </div>
 
-          <div class="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+          <div class="p-2 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
             <div class="flex justify-between text-slate-500 text-[10px] sm:text-[11px]">
-              <span>{{ $t('dashboard.riceDemand') }}</span>
+              <span class="font-semibold">{{ $t('dashboard.riceDemand') }}</span>
               <span class="font-bold text-teal-700 font-mono">25.9%</span>
             </div>
-            <div class="text-sm sm:text-base font-bold font-mono text-slate-900">75,000 KG</div>
+            <div class="text-xs sm:text-base font-bold font-mono text-slate-900">75,000 KG</div>
             <div class="text-[9px] sm:text-[10px] text-slate-400 truncate">{{ $t('agentOrderAnalytics.optimalTurnover') }}</div>
           </div>
 
-          <div class="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+          <div class="p-2 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
             <div class="flex justify-between text-slate-500 text-[10px] sm:text-[11px]">
-              <span>{{ $t('dashboard.oilDemand') }}</span>
+              <span class="font-semibold">{{ $t('dashboard.oilDemand') }}</span>
               <span class="font-bold text-amber-700 font-mono">15.5%</span>
             </div>
-            <div class="text-sm sm:text-base font-bold font-mono text-slate-900">45,000 L</div>
+            <div class="text-xs sm:text-base font-bold font-mono text-slate-900">45,000 L</div>
             <div class="text-[9px] sm:text-[10px] text-slate-400 truncate">{{ $t('agentOrderAnalytics.summerLossRate') }}</div>
           </div>
 
-          <div class="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+          <div class="p-2 sm:p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
             <div class="flex justify-between text-slate-500 text-[10px] sm:text-[11px]">
-              <span>{{ $t('dashboard.sugarDemand') }}</span>
+              <span class="font-semibold">{{ $t('dashboard.sugarDemand') }}</span>
               <span class="font-bold text-indigo-700 font-mono">17.2%</span>
             </div>
-            <div class="text-sm sm:text-base font-bold font-mono text-slate-900">50,000 KG</div>
+            <div class="text-xs sm:text-base font-bold font-mono text-slate-900">50,000 KG</div>
             <div class="text-[9px] sm:text-[10px] text-slate-400 truncate">{{ $t('agentOrderAnalytics.ampleReserve') }}</div>
           </div>
         </div>
 
-        <div class="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between text-emerald-900 gap-1 text-[11px]">
-          <span>🛡️ <strong>{{ $t('agentOrderAnalytics.riskControlLabel') }}</strong>{{ $t('agentOrderAnalytics.complianceConclusion') }}</span>
+        <div class="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between text-emerald-900 gap-1.5 text-[11px]">
+          <span class="leading-snug">🛡️ <strong>{{ $t('agentOrderAnalytics.riskControlLabel') }}</strong>{{ $t('agentOrderAnalytics.complianceConclusion') }}</span>
           <span class="text-emerald-700 font-mono font-bold shrink-0 self-end sm:self-auto">{{ $t('agentOrderAnalytics.compliance100') }}</span>
         </div>
       </div>

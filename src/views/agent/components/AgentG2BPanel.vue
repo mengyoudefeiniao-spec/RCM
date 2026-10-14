@@ -94,29 +94,29 @@
           </div>
         </div>
 
-        <!-- 中心仓与车辆 -->
+        <!-- 中心仓与车辆 (国际化绑定) -->
         <div class="p-2 bg-slate-50 rounded-lg text-[11px] space-y-1 border border-slate-100">
           <div class="flex items-center justify-between">
-            <span class="text-slate-500 font-medium truncate">{{ row.centerName }}</span>
+            <span class="text-slate-500 font-medium truncate">{{ formatG2BCenterName(row.centerName) }}</span>
             <span class="text-slate-400 font-mono">{{ row.deliveryVehicleNo }}</span>
           </div>
           <div class="text-[10px] text-slate-400 flex items-center justify-between">
-            <span>{{ $t('agentG2B.timeSlotLabel') }}{{ row.timeSlot }}</span>
+            <span>{{ $t('agentG2B.timeSlotLabel') }}{{ formatG2BTimeSlot(row.timeSlot) }}</span>
             <span v-if="row.pickupVoucherCode" class="text-emerald-600 font-mono font-bold">
               {{ row.pickupVoucherCode }}
             </span>
           </div>
         </div>
 
-        <!-- 采购物资清单 -->
+        <!-- 采购物资清单 (国际化绑定) -->
         <div class="space-y-1">
           <div
             v-for="(item, idx) in row.items"
             :key="idx"
             class="flex items-center justify-between text-[11px] text-slate-700 bg-slate-50/70 px-2.5 py-1 rounded border border-slate-100"
           >
-            <span class="font-medium truncate max-w-[200px]">{{ item.itemName }}</span>
-            <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ item.unit }}</span>
+            <span class="font-medium truncate max-w-[200px]">{{ formatG2BItemName(item.itemName) }}</span>
+            <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
           </div>
         </div>
 
@@ -168,7 +168,7 @@
       </div>
 
       <div v-if="filteredOrders.length === 0" class="text-center py-8 text-slate-400 text-xs">
-        暂无符合条件的采购记录
+        {{ $t('agentG2B.noOrders') || '暂无符合条件的采购记录' }}
       </div>
     </div>
 
@@ -193,12 +193,12 @@
       <el-table-column :label="$t('agentG2B.colCenterAndMode')" min-width="210">
         <template #default="{ row }">
           <div class="font-bold text-slate-900 flex items-center gap-1.5">
-            <span>{{ row.centerName }}</span>
+            <span>{{ formatG2BCenterName(row.centerName) }}</span>
             <el-tag size="small" :type="row.logisticsMode === 'DISPATCH' ? 'success' : 'warning'" effect="light">
               {{ row.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }}
             </el-tag>
           </div>
-          <div class="text-[11px] text-slate-500 mt-0.5">{{ $t('agentG2B.timeSlotLabel') }}{{ row.timeSlot }}</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">{{ $t('agentG2B.timeSlotLabel') }}{{ formatG2BTimeSlot(row.timeSlot) }}</div>
           <div class="text-[10px] text-slate-400 font-mono">{{ $t('agentG2B.vehicleNoLabel') }}{{ row.deliveryVehicleNo }}</div>
         </template>
       </el-table-column>
@@ -211,8 +211,8 @@
               :key="idx"
               class="flex items-center justify-between text-[11px] text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-100"
             >
-              <span>{{ item.itemName }}</span>
-              <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ item.unit }}</span>
+              <span>{{ formatG2BItemName(item.itemName) }}</span>
+              <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
             </div>
           </div>
         </template>
@@ -719,7 +719,7 @@
           <div class="pt-1 border-t border-slate-200/60 text-[11px] text-slate-500">
             {{ $t('agentG2B.qrIncludeItems') }}
             <span v-for="(it, i) in activeQRRow.items" :key="i" class="mr-2">
-              {{ it.itemName }}: <strong>{{ it.qty }}{{ it.unit }}</strong>
+              {{ formatG2BItemName(it.itemName) }}: <strong>{{ it.qty }}{{ formatG2BUnit(it.unit) }}</strong>
             </span>
           </div>
         </div>
@@ -764,11 +764,79 @@ import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymen
 const { t, locale } = useI18n();
 const route = useRoute();
 const isEn = computed(() => locale.value === 'en');
+const isAr = computed(() => locale.value === 'ar');
+const isKu = computed(() => locale.value === 'ku');
 const isAppMode = computed(() => {
   return route.query.layout === 'app' ||
     sessionStorage.getItem('rcm_layout_mode') === 'app' ||
     window.innerWidth <= 768;
 });
+
+// 采购列表字段四语国际化格式化函数
+const formatG2BItemName = (name) => {
+  if (!name) return '';
+  if (isEn.value) {
+    if (name.includes('面粉') || name.toLowerCase().includes('flour')) return 'Wheat Flour (Standard)';
+    if (name.includes('米') || name.toLowerCase().includes('rice')) return 'Basmati Rice (Grade A)';
+    if (name.includes('油') || name.toLowerCase().includes('oil')) return 'Refined Cooking Oil';
+    if (name.includes('糖') || name.toLowerCase().includes('sugar')) return 'Refined White Sugar';
+  } else if (isAr.value) {
+    if (name.includes('面粉') || name.toLowerCase().includes('flour')) return 'طحين قمح استراتيجي (معياري)';
+    if (name.includes('米') || name.toLowerCase().includes('rice')) return 'أرز بسمتي فاخر (درجة أولى)';
+    if (name.includes('油') || name.toLowerCase().includes('oil')) return 'زيت نباتي مكرر';
+    if (name.includes('糖') || name.toLowerCase().includes('sugar')) return 'سكر أبيض نقي';
+  } else if (isKu.value) {
+    if (name.includes('面粉') || name.toLowerCase().includes('flour')) return 'ئاردی گەنمی ستراتیژی';
+    if (name.includes('米') || name.toLowerCase().includes('rice')) return 'برنجی بەسمەتی پلە یەک';
+    if (name.includes('油') || name.toLowerCase().includes('oil')) return 'ڕۆنی ڕووەکی پاڵاوتە';
+    if (name.includes('糖') || name.toLowerCase().includes('sugar')) return 'شەکری سپی';
+  }
+  return name;
+};
+
+const formatG2BUnit = (unit) => {
+  if (!unit) return '';
+  if (isEn.value) return unit === '升' ? 'L' : 'KG';
+  if (isAr.value) return unit === '升' || unit === 'L' ? 'لتر' : 'كجم';
+  if (isKu.value) return unit === '升' || unit === 'L' ? 'لیتر' : 'کگم';
+  return unit;
+};
+
+const formatG2BCenterName = (name) => {
+  if (!name) return '';
+  if (isEn.value) {
+    if (name.includes('卡尔赫第一')) return 'Karkh 1st Ration Center (Mansour)';
+    if (name.includes('曼苏尔')) return 'Mansour Central Storage Depot';
+    if (name.includes('鲁萨法')) return 'Rusafa Central Ration Center';
+  } else if (isAr.value) {
+    if (name.includes('卡尔赫第一')) return 'مركز توزيع الكرخ الأول (المنصور)';
+    if (name.includes('曼苏尔')) return 'مستودع المنصور المركزي للتموين';
+    if (name.includes('鲁萨法')) return 'مركز توزيع الرصافة المركزي';
+  } else if (isKu.value) {
+    if (name.includes('卡尔赫第一')) return 'Navenda Belavkirinê ya Karkh 1 (Mansour)';
+    if (name.includes('曼苏尔')) return 'Embara Navendî ya Mansour';
+    if (name.includes('鲁萨法')) return 'Navenda Belavkirinê ya Rusafa';
+  }
+  return name;
+};
+
+const formatG2BTimeSlot = (slot) => {
+  if (!slot) return '';
+  if (isEn.value) {
+    if (slot.includes('早间第一批')) return '08:00 - 10:00 (Early Morning Slot 1)';
+    if (slot.includes('上午第二批')) return '10:00 - 12:00 (Morning Slot 2)';
+    if (slot.includes('午后第三批')) return '14:00 - 16:00 (Afternoon Slot 3)';
+  } else if (isAr.value) {
+    if (slot.includes('早间第一批')) return '08:00 - 10:00 (الفترة الصباحية الأولى)';
+    if (slot.includes('上午第二批')) return '10:00 - 12:00 (الفترة الصباحية الثانية)';
+    if (slot.includes('午后第三批')) return '14:00 - 16:00 (فترة بعد الظهر)';
+  } else if (isKu.value) {
+    if (slot.includes('早间第一批')) return '08:00 - 10:00 (بەشی بەیانی ١)';
+    if (slot.includes('上午第二批')) return '10:00 - 12:00 (بەشی بەیانی ٢)';
+    if (slot.includes('午后第三批')) return '14:00 - 16:00 (بەشی پاشنیوەڕۆ)';
+  }
+  return slot;
+};
 
 const loading = ref(false);
 const orders = ref([]);

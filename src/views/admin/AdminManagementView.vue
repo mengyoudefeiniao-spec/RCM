@@ -169,7 +169,7 @@
                     <el-tag v-else type="warning" size="small">{{ formatCardStatus(row.status) }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column :label="$t('admin.actions') || '操作'" width="170" fixed="right" align="center">
+                <el-table-column :label="$t('admin.actions') || '操作'" width="130" fixed="right" align="center">
                   <template #default="{ row }">
                     <div class="flex items-center justify-center gap-1.5">
                       <!-- 查看家庭成员存根 (与公民端 Family Members 完全联动) -->
@@ -186,38 +186,21 @@
                         </el-button>
                       </el-tooltip>
 
-                      <!-- 调额图标按钮 -->
-                      <el-tooltip :content="$t('admin.adjustQuota') || '调整配额外核'" placement="top" :show-after="200">
-                        <el-button
-                          circle
-                          size="small"
-                          type="primary"
-                          plain
-                          class="hover:scale-110 transition-transform shadow-2xs"
-                          @click="openQuotaDialog(row)"
-                        >
-                          <el-icon><Operation /></el-icon>
-                        </el-button>
-                      </el-tooltip>
-
-                      <!-- 冻结 / 解冻图标按钮 -->
+                      <!-- 冻结家庭成员图标按钮 (弹出成员列表及状态，支持选择成员与原因) -->
                       <el-tooltip
-                        :content="isFrozenCard(row) ? ($t('admin.unfreezeCard') || '解除冻结') : ($t('admin.freezeCard') || '冻结卡片')"
+                        :content="$t('admin.memberFreezeAction') || '家庭成员冻结管控'"
                         placement="top"
                         :show-after="200"
                       >
                         <el-button
                           circle
                           size="small"
-                          :type="isFrozenCard(row) ? 'success' : 'danger'"
+                          type="danger"
                           plain
                           class="hover:scale-110 transition-transform shadow-2xs"
-                          @click="handleToggleCardStatus(row)"
+                          @click="openMemberFreezeDialog(row)"
                         >
-                          <el-icon>
-                            <Unlock v-if="isFrozenCard(row)" />
-                            <Lock v-else />
-                          </el-icon>
+                          <el-icon><Lock /></el-icon>
                         </el-button>
                       </el-tooltip>
 
@@ -331,10 +314,28 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
+                <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="140" align="center">
                   <template #default="{ row }">
-                    <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
-                    <el-tag v-else type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                    <div class="flex flex-col items-center gap-0.5">
+                      <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                      <el-tag v-else type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                      <span v-if="(row.status === '已冻结' || row.status === 'Frozen') && row.freezeReason" class="text-[10px] text-rose-600 font-semibold bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                        {{ formatFreezeReason(row.freezeReason) }}
+                      </span>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.actions') || '操作'" width="90" align="center" fixed="right">
+                  <template #default="{ row }">
+                    <el-button
+                      size="small"
+                      :type="row.status === '已冻结' || row.status === 'Frozen' ? 'success' : 'danger'"
+                      link
+                      class="font-medium"
+                      @click="openMemberFreezeDialogFromMember(row)"
+                    >
+                      {{ row.status === '已冻结' || row.status === 'Frozen' ? ($t('admin.unfreezeCard') || '解冻') : ($t('admin.freezeCard') || '冻结') }}
+                    </el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -887,23 +888,186 @@
       </template>
     </el-dialog>
 
-    <!-- 3.4 调整配额对话框 -->
-    <el-dialog v-model="quotaDialogVisible" title="调整配给卡月度物资定额" width="500px" align-center destroy-on-close>
-      <div v-if="currentEditingCard" class="space-y-3 text-xs">
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 flex justify-between">
-          <div>卡号：<span class="font-mono font-bold text-blue-600">{{ currentEditingCard.cardNo }}</span></div>
-          <div>户主：<span class="font-bold text-slate-800">{{ currentEditingCard.headName }}</span></div>
+    <!-- 3.4 家庭成员纳保与冻结状态管控对话框 -->
+    <el-dialog
+      v-model="memberFreezeDialogVisible"
+      :title="$t('admin.memberFreezeDialogTitle') || '家庭成员纳保与冻结状态管控'"
+      width="700px"
+      align-center
+      destroy-on-close
+    >
+      <div v-if="selectedCardForFreeze" class="space-y-3.5 text-xs">
+        <!-- 顶部家庭基础卡片信息提示 -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+          <div>
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <span>{{ formatHeadName(selectedCardForFreeze.headName) }}</span>
+              <span class="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-bold">{{ selectedCardForFreeze.cardNo }}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-1">
+              {{ $t('admin.regionInfo') || '辖区分部' }}: {{ formatDistrict(selectedCardForFreeze.district) }} · {{ formatProvince(selectedCardForFreeze.province) }}
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">{{ $t('admin.currentMembersCount') || '在册成员总数' }}</span>
+            <span class="font-bold font-mono text-emerald-700 text-sm">{{ getFreezeTargetMembers().length }} {{ $t('admin.personUnit') || '人' }}</span>
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><span class="block mb-1">精制面粉 (kg)</span><el-input-number v-model="quotaForm.flour" :min="0" :max="200" class="w-full" size="small" /></div>
-          <div><span class="block mb-1">一级大米 (kg)</span><el-input-number v-model="quotaForm.rice" :min="0" :max="100" class="w-full" size="small" /></div>
-          <div><span class="block mb-1">食用植物油 (L)</span><el-input-number v-model="quotaForm.oil" :precision="1" :step="0.5" :min="0" :max="50" class="w-full" size="small" /></div>
-          <div><span class="block mb-1">白砂糖 (kg)</span><el-input-number v-model="quotaForm.sugar" :min="0" :max="50" class="w-full" size="small" /></div>
+
+        <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
+          <el-icon class="text-amber-600 text-sm shrink-0"><InfoFilled /></el-icon>
+          <span>{{ $t('admin.freezeDialogTip') || '依据第140号行政法令与保供合规规程，您可以选择特定家庭成员冻结其配给资格或解除冻结。冻结后，公民移动端视口将实时同步呈现。' }}</span>
+        </div>
+
+        <!-- 家庭成员明细列表 -->
+        <div>
+          <div class="font-bold text-slate-800 mb-2 flex items-center justify-between">
+            <span>{{ $t('admin.familyMembersList') || '家庭成员清单及状态' }}</span>
+            <span class="text-[11px] font-normal text-slate-500">{{ $t('admin.selectMemberHint') || '请点击对应成员进行状态管控' }}</span>
+          </div>
+
+          <el-table
+            :data="getFreezeTargetMembers()"
+            border
+            stripe
+            size="small"
+            highlight-current-row
+            @current-change="handleSelectMemberForFreeze"
+          >
+            <el-table-column width="45" align="center">
+              <template #default="{ row }">
+                <el-radio
+                  :model-value="selectedMemberToFreeze?.id"
+                  :label="row.id"
+                  @change="() => handleSelectMemberForFreeze(row)"
+                >
+                  &nbsp;
+                </el-radio>
+              </template>
+            </el-table-column>
+            <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="130">
+              <template #default="{ row }">
+                <span class="font-bold text-slate-800">{{ formatMemberName(row.name) }}</span>
+                <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left ml-1">
+                  {{ $t('citizenCard.headTag') || '户主' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="relation" :label="$t('admin.relation') || '关系'" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag size="small" type="info">{{ formatMemberRelation(row.relation) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="nationalId" :label="$t('admin.nationalId') || '国民卡号'" width="140" align="center" />
+            <el-table-column prop="status" :label="$t('admin.cardStatus') || '纳保状态'" width="95" align="center">
+              <template #default="{ row }">
+                <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                <el-tag v-else type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('admin.freezeReasonCol') || '冻结原因 / 经办说明'" min-width="140">
+              <template #default="{ row }">
+                <span v-if="row.status === '已冻结' || row.status === 'Frozen'" class="text-rose-600 font-medium bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                  {{ formatFreezeReason(row.freezeReason) }}
+                </span>
+                <span v-else class="text-slate-400">—</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('admin.actions') || '操作'" width="90" align="center" fixed="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="row.status === '已冻结' || row.status === 'Frozen'"
+                  size="small"
+                  type="success"
+                  link
+                  :loading="freezeLoading && selectedMemberToFreeze?.id === row.id"
+                  @click.stop="handleDirectUnfreeze(row)"
+                >
+                  {{ $t('admin.unfreezeCard') || '解冻' }}
+                </el-button>
+                <el-button
+                  v-else
+                  size="small"
+                  type="danger"
+                  link
+                  @click.stop="handleSelectMemberForFreeze(row)"
+                >
+                  {{ $t('admin.freezeCard') || '冻结' }}
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
+        <!-- 冻结原因选择配置区 (当选中的成员处于正常状态时展开) -->
+        <div v-if="selectedMemberToFreeze && (selectedMemberToFreeze.status === '正常' || selectedMemberToFreeze.status === 'Active')" class="p-3.5 bg-rose-50/50 rounded-xl border border-rose-200 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-rose-100">
+            <span class="font-bold text-rose-900 text-xs flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+              {{ $t('admin.freezeConfigTitle') || '冻结原因配置' }}: {{ formatMemberName(selectedMemberToFreeze.name) }} ({{ formatMemberRelation(selectedMemberToFreeze.relation) }})
+            </span>
+            <span class="text-[11px] text-slate-500 font-mono">{{ selectedMemberToFreeze.nationalId }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+                {{ $t('admin.selectFreezeReason') || '官方冻结原因 (参考解冻法定分类)' }} <span class="text-rose-500">*</span>
+              </label>
+              <el-select v-model="freezeForm.reasonType" class="w-full" size="small">
+                <el-option :label="$t('unfreeze.caseCommercial') || '商业 (拥有商业注册/执照)'" value="商业" />
+                <el-option :label="$t('unfreeze.caseTravel') || '旅行 (出国或长期境外滞留)'" value="旅行" />
+                <el-option :label="$t('unfreeze.caseHighIncome') || '高收入 (月收入超保供救济上限)'" value="高收入" />
+                <el-option :label="$t('unfreeze.caseUnknownAddress') || '住址不明 (户籍居住地址核验失联)'" value="住址不明" />
+                <el-option :label="$t('unfreeze.caseUpdate') || '更新 (户籍核心资料待更新)'" value="更新" />
+                <el-option :label="$t('unfreeze.caseDuplicate') || '重复 (存在跨省/跨卡重复申报)'" value="重复" />
+                <el-option :label="$t('unfreeze.caseTemporary') || '临时 (未按期完成人脸/生物识别年检)'" value="临时" />
+                <el-option :label="$t('unfreeze.caseGeoLocation') || '地理位置 (申领基站与归属分部不符)'" value="地理位置" />
+              </el-select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+                {{ $t('admin.freezeNotes') || '经办行政公文备注 (可选)' }}
+              </label>
+              <el-input
+                v-model="freezeForm.customReason"
+                :placeholder="$t('admin.freezeNotesPlaceholder') || '如: 第140号行政法令例行比对'"
+                size="small"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="selectedMemberToFreeze" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+            <span>当前选中成员【{{ formatMemberName(selectedMemberToFreeze.name) }}】目前为已冻结状态 (原因: {{ formatFreezeReason(selectedMemberToFreeze.freezeReason) }})</span>
+          </div>
+          <el-button type="success" size="small" :loading="freezeLoading" @click="handleDirectUnfreeze(selectedMemberToFreeze)">
+            {{ $t('admin.unfreezeCard') || '立即解除冻结' }}
+          </el-button>
         </div>
       </div>
+
       <template #footer>
-        <el-button @click="quotaDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="quotaSaving" @click="saveQuotaChange">确认保存定额</el-button>
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] text-slate-400">
+            {{ $t('admin.freezeAuditNotice') || '操作将记录于贸易部审计日志并实时推送至公民移动端' }}
+          </div>
+          <div class="flex items-center gap-2">
+            <el-button size="small" @click="memberFreezeDialogVisible = false">{{ $t('common.cancel') || '关闭' }}</el-button>
+            <el-button
+              v-if="selectedMemberToFreeze && (selectedMemberToFreeze.status === '正常' || selectedMemberToFreeze.status === 'Active')"
+              type="danger"
+              size="small"
+              :loading="freezeLoading"
+              @click="handleConfirmFreezeMember"
+            >
+              {{ $t('admin.confirmFreezeBtn') || '确认执行冻结' }}
+            </el-button>
+          </div>
+        </div>
       </template>
     </el-dialog>
 
@@ -1179,6 +1343,139 @@ function formatCardStatus(status) {
   return status;
 }
 
+function formatFreezeReason(reason) {
+  if (!reason) return '—';
+  if (isEn.value) {
+    const map = {
+      '商业': 'Commercial Activity',
+      '旅行': 'Overseas Travel',
+      '高收入': 'High Income Threshold',
+      '住址不明': 'Unknown Residence Address',
+      '更新': 'Civil Registry Update Required',
+      '重复': 'Duplicate Registration',
+      '临时': 'Temporary Biometric Audit',
+      '地理位置': 'Geographic Discrepancy'
+    };
+    return map[reason] || reason;
+  }
+  return reason;
+}
+
+// ----------------------------------------------------
+// 家庭成员纳保与冻结状态管控状态与方法
+// ----------------------------------------------------
+const memberFreezeDialogVisible = ref(false);
+const selectedCardForFreeze = ref(null);
+const selectedMemberToFreeze = ref(null);
+const freezeLoading = ref(false);
+const freezeForm = reactive({
+  reasonType: '商业',
+  customReason: ''
+});
+
+function openMemberFreezeDialog(row) {
+  selectedCardForFreeze.value = row;
+  const targetMembers = getFreezeTargetMembers();
+  const firstActive = targetMembers.find(m => m.status === '正常' || m.status === 'Active');
+  selectedMemberToFreeze.value = firstActive || targetMembers[0] || null;
+  freezeForm.reasonType = '商业';
+  freezeForm.customReason = '';
+  memberFreezeDialogVisible.value = true;
+}
+
+function openMemberFreezeDialogFromMember(memberRow) {
+  const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
+  selectedCardForFreeze.value = currentCard;
+  selectedMemberToFreeze.value = memberRow;
+  freezeForm.reasonType = memberRow.freezeReason || '商业';
+  freezeForm.customReason = '';
+  memberFreezeDialogVisible.value = true;
+}
+
+function getFreezeTargetMembers() {
+  if (!selectedCardForFreeze.value) return [];
+  const cardNo = selectedCardForFreeze.value.cardNo;
+  const matchedCard = cardsList.value.find(c => c.cardNo === cardNo);
+  const matchedFam = familiesList.value.find(f => f.cardNo === cardNo || f.familyCode === selectedCardForFreeze.value.familyCode);
+  if (matchedCard && matchedCard.members && matchedCard.members.length > 0) {
+    return matchedCard.members;
+  }
+  if (matchedFam && matchedFam.members && matchedFam.members.length > 0) {
+    return matchedFam.members;
+  }
+  if (selectedCardForFreeze.value.members && selectedCardForFreeze.value.members.length > 0) {
+    return selectedCardForFreeze.value.members;
+  }
+  return [];
+}
+
+function handleSelectMemberForFreeze(row) {
+  if (!row) return;
+  selectedMemberToFreeze.value = row;
+  if (row.freezeReason) {
+    freezeForm.reasonType = row.freezeReason;
+  }
+}
+
+async function handleConfirmFreezeMember() {
+  if (!selectedMemberToFreeze.value) {
+    ElMessage.warning('请选择需要冻结的家庭成员');
+    return;
+  }
+  const member = selectedMemberToFreeze.value;
+  const targetReason = freezeForm.customReason ? `${freezeForm.reasonType} (${freezeForm.customReason})` : freezeForm.reasonType;
+
+  freezeLoading.value = true;
+  try {
+    const payload = {
+      status: '已冻结',
+      freezeReason: targetReason,
+      freezeDate: new Date().toISOString().slice(0, 10)
+    };
+    await updateMemberInfo(member.id || member.nationalId, payload);
+    
+    // 同步本地对象
+    member.status = '已冻结';
+    member.freezeReason = targetReason;
+    member.freezeDate = payload.freezeDate;
+
+    // 重新拉取以确保各视图状态完全一致
+    await loadCards();
+    await loadFamilies();
+
+    ElMessage.success(`家庭成员【${formatMemberName(member.name)}】已成功执行资格冻结 (原因: ${formatFreezeReason(targetReason)})`);
+  } catch (e) {
+    ElMessage.error('冻结操作失败，请重试');
+  } finally {
+    freezeLoading.value = false;
+  }
+}
+
+async function handleDirectUnfreeze(member) {
+  freezeLoading.value = true;
+  try {
+    const payload = {
+      status: '正常',
+      freezeReason: '',
+      freezeDate: ''
+    };
+    await updateMemberInfo(member.id || member.nationalId, payload);
+
+    member.status = '正常';
+    member.freezeReason = '';
+    member.freezeDate = '';
+
+    await loadCards();
+    await loadFamilies();
+
+    ElMessage.success(`家庭成员【${formatMemberName(member.name)}】已解除冻结，恢复正常纳保！`);
+  } catch (e) {
+    ElMessage.error('解除冻结失败，请重试');
+  } finally {
+    freezeLoading.value = false;
+  }
+}
+
 const route = useRoute();
 import {
   getCitizenCards,
@@ -1208,6 +1505,7 @@ import {
   updateAdminWarehouse,
   deleteAdminWarehouse
 } from '../../api/admin.js';
+import { updateMemberInfo } from '../../api/citizen.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   Search,
@@ -1221,7 +1519,9 @@ import {
   RefreshRight,
   User,
   CreditCard,
-  UserFilled
+  UserFilled,
+  InfoFilled,
+  CircleCheckFilled
 } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
