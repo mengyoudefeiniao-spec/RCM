@@ -476,7 +476,7 @@
 
             <!-- 分页 -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-              <span>共 {{ filteredAgents.length }} 笔记录</span>
+              <span>{{ $t('admin.totalRecords', { count: filteredAgents.length }) }}</span>
               <el-pagination
                 v-model:current-page="agentPage"
                 v-model:page-size="agentPageSize"
@@ -530,25 +530,25 @@
 
               <div>
                 <el-button type="primary" size="small" :icon="Plus" @click="openCreateWarehouseDialog">
-                  新建储备仓库
+                  {{ $t('admin.createWarehouse') || '新建储备仓库' }}
                 </el-button>
               </div>
             </div>
 
             <!-- 仓储中心表格 (自适应占比优化) -->
             <el-table :data="paginatedWarehouses" v-loading="warehousesLoading" border stripe style="width: 100%" size="small" class="text-xs">
-              <el-table-column prop="code" label="仓库编号" width="130" fixed>
+              <el-table-column prop="code" :label="$t('admin.warehouseCode') || '仓库编号'" width="130" fixed>
                 <template #default="{ row }">
                   <span class="font-mono font-bold text-teal-700">{{ row.code }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="name" label="储备仓库名称" min-width="260">
+              <el-table-column prop="name" :label="$t('admin.warehouseName') || '储备仓库名称'" min-width="260">
                 <template #default="{ row }">
                   <div class="font-bold text-slate-800">{{ row.name }}</div>
                   <div class="text-[11px] text-slate-400">{{ row.province }} · {{ row.center }}</div>
                 </template>
               </el-table-column>
-              <el-table-column prop="type" label="仓库功能类型" width="130" align="center">
+              <el-table-column prop="type" :label="$t('admin.warehouseType') || '仓库功能类型'" width="130" align="center">
                 <template #default="{ row }">
                   <el-tag size="small" :type="row.type.includes('总仓') ? 'danger' : row.type.includes('中心') ? 'primary' : 'success'" effect="plain">
                     {{ row.type }}
@@ -572,24 +572,24 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column label="负责人" min-width="160">
+              <el-table-column :label="$t('admin.manager') || '负责人'" min-width="160">
                 <template #default="{ row }">
                   <div class="font-medium text-slate-700">{{ row.manager }}</div>
                   <div class="text-[10px] text-slate-400 font-mono">{{ row.phone }}</div>
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="运营状态" width="110" align="center">
+              <el-table-column prop="status" :label="$t('admin.opStatus') || '运营状态'" width="110" align="center">
                 <template #default="{ row }">
                   <el-tag size="small" :type="row.status === '正常运转' ? 'success' : 'warning'">
                     {{ row.status }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="160" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="160" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="primary" plain @click="openEditWarehouseDialog(row)">编辑</el-button>
-                    <el-button size="small" type="danger" plain @click="handleDeleteWarehouse(row)">删除</el-button>
+                    <el-button size="small" type="primary" plain @click="openEditWarehouseDialog(row)">{{ $t('common.edit') || '编辑' }}</el-button>
+                    <el-button size="small" type="danger" plain @click="handleDeleteWarehouse(row)">{{ $t('common.delete') || '删除' }}</el-button>
                   </div>
                 </template>
               </el-table-column>
