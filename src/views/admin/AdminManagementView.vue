@@ -17,7 +17,7 @@
         <template #extra>
           <div class="flex items-center gap-2">
             <el-tag size="small" type="primary" effect="dark" class="font-bold">
-              {{ authStore.userProfile?.title || '系统总监' }}
+              {{ currentRoleTitle }}
             </el-tag>
             <el-button
               size="small"
@@ -81,9 +81,9 @@
                 <!-- 状态筛选 -->
                 <el-select v-model="cardQuery.status" :placeholder="$t('admin.statusPlaceholder') || '状态'" style="width: 110px" size="small" @change="handleCardSearch">
                   <el-option :label="$t('admin.allStatuses') || '全部状态'" value="全部" />
-                  <el-option :label="isEn ? 'Normal' : '正常'" value="正常" />
-                  <el-option :label="isEn ? 'Frozen' : '已冻结'" value="已冻结" />
-                  <el-option :label="isEn ? 'Reviewing' : '审核中'" value="审核中" />
+                  <el-option :label="$t('admin.statusNormal') || '正常'" value="正常" />
+                  <el-option :label="$t('admin.statusFrozen') || '已冻结'" value="已冻结" />
+                  <el-option :label="$t('admin.statusReviewing') || '审核中'" value="审核中" />
                 </el-select>
 
                 <el-button type="primary" size="small" :icon="Search" @click="handleCardSearch">{{ $t('admin.searchQuery') || '查询' }}</el-button>
@@ -91,7 +91,7 @@
               </div>
 
               <div class="text-xs text-slate-500 font-mono">
-                {{ isEn ? `Matched ${filteredCards.length} cards` : `匹配 ${filteredCards.length} 张卡` }}
+                {{ $t('admin.matchCards', { count: filteredCards.length }) }}
               </div>
             </div>
 
@@ -108,46 +108,47 @@
                   <div class="text-[11px] text-slate-400 font-mono">{{ row.nationalId }}</div>
                 </template>
               </el-table-column>
-              <el-table-column label="所属行政省市/基层区" min-width="220">
+              <el-table-column :label="$t('admin.regionInfo') || '所属行政省市/基层区'" min-width="220">
                 <template #default="{ row }">
                   <div class="text-xs text-slate-700 font-medium">{{ row.province }}</div>
                   <div class="text-[11px] text-slate-400">{{ row.district }}</div>
                 </template>
               </el-table-column>
-              <el-table-column prop="memberCount" label="人口" width="80" align="center">
+              <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="80" align="center">
                 <template #default="{ row }">
-                  <span class="font-bold font-mono">{{ row.memberCount }}</span> 人
+                  <span class="font-bold font-mono">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
                 </template>
               </el-table-column>
-              <el-table-column label="本月配额外核" min-width="260">
+              <el-table-column :label="$t('admin.monthlyQuotaAudit') || '本月配额外核'" min-width="260">
                 <template #default="{ row }">
                   <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
-                    <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">面粉: {{ row.quotas.flour }}kg</span>
-                    <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">大米: {{ row.quotas.rice }}kg</span>
-                    <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">油: {{ row.quotas.oil }}L</span>
+                    <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: {{ row.quotas?.flour ?? 0 }}kg</span>
+                    <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: {{ row.quotas?.rice ?? 0 }}kg</span>
+                    <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: {{ row.quotas?.oil ?? 0 }}L</span>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100" align="center">
+              <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
                 <template #default="{ row }">
-                  <el-tag v-if="row.status === '正常'" type="success" size="small">正常</el-tag>
-                  <el-tag v-else-if="row.status === '已冻结'" type="danger" size="small">已冻结</el-tag>
-                  <el-tag v-else type="warning" size="small">{{ row.status }}</el-tag>
+                  <el-tag v-if="row.status === '正常'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                  <el-tag v-else-if="row.status === '已冻结'" type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                  <el-tag v-else-if="row.status === '审核中'" type="warning" size="small">{{ formatCardStatus('审核中') }}</el-tag>
+                  <el-tag v-else type="warning" size="small">{{ formatCardStatus(row.status) }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="230" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="230" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="primary" plain @click="openQuotaDialog(row)">调额</el-button>
+                    <el-button size="small" type="primary" plain @click="openQuotaDialog(row)">{{ $t('admin.adjustQuota') || '调额' }}</el-button>
                     <el-button
                       size="small"
                       :type="row.status === '已冻结' ? 'success' : 'danger'"
                       plain
                       @click="handleToggleCardStatus(row)"
                     >
-                      {{ row.status === '已冻结' ? '解冻' : '冻结' }}
+                      {{ row.status === '已冻结' ? ($t('admin.unfreezeCard') || '解冻') : ($t('admin.freezeCard') || '冻结') }}
                     </el-button>
-                    <el-button size="small" type="info" plain @click="handleReissueCard(row)">换发</el-button>
+                    <el-button size="small" type="info" plain @click="handleReissueCard(row)">{{ $t('admin.reissue') || '换发' }}</el-button>
                   </div>
                 </template>
               </el-table-column>
@@ -155,7 +156,7 @@
 
             <!-- 分页 -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-              <span>共 {{ filteredCards.length }} 笔记录</span>
+              <span>{{ $t('admin.totalRecords', { count: filteredCards.length }) }}</span>
               <el-pagination
                 v-model:current-page="cardPage"
                 v-model:page-size="cardPageSize"
@@ -857,6 +858,33 @@ import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
+
+const currentRoleTitle = computed(() => {
+  switch (authStore.currentRole) {
+    case 'minister_center':
+      return t('roles.ministerCenter') || t('admin.ministerCenter') || 'Minister of Ration Centers';
+    case 'deputy_minister':
+      return t('roles.deputyMinister') || t('admin.deputyMinister') || 'Deputy Minister';
+    case 'directorPlanning':
+    case 'director_planning':
+      return t('roles.directorPlanning') || t('admin.directorPlanning') || 'Director General';
+    case 'admin':
+      return t('roles.admin') || 'System Administrator';
+    default:
+      if (authStore.userProfile?.title === '配给中心部长') return t('roles.ministerCenter') || t('admin.ministerCenter');
+      if (authStore.userProfile?.title === '行政次长') return t('roles.deputyMinister') || t('admin.deputyMinister');
+      if (authStore.userProfile?.title === '规划与跟进司总干事') return t('roles.directorPlanning') || t('admin.directorPlanning');
+      return authStore.userProfile?.title || t('admin.systemDirector') || 'System Director';
+  }
+});
+
+function formatCardStatus(status) {
+  if (status === '正常') return t('admin.statusNormal') || (isEn.value ? 'Normal' : '正常');
+  if (status === '已冻结') return t('admin.statusFrozen') || (isEn.value ? 'Frozen' : '已冻结');
+  if (status === '审核中') return t('admin.statusReviewing') || (isEn.value ? 'Under Review' : '审核中');
+  return status;
+}
+
 const route = useRoute();
 import {
   getCitizenCards,
