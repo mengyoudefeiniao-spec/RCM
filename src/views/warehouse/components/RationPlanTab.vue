@@ -162,7 +162,8 @@
               <el-icon class="mr-1"><ShoppingCart /></el-icon>
               {{ $t('warehouse.buyThisMonthRation') || '立即选购本月配给品' }}
             </el-button>
-            <el-button type="warning" plain size="small" class="font-bold" @click="$router.push('/citizen')">
+            <el-button type="warning" plain size="small" class="font-bold shadow-xs" @click="openRationCardModal">
+              <el-icon class="mr-1"><Tickets /></el-icon>
               {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
             </el-button>
           </div>
@@ -861,11 +862,200 @@
         </div>
       </div>
     </el-drawer>
+
+    <!-- ======================================================== -->
+    <!-- 3. 公民出示电子配给卡与核验二维码弹窗 (Google Pixel 9 适配) -->
+    <!-- ======================================================== -->
+    <el-dialog
+      v-model="cardModalVisible"
+      :title="null"
+      :width="isAppMode ? 'min(92vw, 386px)' : '420px'"
+      align-center
+      class="citizen-card-verify-dialog"
+      :show-close="true"
+      @closed="handleCardModalClosed"
+    >
+      <div class="space-y-4 p-1">
+        <!-- 弹窗顶栏 -->
+        <div class="flex items-center justify-between pb-2 border-b border-[#ECE7DE]">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center text-xs">
+              <el-icon><Tickets /></el-icon>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-[#18231E]">法定电子配给卡档案凭证</div>
+              <div class="text-[10px] text-[#8C958F]">供代销网点专员现场终端扫描核验</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
+            <span>档案在册</span>
+          </span>
+        </div>
+
+        <!-- 1. 典雅电子配给卡主体 (严格参考 app 公民视口 公民服务 页面最上面的配给卡风格) -->
+        <div
+          class="relative overflow-hidden rounded-2xl p-4 text-white bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142C25] shadow-md border border-[#C59D5F]/35 select-none"
+        >
+          <!-- 金色装饰弧线纹理 -->
+          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-[#C59D5F]/20 pointer-events-none"></div>
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full border border-[#C59D5F]/15 pointer-events-none"></div>
+
+          <div class="relative z-10 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/10">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span>
+                <span class="text-[11px] font-semibold text-[#D4AA6A] tracking-wider uppercase">
+                  {{ $t('citizenCard.cardTitle') || '伊拉克共和国贸易部 · 电子配给卡' }}
+                </span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C59D5F]/20 text-[#D4AA6A] border border-[#C59D5F]/40">
+                {{ citizenFamilyInfo?.status || $t('citizenCard.statusActive') || '正常在册' }}
+              </span>
+            </div>
+
+            <div class="space-y-0.5">
+              <span class="text-[9px] text-white/60 tracking-wider uppercase">
+                {{ $t('citizenCard.rationCardNoLabel') || '国家统一电子配给卡编码' }}
+              </span>
+              <div class="text-lg font-extrabold tracking-widest font-mono text-[#FAF7F2]">
+                {{ citizenFamilyInfo?.rationCardNo || 'RC-10029381' }}
+              </div>
+              <div class="text-[10px] text-[#C59D5F] font-mono">
+                {{ $t('citizenCard.linkedPaperBook') || '关联纸质配给卡本号' }}：{{ citizenFamilyInfo?.oldPaperCardNo || 'IQ-P-1994-082194' }}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
+              <div>
+                <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.legalHeadName') || '法定户主姓名' }}</span>
+                <span class="font-bold text-white text-xs">{{ citizenFamilyInfo?.headName || '艾哈迈德·哈桑' }}</span>
+                <span class="text-[10px] text-emerald-300 font-mono block">（全户在册 {{ memberCount }} 人）</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
+                <span class="text-[11px] text-[#E8D9BF] font-medium truncate block" :title="citizenFamilyInfo?.agentName">
+                  {{ citizenFamilyInfo?.agentName || '巴格达卡尔赫第一代销站' }}
+                </span>
+                <span class="text-[10px] text-white/50 font-mono">代码: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 可扫描验证配给卡的防伪动态二维码 -->
+        <div class="bg-[#FAF8F4] p-3 rounded-2xl border border-[#ECE7DE] text-center space-y-2.5">
+          <div class="flex items-center justify-between text-[11px] text-[#5E6862] px-1">
+            <span class="font-bold text-[#1E3F35] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
+              <span>现场扫码验证凭证</span>
+            </span>
+            <span class="font-mono text-[10px] text-[#C59D5F] bg-[#FAF5ED] px-2 py-0.5 rounded-full border border-[#E8D9BF]">
+              动态防伪中
+            </span>
+          </div>
+
+          <!-- 高保真防伪二维码容器 -->
+          <div class="relative w-48 h-48 mx-auto p-2.5 rounded-2xl bg-white border-2 border-[#1E3F35] shadow-md flex flex-col items-center justify-center overflow-hidden">
+            <!-- 动态扫描光束 -->
+            <div class="absolute inset-x-2 h-0.5 bg-[#C59D5F] shadow-[0_0_12px_#C59D5F] animate-scan-card-qr z-20"></div>
+
+            <!-- SVG 矢量精细二维码 -->
+            <svg viewBox="0 0 200 200" class="w-full h-full text-[#1E3F35]" fill="currentColor">
+              <rect width="200" height="200" fill="#ffffff" />
+              <!-- 三个定位角标 -->
+              <rect x="14" y="14" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="22" y="22" width="30" height="30" fill="#ffffff" rx="4" />
+              <rect x="28" y="28" width="18" height="18" fill="#1E3F35" rx="2" />
+              <rect x="140" y="14" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="148" y="22" width="30" height="30" fill="#ffffff" rx="4" />
+              <rect x="154" y="28" width="18" height="18" fill="#1E3F35" rx="2" />
+              <rect x="14" y="140" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="22" y="148" width="30" height="30" fill="#ffffff" rx="4" />
+              <rect x="28" y="154" width="18" height="18" fill="#1E3F35" rx="2" />
+              <!-- 数据伪码点阵 -->
+              <rect x="74" y="18" width="12" height="12" />
+              <rect x="94" y="18" width="12" height="12" />
+              <rect x="114" y="18" width="12" height="12" />
+              <rect x="74" y="38" width="12" height="12" />
+              <rect x="104" y="44" width="12" height="12" />
+              <rect x="18" y="74" width="12" height="12" />
+              <rect x="38" y="74" width="12" height="12" />
+              <rect x="58" y="74" width="12" height="12" />
+              <rect x="78" y="74" width="12" height="12" />
+              <rect x="98" y="74" width="12" height="12" />
+              <rect x="118" y="74" width="12" height="12" />
+              <rect x="138" y="74" width="12" height="12" />
+              <rect x="158" y="74" width="12" height="12" />
+              <rect x="18" y="94" width="12" height="12" />
+              <rect x="44" y="104" width="12" height="12" />
+              <rect x="74" y="100" width="12" height="12" />
+              <rect x="114" y="94" width="12" height="12" />
+              <rect x="144" y="104" width="12" height="12" />
+              <rect x="164" y="94" width="12" height="12" />
+              <rect x="24" y="118" width="12" height="12" />
+              <rect x="64" y="118" width="12" height="12" />
+              <rect x="84" y="118" width="12" height="12" />
+              <rect x="124" y="118" width="12" height="12" />
+              <rect x="154" y="118" width="12" height="12" />
+              <rect x="74" y="144" width="12" height="12" />
+              <rect x="104" y="144" width="12" height="12" />
+              <rect x="134" y="144" width="12" height="12" />
+              <rect x="164" y="144" width="12" height="12" />
+              <rect x="74" y="164" width="12" height="12" />
+              <rect x="94" y="164" width="12" height="12" />
+              <rect x="124" y="164" width="12" height="12" />
+              <rect x="154" y="164" width="12" height="12" />
+              <!-- 中心徽章 -->
+              <rect x="80" y="80" width="40" height="40" fill="#1E3F35" rx="8" />
+              <rect x="84" y="84" width="32" height="32" fill="#C59D5F" rx="6" />
+              <text x="100" y="104" font-size="11" font-weight="900" fill="#1E3F35" text-anchor="middle" font-family="monospace">RCM</text>
+            </svg>
+
+            <!-- 动态时间戳水印 -->
+            <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#5E6862] bg-white/95 py-0.5 rounded border border-[#ECE7DE]">
+              {{ liveCardClock }}
+            </div>
+          </div>
+
+          <!-- 动态验证密文与刷新控制 -->
+          <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-xl border border-[#ECE7DE]">
+            <div class="text-left font-mono">
+              <span class="text-[10px] text-[#8C958F] block">防伪安全校验密文：</span>
+              <span class="font-bold text-[#1E3F35] text-[11px]">{{ dynamicCardCode }}</span>
+            </div>
+            <button
+              type="button"
+              class="text-[11px] text-[#C59D5F] hover:text-[#1E3F35] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              @click="refreshDynamicCode"
+            >
+              <el-icon><Refresh /></el-icon>
+              <span>刷新密文</span>
+            </button>
+          </div>
+
+          <div class="text-[10px] text-[#8C958F] leading-tight">
+            请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放
+          </div>
+        </div>
+
+        <!-- 底部完成按钮 -->
+        <el-button
+          type="primary"
+          class="w-full font-bold shadow-xs !rounded-xl"
+          style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+          @click="cardModalVisible = false"
+        >
+          完成出示 / 关闭
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../../stores/auth.js';
 import { useCitizenStore } from '../../../stores/citizen.js';
 import {
@@ -876,17 +1066,60 @@ import {
 } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart } from '@element-plus/icons-vue';
+import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['go-purchase']);
 
+const route = useRoute();
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 const authStore = useAuthStore();
 const citizenStore = useCitizenStore();
 
+// 自动检测是否处于 APP 视口模式 (优先检查 query，兼容会话记忆)
+const isAppMode = computed(() => {
+  if (route?.query?.layout === 'app') return true;
+  if (route?.query?.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
+
 const isAdmin = computed(() => authStore.isAdmin);
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
+
+// 公民电子配给卡弹窗与动态防伪凭证
+const cardModalVisible = ref(false);
+const liveCardClock = ref('');
+let cardClockTimer = null;
+const dynamicCardCode = ref('');
+
+function openRationCardModal() {
+  refreshDynamicCode();
+  cardModalVisible.value = true;
+  startCardClock();
+}
+
+function handleCardModalClosed() {
+  if (cardClockTimer) {
+    clearInterval(cardClockTimer);
+    cardClockTimer = null;
+  }
+}
+
+function refreshDynamicCode() {
+  const stamp = Date.now().toString().slice(-4);
+  const cardPart = (citizenFamilyInfo.value?.rationCardNo || 'RC-10029381').replace('RC-', '');
+  dynamicCardCode.value = `VERIFY-${cardPart}-${stamp}`;
+}
+
+function startCardClock() {
+  if (cardClockTimer) clearInterval(cardClockTimer);
+  const updateTime = () => {
+    const now = new Date();
+    liveCardClock.value = now.toTimeString().split(' ')[0] + '.' + Math.floor(now.getMilliseconds() / 100);
+  };
+  updateTime();
+  cardClockTimer = setInterval(updateTime, 100);
+}
 
 const plans = ref([]);
 const tasks = ref([]);
@@ -1146,10 +1379,47 @@ defineExpose({
 onMounted(() => {
   loadData();
 });
+
+onBeforeUnmount(() => {
+  if (cardClockTimer) {
+    clearInterval(cardClockTimer);
+    cardClockTimer = null;
+  }
+});
 </script>
 
 <style scoped>
 :deep(.el-table .cell) {
   padding: 6px 8px;
+}
+
+@keyframes scanCardQrAnimation {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+.animate-scan-card-qr {
+  animation: scanCardQrAnimation 2s ease-in-out infinite;
+}
+
+:deep(.citizen-card-verify-dialog) {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+:deep(.citizen-card-verify-dialog .el-dialog__body) {
+  padding: 12px 14px 16px !important;
+  max-height: 86vh;
+  overflow-y: auto;
 }
 </style>

@@ -2,15 +2,15 @@
   <el-dialog
     :model-value="modelValue"
     :title="null"
-    width="540px"
+    :width="dialogWidth"
     align-center
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="paymentStatus !== 'processing'"
-    class="electronic-payment-dialog"
+    :class="['electronic-payment-dialog', { 'electronic-payment-dialog--app': isAppMode }]"
     @update:model-value="(val) => $emit('update:modelValue', val)"
   >
-    <div class="p-2 sm:p-4 space-y-4">
+    <div :class="['space-y-3.5', isAppMode ? 'p-1' : 'p-2 sm:p-4 space-y-4']">
       <!-- 顶部：国家财政与中央银行安全网关标识 -->
       <div class="flex items-center justify-between border-b border-[#ECE7DE] pb-3">
         <div class="flex items-center gap-2.5">
@@ -374,6 +374,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import {
   CreditCard,
@@ -384,6 +385,20 @@ import {
   CircleCheckFilled,
   Loading
 } from '@element-plus/icons-vue';
+
+const route = useRoute();
+
+// 自动检测是否处于 APP 视口模式 (优先检查 query，兼容会话记忆)
+const isAppMode = computed(() => {
+  if (route?.query?.layout === 'app') return true;
+  if (route?.query?.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
+
+// 在 APP 视口下限制弹窗最大宽度为 392px (适配 Pixel 9 412px 视口，留出合理间距)
+const dialogWidth = computed(() => {
+  return isAppMode.value ? 'min(92vw, 392px)' : '540px';
+});
 
 const props = defineProps({
   modelValue: {
@@ -635,5 +650,24 @@ function handleCancel() {
 
 .animate-scan-face {
   animation: scanFaceAnimation 1.6s ease-in-out infinite;
+}
+
+:deep(.electronic-payment-dialog) {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+:deep(.electronic-payment-dialog--app) {
+  max-width: 396px !important;
+  width: min(92vw, 392px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  border-radius: 18px !important;
+}
+
+:deep(.electronic-payment-dialog--app .el-dialog__body) {
+  padding: 10px 14px 16px !important;
+  max-height: 84vh;
+  overflow-y: auto;
 }
 </style>

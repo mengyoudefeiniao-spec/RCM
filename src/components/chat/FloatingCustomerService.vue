@@ -1,5 +1,5 @@
 <template>
-  <div class="rcm-customer-service-root font-sans">
+  <div v-if="route.path !== '/portal'" class="rcm-customer-service-root font-sans">
     <!-- 1. 悬浮触发球 (Floating Action Button) - APP模式下严格放在 412px 手机视口区域内 -->
     <transition name="pop">
       <div
