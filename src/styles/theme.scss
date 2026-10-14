@@ -1,0 +1,179 @@
+/**
+ * ====================================================================
+ * RCM 企业级政务系统 - 现代中东高端政务主题视觉规范 (SCSS)
+ * 风格基调：沉稳深墨绿 (Deep Forest Green) + 暖砂金 (Sand Gold) + 温润暖米白
+ * ====================================================================
+ */
+
+// 1. 核心调色板 SCSS 变量
+$rcm-primary: #1E3F35;          // 主品牌色：深墨绿
+$rcm-primary-dark: #152E27;     // 深墨绿深色态 (Hover/Active)
+$rcm-primary-light-3: #4A6E64;  // 浅墨绿
+$rcm-primary-light-7: #9EB6AE;
+$rcm-primary-light-9: #EAF1EE;  // 极浅墨绿背景
+
+$rcm-gold: #C59D5F;             // 辅助强调色：暖砂金/麦芽金
+$rcm-gold-dark: #AA8246;        // 深砂金
+$rcm-gold-light: #FAF5ED;       // 极浅砂金底色
+$rcm-gold-border: #E8D9BF;      // 砂金微边框
+
+$rcm-canvas: #F8F7F3;           // 画布底色：温润暖米白 (拒绝刺眼冷白)
+$rcm-surface: #FFFFFF;          // 容器底色：纯白
+$rcm-border: #ECE7DE;           // 极细微暖边框
+$rcm-border-light: #F4F1EA;
+
+$rcm-text-title: #18231E;       // 标题与核心高频数字
+$rcm-text-regular: #5E6862;     // 正文标签
+$rcm-text-secondary: #8C958F;   // 辅助次级字
+$rcm-text-muted: #B4BCB7;
+
+$rcm-badge-pink-bg: #FEECEC;    // 滞后告警胶囊：柔和淡粉底
+$rcm-badge-pink-text: #D34545;  // 砖红文字
+$rcm-badge-gold-bg: #FAF3E6;    // 待办/待收胶囊：浅砂金底
+$rcm-badge-gold-text: #966C2E;
+
+$rcm-radius-card: 16px;         // 卡片大圆角
+$rcm-radius-btn: 8px;           // 按钮微圆角
+$rcm-radius-pill: 9999px;       // 胶囊全圆角
+
+// 2. Element Plus CSS 变量全景覆盖注入
+:root {
+  // 主色 (Primary) -> 沉稳深墨绿
+  --el-color-primary: #{$rcm-primary};
+  --el-color-primary-light-3: #{$rcm-primary-light-3};
+  --el-color-primary-light-5: #6F8E84;
+  --el-color-primary-light-7: #{$rcm-primary-light-7};
+  --el-color-primary-light-8: #C8D7D2;
+  --el-color-primary-light-9: #{$rcm-primary-light-9};
+  --el-color-primary-dark-2: #{$rcm-primary-dark};
+
+  // 告警/警告色 (Warning) -> 暖砂金
+  --el-color-warning: #{$rcm-gold};
+  --el-color-warning-light-3: #D4B27E;
+  --el-color-warning-light-5: #E2C79F;
+  --el-color-warning-light-7: #EFE0C7;
+  --el-color-warning-light-9: #{$rcm-gold-light};
+  --el-color-warning-dark-2: #{$rcm-gold-dark};
+
+  // 危险/驳回/严重色 (Danger) -> 砖红与粉红
+  --el-color-danger: #D34545;
+  --el-color-danger-light-9: #{$rcm-badge-pink-bg};
+
+  // 成功色 (Success) -> 柔和橄榄绿
+  --el-color-success: #2C6E49;
+  --el-color-success-light-9: #EDF6F1;
+
+  // 画布与卡片背景
+  --el-bg-color-page: #{$rcm-canvas};
+  --el-bg-color: #{$rcm-surface};
+  --el-bg-color-overlay: #{$rcm-surface};
+
+  // 边框体系
+  --el-border-color: #{$rcm-border};
+  --el-border-color-light: #{$rcm-border-light};
+  --el-border-color-lighter: #F8F6F1;
+  --el-border-color-extra-light: #FCFBF8;
+
+  // 文本色彩阶梯
+  --el-text-color-primary: #{$rcm-text-title};
+  --el-text-color-regular: #{$rcm-text-regular};
+  --el-text-color-secondary: #{$rcm-text-secondary};
+  --el-text-color-placeholder: #{$rcm-text-muted};
+
+  // 圆角体系
+  --el-border-radius-base: #{$rcm-radius-btn};
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: #{$rcm-radius-pill};
+  --el-card-border-radius: #{$rcm-radius-card};
+
+  // 自定义高端阴影体系 (大扩散柔和微暖阴影)
+  --rcm-shadow-card: 0 4px 20px -2px rgba(60, 48, 25, 0.04), 0 2px 6px -1px rgba(60, 48, 25, 0.02);
+  --rcm-shadow-card-hover: 0 12px 28px -4px rgba(30, 63, 53, 0.08), 0 4px 10px -2px rgba(30, 63, 53, 0.04);
+  --rcm-shadow-dropdown: 0 10px 30px -4px rgba(30, 40, 35, 0.10);
+}
+
+// 3. 全局组件细粒度质感升级
+body {
+  background-color: var(--el-bg-color-page) !important;
+  color: var(--el-text-color-primary);
+  letter-spacing: -0.01em;
+}
+
+// Element Plus Card 容器增强
+.el-card {
+  border: 1px solid var(--el-border-color) !important;
+  border-radius: var(--el-card-border-radius) !important;
+  background-color: var(--el-bg-color) !important;
+  box-shadow: var(--rcm-shadow-card) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// Element Plus Button 交互质感
+.el-button {
+  font-weight: 600;
+  border-radius: var(--el-border-radius-base);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &--primary {
+    background-color: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary) !important;
+    color: #FFFFFF !important;
+
+    &:hover, &:focus {
+      background-color: var(--el-color-primary-light-3) !important;
+      border-color: var(--el-color-primary-light-3) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(30, 63, 53, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// 状态微型胶囊 (Tag) 规范
+.el-tag {
+  font-weight: 600;
+  border-radius: 6px;
+
+  &--danger.el-tag--light {
+    background-color: $rcm-badge-pink-bg !important;
+    border-color: #FBD7D7 !important;
+    color: $rcm-badge-pink-text !important;
+  }
+
+  &--warning.el-tag--light {
+    background-color: $rcm-badge-gold-bg !important;
+    border-color: $rcm-gold-border !important;
+    color: $rcm-badge-gold-text !important;
+  }
+
+  &--primary.el-tag--light {
+    background-color: $rcm-primary-light-9 !important;
+    border-color: #C8D7D2 !important;
+    color: $rcm-primary !important;
+  }
+}
+
+// 线性图标浅砂金方圆容器类 (.rcm-icon-box)
+.rcm-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: $rcm-gold-light;
+  border: 1px solid rgba(197, 157, 95, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $rcm-gold;
+  flex-shrink: 0;
+
+  &--primary {
+    background-color: $rcm-primary-light-9;
+    border-color: rgba(30, 63, 53, 0.2);
+    color: $rcm-primary;
+  }
+}
+
+

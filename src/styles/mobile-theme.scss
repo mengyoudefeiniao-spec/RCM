@@ -1,0 +1,197 @@
+/**
+ * ====================================================================
+ * RCM 企业级政务系统 - 移动端专属主题视觉规范 (SCSS)
+ * 深度适配 Google Pixel 9 (6.3英寸，CSS 视口尺寸 412 × 924 px)
+ * 对标“现代沙特/中东高端政务”质感设计
+ * ====================================================================
+ */
+
+// 1. 移动端核心设计令牌 (Design Tokens)
+$rcm-mobile-primary: #1E3F35;          // 主品牌色：深墨绿 (用于标题、激活态 Tab、核心大数字)
+$rcm-mobile-primary-dark: #142B24;     // 深墨绿按压态
+$rcm-mobile-primary-soft: #275A3E;     // 柔和墨绿 (胶囊文字等)
+
+$rcm-mobile-cta: #D3A757;              // 核心行动色 (CTA)：暖砂金 (用于全宽扫码核销主按钮)
+$rcm-mobile-cta-hover: #C59846;        // 砂金按压态
+$rcm-mobile-cta-light: #F7EEDB;        // 浅砂金底色
+$rcm-mobile-cta-border: #E5C888;       // 砂金描边
+
+$rcm-mobile-canvas: #F7F6F1;           // 页面背景：温润暖米白 (拒绝刺眼冷白)
+$rcm-mobile-card-summary: #EBF3EE;     // 顶部汇总卡微底色：淡灰绿
+$rcm-mobile-card-summary-border: #D6E6DC; // 顶部汇总卡细描边
+
+$rcm-mobile-card-surface: #FFFFFF;     // 列表与常规卡片：纯白
+$rcm-mobile-card-border: #EFECE6;      // 列表卡片暖灰细描边
+$rcm-mobile-card-border-focus: #DFD9CC;
+
+// 状态胶囊标签色系 (Pill Badges)
+$rcm-badge-green-bg: #E4F2E9;          // 正常/平衡：淡薄荷绿底
+$rcm-badge-green-text: #275A3E;        // 墨绿文字
+$rcm-badge-green-dot: #2D8B57;         // 绿色小圆点
+
+$rcm-badge-pink-bg: #FDE8E8;           // 异常/差异：低饱和淡粉底
+$rcm-badge-pink-text: #D04343;         // 砖红文字
+$rcm-badge-pink-dot: #DC3545;          // 红色小圆点
+
+// 圆角与尺寸阶梯
+$rcm-mobile-radius-card: 14px;         // 卡片统一圆角 12px - 14px
+$rcm-mobile-radius-cta: 14px;          // 主按钮圆角
+$rcm-mobile-radius-pill: 9999px;       // 胶囊徽章全圆角
+$rcm-mobile-padding-x: 16px;          // 页面水平内边距 16px
+$rcm-mobile-gap-card: 12px;           // 列表与卡片间距 12px - 14px
+
+// 投影阶梯 (暖色大扩散柔和阴影)
+$rcm-mobile-shadow-card: 0 4px 16px -2px rgba(60, 48, 25, 0.04), 0 2px 6px -1px rgba(60, 48, 25, 0.02);
+$rcm-mobile-shadow-cta: 0 6px 20px -3px rgba(211, 167, 87, 0.35), 0 2px 6px -1px rgba(211, 167, 87, 0.2);
+$rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px rgba(60, 48, 25, 0.02);
+
+// 2. CSS 自定义变量声明注入
+:root {
+  --rcm-m-primary: #{$rcm-mobile-primary};
+  --rcm-m-primary-dark: #{$rcm-mobile-primary-dark};
+  --rcm-m-primary-soft: #{$rcm-mobile-primary-soft};
+  
+  --rcm-m-cta: #{$rcm-mobile-cta};
+  --rcm-m-cta-hover: #{$rcm-mobile-cta-hover};
+  --rcm-m-cta-light: #{$rcm-mobile-cta-light};
+  --rcm-m-cta-border: #{$rcm-mobile-cta-border};
+
+  --rcm-m-canvas: #{$rcm-mobile-canvas};
+  --rcm-m-card-summary: #{$rcm-mobile-card-summary};
+  --rcm-m-card-summary-border: #{$rcm-mobile-card-summary-border};
+  --rcm-m-card-surface: #{$rcm-mobile-card-surface};
+  --rcm-m-card-border: #{$rcm-mobile-card-border};
+
+  --rcm-m-shadow-card: #{$rcm-mobile-shadow-card};
+  --rcm-m-shadow-cta: #{$rcm-mobile-shadow-cta};
+  --rcm-m-shadow-navbar: #{$rcm-mobile-shadow-navbar};
+}
+
+// 3. 通用移动端样式与卡片工具类 Mixins / Classes
+.rcm-mobile-page {
+  background-color: var(--rcm-m-canvas);
+  min-height: 100vh;
+  padding-left: $rcm-mobile-padding-x;
+  padding-right: $rcm-mobile-padding-x;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #18231E;
+}
+
+// 顶部汇总统计卡
+.rcm-summary-card {
+  background-color: var(--rcm-m-card-summary);
+  border: 1px solid var(--rcm-m-card-summary-border);
+  border-radius: $rcm-mobile-radius-card;
+  padding: 16px 18px;
+  box-shadow: var(--rcm-m-shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+// 纯白通用列表与业务卡片
+.rcm-list-card {
+  background-color: var(--rcm-m-card-surface);
+  border: 1px solid var(--rcm-m-card-border);
+  border-radius: $rcm-mobile-radius-card;
+  padding: 16px;
+  box-shadow: var(--rcm-m-shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: $rcm-mobile-card-border-focus;
+  }
+}
+
+// 核心行动全宽砂金扫码按钮 (CTA)
+.rcm-btn-cta-gold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  border-radius: $rcm-mobile-radius-cta;
+  background: linear-gradient(135deg, #DEB365 0%, #D3A757 50%, #C49646 100%);
+  border: 1px solid var(--rcm-m-cta-border);
+  color: #1E3F35;
+  font-weight: 700;
+  font-size: 17px;
+  box-shadow: var(--rcm-m-shadow-cta);
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: filter 0.15s ease, transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.97);
+    filter: brightness(0.96);
+  }
+}
+
+// 状态胶囊标签规范 (Pill Badges)
+.rcm-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: $rcm-mobile-radius-pill;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  .rcm-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  // 正常/平衡状态
+  &.rcm-pill-success {
+    background-color: $rcm-badge-green-bg;
+    color: $rcm-badge-green-text;
+    border: 1px solid rgba(45, 139, 87, 0.15);
+
+    .rcm-badge-dot {
+      background-color: $rcm-badge-green-dot;
+    }
+  }
+
+  // 异常/差异告警状态
+  &.rcm-pill-danger {
+    background-color: $rcm-badge-pink-bg;
+    color: $rcm-badge-pink-text;
+    border: 1px solid rgba(220, 53, 69, 0.18);
+
+    .rcm-badge-dot {
+      background-color: $rcm-badge-pink-dot;
+      animation: rcmPulseDot 2s infinite ease-in-out;
+    }
+  }
+}
+
+// 小红点微呼吸动效
+@keyframes rcmPulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+// 固定底部导航栏规范
+.rcm-bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #FFFFFF;
+  border-top: 1px solid #ECE7DE;
+  box-shadow: var(--rcm-m-shadow-navbar);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+  padding-top: 8px;
+}

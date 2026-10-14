@@ -1,0 +1,174 @@
+<template>
+  <!-- 移动端底部原生级操作模块导航栏 (永远稳固在 APP 视口的最下方) -->
+  <nav
+    v-if="!authStore.isMobileVerificationActive"
+    class="w-full z-50 bg-[#1E3F35]/95 backdrop-blur-md border-t border-[#295447] px-2 py-1.5 flex items-center justify-around safe-area-bottom shadow-2xl transition-all duration-300 shrink-0"
+    :class="[
+      isAppMode
+        ? 'rounded-b-[24px]'
+        : 'fixed bottom-0 left-0 right-0 md:hidden'
+    ]"
+  >
+    <!-- ============================================== -->
+    <!-- 模式 A: 公民端专属功能模块 (仅公民可见) -->
+    <!-- ============================================== -->
+    <template v-if="authStore.currentRole === 'citizen'">
+      <!-- 1. 公民服务 (家庭配给卡与在册成员) -->
+      <router-link
+        :to="getNavTarget('/citizen')"
+        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] min-w-[70px] transition-all"
+        :class="$route.path.startsWith('/citizen') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="20"><User /></el-icon>
+        <span>{{ $t('nav.citizen') || '公民服务' }}</span>
+      </router-link>
+
+      <!-- 2. 配给选购 (配给购买与提货兑付) -->
+      <router-link
+        :to="getNavTarget('/warehouse')"
+        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] min-w-[70px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="20"><ShoppingCart /></el-icon>
+        <span>{{ $t('citizenPurchase.moduleTitle') || '配给选购' }}</span>
+      </router-link>
+    </template>
+
+    <!-- ============================================== -->
+    <!-- 模式 B: 代理端专属功能模块 (仅代理网点可见) -->
+    <!-- ============================================== -->
+    <template v-else-if="authStore.currentRole === 'agent'">
+      <!-- 1. 现场核销 (扫码核销作业看板) -->
+      <router-link
+        :to="getNavTarget('/dashboard')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/dashboard' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="20"><FullScreen /></el-icon>
+        <span>现场核销</span>
+      </router-link>
+
+      <!-- 2. 配给配送 (物资排程与计划) -->
+      <router-link
+        :to="getNavTarget('/warehouse')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="20"><Van /></el-icon>
+        <span>配给配送</span>
+      </router-link>
+
+      <!-- 3. 网点档案 (签约家庭与资质档案) -->
+      <router-link
+        :to="getNavTarget('/agent')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/agent' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="20"><Shop /></el-icon>
+        <span>网点档案</span>
+      </router-link>
+    </template>
+
+    <!-- ============================================== -->
+    <!-- 模式 C: 政府监督管理端功能模块 (仅管理角色可见) -->
+    <!-- ============================================== -->
+    <template v-else>
+      <!-- 1. 看板 -->
+      <router-link
+        :to="getNavTarget('/dashboard')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/dashboard' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><DataAnalysis /></el-icon>
+        <span>{{ $t('nav.dashboard') }}</span>
+      </router-link>
+
+      <!-- 2. 审核 -->
+      <router-link
+        :to="getNavTarget('/review')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] relative transition-all"
+        :class="$route.path === '/review' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><Stamp /></el-icon>
+        <span>{{ $t('nav.review') }}</span>
+        <span v-if="pendingReviewCount > 0" class="absolute top-0.5 right-1.5 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
+      </router-link>
+
+      <!-- 3. 配给管理 -->
+      <router-link
+        :to="getNavTarget('/warehouse')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><Box /></el-icon>
+        <span>{{ $t('nav.rationShort') || '配给' }}</span>
+      </router-link>
+
+      <!-- 4. 代理视察 -->
+      <router-link
+        :to="getNavTarget('/agent')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/agent' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><Shop /></el-icon>
+        <span>{{ $t('nav.agent') }}</span>
+      </router-link>
+
+      <!-- 5. 投诉管理 -->
+      <router-link
+        :to="getNavTarget('/complaint')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
+        :class="$route.path.startsWith('/complaint') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><Service /></el-icon>
+        <span>{{ $t('nav.complaint') }}</span>
+      </router-link>
+
+      <!-- 6. 后台管理 -->
+      <router-link
+        :to="getNavTarget('/admin')"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
+        :class="$route.path.startsWith('/admin') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+      >
+        <el-icon :size="19"><Setting /></el-icon>
+        <span>{{ $t('nav.admin') }}</span>
+      </router-link>
+    </template>
+  </nav>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '../../stores/auth.js';
+import { useReviewStore } from '../../stores/review.js';
+import {
+  DataAnalysis,
+  User,
+  Stamp,
+  Box,
+  Shop,
+  Setting,
+  Service,
+  ShoppingCart,
+  Van,
+  FullScreen
+} from '@element-plus/icons-vue';
+
+const route = useRoute();
+const authStore = useAuthStore();
+const reviewStore = useReviewStore();
+
+const isAppMode = computed(() => route.query.layout === 'app');
+
+function getNavTarget(path) {
+  if (isAppMode.value) {
+    return { path, query: { layout: 'app', role: authStore.currentRole } };
+  }
+  return path;
+}
+
+const pendingReviewCount = computed(() => {
+  return reviewStore.tickets?.filter((t) => t.status.includes('待')).length || 0;
+});
+</script>
