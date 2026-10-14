@@ -582,24 +582,46 @@ export async function mockDispatch(config) {
     return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
   }
 
-  // 更新成员信息 (PUT)
+  // 更新成员信息与状态（支持冻结/解冻/资料修改）(PUT)
   if (url.match(/\/citizen\/members\/([^/]+)/) && method === 'PUT') {
     const memberId = url.split('/').pop();
     const sharedFams = getSharedFamilies();
     sharedFams.forEach((f) => {
-      const target = f.members.find((m) => m.id === memberId);
+      const target = f.members.find((m) => m.id === memberId || m.nationalId === memberId);
       if (target) {
         Object.assign(target, data, { isUpdatedInSystem: true });
         updateSharedFamily(f.rationCardNo, { members: f.members });
       }
     });
+
     familiesStore.forEach((f) => {
-      const target = f.members.find((m) => m.id === memberId);
+      const target = f.members.find((m) => m.id === memberId || m.nationalId === memberId);
       if (target) {
         Object.assign(target, data, { isUpdatedInSystem: true });
       }
     });
-    return createResponse({ success: true, memberId }, 200, '家庭成员信息已成功更新');
+
+    Object.values(multiLangStores).forEach((stores) => {
+      (stores.adminCardsStore || []).forEach((c) => {
+        const target = (c.members || []).find((m) => m.id === memberId || m.nationalId === memberId);
+        if (target) Object.assign(target, data);
+      });
+      (stores.adminFamiliesStore || []).forEach((fam) => {
+        const target = (fam.members || []).find((m) => m.id === memberId || m.nationalId === memberId);
+        if (target) Object.assign(target, data);
+      });
+    });
+
+    const isFreezeAction = data.status === '已冻结' || data.status === 'Frozen' || data.status === '冻结';
+    const isUnfreezeAction = data.status === '正常' || data.status === 'Active';
+    let msg = '家庭成员信息已成功更新';
+    if (isFreezeAction) {
+      msg = `已成功冻结该成员纳保资格 (原因: ${data.freezeReason || '监管合规冻结'})`;
+    } else if (isUnfreezeAction) {
+      msg = '已成功解除该成员冻结状态，恢复口粮配给保障';
+    }
+
+    return createResponse({ success: true, memberId }, 200, msg);
   }
 
   // 变更户主 (POST)

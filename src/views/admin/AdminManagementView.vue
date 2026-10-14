@@ -49,174 +49,308 @@
             </span>
           </template>
           <div class="py-3.5 space-y-3.5">
-            <!-- 检索筛选栏 -->
-            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
-              <div class="flex flex-wrap items-center gap-2.5">
-                <el-input
-                  v-model="cardQuery.cardNo"
-                  :placeholder="$t('admin.cardNoPlaceholder') || '配给卡号 (RC-...)'"
-                  style="width: 170px"
-                  size="small"
-                  clearable
-                  @keyup.enter="handleCardSearch"
-                />
-                <el-input
-                  v-model="cardQuery.headName"
-                  :placeholder="$t('admin.headNamePlaceholder') || '户主姓名'"
-                  style="width: 150px"
-                  size="small"
-                  clearable
-                  @keyup.enter="handleCardSearch"
-                />
-                <!-- 省市筛选 -->
-                <el-select v-model="cardQuery.province" :placeholder="$t('admin.provincePlaceholder') || '所属省市'" style="width: 130px" size="small" @change="handleCardProvinceChange">
-                  <el-option :label="$t('admin.allProvinces') || '全部省市'" value="全部" />
-                  <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
-                </el-select>
-                <!-- 中心筛选 -->
-                <el-select v-model="cardQuery.center" :placeholder="$t('admin.centerPlaceholder') || '服务中心'" style="width: 170px" size="small" @change="handleCardSearch">
-                  <el-option :label="$t('admin.allCenters') || '全部中心'" value="全部" />
-                  <el-option v-for="c in currentCardCenterOptions" :key="c" :label="c" :value="c" />
-                </el-select>
-                <!-- 状态筛选 -->
-                <el-select v-model="cardQuery.status" :placeholder="$t('admin.statusPlaceholder') || '状态'" style="width: 110px" size="small" @change="handleCardSearch">
-                  <el-option :label="$t('admin.allStatuses') || '全部状态'" value="全部" />
-                  <el-option :label="$t('admin.statusNormal') || '正常'" value="正常" />
-                  <el-option :label="$t('admin.statusFrozen') || '已冻结'" value="已冻结" />
-                  <el-option :label="$t('admin.statusReviewing') || '审核中'" value="审核中" />
-                </el-select>
-
-                <el-button type="primary" size="small" :icon="Search" @click="handleCardSearch">{{ $t('admin.searchQuery') || '查询' }}</el-button>
-                <el-button size="small" :icon="Refresh" @click="resetCardQuery">{{ $t('admin.resetQuery') || '重置' }}</el-button>
+            <!-- 视图模式切换与状态栏 -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+              <div class="flex items-center gap-2">
+                <el-radio-group v-model="cardViewMode" size="small">
+                  <el-radio-button value="cards">
+                    <span class="flex items-center gap-1.5 font-medium">
+                      <el-icon><CreditCard /></el-icon>
+                      <span>{{ $t('admin.viewModeCards') || '配给卡总账' }}</span>
+                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 text-[11px] font-mono">{{ filteredCards.length }}</span>
+                    </span>
+                  </el-radio-button>
+                  <el-radio-button value="members">
+                    <span class="flex items-center gap-1.5 font-medium">
+                      <el-icon><User /></el-icon>
+                      <span>{{ $t('admin.viewModeMembers') || '在册家庭成员清单' }}</span>
+                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono">{{ currentFamilyMembers.length }}</span>
+                    </span>
+                  </el-radio-button>
+                </el-radio-group>
               </div>
 
-              <div class="text-xs text-slate-500 font-mono">
-                {{ $t('admin.matchCards', { count: filteredCards.length }) }}
+              <!-- 实时联通徽章 -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {{ $t('admin.syncedWithCitizenApp') || '与公民APP家庭成员实时联通' }}
+                </span>
+                <span class="text-slate-400 font-mono text-[11px]">RC-10029381</span>
               </div>
             </div>
 
-            <!-- 配给卡数据表格 (自适应占比优化) -->
-            <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs">
-              <el-table-column prop="cardNo" :label="$t('admin.cardNo') || '配给卡号'" width="160" fixed>
-                <template #default="{ row }">
-                  <span class="font-mono font-bold text-blue-600">{{ row.cardNo }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('admin.headInfo') || '户主信息'" min-width="190">
-                <template #default="{ row }">
-                  <div class="font-medium text-slate-800">{{ formatHeadName(row.headName) }}</div>
-                  <div class="text-[11px] text-slate-400 font-mono">{{ row.nationalId }}</div>
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('admin.regionInfo') || '所属行政省市/基层区'" min-width="220">
-                <template #default="{ row }">
-                  <div class="text-xs text-slate-700 font-medium">{{ formatProvince(row.province) }}</div>
-                  <div class="text-[11px] text-slate-400">{{ formatDistrict(row.district) }}</div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="80" align="center">
-                <template #default="{ row }">
-                  <span class="font-bold font-mono">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('admin.monthlyQuotaAudit') || '本月配额外核'" min-width="260">
-                <template #default="{ row }">
-                  <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
-                    <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: {{ row.quotas?.flour ?? 0 }}kg</span>
-                    <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: {{ row.quotas?.rice ?? 0 }}kg</span>
-                    <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: {{ row.quotas?.oil ?? 0 }}L</span>
+            <!-- 模式 1: 配给卡总账 (Cards) -->
+            <div v-show="cardViewMode === 'cards'" class="space-y-3.5">
+              <!-- 检索筛选栏 -->
+              <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <el-input
+                    v-model="cardQuery.cardNo"
+                    :placeholder="$t('admin.cardNoPlaceholder') || '配给卡号 (RC-...)'"
+                    style="width: 170px"
+                    size="small"
+                    clearable
+                    @keyup.enter="handleCardSearch"
+                  />
+                  <el-input
+                    v-model="cardQuery.headName"
+                    :placeholder="$t('admin.headNamePlaceholder') || '户主姓名'"
+                    style="width: 150px"
+                    size="small"
+                    clearable
+                    @keyup.enter="handleCardSearch"
+                  />
+                  <!-- 省市筛选 -->
+                  <el-select v-model="cardQuery.province" :placeholder="$t('admin.provincePlaceholder') || '所属省市'" style="width: 130px" size="small" @change="handleCardProvinceChange">
+                    <el-option :label="$t('admin.allProvinces') || '全部省市'" value="全部" />
+                    <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
+                  </el-select>
+                  <!-- 中心筛选 -->
+                  <el-select v-model="cardQuery.center" :placeholder="$t('admin.centerPlaceholder') || '服务中心'" style="width: 170px" size="small" @change="handleCardSearch">
+                    <el-option :label="$t('admin.allCenters') || '全部中心'" value="全部" />
+                    <el-option v-for="c in currentCardCenterOptions" :key="c" :label="c" :value="c" />
+                  </el-select>
+                  <!-- 状态筛选 -->
+                  <el-select v-model="cardQuery.status" :placeholder="$t('admin.statusPlaceholder') || '状态'" style="width: 110px" size="small" @change="handleCardSearch">
+                    <el-option :label="$t('admin.allStatuses') || '全部状态'" value="全部" />
+                    <el-option :label="$t('admin.statusNormal') || '正常'" value="正常" />
+                    <el-option :label="$t('admin.statusFrozen') || '已冻结'" value="已冻结" />
+                    <el-option :label="$t('admin.statusReviewing') || '审核中'" value="审核中" />
+                  </el-select>
+
+                  <el-button type="primary" size="small" :icon="Search" @click="handleCardSearch">{{ $t('admin.searchQuery') || '查询' }}</el-button>
+                  <el-button size="small" :icon="Refresh" @click="resetCardQuery">{{ $t('admin.resetQuery') || '重置' }}</el-button>
+                </div>
+
+                <div class="text-xs text-slate-500 font-mono">
+                  {{ $t('admin.matchCards', { count: filteredCards.length }) }}
+                </div>
+              </div>
+
+              <!-- 配给卡数据表格 (自适应占比优化) -->
+              <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs">
+                <el-table-column prop="cardNo" :label="$t('admin.cardNo') || '配给卡号'" width="160" fixed>
+                  <template #default="{ row }">
+                    <span class="font-mono font-bold text-blue-600">{{ row.cardNo }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.headInfo') || '户主信息'" min-width="190">
+                  <template #default="{ row }">
+                    <div class="font-medium text-slate-800">{{ formatHeadName(row.headName) }}</div>
+                    <div class="text-[11px] text-slate-400 font-mono">{{ row.nationalId }}</div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.regionInfo') || '所属行政省市/基层区'" min-width="220">
+                  <template #default="{ row }">
+                    <div class="text-xs text-slate-700 font-medium">{{ formatProvince(row.province) }}</div>
+                    <div class="text-[11px] text-slate-400">{{ formatDistrict(row.district) }}</div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="90" align="center">
+                  <template #default="{ row }">
+                    <span class="font-bold font-mono text-emerald-700">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.monthlyQuotaAudit') || '本月配额外核'" min-width="260">
+                  <template #default="{ row }">
+                    <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
+                      <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: {{ row.quotas?.flour ?? 0 }}kg</span>
+                      <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: {{ row.quotas?.rice ?? 0 }}kg</span>
+                      <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: {{ row.quotas?.oil ?? 0 }}L</span>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                    <el-tag v-else-if="row.status === '已冻结' || row.status === 'Frozen'" type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                    <el-tag v-else-if="row.status === '审核中' || row.status === 'Under Review'" type="warning" size="small">{{ formatCardStatus('审核中') }}</el-tag>
+                    <el-tag v-else type="warning" size="small">{{ formatCardStatus(row.status) }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.actions') || '操作'" width="170" fixed="right" align="center">
+                  <template #default="{ row }">
+                    <div class="flex items-center justify-center gap-1.5">
+                      <!-- 查看家庭成员存根 (与公民端 Family Members 完全联动) -->
+                      <el-tooltip :content="$t('admin.viewFamilyMembers') || '查看家庭成员清单'" placement="top" :show-after="200">
+                        <el-button
+                          circle
+                          size="small"
+                          type="info"
+                          plain
+                          class="hover:scale-110 transition-transform shadow-2xs"
+                          @click="openCardMembersDrawer(row)"
+                        >
+                          <el-icon><User /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+
+                      <!-- 调额图标按钮 -->
+                      <el-tooltip :content="$t('admin.adjustQuota') || '调整配额外核'" placement="top" :show-after="200">
+                        <el-button
+                          circle
+                          size="small"
+                          type="primary"
+                          plain
+                          class="hover:scale-110 transition-transform shadow-2xs"
+                          @click="openQuotaDialog(row)"
+                        >
+                          <el-icon><Operation /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+
+                      <!-- 冻结 / 解冻图标按钮 -->
+                      <el-tooltip
+                        :content="isFrozenCard(row) ? ($t('admin.unfreezeCard') || '解除冻结') : ($t('admin.freezeCard') || '冻结卡片')"
+                        placement="top"
+                        :show-after="200"
+                      >
+                        <el-button
+                          circle
+                          size="small"
+                          :type="isFrozenCard(row) ? 'success' : 'danger'"
+                          plain
+                          class="hover:scale-110 transition-transform shadow-2xs"
+                          @click="handleToggleCardStatus(row)"
+                        >
+                          <el-icon>
+                            <Unlock v-if="isFrozenCard(row)" />
+                            <Lock v-else />
+                          </el-icon>
+                        </el-button>
+                      </el-tooltip>
+
+                      <!-- 换发图标按钮 -->
+                      <el-tooltip :content="$t('admin.reissue') || '换发新卡 / 重置NFC'" placement="top" :show-after="200">
+                        <el-button
+                          circle
+                          size="small"
+                          type="warning"
+                          plain
+                          class="hover:scale-110 transition-transform shadow-2xs"
+                          @click="handleReissueCard(row)"
+                        >
+                          <el-icon><RefreshRight /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+
+              <!-- 分页 -->
+              <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+                <span>{{ $t('admin.totalRecords', { count: filteredCards.length }) }}</span>
+                <el-pagination
+                  v-model:current-page="cardPage"
+                  v-model:page-size="cardPageSize"
+                  :page-sizes="[5, 10, 20]"
+                  layout="total, sizes, prev, pager, next"
+                  :total="filteredCards.length"
+                  size="small"
+                />
+              </div>
+            </div>
+
+            <!-- 模式 2: 在册家庭成员名册 (Members) (与公民 APP 移动视口 Family Members 1:1 镜像) -->
+            <div v-show="cardViewMode === 'members'" class="space-y-3.5">
+              <!-- 顶部当前家庭信息摘要横幅 -->
+              <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-slate-50 p-3.5 rounded-xl border border-emerald-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                    <el-icon><UserFilled /></el-icon>
                   </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
-                <template #default="{ row }">
-                  <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
-                  <el-tag v-else-if="row.status === '已冻结' || row.status === 'Frozen'" type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
-                  <el-tag v-else-if="row.status === '审核中' || row.status === 'Under Review'" type="warning" size="small">{{ formatCardStatus('审核中') }}</el-tag>
-                  <el-tag v-else type="warning" size="small">{{ formatCardStatus(row.status) }}</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column :label="$t('admin.actions') || '操作'" width="170" fixed="right" align="center">
-                <template #default="{ row }">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <!-- 查看家庭成员存根 (与公民端 Family Members 完全联动) -->
-                    <el-tooltip :content="$t('admin.viewFamilyMembers') || '查看家庭成员清单'" placement="top" :show-after="200">
-                      <el-button
-                        circle
-                        size="small"
-                        type="info"
-                        plain
-                        class="hover:scale-110 transition-transform shadow-2xs"
-                        @click="openCardMembersDrawer(row)"
-                      >
-                        <el-icon><User /></el-icon>
-                      </el-button>
-                    </el-tooltip>
-
-                    <!-- 调额图标按钮 -->
-                    <el-tooltip :content="$t('admin.adjustQuota') || '调整配额外核'" placement="top" :show-after="200">
-                      <el-button
-                        circle
-                        size="small"
-                        type="primary"
-                        plain
-                        class="hover:scale-110 transition-transform shadow-2xs"
-                        @click="openQuotaDialog(row)"
-                      >
-                        <el-icon><Operation /></el-icon>
-                      </el-button>
-                    </el-tooltip>
-
-                    <!-- 冻结 / 解冻图标按钮 -->
-                    <el-tooltip
-                      :content="isFrozenCard(row) ? ($t('admin.unfreezeCard') || '解除冻结') : ($t('admin.freezeCard') || '冻结卡片')"
-                      placement="top"
-                      :show-after="200"
-                    >
-                      <el-button
-                        circle
-                        size="small"
-                        :type="isFrozenCard(row) ? 'success' : 'danger'"
-                        plain
-                        class="hover:scale-110 transition-transform shadow-2xs"
-                        @click="handleToggleCardStatus(row)"
-                      >
-                        <el-icon>
-                          <Unlock v-if="isFrozenCard(row)" />
-                          <Lock v-else />
-                        </el-icon>
-                      </el-button>
-                    </el-tooltip>
-
-                    <!-- 换发图标按钮 -->
-                    <el-tooltip :content="$t('admin.reissue') || '换发新卡 / 重置NFC'" placement="top" :show-after="200">
-                      <el-button
-                        circle
-                        size="small"
-                        type="warning"
-                        plain
-                        class="hover:scale-110 transition-transform shadow-2xs"
-                        @click="handleReissueCard(row)"
-                      >
-                        <el-icon><RefreshRight /></el-icon>
-                      </el-button>
-                    </el-tooltip>
+                  <div>
+                    <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                      <span>{{ formatHeadName(currentCardFamily?.headName || '艾哈迈德·哈桑·萨利赫') }}</span>
+                      <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
+                        {{ currentCardFamily?.rationCardNo || currentCardFamily?.cardNo || 'RC-10029381' }}
+                      </el-tag>
+                      <span class="text-xs font-normal text-slate-500 font-mono">({{ currentCardFamily?.familyCode || 'FAM-BAG-08832' }})</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">
+                      {{ $t('admin.linkedAgentBranch') || '所属定点分部' }}: {{ formatDistrict(currentCardFamily?.district) }} · {{ formatProvince(currentCardFamily?.province) }}
+                    </div>
                   </div>
-                </template>
-              </el-table-column>
-            </el-table>
+                </div>
 
-            <!-- 分页 -->
-            <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-              <span>{{ $t('admin.totalRecords', { count: filteredCards.length }) }}</span>
-              <el-pagination
-                v-model:current-page="cardPage"
-                v-model:page-size="cardPageSize"
-                :page-sizes="[5, 10, 20]"
-                layout="total, sizes, prev, pager, next"
-                :total="filteredCards.length"
-                size="small"
-              />
+                <div class="flex items-center gap-2">
+                  <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-center shadow-2xs">
+                    <span class="text-[10px] text-slate-400 block">{{ $t('admin.currentMembersCount') || '在册保障人口' }}</span>
+                    <span class="font-bold font-mono text-emerald-700 text-sm">{{ currentFamilyMembers.length }} {{ $t('admin.personUnit') || '人' }}</span>
+                  </div>
+                  <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-center shadow-2xs">
+                    <span class="text-[10px] text-slate-400 block">{{ $t('admin.syncStatus') || '与公民APP同步' }}</span>
+                    <span class="font-bold text-emerald-600 text-xs flex items-center justify-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      {{ $t('admin.liveSynced') || '实时同步中' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 家庭成员数据表格 (与公民 APP Family Members 1:1 镜像) -->
+              <el-table :data="paginatedMembers" border stripe style="width: 100%" size="small" class="text-xs">
+                <el-table-column prop="nationalId" :label="$t('admin.nationalId') || '国民身份证号'" width="160" fixed>
+                  <template #default="{ row }">
+                    <span class="font-mono font-bold text-slate-700">{{ row.nationalId }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="160">
+                  <template #default="{ row }">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-slate-800">{{ formatMemberName(row.name) }}</span>
+                      <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left">
+                        {{ $t('citizenCard.headTag') || '户主' }}
+                      </el-tag>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="relation" :label="$t('admin.relation') || '与户主关系'" width="130" align="center">
+                  <template #default="{ row }">
+                    <el-tag size="small" type="info">{{ formatMemberRelation(row.relation) }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="gender" :label="$t('admin.gender') || '性别'" width="80" align="center">
+                  <template #default="{ row }">
+                    <span>{{ formatMemberGender(row.gender) }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="birthDate" :label="$t('admin.birthDate') || '出生日期'" width="110" align="center">
+                  <template #default="{ row }">
+                    <span class="font-mono text-slate-600">{{ row.birthDate }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('admin.quotaShare') || '人均口粮保障定额'" min-width="230">
+                  <template #default>
+                    <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
+                      <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: 9kg</span>
+                      <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: 3kg</span>
+                      <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: 1L</span>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="status" :label="$t('admin.cardStatus') || '状态'" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
+                    <el-tag v-else type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
+                  </template>
+                </el-table-column>
+              </el-table>
+
+              <!-- 分页 (与公民端成员总数完全一致) -->
+              <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+                <span>{{ $t('admin.totalRecords', { count: currentFamilyMembers.length }) }}</span>
+                <el-pagination
+                  v-model:current-page="memberPage"
+                  v-model:page-size="memberPageSize"
+                  :page-sizes="[5, 10, 20]"
+                  layout="total, sizes, prev, pager, next"
+                  :total="currentFamilyMembers.length"
+                  size="small"
+                />
+              </div>
             </div>
           </div>
         </el-tab-pane>
@@ -967,9 +1101,50 @@ function isFrozenCard(row) {
   return row?.status === '已冻结' || row?.status === 'Frozen';
 }
 
+const memberNameZhToEnMap = {
+  '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
+  '法蒂玛·阿里·穆罕默德': 'Fatima Ali Mohammed',
+  '奥马尔·艾哈迈德·哈桑': 'Omar Ahmed Hassan',
+  '宰娜卜·艾哈迈德·哈桑': 'Zainab Ahmed Hassan',
+  '优素福·艾哈迈德·哈桑': 'Youssef Ahmed Hassan'
+};
+
+function formatMemberName(name) {
+  if (!name) return '';
+  if (isEn.value && memberNameZhToEnMap[name]) return memberNameZhToEnMap[name];
+  return formatHeadName(name);
+}
+
+function formatMemberRelation(relation) {
+  if (!relation) return '';
+  if (isEn.value) {
+    const map = {
+      '户主': 'Head',
+      '配偶': 'Spouse',
+      '子女': 'Child',
+      '父母': 'Parent',
+      '其他亲属': 'Other Relative'
+    };
+    return map[relation] || relation;
+  }
+  return relation;
+}
+
+function formatMemberGender(gender) {
+  if (!gender) return '';
+  if (isEn.value) {
+    if (gender === '男' || gender === 'Male') return 'Male';
+    if (gender === '女' || gender === 'Female') return 'Female';
+  }
+  return gender;
+}
+
 function openCardMembersDrawer(row) {
+  const matchedCard = cardsList.value.find(c => c.cardNo === row.cardNo);
   const matchedFam = familiesList.value.find(f => f.cardNo === row.cardNo || f.familyCode === row.familyCode);
-  const memList = (matchedFam?.members && matchedFam.members.length > 0) ? matchedFam.members : (row.members || []);
+  const memList = (matchedCard?.members && matchedCard.members.length > 0)
+    ? matchedCard.members
+    : ((matchedFam?.members && matchedFam.members.length > 0) ? matchedFam.members : (row.members || []));
   selectedFamilyForMembers.value = {
     familyCode: matchedFam?.familyCode || row.familyCode || row.cardNo,
     headName: formatHeadName(row.headName),
@@ -1044,7 +1219,9 @@ import {
   Lock,
   Unlock,
   RefreshRight,
-  User
+  User,
+  CreditCard,
+  UserFilled
 } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
@@ -1136,6 +1313,36 @@ const filteredCards = computed(() => {
 const paginatedCards = computed(() => {
   const start = (cardPage.value - 1) * cardPageSize.value;
   return filteredCards.value.slice(start, start + cardPageSize.value);
+});
+
+// ----------------------------------------------------
+// 1.1 在册家庭成员清单（与公民端移动视口 Family Members 1:1 镜像联动）
+// ----------------------------------------------------
+const cardViewMode = ref('cards'); // 'cards' | 'members'
+const memberPage = ref(1);
+const memberPageSize = ref(10);
+
+const currentCardFamily = computed(() => {
+  const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
+  const matchedFam = familiesList.value.find(f => f.cardNo === (currentCard?.cardNo || 'RC-10029381'));
+  return matchedFam || currentCard || null;
+});
+
+const currentFamilyMembers = computed(() => {
+  const targetCard = cardsList.value.find(c => c.cardNo === 'RC-10029381');
+  const targetFam = familiesList.value.find(f => f.cardNo === 'RC-10029381');
+  if (targetCard && targetCard.members && targetCard.members.length > 0) {
+    return targetCard.members;
+  }
+  if (targetFam && targetFam.members && targetFam.members.length > 0) {
+    return targetFam.members;
+  }
+  return [];
+});
+
+const paginatedMembers = computed(() => {
+  const start = (memberPage.value - 1) * memberPageSize.value;
+  return currentFamilyMembers.value.slice(start, start + memberPageSize.value);
 });
 
 async function loadCards() {

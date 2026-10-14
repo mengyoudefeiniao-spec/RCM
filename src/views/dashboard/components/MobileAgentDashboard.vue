@@ -268,60 +268,38 @@
           <span class="text-[11px] text-[#8C958F] font-medium">{{ $t('dashboard.quickServices.subtitle') || '网点现场协同' }}</span>
         </div>
 
-        <div class="grid grid-cols-5 gap-1.5 text-center select-none">
+        <div class="grid grid-cols-3 gap-3 text-center select-none">
           <!-- 1. 现场智能核销 (扫码弹窗) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
             @click="handleTriggerScan"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-lg border border-[#D1E7DA] shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-xl border border-[#D1E7DA] shadow-xs">
               <el-icon><FullScreen /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
+            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
           </div>
 
           <!-- 2. 物资配给履约 (跳转配给配送) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
             @click="navigateToModule('/warehouse')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-lg border border-[#E4D8F7] shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-xl border border-[#E4D8F7] shadow-xs">
               <el-icon><Van /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
+            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
           </div>
 
           <!-- 3. 签约网点档案 (跳转代理档案) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
             @click="navigateToModule('/agent')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-lg border border-[#F2E3C6] shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-xl border border-[#F2E3C6] shadow-xs">
               <el-icon><Shop /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
-          </div>
-
-          <!-- 4. 核销分发流水 (历史流水抽屉) -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
-            @click="showHistoryDrawer = true"
-          >
-            <div class="w-11 h-11 rounded-2xl bg-[#F0F2FA] text-[#4F46E5] flex items-center justify-center text-lg border border-[#D9DCF2] shadow-xs">
-              <el-icon><Document /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickLedgerRecords') }}</span>
-          </div>
-
-          <!-- 5. 库存台账稽查 (平衡公式与实体验证) -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
-            @click="openInventoryAudit"
-          >
-            <div class="w-11 h-11 rounded-2xl bg-[#FEECEC] text-[#D34545] flex items-center justify-center text-lg border border-[#FCD5D5] shadow-xs">
-              <el-icon><Check /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAuditBalance') }}</span>
+            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
           </div>
         </div>
       </div>

@@ -187,6 +187,13 @@
               >
                 {{ formatMemberStatus(member.status) }}
               </span>
+              <span
+                v-if="!isMemberActive(member.status) && member.freezeReason"
+                class="text-[9px] text-[#D34545] font-semibold bg-[#FEECEC] px-1.5 py-0.5 rounded border border-[#FCD5D5] max-w-[90px] truncate"
+                :title="member.freezeReason"
+              >
+                {{ member.freezeReason }}
+              </span>
               <button
                 type="button"
                 class="text-[11px] text-[#C59D5F] hover:text-[#1E3F35] underline cursor-pointer"
@@ -890,6 +897,7 @@ import {
   Check
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -1005,13 +1013,26 @@ watch(locale, () => {
   citizenStore.fetchFamilies();
 });
 
+let offFamilyUpdated = null;
+
+function handleFamilyUpdatedSync() {
+  citizenStore.fetchFamilies();
+}
+
 onMounted(() => {
   citizenStore.fetchFamilies();
   window.addEventListener('rcm-language-changed', handleLanguageChange);
+  window.addEventListener('rcm-family-updated', handleFamilyUpdatedSync);
+  offFamilyUpdated = onTabMessage('FAMILY_UPDATED', handleFamilyUpdatedSync);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('rcm-language-changed', handleLanguageChange);
+  window.removeEventListener('rcm-family-updated', handleFamilyUpdatedSync);
+  if (offFamilyUpdated) {
+    offFamilyUpdated();
+    offFamilyUpdated = null;
+  }
   if (cardClockTimer) {
     clearInterval(cardClockTimer);
     cardClockTimer = null;

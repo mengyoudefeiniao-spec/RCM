@@ -1,5 +1,5 @@
 <template>
-  <div class="agent-mgmt-view space-y-6">
+  <div class="agent-mgmt-view" :class="isAppMode ? 'space-y-3 pb-8' : 'space-y-6'">
     <!-- ======================================================== -->
     <!-- 1. 顶部代理商身份看板与第 140 号决议监管总览 (仅管理视察角色可见，代理角色已去除) -->
     <!-- ======================================================== -->
@@ -139,38 +139,44 @@
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Shop /></el-icon>
-              <span class="font-bold">{{ isAdmin ? '代销商网点名录 (所有代理列表)' : $t('agent.myCenters') }}</span>
+              <span class="font-bold">{{ isAdmin ? $t('agent.adminCentersList') : $t('agent.myCenters') }}</span>
               <el-badge :value="filteredAgents.length" type="primary" class="ml-1" />
             </div>
           </template>
 
-          <div class="py-4 space-y-4">
+          <div class="py-3 sm:py-4 space-y-3 sm:space-y-4">
             <!-- 代理快捷业务申报与刷新操作栏 -->
-            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div
+              class="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100"
+              :class="isAppMode ? 'flex-col items-start gap-2' : ''"
+            >
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                 <span class="font-bold text-slate-800 text-xs sm:text-sm">
-                  {{ isAdmin ? '全国各省代销网点全景分布与履约档案 (单店上限 1,500 户)' : '已代理中心网格管理 (单店上限 1,500 户)' }}
+                  {{ isAdmin ? $t('agent.adminCentersBanner') : $t('agent.agentCentersBanner') }}
                 </span>
                 <el-tag v-if="isAdmin" size="small" type="success" effect="plain" class="font-mono">
-                  全网格穿透监管
+                  {{ $t('agent.fullGridSupervision') }}
                 </el-tag>
               </div>
-              <div class="flex flex-wrap items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2" :class="isAppMode ? 'w-full justify-end' : ''">
                 <el-button type="primary" size="small" @click="handleOpenApply()">
                   <el-icon class="mr-1"><Plus /></el-icon>
-                  申请代理 (新授予)
+                  {{ $t('agent.applyGrant') }}
                 </el-button>
               </div>
             </div>
 
-            <!-- 过滤查询条件工具栏 (需求 2) -->
-            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+            <!-- 过滤查询条件工具栏 (自适应 APP 模式) -->
+            <div
+              class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 gap-2.5 text-xs"
+              :class="isAppMode ? 'flex flex-col space-y-2' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5'"
+            >
               <div>
-                <span class="block text-slate-500 mb-1 font-semibold">中心名称 / 编号关键字</span>
+                <span class="block text-slate-500 mb-1 font-semibold">{{ $t('agent.filterKeyword') }}</span>
                 <el-input
                   v-model="myCenterKeyword"
-                  placeholder="搜索名称 / 编号 / 地址"
+                  :placeholder="$t('agent.filterKeywordPlaceholder')"
                   clearable
                   size="small"
                   @input="myCentersCurrentPage = 1"
@@ -178,69 +184,221 @@
                   <template #prefix><el-icon><Search /></el-icon></template>
                 </el-input>
               </div>
-              <div>
-                <span class="block text-slate-500 mb-1 font-semibold">所属省份筛选</span>
-                <el-select v-model="myCenterProvinceFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
-                  <el-option label="全部省份" value="全部" />
-                  <el-option label="巴格达省 (Baghdad)" value="巴格达省" />
-                  <el-option label="迪亚拉省 (Diyala)" value="迪亚拉省" />
-                  <el-option label="基尔库克省 (Kirkuk)" value="基尔库克省" />
-                  <el-option label="尼尼微省 (Nineveh)" value="尼尼微省" />
-                  <el-option label="巴士拉省 (Basra)" value="巴士拉省" />
-                </el-select>
+
+              <div :class="isAppMode ? 'grid grid-cols-2 gap-2' : 'contents'">
+                <div>
+                  <span class="block text-slate-500 mb-1 font-semibold">{{ $t('agent.filterProvince') }}</span>
+                  <el-select v-model="myCenterProvinceFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
+                    <el-option :label="$t('agent.allProvinces')" value="全部" />
+                    <el-option :label="isEn ? 'Baghdad Province' : '巴格达省 (Baghdad)'" value="巴格达省" />
+                    <el-option :label="isEn ? 'Diyala Province' : '迪亚拉省 (Diyala)'" value="迪亚拉省" />
+                    <el-option :label="isEn ? 'Kirkuk Province' : '基尔库克省 (Kirkuk)'" value="基尔库克省" />
+                    <el-option :label="isEn ? 'Nineveh Province' : '尼尼微省 (Nineveh)'" value="尼尼微省" />
+                    <el-option :label="isEn ? 'Basra Province' : '巴士拉省 (Basra)'" value="巴士拉省" />
+                  </el-select>
+                </div>
+                <div>
+                  <span class="block text-slate-500 mb-1 font-semibold">{{ $t('agent.filterStatus') }}</span>
+                  <el-select v-model="myCenterStatusFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
+                    <el-option :label="$t('agent.allStatuses')" value="全部" />
+                    <el-option :label="$t('agent.statusNormal')" value="正常" />
+                    <el-option :label="$t('agent.statusCancelled')" value="注销" />
+                  </el-select>
+                </div>
               </div>
-              <div>
-                <span class="block text-slate-500 mb-1 font-semibold">经营品类筛选</span>
+
+              <div v-if="!isAppMode">
+                <span class="block text-slate-500 mb-1 font-semibold">{{ $t('agent.filterCategory') }}</span>
                 <el-select v-model="myCenterCategoryFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
-                  <el-option label="全部品类" value="全部" />
-                  <el-option label="综合 (食品+面粉)" value="综合" />
-                  <el-option label="食品" value="食品" />
-                  <el-option label="面粉" value="面粉" />
+                  <el-option :label="$t('agent.allCategories')" value="全部" />
+                  <el-option :label="$t('agent.catComprehensive')" value="综合" />
+                  <el-option :label="$t('agent.catFood')" value="食品" />
+                  <el-option :label="$t('agent.catFlour')" value="面粉" />
                 </el-select>
               </div>
-              <div>
-                <span class="block text-slate-500 mb-1 font-semibold">营业状态筛选</span>
-                <el-select v-model="myCenterStatusFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
-                  <el-option label="全部状态" value="全部" />
-                  <el-option label="正常营业" value="正常" />
-                  <el-option label="已注销 (待轮替)" value="注销" />
-                </el-select>
-              </div>
-              <div class="flex items-end gap-2">
+
+              <div class="flex items-end gap-2" :class="isAppMode ? 'pt-1' : ''">
                 <el-button size="small" type="primary" class="flex-1" @click="myCentersCurrentPage = 1">
                   <el-icon class="mr-1"><Search /></el-icon>
-                  查询
+                  {{ $t('common.search') }}
                 </el-button>
                 <el-button size="small" class="flex-1" @click="handleResetMyCentersFilter">
-                  重置
+                  {{ $t('common.reset') }}
                 </el-button>
               </div>
             </div>
 
             <!-- 列表信息与精简提示 -->
-            <div class="flex items-center justify-between text-xs px-1 text-slate-500">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs px-1 text-slate-500 gap-1">
               <span class="text-[11px]">
-                {{ isAdmin ? '全国代销商网络监管：严格执行单店1,500户物理容量上限，保障社区口粮安全精准直达。' : '提示：已被代理中心若需变更为其他人承接或重新申请，须先注销代理。' }}
+                {{ isAdmin ? $t('agent.noticeAdminGrid') : $t('agent.noticeDeconflict') }}
               </span>
-              <span class="text-[11px] font-mono">符合条件代销网点：共 {{ filteredAgents.length }} 个</span>
+              <span class="text-[11px] font-mono shrink-0">
+                {{ $t('agent.matchedStationsCount', { count: filteredAgents.length }) }}
+              </span>
             </div>
 
-            <!-- 代理网点名录表格 (所有代理列表) -->
+            <!-- ============================================== -->
+            <!-- 视图 A: 移动端流式网点卡片视图 (针对 Pixel 9 412px 优化) -->
+            <!-- ============================================== -->
+            <div v-if="isAppMode" class="space-y-3" v-loading="loadingAllAgents || loadingMyCenters">
+              <div
+                v-for="row in pagedAgents"
+                :key="row.id"
+                class="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2.5"
+              >
+                <!-- 头部：许可编号、营业状态与决议 Tag -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-mono font-bold text-slate-800">#{{ row.id }}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">({{ row.licenseNo }})</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <el-tag
+                      v-if="row.isArticle140"
+                      size="small"
+                      type="warning"
+                      effect="dark"
+                      class="scale-90"
+                    >
+                      {{ $t('agent.article140Tag') }}
+                    </el-tag>
+                    <el-tag
+                      size="small"
+                      :type="row.status.includes('正常') ? 'success' : 'danger'"
+                      effect="light"
+                    >
+                      {{ row.status.includes('正常') ? $t('agent.statusNormal') : $t('agent.statusCancelled') }}
+                    </el-tag>
+                  </div>
+                </div>
+
+                <!-- 网点中心与网点名称 -->
+                <div>
+                  <div class="text-sm font-bold text-slate-900 leading-snug">{{ row.centerName }}</div>
+                  <div class="text-xs text-slate-600 font-medium mt-0.5">{{ row.name }}</div>
+                  <div class="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
+                    <el-icon><LocationFilled class="text-slate-400" /></el-icon>
+                    <span class="truncate">{{ row.address }}</span>
+                  </div>
+                </div>
+
+                <!-- 所属省份、负责人、经营品类与面积 -->
+                <div class="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded-lg text-[11px] border border-slate-100">
+                  <div>
+                    <span class="text-slate-400 block">{{ $t('agent.colProvince') }}</span>
+                    <span class="font-medium text-slate-700">{{ row.province }} · {{ row.branchName }}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block">{{ $t('agent.colOwnerContact') }}</span>
+                    <span class="font-medium text-slate-700">{{ row.ownerName || '代销专员' }} ({{ row.phone || '07701122339' }})</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block">{{ $t('agent.colCategory') }}</span>
+                    <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left">{{ row.agentType }}</el-tag>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block">{{ $t('agent.colStoreArea') }}</span>
+                    <span class="font-mono font-medium text-slate-700">{{ row.storeAreaSqM }} ㎡</span>
+                  </div>
+                </div>
+
+                <!-- 服务户数与 1500 户上限进度条 -->
+                <div class="space-y-1 pt-1 border-t border-slate-100">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">{{ $t('agent.colHouseholdQuota') }}:</span>
+                    <span class="font-mono font-bold text-slate-800">{{ row.householdsCount }} / 1,500 {{ $t('agent.householdUnit') }}</span>
+                  </div>
+                  <el-progress
+                    :percentage="Math.min(100, (row.householdsCount / 1500) * 100)"
+                    :status="row.householdsCount >= 1500 ? 'exception' : (row.householdsCount >= 1400 ? 'warning' : 'primary')"
+                    :show-text="false"
+                    :stroke-width="5"
+                  />
+                  <div v-if="row.householdsCount >= 1500" class="text-[10px] text-rose-600 font-medium">
+                    {{ $t('agent.quotaLocked') }} - {{ $t('agent.quotaV1Rule') }}
+                  </div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <template v-if="isAdmin">
+                    <el-button size="small" type="primary" link @click="$router.push('/admin')">
+                      {{ $t('agent.actionLegalSupervision') }}
+                    </el-button>
+                    <el-button size="small" type="info" link @click="openWorkflowOverview">
+                      {{ $t('agent.actionComplianceTrace') }}
+                    </el-button>
+                  </template>
+                  <template v-else>
+                    <template v-if="row.isCurrentActive || row.status === '正常营业'">
+                      <el-button
+                        size="small"
+                        type="warning"
+                        plain
+                        class="!h-7 text-xs flex-1"
+                        @click="handleOpenRotation(row.centerId)"
+                      >
+                        {{ $t('agent.actionHandleRotation') }}
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="danger"
+                        plain
+                        class="!h-7 text-xs flex-1"
+                        @click="handleOpenCancellation(row)"
+                      >
+                        {{ $t('agent.actionHandleCancellation') }}
+                      </el-button>
+                    </template>
+                    <template v-else>
+                      <el-button
+                        size="small"
+                        type="primary"
+                        plain
+                        class="!h-7 text-xs flex-1"
+                        @click="handleOpenRestoration(row.centerId)"
+                      >
+                        {{ $t('agent.actionHandleRestoration') }}
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="success"
+                        plain
+                        class="!h-7 text-xs flex-1"
+                        @click="handleOpenApply(row.centerId)"
+                      >
+                        {{ $t('agent.actionHandleReapply') }}
+                      </el-button>
+                    </template>
+                  </template>
+                </div>
+              </div>
+
+              <div v-if="filteredAgents.length === 0" class="text-center py-8 text-slate-400 text-xs">
+                暂无符合条件的代销网点
+              </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 视图 B: 桌面 Web 宽表格视图 (全量国际化绑定) -->
+            <!-- ============================================== -->
             <el-table
+              v-else
               :data="pagedAgents"
               v-loading="loadingAllAgents || loadingMyCenters"
               border
               style="width: 100%"
               class="text-xs"
             >
-              <el-table-column prop="id" label="网点许可编号" width="120">
+              <el-table-column prop="id" :label="$t('agent.colLicenseId')" width="120">
                 <template #default="{ row }">
                   <span class="font-mono font-bold text-slate-800">{{ row.id }}</span>
                   <div class="text-[10px] text-slate-400">{{ row.licenseNo }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column label="配给中心及网点名称" min-width="220">
+              <el-table-column :label="$t('agent.colCenterName')" min-width="220">
                 <template #default="{ row }">
                   <div class="font-bold text-slate-900 flex items-center gap-1.5">
                     <span>{{ row.centerName }}</span>
@@ -251,7 +409,7 @@
                       effect="dark"
                       class="scale-90 origin-left"
                     >
-                      第140号决议
+                      {{ $t('agent.article140Tag') }}
                     </el-tag>
                   </div>
                   <div class="text-[11px] text-slate-600 mt-0.5">{{ row.name }}</div>
@@ -259,36 +417,36 @@
                 </template>
               </el-table-column>
 
-              <el-table-column prop="province" label="所属省份 / 分部" width="170">
+              <el-table-column prop="province" :label="$t('agent.colProvince')" width="170">
                 <template #default="{ row }">
                   <span class="font-medium text-slate-800">{{ row.province }}</span>
                   <div class="text-[10px] text-slate-400">{{ row.branchName }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column label="负责人与联系方式" width="160">
+              <el-table-column :label="$t('agent.colOwnerContact')" width="160">
                 <template #default="{ row }">
                   <div class="font-bold text-slate-800">{{ row.ownerName || '代销专员' }}</div>
                   <div class="text-[10px] text-slate-500 font-mono">{{ row.phone || '07701122339' }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="agentType" label="经营品类" width="110">
+              <el-table-column prop="agentType" :label="$t('agent.colCategory')" width="110">
                 <template #default="{ row }">
                   <el-tag size="small" type="info" effect="plain">{{ row.agentType }}</el-tag>
                 </template>
               </el-table-column>
 
-              <el-table-column label="服务户数 / 1,500 户硬上限" min-width="210">
+              <el-table-column :label="$t('agent.colHouseholdQuota')" min-width="210">
                 <template #default="{ row }">
                   <div v-if="row.status !== '已注销'" class="space-y-1">
                     <div class="flex items-center justify-between text-[11px]">
-                      <span class="font-mono font-bold">{{ row.householdsCount }} / 1,500 户</span>
+                      <span class="font-mono font-bold">{{ row.householdsCount }} / 1,500 {{ $t('agent.householdUnit') }}</span>
                       <span v-if="row.householdsCount >= 1500" class="text-rose-600 font-bold flex items-center gap-0.5">
-                        <el-tag size="small" type="danger" effect="dark" class="scale-90">网格饱和锁定</el-tag>
+                        <el-tag size="small" type="danger" effect="dark" class="scale-90">{{ $t('agent.quotaLocked') }}</el-tag>
                       </span>
                       <span v-else-if="row.householdsCount >= 1400" class="text-amber-600 font-bold">
-                        临界预警 ({{ ((row.householdsCount / 1500) * 100).toFixed(1) }}%)
+                        {{ $t('agent.quotaWarning', { pct: ((row.householdsCount / 1500) * 100).toFixed(1) }) }}
                       </span>
                       <span v-else class="text-slate-500 font-mono">
                         {{ ((row.householdsCount / 1500) * 100).toFixed(1) }}%
@@ -301,45 +459,45 @@
                       :stroke-width="6"
                     />
                     <div v-if="row.householdsCount >= 1500" class="text-[10px] text-rose-600">
-                      V1规则拦截：禁止新户迁入，必须由区域经理分流设立新代理点
+                      {{ $t('agent.quotaV1Rule') }}
                     </div>
                     <div v-else class="text-[10px] text-slate-400">
-                      单中心物理绑定：隶属【{{ row.centerName }}】
+                      {{ $t('agent.singleCenterBound', { center: row.centerName }) }}
                     </div>
                   </div>
                   <div v-else class="text-[11px] text-slate-400">
-                    网点处于已注销清退状态（原额度已冻结）
+                    {{ $t('agent.stationCancelledNotice') }}
                   </div>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="storeAreaSqM" label="营业面积" width="95" align="right">
+              <el-table-column prop="storeAreaSqM" :label="$t('agent.colStoreArea')" width="95" align="right">
                 <template #default="{ row }">
                   <span class="font-mono font-medium">{{ row.storeAreaSqM }} ㎡</span>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="status" label="网点营业状态" width="130" align="center">
+              <el-table-column prop="status" :label="$t('agent.colStatus')" width="130" align="center">
                 <template #default="{ row }">
                   <el-tag
                     size="small"
                     :type="row.status.includes('正常') ? 'success' : 'danger'"
                     effect="light"
                   >
-                    {{ row.status }}
+                    {{ row.status.includes('正常') ? $t('agent.statusNormal') : $t('agent.statusCancelled') }}
                   </el-tag>
                 </template>
               </el-table-column>
 
               <!-- 操作列：管理角色支持监管与查看，代理商支持轮替转移/注销 -->
-              <el-table-column label="操作" width="180" fixed="right" align="center">
+              <el-table-column :label="$t('agent.colActions')" width="180" fixed="right" align="center">
                 <template #default="{ row }">
                   <div v-if="isAdmin" class="text-slate-400 text-[11px] flex items-center justify-center gap-2">
                     <el-button size="small" type="primary" link @click="$router.push('/admin')">
-                      法定职权监管
+                      {{ $t('agent.actionLegalSupervision') }}
                     </el-button>
                     <el-button size="small" type="info" link @click="openWorkflowOverview">
-                      合规溯源
+                      {{ $t('agent.actionComplianceTrace') }}
                     </el-button>
                   </div>
                   <div v-else class="flex items-center justify-center gap-1.5 flex-wrap">
@@ -351,7 +509,7 @@
                         link
                         @click="handleOpenRotation(row.centerId)"
                       >
-                        办理轮替
+                        {{ $t('agent.actionHandleRotation') }}
                       </el-button>
                       <el-button
                         size="small"
@@ -359,7 +517,7 @@
                         link
                         @click="handleOpenCancellation(row)"
                       >
-                        注销代理
+                        {{ $t('agent.actionHandleCancellation') }}
                       </el-button>
                     </template>
 
@@ -371,7 +529,7 @@
                         link
                         @click="handleOpenRestoration(row.centerId)"
                       >
-                        申请恢复
+                        {{ $t('agent.actionHandleRestoration') }}
                       </el-button>
                       <el-button
                         size="small"
@@ -379,7 +537,7 @@
                         link
                         @click="handleOpenApply(row.centerId)"
                       >
-                        重新申请
+                        {{ $t('agent.actionHandleReapply') }}
                       </el-button>
                     </template>
                   </div>
@@ -388,16 +546,19 @@
             </el-table>
 
             <!-- 分页控件 -->
-            <div class="flex items-center justify-between pt-3 text-xs border-t border-slate-100">
+            <div
+              class="flex items-center justify-between pt-3 text-xs border-t border-slate-100"
+              :class="isAppMode ? 'flex-col gap-2 items-center' : ''"
+            >
               <div class="text-slate-400 text-[11px]">
-                第 {{ myCentersCurrentPage }} 页 / 共 {{ Math.ceil(filteredAgents.length / myCentersPageSize) || 1 }} 页
+                {{ $t('agent.pageInfo', { current: myCentersCurrentPage, total: Math.ceil(filteredAgents.length / myCentersPageSize) || 1 }) }}
               </div>
               <el-pagination
                 v-model:current-page="myCentersCurrentPage"
                 v-model:page-size="myCentersPageSize"
                 :page-sizes="[5, 10, 20]"
                 :total="filteredAgents.length"
-                layout="total, sizes, prev, pager, next, jumper"
+                :layout="isAppMode ? 'prev, pager, next' : 'total, sizes, prev, pager, next, jumper'"
                 size="small"
                 background
               />
@@ -703,11 +864,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 
 const { t, locale } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
+const isAppMode = computed(() => {
+  return route.query.layout === 'app' ||
+    sessionStorage.getItem('rcm_layout_mode') === 'app' ||
+    window.innerWidth <= 768;
+});
 import { ElMessage } from 'element-plus';
 import {
   getMyAgentCenters,
@@ -756,9 +924,6 @@ import {
 } from '@element-plus/icons-vue';
 
 // 响应式数据
-import { useRoute } from 'vue-router';
-const route = useRoute();
-const router = useRouter();
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.isAdmin);
 const workflowDrawerRef = ref(null);
