@@ -220,21 +220,24 @@
     <div v-else class="space-y-6">
       <!-- 贸易部月度配给总计划卡片 -->
       <div class="space-y-3">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
             <el-icon class="text-blue-600"><Calendar /></el-icon>
-            <span>贸易部战略口粮月度物资配给总计划 (SCM / BPM)</span>
+            <span>{{ $t('warehouse.ministryPlanTitle') || '贸易部战略口粮月度物资配给总计划 (SCM / BPM)' }}</span>
           </h3>
           <span class="text-[11px] text-slate-400">
-            按月下发 · 依据签约户数自动排程 · 实行国家保供指导限价
+            {{ $t('warehouse.ministryPlanSubtitle') || '按月下发 · 依据签约户数自动排程 · 实行国家保供指导限价' }}
           </span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div
+          class="grid gap-3.5"
+          :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'"
+        >
           <div
             v-for="plan in plans"
             :key="plan.id"
-            class="p-4.5 rounded-2xl border transition-all space-y-3"
+            class="p-4 rounded-2xl border transition-all space-y-3"
             :class="plan.status === '执行中' ? 'bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 shadow-xs' : 'bg-white border-slate-200'"
           >
             <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
@@ -246,9 +249,9 @@
                   </el-tag>
                 </div>
                 <div class="text-[11px] text-slate-500 font-mono mt-0.5 flex items-center gap-2">
-                  <span>编号: {{ plan.planNo }}</span>
+                  <span>{{ $t('warehouse.planNoPrefix') || '编号: ' }}{{ plan.planNo }}</span>
                   <span>·</span>
-                  <span>周期: {{ plan.periodName }}</span>
+                  <span>{{ $t('warehouse.cyclePrefix') || '周期: ' }}{{ plan.periodName }}</span>
                 </div>
               </div>
               <el-tag size="small" type="primary" effect="plain" class="shrink-0 text-[10px]">
@@ -259,20 +262,20 @@
             <!-- 目标指标网格 -->
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="bg-slate-50/80 p-2 rounded-lg border border-slate-100">
-                <span class="text-slate-400 text-[10px] block">全国保供家庭</span>
-                <span class="font-mono font-bold text-slate-800 text-xs">{{ plan.targetHouseholds.toLocaleString() }} 户</span>
+                <span class="text-slate-400 text-[10px] block">{{ $t('warehouse.targetHouseholds') || '全国保供家庭' }}</span>
+                <span class="font-mono font-bold text-slate-800 text-xs">{{ plan.targetHouseholds.toLocaleString() }} {{ $t('warehouse.householdUnit') || '户' }}</span>
               </div>
               <div class="bg-slate-50/80 p-2 rounded-lg border border-slate-100">
-                <span class="text-slate-400 text-[10px] block">月度保供总重</span>
-                <span class="font-mono font-bold text-blue-600 text-xs">{{ (plan.overallProgress?.totalPlanWeightTon || 0).toLocaleString() }} 吨</span>
+                <span class="text-slate-400 text-[10px] block">{{ $t('warehouse.totalWeight') || '月度保供总重' }}</span>
+                <span class="font-mono font-bold text-blue-600 text-xs">{{ (plan.overallProgress?.totalPlanWeightTon || 0).toLocaleString() }} {{ $t('warehouse.tonUnit') || '吨' }}</span>
               </div>
             </div>
 
             <!-- 月度人均配额与国家保供指导价格标准 -->
             <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-100 space-y-1.5 text-xs">
               <div class="flex items-center justify-between">
-                <span class="font-semibold text-slate-700 text-[11px]">口粮配额与国家指导限价：</span>
-                <span class="text-[10px] font-mono font-bold text-amber-700">标准户: 53,800 IQD/月</span>
+                <span class="font-semibold text-slate-700 text-[11px]">{{ $t('warehouse.quotaAndGuidePrice') || '口粮配额与国家指导限价：' }}</span>
+                <span class="text-[10px] font-mono font-bold text-amber-700">{{ $t('warehouse.standardHouseholdGuide') || '标准户: 53,800 IQD/月' }}</span>
               </div>
               <div class="grid grid-cols-2 gap-1.5">
                 <div
@@ -280,7 +283,7 @@
                   :key="q.itemCode"
                   class="bg-white px-2 py-1 rounded border border-slate-200/60 flex items-center justify-between text-[11px]"
                 >
-                  <span class="text-slate-600 truncate mr-1">{{ q.itemName }}</span>
+                  <span class="text-slate-600 truncate mr-1">{{ formatItemName(q.itemName) }}</span>
                   <div class="text-right shrink-0">
                     <span class="font-mono font-bold text-slate-900 block">{{ q.quotaPerPerson }} {{ q.unit.split('/')[0] }}</span>
                     <span class="text-[9px] text-amber-600 font-mono">{{ q.guidePriceIQD }} IQD</span>
@@ -292,8 +295,8 @@
             <!-- 执行进度条 -->
             <div class="pt-2 border-t border-slate-100 space-y-1 text-xs">
               <div class="flex items-center justify-between text-[10px] font-mono">
-                <span class="text-slate-500">履约全链路进度：</span>
-                <span class="text-emerald-600 font-bold">家庭核销: {{ plan.overallProgress?.claimedRate || 0 }}%</span>
+                <span class="text-slate-500">{{ $t('warehouse.fullChainProgress') || '履约全链路进度：' }}</span>
+                <span class="text-emerald-600 font-bold">{{ $t('warehouse.householdClaimed') || '家庭核销:' }} {{ plan.overallProgress?.claimedRate || 0 }}%</span>
               </div>
               <el-progress
                 :percentage="plan.overallProgress?.claimedRate || 0"
@@ -309,30 +312,31 @@
       <!-- 网格配额分解与排程任务单列表 (三级代理层级架构) -->
       <!-- ======================================================== -->
       <div class="space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
               <el-icon class="text-indigo-600"><Shop /></el-icon>
-              <span>代理中心网格配额分解与月度排程任务单</span>
+              <span>{{ $t('warehouse.agentQuotaTaskTitle') || '代理中心网格配额分解与月度排程任务单' }}</span>
             </h3>
-            <el-tag size="small" type="info" effect="plain" class="text-[11px]">
-              省级 / 区域 / 街道三级联动
+            <el-tag size="small" type="info" effect="plain" class="text-[10px]">
+              {{ $t('warehouse.threeTierLinkage') || '省级 / 区域 / 街道三级联动' }}
             </el-tag>
           </div>
           <span class="text-[11px] text-slate-400">
-            共查询到 <strong class="text-slate-800">{{ filteredTasks.length }}</strong> 笔任务排程单
+            {{ $t('warehouse.foundTasksCount', { count: filteredTasks.length }) || `共查询到 ${filteredTasks.length} 笔任务排程单` }}
           </span>
         </div>
 
-        <!-- 多维度与日期查询栏 -->
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-2 text-xs">
-          <div class="flex flex-wrap items-center gap-2.5">
+        <!-- 多维度与日期查询栏 (针对 APP 模式优雅排版) -->
+        <div class="bg-white p-3 sm:p-3.5 rounded-xl border border-slate-200/80 shadow-xs text-xs space-y-2">
+          <!-- APP 模式下采用纵向自适应分层布局，Web 模式下保持横向弹性行 -->
+          <div :class="isAppMode ? 'space-y-2' : 'flex flex-wrap items-center gap-2.5'">
             <el-input
               v-model="taskSearch"
-              placeholder="搜索任务单号 / 代理网点 / 负责人"
+              :placeholder="$t('warehouse.searchTaskPlaceholder') || '搜索任务单号 / 代理网点 / 负责人'"
               clearable
               size="small"
-              class="max-w-xs"
+              :class="isAppMode ? 'w-full' : 'max-w-xs'"
               @input="resetTaskPage"
             >
               <template #prefix>
@@ -340,87 +344,178 @@
               </template>
             </el-input>
 
-            <!-- 代理层级快捷筛选 -->
-            <div class="flex items-center gap-1 text-[11px] text-slate-500">
-              <span>代理层级:</span>
-              <el-select
-                v-model="taskLevelFilter"
-                placeholder="全部层级"
-                clearable
-                size="small"
-                class="!w-28"
-                @change="resetTaskPage"
-              >
-                <el-option label="全部层级" value="" />
-                <el-option label="省级代理" value="PROVINCE" />
-                <el-option label="区域代理" value="DISTRICT" />
-                <el-option label="街道代理" value="STREET" />
-              </el-select>
+            <div :class="isAppMode ? 'grid grid-cols-2 gap-2' : 'flex items-center gap-2.5'">
+              <!-- 代理层级快捷筛选 -->
+              <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                <span class="shrink-0">{{ $t('warehouse.agentLevelLabel') || '代理层级:' }}</span>
+                <el-select
+                  v-model="taskLevelFilter"
+                  :placeholder="$t('warehouse.levelAll') || '全部层级'"
+                  clearable
+                  size="small"
+                  class="w-full sm:!w-28"
+                  @change="resetTaskPage"
+                >
+                  <el-option :label="$t('warehouse.levelAll') || '全部层级'" value="" />
+                  <el-option :label="$t('warehouse.levelProvince') || '省级代理'" value="PROVINCE" />
+                  <el-option :label="$t('warehouse.levelDistrict') || '区域代理'" value="DISTRICT" />
+                  <el-option :label="$t('warehouse.levelStreet') || '街道代理'" value="STREET" />
+                </el-select>
+              </div>
+
+              <!-- 状态筛选 -->
+              <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                <span class="shrink-0">{{ $t('warehouse.fulfillmentStatusLabel') || '状态:' }}</span>
+                <el-select
+                  v-model="taskStatusFilter"
+                  :placeholder="$t('warehouse.fulfillmentStatusLabel') || '履约状态'"
+                  clearable
+                  size="small"
+                  class="w-full sm:!w-28"
+                  @change="resetTaskPage"
+                >
+                  <el-option :label="$t('warehouse.levelAll') || '全部状态'" value="" />
+                  <el-option :label="$t('warehouse.statusNormalFulfilling') || '正常履约中'" value="正常履约中" />
+                  <el-option :label="$t('warehouse.statusLagAlert') || '履约滞后预警'" value="履约滞后预警" />
+                  <el-option :label="$t('warehouse.statusShortageRisk') || '短缺风险预警'" value="短缺风险预警" />
+                  <el-option :label="$t('warehouse.statusFinished') || '已完结'" value="已完结" />
+                </el-select>
+              </div>
             </div>
 
-            <!-- 月份周期筛选 (默认按月查询，可手动切换) -->
-            <div class="flex items-center gap-1 text-[11px] text-slate-500">
-              <span>月份周期:</span>
-              <el-date-picker
-                v-model="taskMonth"
-                type="month"
-                value-format="YYYY-MM"
-                placeholder="默认按月查询"
-                size="small"
-                class="!w-32"
-                @change="handleMonthChange"
-              />
+            <div :class="isAppMode ? 'grid grid-cols-2 gap-2 pt-1 border-t border-slate-100' : 'flex items-center gap-2.5'">
+              <!-- 月份周期筛选 -->
+              <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                <span class="shrink-0">{{ $t('warehouse.monthPeriodLabel') || '月份:' }}</span>
+                <el-date-picker
+                  v-model="taskMonth"
+                  type="month"
+                  value-format="YYYY-MM"
+                  :placeholder="$t('warehouse.defaultMonthSearch') || '按月查询'"
+                  size="small"
+                  class="w-full sm:!w-32"
+                  @change="handleMonthChange"
+                />
+              </div>
+
+              <div class="flex items-center justify-end">
+                <el-button size="small" type="primary" plain class="w-full sm:w-auto" @click="resetTaskFilters">
+                  {{ $t('common.reset') || '重置' }}
+                </el-button>
+              </div>
             </div>
-
-            <!-- 精确日期范围选择 -->
-            <div class="flex items-center gap-1 text-[11px] text-slate-500">
-              <span>精确日期:</span>
-              <el-date-picker
-                v-model="taskDateRange"
-                type="daterange"
-                value-format="YYYY-MM-DD"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                size="small"
-                class="!w-56"
-                @change="handleDateRangeChange"
-              />
-            </div>
-
-            <!-- 状态筛选 -->
-            <el-select
-              v-model="taskStatusFilter"
-              placeholder="履约状态"
-              clearable
-              size="small"
-              class="!w-28"
-              @change="resetTaskPage"
-            >
-              <el-option label="正常履约中" value="正常履约中" />
-              <el-option label="履约滞后预警" value="履约滞后预警" />
-              <el-option label="短缺风险预警" value="短缺风险预警" />
-              <el-option label="已完结" value="已完结" />
-            </el-select>
-
-            <el-button size="small" link type="primary" @click="resetTaskFilters">重置</el-button>
           </div>
         </div>
 
-        <!-- 任务单表格 (增加指导价格、三级层级Tag、服务户数与总货值) -->
-        <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <!-- 任务单列表展示：APP 模式下展示原生移动端卡片流，Web 模式下展示完整表格 -->
+        <!-- 移动端 APP 专用卡片流视图 -->
+        <div v-if="isAppMode" class="space-y-3" v-loading="loading">
+          <div v-if="paginatedTasks.length === 0" class="py-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
+            <el-icon class="text-3xl mb-1 text-slate-300"><Document /></el-icon>
+            <p class="text-xs">{{ $t('common.noData') || '暂无排程任务单' }}</p>
+          </div>
+
+          <div
+            v-for="task in paginatedTasks"
+            :key="task.taskNo"
+            class="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs space-y-2.5"
+          >
+            <!-- 卡片头部：编号与状态 -->
+            <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
+              <div>
+                <span class="font-mono font-bold text-blue-700 text-xs block">#{{ task.taskNo }}</span>
+                <div class="text-[10px] text-slate-400 font-mono">{{ task.periodMonth }}</div>
+              </div>
+              <div class="flex items-center gap-1">
+                <el-tag
+                  size="small"
+                  :type="task.agentLevel === 'PROVINCE' ? 'danger' : task.agentLevel === 'DISTRICT' ? 'primary' : 'success'"
+                  effect="dark"
+                  class="font-bold scale-90"
+                >
+                  {{ task.agentLevelName || (task.agentLevel === 'PROVINCE' ? ($t('warehouse.levelProvince') || '省级代理') : task.agentLevel === 'DISTRICT' ? ($t('warehouse.levelDistrict') || '区域代理') : ($t('warehouse.levelStreet') || '街道代理')) }}
+                </el-tag>
+                <el-tag
+                  size="small"
+                  :type="task.taskStatus === '已完结' ? 'info' : task.taskStatus === '正常履约中' ? 'success' : 'danger'"
+                  class="scale-90"
+                >
+                  {{ formatTaskStatus(task.taskStatus || task.status) }}
+                </el-tag>
+              </div>
+            </div>
+
+            <!-- 网点名称与负责人 -->
+            <div class="space-y-0.5">
+              <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5 flex-wrap">
+                <span>{{ task.centerName }}</span>
+                <span v-if="task.isSelf" class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                  {{ $t('warehouse.isSelfDirect') || '本人直营' }}
+                </span>
+                <span v-if="task.isArticle140" class="text-[9px] text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded border border-amber-200">
+                  {{ $t('warehouse.isArticle140Zone') || '第140号争议区' }}
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-500">
+                {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ task.responsiblePerson || task.ownerName || '代销主管' }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ task.agentCenterId }}
+              </div>
+            </div>
+
+            <!-- 指标网格：户数与总货值 -->
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
+              <div>
+                <span class="text-slate-400 text-[10px] block">{{ $t('warehouse.targetHouseholds') || '签约保供户数' }}</span>
+                <span class="font-mono font-bold text-slate-800 text-xs">{{ (task.registeredHouseholds || 0).toLocaleString() }} {{ $t('warehouse.householdUnit') || '户' }}</span>
+                <span class="text-[9px] text-slate-400 block font-mono">{{ $t('warehouse.coveredPopulation', { count: (task.coveredCitizens || task.registeredHouseholds * 4 || 0).toLocaleString() }) || `覆盖人口: ${(task.coveredCitizens || task.registeredHouseholds * 4 || 0).toLocaleString()} 人` }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 text-[10px] block">{{ $t('warehouse.totalGuideValueTitle') || '指导总货值' }}</span>
+                <span class="font-mono font-bold text-amber-700 text-xs">{{ (task.totalGuideAmountIQD || task.registeredHouseholds * 53800 || 0).toLocaleString() }} IQD</span>
+                <span class="text-[9px] text-emerald-600 block">{{ $t('warehouse.algorithmHouseholdLocked') || '按户锁定' }}</span>
+              </div>
+            </div>
+
+            <!-- 物资清单微标签 -->
+            <div class="flex flex-wrap items-center gap-1 pt-0.5">
+              <span
+                v-for="item in (task.items || []).slice(0, 3)"
+                :key="item.itemCode"
+                class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200/60"
+              >
+                {{ formatItemName(item.itemName) }} <b class="font-mono font-bold text-slate-900">{{ item.allocatedQtyTon ? item.allocatedQtyTon + '吨' : (item.plannedQty + item.unit) }}</b>
+              </span>
+              <span v-if="task.items && task.items.length > 3" class="text-[10px] text-slate-400">
+                +{{ task.items.length - 3 }}
+              </span>
+            </div>
+
+            <!-- 卡片底栏：起止交付期与操作按钮 -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+              <div class="font-mono">
+                <span>{{ $t('warehouse.scheduledDeliveryDate') || '排程交付: ' }}</span>
+                <strong class="text-blue-600">{{ task.scheduledDeliveryDate || '2026-10-15' }}</strong>
+              </div>
+              <el-button size="small" type="primary" plain class="!h-7 text-xs" @click="handleViewTask(task)">
+                {{ $t('warehouse.taskDetailBtn') || '全链详情' }}
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 桌面端 Web 表格视图 (保留原有丰富列) -->
+        <div v-else class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           <el-table :data="paginatedTasks" v-loading="loading" border style="width: 100%" class="text-xs">
             <!-- 1. 排程编号 -->
-            <el-table-column prop="taskNo" label="排程任务编号" min-width="165">
+            <el-table-column prop="taskNo" :label="$t('warehouse.planNo') || '排程任务编号'" min-width="165">
               <template #default="{ row }">
                 <span class="font-mono font-bold text-blue-700 block">{{ row.taskNo }}</span>
                 <div class="text-[10px] text-slate-400 font-mono">{{ row.planNo }}</div>
-                <div class="text-[10px] text-slate-500 font-mono">{{ row.periodMonth }} 月度</div>
+                <div class="text-[10px] text-slate-500 font-mono">{{ row.periodMonth }}</div>
               </template>
             </el-table-column>
 
             <!-- 2. 代理层级与网点名称 -->
-            <el-table-column label="代理层级 / 目标网点" min-width="210">
+            <el-table-column :label="$t('warehouse.agentLevelLabel') || '代理层级 / 目标网点'" min-width="210">
               <template #default="{ row }">
                 <div class="flex items-center gap-1.5 mb-1 flex-wrap">
                   <el-tag
@@ -429,54 +524,54 @@
                     effect="dark"
                     class="font-bold scale-90"
                   >
-                    {{ row.agentLevelName || (row.agentLevel === 'PROVINCE' ? '省级代理' : row.agentLevel === 'DISTRICT' ? '区域代理' : '街道代理') }}
+                    {{ row.agentLevelName || (row.agentLevel === 'PROVINCE' ? ($t('warehouse.levelProvince') || '省级代理') : row.agentLevel === 'DISTRICT' ? ($t('warehouse.levelDistrict') || '区域代理') : ($t('warehouse.levelStreet') || '街道代理')) }}
                   </el-tag>
                   <span v-if="row.isSelf" class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">
-                    本人直营
+                    {{ $t('warehouse.isSelfDirect') || '本人直营' }}
                   </span>
                   <span v-if="row.isArticle140" class="text-[10px] text-amber-700 font-bold bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
-                    第140号争议区
+                    {{ $t('warehouse.isArticle140Zone') || '第140号争议区' }}
                   </span>
                 </div>
                 <div class="font-bold text-slate-800 text-xs">{{ row.centerName }}</div>
                 <div class="text-[10px] text-slate-400">
-                  负责人: {{ row.responsiblePerson || row.ownerName || '代销主管' }} · 代码: {{ row.agentCenterId }}
+                  {{ $t('warehouse.responsiblePersonPrefix') || '负责人: ' }}{{ row.responsiblePerson || row.ownerName || '代销主管' }} · {{ $t('warehouse.agentCodePrefix') || '代码: ' }}{{ row.agentCenterId }}
                 </div>
               </template>
             </el-table-column>
 
             <!-- 3. 服务签约户数 (算法基准) -->
-            <el-table-column label="服务签约户数 / 人口" min-width="145" align="center">
+            <el-table-column :label="$t('warehouse.targetHouseholds') || '服务签约户数 / 人口'" min-width="145" align="center">
               <template #default="{ row }">
                 <div class="font-mono font-bold text-slate-900 text-sm">
-                  {{ (row.registeredHouseholds || 0).toLocaleString() }} <span class="text-xs font-normal text-slate-500">户</span>
+                  {{ (row.registeredHouseholds || 0).toLocaleString() }} <span class="text-xs font-normal text-slate-500">{{ $t('warehouse.householdUnit') || '户' }}</span>
                 </div>
                 <div class="text-[10px] text-slate-400 font-mono">
-                  覆盖人口: {{ (row.coveredCitizens || row.registeredHouseholds * 4 || 0).toLocaleString() }} 人
+                  {{ $t('warehouse.coveredPopulation', { count: (row.coveredCitizens || row.registeredHouseholds * 4 || 0).toLocaleString() }) || `覆盖人口: ${(row.coveredCitizens || row.registeredHouseholds * 4 || 0).toLocaleString()} 人` }}
                 </div>
                 <div class="text-[9px] text-emerald-600 mt-0.5">
-                  算法根据户数锁定分配
+                  {{ $t('warehouse.algorithmHouseholdLocked') || '算法根据户数锁定分配' }}
                 </div>
               </template>
             </el-table-column>
 
             <!-- 4. 国家保供指导限价与总货值 -->
-            <el-table-column label="国家保供指导总货值" min-width="170">
+            <el-table-column :label="$t('warehouse.totalGuideValueTitle') || '国家保供指导总货值'" min-width="170">
               <template #default="{ row }">
                 <div class="font-mono font-bold text-amber-700 text-sm">
                   {{ (row.totalGuideAmountIQD || row.registeredHouseholds * 53800 || 0).toLocaleString() }} <span class="text-[10px] font-sans">IQD</span>
                 </div>
                 <div class="text-[10px] text-slate-400 font-mono">
-                  户均保供基准: 53,800 IQD/户
+                  {{ $t('warehouse.householdAverageGuide') || '户均保供基准: 53,800 IQD/户' }}
                 </div>
                 <div class="text-[9px] text-slate-400">
-                  米 1000 · 面 750 · 油 2500 · 糖 1200
+                  {{ $t('warehouse.guidelinePriceMicro') || '米 1000 · 面 750 · 油 2500 · 糖 1200' }}
                 </div>
               </template>
             </el-table-column>
 
             <!-- 5. 排程配送物资与配额 (按户数自动分配) -->
-            <el-table-column label="排程保供物资与配额明细" min-width="230">
+            <el-table-column :label="$t('warehouse.itemsAndQuotasTitle') || '排程保供物资与配额明细'" min-width="230">
               <template #default="{ row }">
                 <div class="space-y-1">
                   <div
@@ -484,36 +579,36 @@
                     :key="item.itemCode"
                     class="flex items-center justify-between text-[11px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100"
                   >
-                    <span class="text-slate-600 truncate">{{ item.itemName }}</span>
+                    <span class="text-slate-600 truncate">{{ formatItemName(item.itemName) }}</span>
                     <div class="font-mono text-right shrink-0">
                       <span class="font-bold text-slate-800">{{ item.allocatedQtyTon ? item.allocatedQtyTon + ' 吨' : (item.plannedQty?.toLocaleString() + ' ' + item.unit) }}</span>
-                      <span class="text-[9px] text-amber-600 block">限价: {{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD</span>
+                      <span class="text-[9px] text-amber-600 block">{{ $t('warehouse.priceCapPrefix') || '限价: ' }}{{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD</span>
                     </div>
                   </div>
                   <div v-if="row.items && row.items.length > 3" class="text-[10px] text-slate-400 text-right">
-                    等共 {{ row.items.length }} 种战略保供物资...
+                    {{ $t('warehouse.moreItemsCount', { count: row.items.length }) || `等共 ${row.items.length} 种战略保供物资...` }}
                   </div>
                 </div>
               </template>
             </el-table-column>
 
             <!-- 6. 计划起止与交接期 -->
-            <el-table-column prop="scheduleDate" label="执行起止周期" min-width="145">
+            <el-table-column prop="scheduleDate" :label="$t('warehouse.executionCycleTitle') || '执行起止周期'" min-width="145">
               <template #default="{ row }">
                 <div class="font-mono text-slate-700 text-[11px]">
                   {{ row.scheduleStartDate || '2026-10-01' }}
                 </div>
                 <div class="font-mono text-slate-400 text-[10px]">
-                  至 {{ row.scheduleEndDate || '2026-10-31' }}
+                  {{ $t('warehouse.dateSeparator') || '至' }} {{ row.scheduleEndDate || '2026-10-31' }}
                 </div>
                 <div class="text-[10px] text-blue-600 font-mono">
-                  排程交付: {{ row.scheduledDeliveryDate || '2026-10-15' }}
+                  {{ $t('warehouse.scheduledDeliveryDate') || '排程交付: ' }}{{ row.scheduledDeliveryDate || '2026-10-15' }}
                 </div>
               </template>
             </el-table-column>
 
             <!-- 7. 任务状态 -->
-            <el-table-column prop="taskStatus" label="履约状态" width="115" align="center">
+            <el-table-column prop="taskStatus" :label="$t('warehouse.fulfillmentStatusLabel') || '履约状态'" width="115" align="center">
               <template #default="{ row }">
                 <el-tag
                   size="small"
@@ -527,7 +622,7 @@
                       : 'danger'
                   "
                 >
-                  {{ row.taskStatus || row.status }}
+                  {{ formatTaskStatus(row.taskStatus || row.status) }}
                 </el-tag>
                 <div v-if="row.riskReason" class="text-[9px] text-red-500 truncate max-w-[100px] mt-0.5" :title="row.riskReason">
                   {{ row.riskReason }}
@@ -536,10 +631,10 @@
             </el-table-column>
 
             <!-- 8. 操作 -->
-            <el-table-column label="操作" width="110" align="center" fixed="right">
+            <el-table-column :label="$t('common.actions') || '操作'" width="110" align="center" fixed="right">
               <template #default="{ row }">
                 <el-button size="small" type="primary" plain @click="handleViewTask(row)">
-                  全链详情
+                  {{ $t('warehouse.taskDetailBtn') || '全链详情' }}
                 </el-button>
               </template>
             </el-table-column>
@@ -1128,6 +1223,52 @@ const isAppMode = computed(() => {
 
 const isAdmin = computed(() => authStore.isAdmin);
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
+
+function formatTaskStatus(status) {
+  if (!status) return '';
+  const s = String(status).trim();
+  if (s === '正常履约中' || s === 'Normal Progress' || s === 'قيد التوزيع الطبيعي' || s === 'لە جێبەجێکردنی ئاسایی') {
+    return t('warehouse.statusNormalFulfilling') || (isEn.value ? 'Normal Progress' : '正常履约中');
+  }
+  if (s === '履约滞后预警' || s === 'Lag Alert' || s === 'تنبيه تأخير التوزيع' || s === 'هۆشداری دواکەوتن') {
+    return t('warehouse.statusLagAlert') || (isEn.value ? 'Lag Alert' : '履约滞后预警');
+  }
+  if (s === '短缺风险预警' || s === 'Shortage Risk' || s === 'مخاطر نقص المخزون' || s === 'مەترسی کورتهێنان') {
+    return t('warehouse.statusShortageRisk') || (isEn.value ? 'Shortage Risk' : '短缺风险预警');
+  }
+  if (s === '已完结' || s === 'Completed' || s === 'مكتمل' || s === 'تەواوکراو') {
+    return t('warehouse.statusFinished') || (isEn.value ? 'Completed' : '已完结');
+  }
+  return status;
+}
+
+function formatItemName(name) {
+  if (!name) return '';
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'Wheat Flour';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'Rice (Imported)';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'Vegetable Oil';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'Refined Sugar';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'Milk Powder';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'Black Tea';
+  } else if (lang === 'ar') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'طحين الحنطة';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'أرز مستورد';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'زيت نباتي مكرر';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود نخب';
+  } else if (lang === 'ku') {
+    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنم';
+    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی هاوردەکراو';
+    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
+    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'شەکری سپی';
+    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'شیری وشککراو';
+    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'چای ڕەش';
+  }
+  return name;
+}
 
 // 公民电子配给卡弹窗与动态防伪凭证
 const cardModalVisible = ref(false);

@@ -4,15 +4,15 @@
     <!-- 1. 顶部操作栏：搜索筛选 + 【📸 扫码核验交货】核心大按钮 -->
     <!-- ======================================================== -->
     <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/80 space-y-3">
-      <!-- 搜索、履约类型筛选与扫码交货大按钮 -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-        <div class="flex items-center gap-2 flex-1">
+      <!-- 搜索、履约类型筛选与扫码交货大按钮 (自适应 APP 移动端视口) -->
+      <div :class="isAppMode ? 'space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5'">
+        <div :class="isAppMode ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-1'">
           <el-input
             v-model="searchKeyword"
             :placeholder="$t('agentOrders.searchPlaceholder')"
             clearable
             size="small"
-            class="flex-1 max-w-md"
+            class="flex-1"
             @input="handleSearch"
           >
             <template #prefix>
@@ -23,7 +23,7 @@
           <el-select
             v-model="deliveryTypeFilter"
             size="small"
-            class="w-32 shrink-0"
+            class="w-28 sm:w-32 shrink-0"
             @change="loadOrders"
           >
             <el-option :label="$t('agentOrders.typeAll')" value="ALL" />
@@ -32,21 +32,28 @@
           </el-select>
         </div>
 
-        <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+        <div :class="isAppMode ? 'grid grid-cols-2 gap-2 pt-0.5' : 'flex items-center justify-between sm:justify-end gap-2 shrink-0'">
           <!-- 阶段 4 核心：扫码核验交货按钮 (高亮翠绿) -->
           <el-button
             type="success"
             size="small"
-            class="font-bold shadow-xs px-3.5 bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center gap-1.5 rounded-xl"
+            class="font-bold shadow-xs px-3 bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center justify-center gap-1.5 rounded-xl !m-0"
+            :class="isAppMode ? '!h-8 !w-full' : ''"
             @click="openScanVerifyModal()"
           >
             <el-icon class="text-base"><Camera /></el-icon>
-            <span>{{ $t('orderClaim.scanVerifyBtn') }}</span>
+            <span class="truncate">{{ $t('orderClaim.scanVerifyBtn') }}</span>
           </el-button>
 
-          <el-button size="small" :loading="loading" @click="loadOrders">
+          <el-button
+            size="small"
+            :loading="loading"
+            class="!m-0 rounded-xl"
+            :class="isAppMode ? '!h-8 !w-full flex items-center justify-center' : ''"
+            @click="loadOrders"
+          >
             <el-icon class="mr-1"><Refresh /></el-icon>
-            {{ $t('common.refresh') }}
+            <span>{{ $t('common.refresh') }}</span>
           </el-button>
         </div>
       </div>
@@ -285,7 +292,7 @@
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
-              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ isEn ? 'Delivery Photo' : '送达拍照核验' }}）</span>
+              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ $t('agentOrders.deliveryPhotoVerify') || '送达拍照核验' }}）</span>
             </el-button>
 
             <!-- 阶段 4 核心：备货就绪状态 -> 打开摄像头扫码核验 (先拍照扫码，再出确认单) -->
@@ -296,7 +303,7 @@
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
-              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ isEn ? 'Pickup Photo' : '到店拍照核验' }}）</span>
+              <span>{{ $t('orderClaim.scanVerifyBtn') }}（{{ $t('agentOrders.pickupPhotoVerify') || '到店拍照核验' }}）</span>
             </el-button>
 
             <!-- 已交付完结 -->
@@ -349,8 +356,8 @@
               :class="dispatchForm.vehicleNo.includes('78219') ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
               @click="applyQuickDriver(0)"
             >
-              <div class="text-xs font-bold">哈希姆·阿里</div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5">BG-78219 (急送货车)</div>
+              <div class="text-xs font-bold">{{ $t('agentOrders.driver1Name') || '哈希姆·阿里' }}</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $t('agentOrders.driver1Desc') || 'BG-78219 (急送货车)' }}</div>
             </button>
 
             <button
@@ -359,8 +366,8 @@
               :class="dispatchForm.vehicleNo.includes('33812') ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
               @click="applyQuickDriver(1)"
             >
-              <div class="text-xs font-bold">萨米尔·卡西姆</div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5">BG-33812 (冷链专车)</div>
+              <div class="text-xs font-bold">{{ $t('agentOrders.driver2Name') || '萨米尔·卡西姆' }}</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $t('agentOrders.driver2Desc') || 'BG-33812 (冷链专车)' }}</div>
             </button>
           </div>
         </div>
@@ -904,10 +911,10 @@ const quickDrivers = [
 function applyQuickDriver(idx) {
   const d = quickDrivers[idx];
   if (d) {
-    dispatchForm.value.deliveryPerson = d.name;
+    dispatchForm.value.deliveryPerson = idx === 0 ? (t('agentOrders.driver1Name') || d.name) : (t('agentOrders.driver2Name') || d.name);
     dispatchForm.value.driverPhone = d.phone;
-    dispatchForm.value.vehicleNo = d.vehicleNo;
-    dispatchForm.value.estimatedTime = d.time;
+    dispatchForm.value.vehicleNo = idx === 0 ? (t('agentOrders.driver1Desc') || d.vehicleNo) : (t('agentOrders.driver2Desc') || d.vehicleNo);
+    dispatchForm.value.estimatedTime = idx === 0 ? (t('agentOrders.est30Mins') || d.time) : (t('agentOrders.est1Hour') || d.time);
   }
 }
 

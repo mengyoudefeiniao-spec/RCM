@@ -92,53 +92,5 @@ export const MOCK_FAMILIES = [
         faceVerified: true
       }
     ]
-  },
-  {
-    rationCardNo: 'RC-10034592',
-    oldPaperCardNo: 'BSR-02-33419',
-    familyCode: 'FAM-BSR-11902',
-    province: '巴士拉省 (Basra)',
-    district: '阿夏尔中心配给站 (#02)',
-    headName: '海德尔·卡西姆·纳赛尔',
-    phone: '07801122334',
-    memberCount: 4,
-    status: '正常',
-    agentId: 'FA-00210',
-    agentName: '阿夏尔第一食品代销点',
-    address: '巴士拉市阿夏尔码头大道77号',
-    createdDate: '2026-02-01',
-    lastSelfCheckDate: '2026-03-25',
-    members: [
-      {
-        id: 'M-101',
-        name: '海德尔·卡西姆·纳赛尔',
-        nationalId: '197211029381',
-        familyCode: 'FAM-BSR-11902',
-        relation: '户主',
-        birthDate: '1972-04-14',
-        gender: '男',
-        status: '正常',
-        phone: '07801122334',
-        residenceInfo: '巴士拉市阿夏尔码头大道77号',
-        monthlyIncome: 800000,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      },
-      {
-        id: 'M-102',
-        name: '麦尔彦·贾西姆',
-        nationalId: '197611029382',
-        familyCode: 'FAM-BSR-11902',
-        relation: '配偶',
-        birthDate: '1976-12-08',
-        gender: '女',
-        status: '正常',
-        phone: '07801122335',
-        residenceInfo: '巴士拉市阿夏尔码头大道77号',
-        monthlyIncome: 0,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      }
-    ]
   }
 ];
