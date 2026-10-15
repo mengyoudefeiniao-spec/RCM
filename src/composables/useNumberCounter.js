@@ -132,11 +132,12 @@ export function useNumberCounter(targetValue, options = {}) {
     kill();
   });
 
-  return {
+  return reactive({
     displayValue,
     currentNumber,
+    currentValue: computed(() => state.current),
     animateTo,
     restart,
     kill
-  };
+  });
 }

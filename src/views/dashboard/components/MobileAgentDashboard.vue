@@ -14,7 +14,7 @@
       <!-- 背景图图层：真实截图处理后的无字背景大图 -->
       <img
         src="/images/dashboard-banner.png"
-        alt="National Food Support Platform Background"
+        alt="National Ration Card System Background"
         class="absolute inset-0 w-full h-full object-cover object-left sm:object-center select-none pointer-events-none"
         loading="eager"
       />

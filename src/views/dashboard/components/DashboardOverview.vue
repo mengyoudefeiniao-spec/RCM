@@ -11,7 +11,7 @@
       <!-- 背景图图层：使用用户截图无痕去字后的高品质真实建筑全景底图 -->
       <img
         src="/images/dashboard-banner.png"
-        alt="National Food Support Platform Background"
+        alt="National Ration Card System Background"
         class="absolute inset-0 w-full h-full object-cover object-left md:object-center select-none pointer-events-none"
         loading="eager"
       />
@@ -96,7 +96,8 @@
         <!-- 卡片头部：小标题与浅砂金底线性图标 -->
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardOrdersTitle') }}</span>
+            <span class="font-serif font-bold">الطلبات</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardOrdersTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Document /></el-icon>
@@ -160,7 +161,8 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardCitizensTitle') }}</span>
+            <span class="font-serif font-bold">المواطنون والأسر</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardCitizensTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><House /></el-icon>
@@ -213,7 +215,8 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardVerificationTitle') }}</span>
+            <span class="font-serif font-bold">التحقق من الهوية</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardVerificationTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Avatar /></el-icon>
@@ -267,7 +270,8 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardDistributionTitle') }}</span>
+            <span class="font-serif font-bold">توزيع الغذاء</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardDistributionTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Box /></el-icon>
@@ -321,7 +325,8 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardAgentsTitle') }}</span>
+            <span class="font-serif font-bold">عمليات الوكلاء</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardAgentsTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Shop /></el-icon>
@@ -375,7 +380,8 @@
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
           <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span>{{ $t('dashboardOverview.cardSystemTitle') }}</span>
+            <span class="font-serif font-bold">النظام والربط</span>
+            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardSystemTitle') }}</span>
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Connection /></el-icon>
@@ -489,47 +495,21 @@ const countFailedTasks = useNumberCounter(1, { duration: 1.0, delay: 0.4 });
 const countPendingDiscrepancies = useNumberCounter(2, { duration: 1.0, delay: 0.45 });
 
 // ====================================================================
-// GSAP 进场动画与悬停微交互
+// 跨标签页业务事件监听与实时指标联动
 // ====================================================================
-let pageTimeline = null;
 let unsubTicket = null;
 let unsubOrder = null;
 
 onMounted(async () => {
   await nextTick();
 
-  // 1. 顶部 Header Banner 与 卡片矩阵进场错落动效 (Stagger)
-  pageTimeline = gsap.timeline();
-
-  if (headerBannerRef.value) {
-    pageTimeline.from(headerBannerRef.value, {
-      opacity: 0,
-      y: 25,
-      duration: 0.9,
-      ease: 'power3.out'
-    });
-  }
-
-  if (cardsContainerRef.value) {
-    const cards = cardsContainerRef.value.querySelectorAll('.rcm-metric-card');
-    pageTimeline.from(
-      cards,
-      {
-        opacity: 0,
-        y: 24,
-        duration: 0.7,
-        stagger: 0.08,
-        ease: 'power2.out'
-      },
-      '-=0.5'
-    );
-  }
-
-  // 2. 跨标签页业务事件监听：公民提交业务申请工单
+  // 1. 跨标签页业务事件监听：公民提交业务申请工单
   unsubTicket = onTabMessage('TICKET_SUBMITTED', (ticket) => {
     // 动态增加大盘申请与待审指标
-    countTotalOrders.animateTo(countTotalOrders.currentValue.value + 1);
-    countUnderReview.animateTo(countUnderReview.currentValue.value + 1);
+    const curTotal = typeof countTotalOrders.currentValue === 'number' ? countTotalOrders.currentValue : (countTotalOrders.currentValue?.value || 48210);
+    const curReview = typeof countUnderReview.currentValue === 'number' ? countUnderReview.currentValue : (countUnderReview.currentValue?.value || 3920);
+    countTotalOrders.animateTo(curTotal + 1);
+    countUnderReview.animateTo(curReview + 1);
 
     // 优雅通知提醒
     ElNotification({
@@ -541,11 +521,13 @@ onMounted(async () => {
     });
   });
 
-  // 3. 跨标签页业务事件监听：公民完成配给选购支付
+  // 2. 跨标签页业务事件监听：公民完成配给选购支付
   unsubOrder = onTabMessage('ORDER_PURCHASED', (order) => {
     // 动态增加今日派发与领取家庭指标
-    countTodayDispatches.animateTo(countTodayDispatches.currentValue.value + 1);
-    countReceivedFamilies.animateTo(countReceivedFamilies.currentValue.value + 1);
+    const curDispatch = typeof countTodayDispatches.currentValue === 'number' ? countTodayDispatches.currentValue : (countTodayDispatches.currentValue?.value || 62310);
+    const curReceived = typeof countReceivedFamilies.currentValue === 'number' ? countReceivedFamilies.currentValue : (countReceivedFamilies.currentValue?.value || 938040);
+    countTodayDispatches.animateTo(curDispatch + 1);
+    countReceivedFamilies.animateTo(curReceived + 1);
 
     ElNotification({
       title: t('dashboardOverview.crossTabOrderTitle'),
@@ -558,10 +540,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  if (pageTimeline) {
-    pageTimeline.kill();
-    pageTimeline = null;
-  }
   if (unsubTicket) {
     unsubTicket();
     unsubTicket = null;
@@ -648,7 +626,25 @@ async function handleManualRefresh() {
   background-color: var(--el-bg-color-page, #F8F7F3);
 }
 
+@keyframes rcmCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-banner {
+  opacity: 1;
+  animation: rcmCardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .rcm-metric-card {
+  opacity: 1 !important;
+  animation: rcmCardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

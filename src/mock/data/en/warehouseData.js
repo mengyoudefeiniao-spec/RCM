@@ -1114,44 +1114,44 @@ export const MOCK_RATION_PLANS = [
   {
     "id": "PLAN-001",
     "planNo": "PLAN-2026-Q4-001",
-    "title": "2026年第四季度全员战略粮油口粮保供计划",
-    "periodName": "2026年第4季度 (10月-12月)",
+    "title": "Q4 2026 National Strategic Grain & Oil Ration Plan",
+    "periodName": "Q4 2026 (Oct - Dec)",
     "startDate": "2026-10-01",
     "endDate": "2026-12-31",
-    "scope": "全国18省全域 (重点倾斜覆盖第140号决议争议区与受损安置点)",
+    "scope": "National 18 Governorates (Priority for Res. 140 Disputed Areas)",
     "targetHouseholds": 1250000,
     "targetBeneficiaries": 5625000,
-    "issuer": "伊拉克贸易部Food配给署总规划司",
+    "issuer": "Ministry of Trade Strategic Food Planning Directorate",
     "issueDate": "2026-09-28",
-    "status": "执行中",
-    "allocationStatus": "已自动分解排程",
+    "status": "In Progress",
+    "allocationStatus": "Auto-Scheduled",
     "quotaStandards": [
       {
-        "itemName": "精制Rice",
+        "itemName": "Rice (Imported)",
         "itemCode": "RICE-BAS-01",
         "quotaPerPerson": 3,
-        "unit": "KG/人/月",
+        "unit": "KG/person/mo",
         "totalQty": 50625000
       },
       {
-        "itemName": "特级Flour",
+        "itemName": "Wheat Flour",
         "itemCode": "FLOUR-WHT-02",
         "quotaPerPerson": 9,
-        "unit": "KG/人/月",
+        "unit": "KG/person/mo",
         "totalQty": 151875000
       },
       {
-        "itemName": "食用植物油",
+        "itemName": "Vegetable Oil",
         "itemCode": "OIL-SUN-03",
         "quotaPerPerson": 1,
-        "unit": "L/人/月",
+        "unit": "L/person/mo",
         "totalQty": 16875000
       },
       {
-        "itemName": "纯精Sugar",
+        "itemName": "Refined Sugar",
         "itemCode": "SUGAR-WHT-04",
         "quotaPerPerson": 1,
-        "unit": "KG/人/月",
+        "unit": "KG/person/mo",
         "totalQty": 16875000
       }
     ],
@@ -1168,30 +1168,30 @@ export const MOCK_RATION_PLANS = [
   {
     "id": "PLAN-002",
     "planNo": "PLAN-2026-Q3-002",
-    "title": "2026年第三季度夏季保供配给计划",
-    "periodName": "2026年第3季度 (7月-9月)",
+    "title": "Q3 2026 Summer Strategic Food Ration Plan",
+    "periodName": "Q3 2026 (Jul - Sep)",
     "startDate": "2026-07-01",
     "endDate": "2026-09-30",
-    "scope": "全国18省全域",
+    "scope": "National 18 Governorates",
     "targetHouseholds": 1248000,
     "targetBeneficiaries": 5616000,
-    "issuer": "伊拉克贸易部Food配给署总规划司",
+    "issuer": "Ministry of Trade Strategic Food Planning Directorate",
     "issueDate": "2026-06-25",
-    "status": "已完成",
-    "allocationStatus": "已完结归档",
+    "status": "Completed",
+    "allocationStatus": "Archived",
     "quotaStandards": [
       {
-        "itemName": "精制Rice",
+        "itemName": "Rice (Imported)",
         "itemCode": "RICE-BAS-01",
         "quotaPerPerson": 3,
-        "unit": "KG/人/月",
+        "unit": "KG/person/mo",
         "totalQty": 50544000
       },
       {
-        "itemName": "特级Flour",
+        "itemName": "Wheat Flour",
         "itemCode": "FLOUR-WHT-02",
         "quotaPerPerson": 9,
-        "unit": "KG/人/月",
+        "unit": "KG/person/mo",
         "totalQty": 151632000
       }
     ],

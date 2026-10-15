@@ -251,7 +251,7 @@
                 <div class="text-[11px] text-slate-500 font-mono mt-0.5 flex items-center gap-2">
                   <span>{{ $t('warehouse.planNoPrefix') || '编号: ' }}{{ plan.planNo }}</span>
                   <span>·</span>
-                  <span>{{ $t('warehouse.cyclePrefix') || '周期: ' }}{{ plan.periodName }}</span>
+                  <span>{{ $t('warehouse.cyclePrefix') || '周期: ' }}{{ formatPeriodName(plan.periodName) }}</span>
                 </div>
               </div>
               <el-tag size="small" type="primary" effect="plain" class="shrink-0 text-[10px]">
@@ -433,7 +433,7 @@
                   effect="dark"
                   class="font-bold scale-90"
                 >
-                  {{ task.agentLevelName || (task.agentLevel === 'PROVINCE' ? ($t('warehouse.levelProvince') || '省级代理') : task.agentLevel === 'DISTRICT' ? ($t('warehouse.levelDistrict') || '区域代理') : ($t('warehouse.levelStreet') || '街道代理')) }}
+                  {{ formatAgentLevel(task) }}
                 </el-tag>
                 <el-tag
                   size="small"
@@ -524,7 +524,7 @@
                     effect="dark"
                     class="font-bold scale-90"
                   >
-                    {{ row.agentLevelName || (row.agentLevel === 'PROVINCE' ? ($t('warehouse.levelProvince') || '省级代理') : row.agentLevel === 'DISTRICT' ? ($t('warehouse.levelDistrict') || '区域代理') : ($t('warehouse.levelStreet') || '街道代理')) }}
+                    {{ formatAgentLevel(row) }}
                   </el-tag>
                   <span v-if="row.isSelf" class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200">
                     {{ $t('warehouse.isSelfDirect') || '本人直营' }}
@@ -685,18 +685,18 @@
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <span class="font-bold text-slate-700 block mb-1">选择贸易部月度总计划：</span>
+              <span class="font-bold text-slate-700 block mb-1">{{ isEn ? 'Select Ministry Strategic Plan:' : '选择贸易部月度总计划：' }}</span>
               <el-select v-model="selectedDecomposePlanId" class="w-full" size="small" @change="handlePlanSelectChange">
                 <el-option
                   v-for="p in plans"
                   :key="p.id"
-                  :label="`${p.title} (${p.periodName})`"
+                  :label="`${formatPlanTitle(p.title)} (${formatPeriodName(p.periodName)})`"
                   :value="p.id"
                 />
               </el-select>
             </div>
             <div>
-              <span class="font-bold text-slate-700 block mb-1">目标排程月份周期：</span>
+              <span class="font-bold text-slate-700 block mb-1">{{ isEn ? 'Target Scheduled Month:' : '目标排程月份周期：' }}</span>
               <el-date-picker
                 v-model="targetDecomposeMonth"
                 type="month"
@@ -1375,41 +1375,122 @@ function formatPlanTitle(title) {
   if (!title) return '';
   const lang = locale.value;
   if (lang === 'en') {
+    if (title.includes('第四季度') || title.includes('Q4')) return 'Q4 2026 National Strategic Grain & Oil Ration Plan';
+    if (title.includes('第三季度') || title.includes('Q3')) return 'Q3 2026 Summer Strategic Food Ration Plan';
+    if (title.includes('第二季度') || title.includes('Q2')) return 'Q2 2026 National Strategic Food Ration Plan';
+    if (title.includes('第一季度') || title.includes('Q1')) return 'Q1 2026 National Strategic Food Ration Plan';
     if (title.includes('2026年10月')) return 'October 2026 National Strategic Ration Plan';
-    if (title.includes('2026年09月')) return 'September 2026 National Strategic Ration Plan';
+    if (title.includes('2026年09月') || title.includes('2026年9月')) return 'September 2026 National Strategic Ration Plan';
     if (title.includes('2026年11月')) return 'November 2026 National Strategic Ration Plan';
+    if (title.includes('2026年12月')) return 'December 2026 National Strategic Ration Plan';
+    if (title.includes('新增战略物资口粮保供计划')) return 'New Strategic Food Ration Supply Plan';
   } else if (lang === 'ar') {
+    if (title.includes('第四季度') || title.includes('Q4')) return 'خطة التموين الاستراتيجية للربع الرابع 2026';
+    if (title.includes('第三季度') || title.includes('Q3')) return 'خطة التموين الصيفية للربع الثالث 2026';
+    if (title.includes('第二季度') || title.includes('Q2')) return 'خطة التموين الاستراتيجية للربع الثاني 2026';
+    if (title.includes('第一季度') || title.includes('Q1')) return 'خطة التموين الاستراتيجية للربع الأول 2026';
     if (title.includes('2026年10月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر تشرين الأول 2026';
-    if (title.includes('2026年09月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر أيلول 2026';
+    if (title.includes('2026年09月') || title.includes('2026年9月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر أيلول 2026';
     if (title.includes('2026年11月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر تشرين الثاني 2026';
+    if (title.includes('新增战略物资口粮保供计划')) return 'خطة إمدادات الحصص الاستراتيجية الجديدة';
   } else if (lang === 'ku') {
+    if (title.includes('第四季度') || title.includes('Q4')) return 'پلانی بەشەخۆراکی وەرزی چوارەمی ٢٠٢٦';
+    if (title.includes('第三季度') || title.includes('Q3')) return 'پلانی بەشەخۆراکی هاوینەی وەرزی سێیەمی ٢٠٢٦';
+    if (title.includes('第二季度') || title.includes('Q2')) return 'پلانی بەشەخۆراکی وەرزی دووەمی ٢٠٢٦';
+    if (title.includes('第一季度') || title.includes('Q1')) return 'پلانی بەشەخۆراکی وەرزی یەکەمی ٢٠٢٦';
     if (title.includes('2026年10月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ تشرینی یەکەمی ٢٠٢٦';
-    if (title.includes('2026年09月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ ئەیلوولی ٢٠٢٦';
+    if (title.includes('2026年09月') || title.includes('2026年9月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ ئەیلوولی ٢٠٢٦';
     if (title.includes('2026年11月')) return 'پلانی ستراتیژی بەشەخۆراکی نیشتمانی بۆ تشرینی دووەمی ٢٠٢٦';
+    if (title.includes('新增战略物资口粮保供计划')) return 'پلانی نوێی بەشەخۆراکی ستراتیژی';
+  } else {
+    if (title.includes('Q4 2026')) return '2026年第四季度全员战略粮油口粮保供计划';
+    if (title.includes('Q3 2026')) return '2026年第三季度夏季保供配给计划';
   }
   return title;
 }
 
-function formatPlanStatus(st) {
-  if (!st) return '';
+function formatPeriodName(period) {
+  if (!period) return '';
   const lang = locale.value;
   if (lang === 'en') {
-    if (st === '执行中' || st === 'ACTIVE') return 'Active / In Progress';
-    if (st === '已完结' || st === 'COMPLETED') return 'Completed';
-    if (st === '已排程') return 'Scheduled';
-    if (st === '待排程') return 'Pending Schedule';
+    if (period.includes('第3季度') || period.includes('第三季度') || period.includes('Q3')) return 'Q3 2026 (Jul - Sep)';
+    if (period.includes('第4季度') || period.includes('第四季度') || period.includes('Q4')) return 'Q4 2026 (Oct - Dec)';
+    if (period.includes('第1季度') || period.includes('第一季度') || period.includes('Q1')) return 'Q1 2026 (Jan - Mar)';
+    if (period.includes('第2季度') || period.includes('第二季度') || period.includes('Q2')) return 'Q2 2026 (Apr - Jun)';
+    if (period.includes('10月度') || period.includes('2026-10') || period.includes('2026年10月')) return 'October 2026';
+    if (period.includes('09月度') || period.includes('9月度') || period.includes('2026-09') || period.includes('2026年09月')) return 'September 2026';
+    if (period.includes('11月度') || period.includes('2026-11') || period.includes('2026年11月')) return 'November 2026';
+    if (period.includes('12月度') || period.includes('2026-12') || period.includes('2026年12月')) return 'December 2026';
+    if (period.includes('保供周期')) return '2026 Ration Cycle';
   } else if (lang === 'ar') {
-    if (st === '执行中' || st === 'ACTIVE') return 'قيد التنفيذ';
-    if (st === '已完结' || st === 'COMPLETED') return 'مكتمل';
-    if (st === '已排程') return 'تمت الجدولة';
-    if (st === '待排程') return 'بانتظار الجدولة';
+    if (period.includes('第3季度') || period.includes('第三季度') || period.includes('Q3')) return 'الربع الثالث 2026 (تموز - أيلول)';
+    if (period.includes('第4季度') || period.includes('第四季度') || period.includes('Q4')) return 'الربع الرابع 2026 (تشرين الأول - كانون الأول)';
+    if (period.includes('第1季度') || period.includes('第一季度') || period.includes('Q1')) return 'الربع الأول 2026 (كانون الثاني - آذار)';
+    if (period.includes('第2季度') || period.includes('第二季度') || period.includes('Q2')) return 'الربع الثاني 2026 (نيسان - حزيران)';
+    if (period.includes('10月度') || period.includes('2026-10') || period.includes('2026年10月')) return 'دورة تشرين الأول 2026';
+    if (period.includes('09月度') || period.includes('9月度') || period.includes('2026-09') || period.includes('2026年09月')) return 'دورة أيلول 2026';
+    if (period.includes('11月度') || period.includes('2026-11') || period.includes('2026年11月')) return 'دورة تشرين الثاني 2026';
   } else if (lang === 'ku') {
-    if (st === '执行中' || st === 'ACTIVE') return 'لە جێبەجێکردندا';
-    if (st === '已完结' || st === 'COMPLETED') return 'تەواوکراو';
-    if (st === '已排程') return 'خشتەکراو';
-    if (st === '待排程') return 'چاوەڕوانی خشتەکردن';
+    if (period.includes('第3季度') || period.includes('第三季度') || period.includes('Q3')) return 'وەرزی سێیەمی ٢٠٢٦ (تەمووز - ئەیلوول)';
+    if (period.includes('第4季度') || period.includes('第四季度') || period.includes('Q4')) return 'وەرزی چوارەمی ٢٠٢٦ (تشرینی یەکەم - کانوونی یەکەم)';
+    if (period.includes('第1季度') || period.includes('第一季度') || period.includes('Q1')) return 'وەرزی یەکەمی ٢٠٢٦ (کانوونی دووەم - ئازار)';
+    if (period.includes('第2季度') || period.includes('第二季度') || period.includes('Q2')) return 'وەرزی دووەمی ٢٠٢٦ (نیسان - حوزەیران)';
+    if (period.includes('10月度') || period.includes('2026-10') || period.includes('2026年10月')) return 'خولی تشرینی یەکەمی ٢٠٢٦';
+    if (period.includes('09月度') || period.includes('9月度') || period.includes('2026-09') || period.includes('2026年09月')) return 'خولی ئەیلوولی ٢٠٢٦';
+    if (period.includes('11月度') || period.includes('2026-11') || period.includes('2026年11月')) return 'خولی تشرینی دووەمی ٢٠٢٦';
+  } else {
+    if (period.includes('Q3 2026')) return '2026年第3季度 (7月-9月)';
+    if (period.includes('Q4 2026')) return '2026年第4季度 (10月-12月)';
+  }
+  return period;
+}
+
+function formatPlanStatus(st) {
+  if (!st) return '';
+  const s = String(st).trim();
+  const lang = locale.value;
+  if (lang === 'en') {
+    if (s === '执行中' || s === 'ACTIVE' || s === 'Active' || s === 'In Progress' || s === 'Active / In Progress') return 'Active';
+    if (s === '已完成' || s === 'COMPLETED' || s === 'Completed') return 'Completed';
+    if (s === '已完结归档' || s === '已归档' || s === '已完结' || s === 'ARCHIVED' || s === 'Archived') return 'Archived';
+    if (s === '已排程' || s === '已完成三级代理排程' || s === '已自动分解排程' || s === 'SCHEDULED' || s === 'Auto-Scheduled') return 'Scheduled';
+    if (s === '待排程' || s === '待下发' || s === '待分解排程' || s === '待三级代理排程' || s === 'PENDING' || s === 'Pending Schedule') return 'Pending Schedule';
+  } else if (lang === 'ar') {
+    if (s === '执行中' || s === 'ACTIVE' || s === 'Active' || s === 'In Progress' || s === 'Active / In Progress') return 'قيد التنفيذ';
+    if (s === '已完成' || s === 'COMPLETED' || s === 'Completed') return 'مكتمل';
+    if (s === '已完结归档' || s === '已归档' || s === '已完结' || s === 'ARCHIVED' || s === 'Archived') return 'مؤرشف';
+    if (s === '已排程' || s === '已完成三级代理排程' || s === '已自动分解排程' || s === 'SCHEDULED' || s === 'Auto-Scheduled') return 'تمت الجدولة';
+    if (s === '待排程' || s === '待下发' || s === '待分解排程' || s === '待三级代理排程' || s === 'PENDING' || s === 'Pending Schedule') return 'بانتظار الجدولة';
+  } else if (lang === 'ku') {
+    if (s === '执行中' || s === 'ACTIVE' || s === 'Active' || s === 'In Progress' || s === 'Active / In Progress') return 'لە جێبەجێکردندا';
+    if (s === '已完成' || s === 'COMPLETED' || s === 'Completed') return 'تەواوکراو';
+    if (s === '已完结归档' || s === '已归档' || s === '已完结' || s === 'ARCHIVED' || s === 'Archived') return 'ئەرشیڤکراو';
+    if (s === '已排程' || s === '已完成三级代理排程' || s === '已自动分解排程' || s === 'SCHEDULED' || s === 'Auto-Scheduled') return 'خشتەکراو';
+    if (s === '待排程' || s === '待下发' || s === '待分解排程' || s === '待三级代理排程' || s === 'PENDING' || s === 'Pending Schedule') return 'چاوەڕوانی خشتەکردن';
+  } else {
+    if (s === 'Active' || s === 'In Progress') return '执行中';
+    if (s === 'Completed') return '已完成';
+    if (s === 'Archived') return '已完结归档';
+    if (s === 'Auto-Scheduled' || s === 'Scheduled') return '已完成排程';
+    if (s === 'Pending Schedule') return '待排程';
   }
   return st;
+}
+
+function formatAgentLevel(item) {
+  if (!item) return '';
+  const level = typeof item === 'string' ? item : (item.agentLevel || '');
+  const name = typeof item === 'object' ? (item.agentLevelName || '') : '';
+  if (level === 'PROVINCE' || name.includes('省级') || name.toLowerCase().includes('provinc')) {
+    return t('warehouse.levelProvince') || (isEn.value ? 'Provincial Agent' : '省级代理');
+  }
+  if (level === 'DISTRICT' || name.includes('区域') || name.toLowerCase().includes('district')) {
+    return t('warehouse.levelDistrict') || (isEn.value ? 'District Agent' : '区域代理');
+  }
+  if (level === 'STREET' || name.includes('街道') || name.toLowerCase().includes('street') || name.toLowerCase().includes('local')) {
+    return t('warehouse.levelStreet') || (isEn.value ? 'Local Station' : '街道代理');
+  }
+  return name || level;
 }
 const cardModalVisible = ref(false);
 const liveCardClock = ref('');

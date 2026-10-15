@@ -267,7 +267,11 @@ const multiLangStores = {
     ticketsStore: JSON.parse(JSON.stringify(enReview.MOCK_REVIEW_TICKETS)),
     stocksStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_STOCKS)),
     rationPlansStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_RATION_PLANS)),
-    agentAllocationTasksStore: JSON.parse(JSON.stringify(zhWarehouse.MOCK_AGENT_ALLOCATION_TASKS)),
+    agentAllocationTasksStore: zhWarehouse.MOCK_AGENT_ALLOCATION_TASKS.map((t) => ({
+      ...t,
+      agentLevelName: t.agentLevel === 'PROVINCE' ? 'Provincial Agent' : t.agentLevel === 'DISTRICT' ? 'District Agent' : 'Local Station',
+      taskStatus: t.taskStatus === '正常履约中' ? 'Normal Progress' : t.taskStatus === '已完结' ? 'Completed' : t.taskStatus
+    })),
     inboundOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_INBOUND_ORDERS)),
     outboundOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_OUTBOUND_ORDERS)),
     transferOrdersStore: JSON.parse(JSON.stringify(enWarehouse.MOCK_TRANSFER_ORDERS)),
@@ -1587,11 +1591,13 @@ export async function mockDispatch(config) {
         periodMonth: month,
         agentLevel: agent.level,
         agentLevelName:
-          agent.level === 'PROVINCE'
-            ? '省级代理'
-            : agent.level === 'DISTRICT'
-            ? '区域代理'
-            : '街道代理',
+          reqLang === 'en'
+            ? (agent.level === 'PROVINCE' ? 'Provincial Agent' : agent.level === 'DISTRICT' ? 'District Agent' : 'Local Station')
+            : reqLang === 'ar'
+            ? (agent.level === 'PROVINCE' ? 'وكيل المحافظة' : agent.level === 'DISTRICT' ? 'وكيل القضاء' : 'وكيل محلي')
+            : reqLang === 'ku'
+            ? (agent.level === 'PROVINCE' ? 'بریکاری پارێزگا' : agent.level === 'DISTRICT' ? 'بریکاری قەزا' : 'بریکاری ناوخۆیی')
+            : (agent.level === 'PROVINCE' ? '省级代理' : agent.level === 'DISTRICT' ? '区域代理' : '街道代理'),
         agentCenterId: agent.id,
         centerName: agent.storeName || agent.title || agent.name,
         province: agent.province || '巴格达省 (Baghdad)',
@@ -1601,15 +1607,15 @@ export async function mockDispatch(config) {
         isArticle140: !!agent.isArticle140,
         registeredHouseholds: households,
         coveredCitizens: citizens,
-        deliveryCycle: `${month} 月度全量配额`,
+        deliveryCycle: reqLang === 'en' ? `${month} Full Quota Batch` : `${month} 月度全量配额`,
         scheduleStartDate: `${month}-01`,
         scheduleEndDate: `${month}-28`,
         scheduledDeliveryDate: `${month}-15`,
         totalGuideAmountIQD: totalAmount,
-        autoAllocatedFormula: `签约户数 ${households.toLocaleString()}户 × 4人/户 × 国家月度保供配额指标 (依据名下实名签约家庭户数算法锁定，严禁手动篡改)`,
+        autoAllocatedFormula: reqLang === 'en' ? `Registered: ${households.toLocaleString()} families × 4 members × National monthly ration standard` : `签约户数 ${households.toLocaleString()}户 × 4人/户 × 国家月度保供配额指标 (依据名下实名签约家庭户数算法锁定，严禁手动篡改)`,
         items,
-        taskStatus: '正常履约中',
-        status: '执行中',
+        taskStatus: reqLang === 'en' ? 'Normal Progress' : '正常履约中',
+        status: reqLang === 'en' ? 'In Progress' : '执行中',
         riskLevel: 'LOW',
         lastDispatchedDeliveryNo: `DELIV-${month.replace('-', '')}-${agent.id}`
       };
