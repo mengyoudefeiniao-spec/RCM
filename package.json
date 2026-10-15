@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "package:win": "node scripts/package-windows.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
