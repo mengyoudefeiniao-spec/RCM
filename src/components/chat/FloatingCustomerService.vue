@@ -684,7 +684,7 @@ const fabAppStyle = computed(() => {
   // 桌面端 Pixel 9 仿真视口预览：手机视口居中宽 412px，浮窗严格固定在手机视口右内侧
   return {
     right: 'calc(50vw - 192px)',
-    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 46px)) / 2) + 68px)'
+    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 68px)'
   };
 });
 
@@ -704,8 +704,8 @@ const chatWindowAppStyle = computed(() => {
     width: '388px',
     left: '50%',
     transform: 'translateX(-50%)',
-    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 46px)) / 2) + 64px)',
-    maxHeight: 'calc(min(924px, 100vh - 46px) - 100px)'
+    bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 64px)',
+    maxHeight: 'calc(min(924px, 100vh - 20px) - 100px)'
   };
 });
 

@@ -10,6 +10,7 @@ import { i18n } from './locales/index.js';
 import './style.css';
 import './styles/theme.scss';
 import './styles/mobile-theme.scss';
+import './styles/dialog-responsive.css';
 import './assets/css/ht-theme.css';
 
 const app = createApp(App);

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
+import { i18n } from '../locales/index.js';
 
 // 创建统一的 Axios 实例
 const client = axios.create({
@@ -76,7 +77,7 @@ client.interceptors.response.use(
 
     // 401 凭证过期或未授权：统一清理凭据并重定向登录
     if (res.code === 401) {
-      ElMessage.error(res.message || '登录凭据已失效，请重新登录');
+      ElMessage.error(res.message || i18n.global.t('api.sessionExpired'));
       localStorage.removeItem('rcm_auth_token');
       localStorage.removeItem('rcm_user_profile');
       window.location.hash = '#/login';
@@ -84,7 +85,7 @@ client.interceptors.response.use(
     }
 
     // 其它业务异常：统一弹出 Element Plus 提示
-    ElMessage.error(res.message || '业务操作异常');
+    ElMessage.error(res.message || i18n.global.t('api.businessError'));
     return Promise.reject(new Error(res.message || 'Business Error'));
   },
   (error) => {
@@ -97,23 +98,23 @@ client.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    let errorMessage = '网络通信异常，请检查网关服务';
+    let errorMessage = i18n.global.t('api.networkError');
     if (error.response) {
       const status = error.response.status;
       if (status === 401) {
-        errorMessage = '登录超时或令牌无效，请重新登录';
+        errorMessage = i18n.global.t('api.unauthorized');
         localStorage.removeItem('rcm_auth_token');
         localStorage.removeItem('rcm_user_profile');
         window.location.hash = '#/login';
       } else if (status === 403) {
-        errorMessage = '当前角色无权限访问该资源';
+        errorMessage = i18n.global.t('api.forbidden');
       } else if (status === 404) {
-        errorMessage = '请求的微服务接口地址不存在';
+        errorMessage = i18n.global.t('api.notFound');
       } else if (status >= 500) {
-        errorMessage = '后端微服务处理失败 (500)';
+        errorMessage = i18n.global.t('api.serverError');
       }
     } else if (error.message.includes('timeout')) {
-      errorMessage = '请求网关超时，请稍后重试';
+      errorMessage = i18n.global.t('api.timeout');
     }
 
     ElMessage.error(errorMessage);

@@ -8,23 +8,23 @@ export const MOCK_DASHBOARD_STATS = {
   "supplyFulfillmentRate": 99.4,
   "recentDistributionTrend": [
     {
-      "month": "4月",
+      "month": "Apr",
       "amount": 372000
     },
     {
-      "month": "5月",
+      "month": "May",
       "amount": 381000
     },
     {
-      "month": "6月",
+      "month": "Jun",
       "amount": 389000
     },
     {
-      "month": "7月",
+      "month": "Jul",
       "amount": 395000
     },
     {
-      "month": "8月",
+      "month": "Aug",
       "amount": 384500
     }
   ]
@@ -33,7 +33,7 @@ export const MOCK_DASHBOARD_STATS = {
 export const MOCK_ADMIN_DASHBOARD_DATA = {
   "quarter": {
     "timeRange": "quarter",
-    "timeLabel": "2026年第四季度",
+    "timeLabel": "Q4 2026",
     "citizens": {
       "totalCitizens": 38420500,
       "activeBeneficiaries": 36890000,
@@ -42,31 +42,31 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "vulnerableCount": 1280000,
       "ageDistribution": [
         {
-          "name": "0-14岁未成年人",
+          "name": "Minors Aged 0-14",
           "value": 12400000,
           "percentage": 32.3
         },
         {
-          "name": "15-59岁适龄劳动力",
+          "name": "Working-Age Population Aged 15-59",
           "value": 23120500,
           "percentage": 60.2
         },
         {
-          "name": "60岁及以上长者",
+          "name": "Seniors Aged 60+",
           "value": 2900000,
           "percentage": 7.5
         }
       ],
       "growthTrend": {
         "dates": [
-          "第40周",
-          "第41周",
-          "第42周",
-          "第43周",
-          "第44周",
-          "第45周",
-          "第46周",
-          "第47周"
+          "Week 40",
+          "Week 41",
+          "Week 42",
+          "Week 43",
+          "Week 44",
+          "Week 45",
+          "Week 46",
+          "Week 47"
         ],
         "newRegistered": [
           21500,
@@ -97,44 +97,44 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "totalBusinessHandled": 78500,
       "sizeDistribution": [
         {
-          "name": "1-2人小家庭",
+          "name": "Small Family (1-2 Members)",
           "count": 1612000,
           "percentage": 17
         },
         {
-          "name": "3-4人标准家庭",
+          "name": "Standard Family (3-4 Members)",
           "count": 4551400,
           "percentage": 48
         },
         {
-          "name": "5-6大家庭",
+          "name": "Large Family (5-6 Members)",
           "count": 2465350,
           "percentage": 26
         },
         {
-          "name": "7人及以上多代家庭",
+          "name": "Multi-Generational Family (7+ Members)",
           "count": 853400,
           "percentage": 9
         }
       ],
       "businessStats": [
         {
-          "type": "变更户主",
+          "type": "Change Head",
           "applyCount": 18500,
           "approvedCount": 17920
         },
         {
-          "type": "申请解冻",
+          "type": "Unfreeze Card",
           "applyCount": 14200,
           "approvedCount": 13680
         },
         {
-          "type": "申请分户",
+          "type": "Split Household",
           "applyCount": 26400,
           "approvedCount": 25100
         },
         {
-          "type": "成员转移",
+          "type": "Member Entry",
           "applyCount": 19400,
           "approvedCount": 18950
         }
@@ -197,23 +197,23 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       ],
       "regulatoryFlow": [
         {
-          "name": "新设授予代理权",
+          "name": "New Agency Grant",
           "count": 320
         },
         {
-          "name": "代理权轮替继承",
+          "name": "Agency Rotation Succession",
           "count": 215
         },
         {
-          "name": "合并优化网点",
+          "name": "Station Merger & Optimization",
           "count": 142
         },
         {
-          "name": "清退注销网点",
+          "name": "Station Deregistration & Clearance",
           "count": 78
         },
         {
-          "name": "行政处罚整顿",
+          "name": "Administrative Punishment Rectification",
           "count": 46
         }
       ]
@@ -225,7 +225,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "onTimeDeliveryRate": 98.2,
       "commodities": [
         {
-          "name": "Wheat粉",
+          "name": "Wheat Flour",
           "plannedTon": 620000,
           "actualTon": 615000,
           "completionRate": 99.2
@@ -319,41 +319,41 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "satisfactionRate": 96.2,
       "categoryDistribution": [
         {
-          "name": "代销点缺斤短两/克扣",
+          "name": "Station Short-Weighing / Under-Portioning",
           "count": 1098,
           "percentage": 28
         },
         {
-          "name": "服务态度差/排队耗时",
+          "name": "Poor Service Attitude / Long Queue Time",
           "count": 941,
           "percentage": 24
         },
         {
-          "name": "物资品质口感异议",
+          "name": "Material Quality & Taste Objection",
           "count": 706,
           "percentage": 18
         },
         {
-          "name": "私自加价/违规收费",
+          "name": "Unauthorized Overcharge / Illegal Fees",
           "count": 627,
           "percentage": 16
         },
         {
-          "name": "配给份额核定有误",
+          "name": "Ration Quota Assessment Error",
           "count": 548,
           "percentage": 14
         }
       ],
       "trend": {
         "dates": [
-          "第40周",
-          "第41周",
-          "第42周",
-          "第43周",
-          "第44周",
-          "第45周",
-          "第46周",
-          "第47周"
+          "Week 40",
+          "Week 41",
+          "Week 42",
+          "Week 43",
+          "Week 44",
+          "Week 45",
+          "Week 46",
+          "Week 47"
         ],
         "received": [
           520,
@@ -389,42 +389,42 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "recentComplaints": [
         {
           "id": "CMP-2026-1082",
-          "type": "违规收费",
-          "province": "Baghdad Province卡尔赫区",
-          "agent": "第14号Food供应站",
-          "applicant": "拉希德·马吉德",
+          "type": "Illegal Fees",
+          "province": "Al-Karkh District, Baghdad Province",
+          "agent": "No.14 Food Supply Station",
+          "applicant": "Rasheed Majid",
           "status": "Resolved",
-          "result": "退还违规差价并责令通报批评",
+          "result": "Illegal overcharge refunded with circulated criticism order",
           "time": "2026-10-10"
         },
         {
           "id": "CMP-2026-1081",
-          "type": "少发漏发",
-          "province": "Basra Province阿沙尔区",
-          "agent": "滨海第二代销点",
-          "applicant": "萨巴赫·卡西姆",
+          "type": "Under-Delivery",
+          "province": "Al-Ashar District, Basra Province",
+          "agent": "Coastal 2nd Distribution Station",
+          "applicant": "Sabah Qasim",
           "status": "Resolved",
-          "result": "经核实当日补发2公斤Rice",
+          "result": "Verified and 2 KG of Rice re-issued the same day",
           "time": "2026-10-09"
         },
         {
           "id": "CMP-2026-1079",
-          "type": "物资品质",
-          "province": "Diyala Province哈奈根",
-          "agent": "哈奈根中心代销站",
-          "applicant": "穆罕默德·阿里",
-          "status": "处理中",
-          "result": "已抽样送质检实验室化验",
+          "type": "Material Quality",
+          "province": "Khanaqin, Diyala Province",
+          "agent": "Khanaqin Central Distribution Station",
+          "applicant": "Mohammed Ali",
+          "status": "Processing",
+          "result": "Sampled and sent to the QC laboratory for testing",
           "time": "2026-10-11"
         },
         {
           "id": "CMP-2026-1075",
-          "type": "排队耗时",
-          "province": "Nineveh Province摩苏尔",
-          "agent": "摩苏尔第三配发处",
-          "applicant": "法蒂玛·努尔",
+          "type": "Long Queue Time",
+          "province": "Mosul, Nineveh Province",
+          "agent": "Mosul 3rd Distribution Office",
+          "applicant": "Fatima Nour",
           "status": "Resolved",
-          "result": "已协调增开2个扫码核销核发窗口",
+          "result": "Coordinated to open 2 additional scan-verification issuance windows",
           "time": "2026-10-08"
         }
       ]
@@ -432,7 +432,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
   },
   "month": {
     "timeRange": "month",
-    "timeLabel": "过去30天",
+    "timeLabel": "Last 30 Days",
     "citizens": {
       "totalCitizens": 38420500,
       "activeBeneficiaries": 36890000,
@@ -441,17 +441,17 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "vulnerableCount": 1280000,
       "ageDistribution": [
         {
-          "name": "0-14岁未成年人",
+          "name": "Minors Aged 0-14",
           "value": 12400000,
           "percentage": 32.3
         },
         {
-          "name": "15-59岁适龄劳动力",
+          "name": "Working-Age Population Aged 15-59",
           "value": 23120500,
           "percentage": 60.2
         },
         {
-          "name": "60岁及以上长者",
+          "name": "Seniors Aged 60+",
           "value": 2900000,
           "percentage": 7.5
         }
@@ -493,44 +493,44 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "totalBusinessHandled": 24180,
       "sizeDistribution": [
         {
-          "name": "1-2人小家庭",
+          "name": "Small Family (1-2 Members)",
           "count": 1612000,
           "percentage": 17
         },
         {
-          "name": "3-4人标准家庭",
+          "name": "Standard Family (3-4 Members)",
           "count": 4551400,
           "percentage": 48
         },
         {
-          "name": "5-6大家庭",
+          "name": "Large Family (5-6 Members)",
           "count": 2465350,
           "percentage": 26
         },
         {
-          "name": "7人及以上多代家庭",
+          "name": "Multi-Generational Family (7+ Members)",
           "count": 853400,
           "percentage": 9
         }
       ],
       "businessStats": [
         {
-          "type": "变更户主",
+          "type": "Change Head",
           "applyCount": 5600,
           "approvedCount": 5480
         },
         {
-          "type": "申请解冻",
+          "type": "Unfreeze Card",
           "applyCount": 4300,
           "approvedCount": 4190
         },
         {
-          "type": "申请分户",
+          "type": "Split Household",
           "applyCount": 8100,
           "approvedCount": 7850
         },
         {
-          "type": "成员转移",
+          "type": "Member Entry",
           "applyCount": 6180,
           "approvedCount": 6050
         }
@@ -593,23 +593,23 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       ],
       "regulatoryFlow": [
         {
-          "name": "新设授予代理权",
+          "name": "New Agency Grant",
           "count": 95
         },
         {
-          "name": "代理权轮替继承",
+          "name": "Agency Rotation Succession",
           "count": 68
         },
         {
-          "name": "合并优化网点",
+          "name": "Station Merger & Optimization",
           "count": 44
         },
         {
-          "name": "清退注销网点",
+          "name": "Station Deregistration & Clearance",
           "count": 24
         },
         {
-          "name": "行政处罚整顿",
+          "name": "Administrative Punishment Rectification",
           "count": 18
         }
       ]
@@ -621,7 +621,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "onTimeDeliveryRate": 98.7,
       "commodities": [
         {
-          "name": "Wheat粉",
+          "name": "Wheat Flour",
           "plannedTon": 206000,
           "actualTon": 205000,
           "completionRate": 99.5
@@ -715,27 +715,27 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "satisfactionRate": 96.8,
       "categoryDistribution": [
         {
-          "name": "代销点缺斤短两/克扣",
+          "name": "Station Short-Weighing / Under-Portioning",
           "count": 359,
           "percentage": 28
         },
         {
-          "name": "服务态度差/排队耗时",
+          "name": "Poor Service Attitude / Long Queue Time",
           "count": 308,
           "percentage": 24
         },
         {
-          "name": "物资品质口感异议",
+          "name": "Material Quality & Taste Objection",
           "count": 231,
           "percentage": 18
         },
         {
-          "name": "私自加价/违规收费",
+          "name": "Unauthorized Overcharge / Illegal Fees",
           "count": 205,
           "percentage": 16
         },
         {
-          "name": "配给份额核定有误",
+          "name": "Ration Quota Assessment Error",
           "count": 181,
           "percentage": 14
         }
@@ -781,42 +781,42 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "recentComplaints": [
         {
           "id": "CMP-2026-1082",
-          "type": "违规收费",
-          "province": "Baghdad Province卡尔赫区",
-          "agent": "第14号Food供应站",
-          "applicant": "拉希德·马吉德",
+          "type": "Illegal Fees",
+          "province": "Al-Karkh District, Baghdad Province",
+          "agent": "No.14 Food Supply Station",
+          "applicant": "Rasheed Majid",
           "status": "Resolved",
-          "result": "退还违规差价并责令通报批评",
+          "result": "Illegal overcharge refunded with circulated criticism order",
           "time": "2026-10-10"
         },
         {
           "id": "CMP-2026-1081",
-          "type": "少发漏发",
-          "province": "Basra Province阿沙尔区",
-          "agent": "滨海第二代销点",
-          "applicant": "萨巴赫·卡西姆",
+          "type": "Under-Delivery",
+          "province": "Al-Ashar District, Basra Province",
+          "agent": "Coastal 2nd Distribution Station",
+          "applicant": "Sabah Qasim",
           "status": "Resolved",
-          "result": "经核实当日补发2公斤Rice",
+          "result": "Verified and 2 KG of Rice re-issued the same day",
           "time": "2026-10-09"
         },
         {
           "id": "CMP-2026-1079",
-          "type": "物资品质",
-          "province": "Diyala Province哈奈根",
-          "agent": "哈奈根中心代销站",
-          "applicant": "穆罕默德·阿里",
-          "status": "处理中",
-          "result": "已抽样送质检实验室化验",
+          "type": "Material Quality",
+          "province": "Khanaqin, Diyala Province",
+          "agent": "Khanaqin Central Distribution Station",
+          "applicant": "Mohammed Ali",
+          "status": "Processing",
+          "result": "Sampled and sent to the QC laboratory for testing",
           "time": "2026-10-11"
         },
         {
           "id": "CMP-2026-1075",
-          "type": "排队耗时",
-          "province": "Nineveh Province摩苏尔",
-          "agent": "摩苏尔第三配发处",
-          "applicant": "法蒂玛·努尔",
+          "type": "Long Queue Time",
+          "province": "Mosul, Nineveh Province",
+          "agent": "Mosul 3rd Distribution Office",
+          "applicant": "Fatima Nour",
           "status": "Resolved",
-          "result": "已协调增开2个扫码核销核发窗口",
+          "result": "Coordinated to open 2 additional scan-verification issuance windows",
           "time": "2026-10-08"
         }
       ]
@@ -824,7 +824,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
   },
   "week": {
     "timeRange": "week",
-    "timeLabel": "过去7天",
+    "timeLabel": "Last 7 Days",
     "citizens": {
       "totalCitizens": 38420500,
       "activeBeneficiaries": 36890000,
@@ -833,17 +833,17 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "vulnerableCount": 1280000,
       "ageDistribution": [
         {
-          "name": "0-14岁未成年人",
+          "name": "Minors Aged 0-14",
           "value": 12400000,
           "percentage": 32.3
         },
         {
-          "name": "15-59岁适龄劳动力",
+          "name": "Working-Age Population Aged 15-59",
           "value": 23120500,
           "percentage": 60.2
         },
         {
-          "name": "60岁及以上长者",
+          "name": "Seniors Aged 60+",
           "value": 2900000,
           "percentage": 7.5
         }
@@ -885,44 +885,44 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "totalBusinessHandled": 5620,
       "sizeDistribution": [
         {
-          "name": "1-2人小家庭",
+          "name": "Small Family (1-2 Members)",
           "count": 1612000,
           "percentage": 17
         },
         {
-          "name": "3-4人标准家庭",
+          "name": "Standard Family (3-4 Members)",
           "count": 4551400,
           "percentage": 48
         },
         {
-          "name": "5-6大家庭",
+          "name": "Large Family (5-6 Members)",
           "count": 2465350,
           "percentage": 26
         },
         {
-          "name": "7人及以上多代家庭",
+          "name": "Multi-Generational Family (7+ Members)",
           "count": 853400,
           "percentage": 9
         }
       ],
       "businessStats": [
         {
-          "type": "变更户主",
+          "type": "Change Head",
           "applyCount": 1320,
           "approvedCount": 1290
         },
         {
-          "type": "申请解冻",
+          "type": "Unfreeze Card",
           "applyCount": 980,
           "approvedCount": 960
         },
         {
-          "type": "申请分户",
+          "type": "Split Household",
           "applyCount": 1890,
           "approvedCount": 1840
         },
         {
-          "type": "成员转移",
+          "type": "Member Entry",
           "applyCount": 1430,
           "approvedCount": 1400
         }
@@ -985,23 +985,23 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       ],
       "regulatoryFlow": [
         {
-          "name": "新设授予代理权",
+          "name": "New Agency Grant",
           "count": 22
         },
         {
-          "name": "代理权轮替继承",
+          "name": "Agency Rotation Succession",
           "count": 16
         },
         {
-          "name": "合并优化网点",
+          "name": "Station Merger & Optimization",
           "count": 9
         },
         {
-          "name": "清退注销网点",
+          "name": "Station Deregistration & Clearance",
           "count": 5
         },
         {
-          "name": "行政处罚整顿",
+          "name": "Administrative Punishment Rectification",
           "count": 4
         }
       ]
@@ -1013,7 +1013,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "onTimeDeliveryRate": 99.1,
       "commodities": [
         {
-          "name": "Wheat粉",
+          "name": "Wheat Flour",
           "plannedTon": 48200,
           "actualTon": 48100,
           "completionRate": 99.8
@@ -1107,27 +1107,27 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "satisfactionRate": 97.4,
       "categoryDistribution": [
         {
-          "name": "代销点缺斤短两/克扣",
+          "name": "Station Short-Weighing / Under-Portioning",
           "count": 80,
           "percentage": 28
         },
         {
-          "name": "服务态度差/排队耗时",
+          "name": "Poor Service Attitude / Long Queue Time",
           "count": 69,
           "percentage": 24
         },
         {
-          "name": "物资品质口感异议",
+          "name": "Material Quality & Taste Objection",
           "count": 51,
           "percentage": 18
         },
         {
-          "name": "私自加价/违规收费",
+          "name": "Unauthorized Overcharge / Illegal Fees",
           "count": 46,
           "percentage": 16
         },
         {
-          "name": "配给份额核定有误",
+          "name": "Ration Quota Assessment Error",
           "count": 40,
           "percentage": 14
         }
@@ -1173,42 +1173,42 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "recentComplaints": [
         {
           "id": "CMP-2026-1082",
-          "type": "违规收费",
-          "province": "Baghdad Province卡尔赫区",
-          "agent": "第14号Food供应站",
-          "applicant": "拉希德·马吉德",
+          "type": "Illegal Fees",
+          "province": "Al-Karkh District, Baghdad Province",
+          "agent": "No.14 Food Supply Station",
+          "applicant": "Rasheed Majid",
           "status": "Resolved",
-          "result": "退还违规差价并责令通报批评",
+          "result": "Illegal overcharge refunded with circulated criticism order",
           "time": "2026-10-10"
         },
         {
           "id": "CMP-2026-1081",
-          "type": "少发漏发",
-          "province": "Basra Province阿沙尔区",
-          "agent": "滨海第二代销点",
-          "applicant": "萨巴赫·卡西姆",
+          "type": "Under-Delivery",
+          "province": "Al-Ashar District, Basra Province",
+          "agent": "Coastal 2nd Distribution Station",
+          "applicant": "Sabah Qasim",
           "status": "Resolved",
-          "result": "经核实当日补发2公斤Rice",
+          "result": "Verified and 2 KG of Rice re-issued the same day",
           "time": "2026-10-09"
         },
         {
           "id": "CMP-2026-1079",
-          "type": "物资品质",
-          "province": "Diyala Province哈奈根",
-          "agent": "哈奈根中心代销站",
-          "applicant": "穆罕默德·阿里",
-          "status": "处理中",
-          "result": "已抽样送质检实验室化验",
+          "type": "Material Quality",
+          "province": "Khanaqin, Diyala Province",
+          "agent": "Khanaqin Central Distribution Station",
+          "applicant": "Mohammed Ali",
+          "status": "Processing",
+          "result": "Sampled and sent to the QC laboratory for testing",
           "time": "2026-10-11"
         },
         {
           "id": "CMP-2026-1075",
-          "type": "排队耗时",
-          "province": "Nineveh Province摩苏尔",
-          "agent": "摩苏尔第三配发处",
-          "applicant": "法蒂玛·努尔",
+          "type": "Long Queue Time",
+          "province": "Mosul, Nineveh Province",
+          "agent": "Mosul 3rd Distribution Office",
+          "applicant": "Fatima Nour",
           "status": "Resolved",
-          "result": "已协调增开2个扫码核销核发窗口",
+          "result": "Coordinated to open 2 additional scan-verification issuance windows",
           "time": "2026-10-08"
         }
       ]
@@ -1216,7 +1216,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
   },
   "day": {
     "timeRange": "day",
-    "timeLabel": "近1天 (今日实时)",
+    "timeLabel": "Last 1 Day (Today, Real-Time)",
     "citizens": {
       "totalCitizens": 38420500,
       "activeBeneficiaries": 36890000,
@@ -1225,17 +1225,17 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "vulnerableCount": 1280000,
       "ageDistribution": [
         {
-          "name": "0-14岁未成年人",
+          "name": "Minors Aged 0-14",
           "value": 12400000,
           "percentage": 32.3
         },
         {
-          "name": "15-59岁适龄劳动力",
+          "name": "Working-Age Population Aged 15-59",
           "value": 23120500,
           "percentage": 60.2
         },
         {
-          "name": "60岁及以上长者",
+          "name": "Seniors Aged 60+",
           "value": 2900000,
           "percentage": 7.5
         }
@@ -1277,44 +1277,44 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "totalBusinessHandled": 820,
       "sizeDistribution": [
         {
-          "name": "1-2人小家庭",
+          "name": "Small Family (1-2 Members)",
           "count": 1612000,
           "percentage": 17
         },
         {
-          "name": "3-4人标准家庭",
+          "name": "Standard Family (3-4 Members)",
           "count": 4551400,
           "percentage": 48
         },
         {
-          "name": "5-6大家庭",
+          "name": "Large Family (5-6 Members)",
           "count": 2465350,
           "percentage": 26
         },
         {
-          "name": "7人及以上多代家庭",
+          "name": "Multi-Generational Family (7+ Members)",
           "count": 853400,
           "percentage": 9
         }
       ],
       "businessStats": [
         {
-          "type": "变更户主",
+          "type": "Change Head",
           "applyCount": 195,
           "approvedCount": 190
         },
         {
-          "type": "申请解冻",
+          "type": "Unfreeze Card",
           "applyCount": 142,
           "approvedCount": 140
         },
         {
-          "type": "申请分户",
+          "type": "Split Household",
           "applyCount": 278,
           "approvedCount": 270
         },
         {
-          "type": "成员转移",
+          "type": "Member Entry",
           "applyCount": 205,
           "approvedCount": 200
         }
@@ -1377,23 +1377,23 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       ],
       "regulatoryFlow": [
         {
-          "name": "新设授予代理权",
+          "name": "New Agency Grant",
           "count": 4
         },
         {
-          "name": "代理权轮替继承",
+          "name": "Agency Rotation Succession",
           "count": 3
         },
         {
-          "name": "合并优化网点",
+          "name": "Station Merger & Optimization",
           "count": 2
         },
         {
-          "name": "清退注销网点",
+          "name": "Station Deregistration & Clearance",
           "count": 1
         },
         {
-          "name": "行政处罚整顿",
+          "name": "Administrative Punishment Rectification",
           "count": 1
         }
       ]
@@ -1405,7 +1405,7 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "onTimeDeliveryRate": 99.4,
       "commodities": [
         {
-          "name": "Wheat粉",
+          "name": "Wheat Flour",
           "plannedTon": 6900,
           "actualTon": 6890,
           "completionRate": 99.9
@@ -1499,27 +1499,27 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "satisfactionRate": 98.1,
       "categoryDistribution": [
         {
-          "name": "代销点缺斤短两/克扣",
+          "name": "Station Short-Weighing / Under-Portioning",
           "count": 12,
           "percentage": 29.3
         },
         {
-          "name": "服务态度差/排队耗时",
+          "name": "Poor Service Attitude / Long Queue Time",
           "count": 10,
           "percentage": 24.4
         },
         {
-          "name": "物资品质口感异议",
+          "name": "Material Quality & Taste Objection",
           "count": 8,
           "percentage": 19.5
         },
         {
-          "name": "私自加价/违规收费",
+          "name": "Unauthorized Overcharge / Illegal Fees",
           "count": 6,
           "percentage": 14.6
         },
         {
-          "name": "配给份额核定有误",
+          "name": "Ration Quota Assessment Error",
           "count": 5,
           "percentage": 12.2
         }
@@ -1565,22 +1565,22 @@ export const MOCK_ADMIN_DASHBOARD_DATA = {
       "recentComplaints": [
         {
           "id": "CMP-2026-1082",
-          "type": "违规收费",
-          "province": "Baghdad Province卡尔赫区",
-          "agent": "第14号Food供应站",
-          "applicant": "拉希德·马吉德",
+          "type": "Illegal Fees",
+          "province": "Al-Karkh District, Baghdad Province",
+          "agent": "No.14 Food Supply Station",
+          "applicant": "Rasheed Majid",
           "status": "Resolved",
-          "result": "退还违规差价并责令通报批评",
+          "result": "Illegal overcharge refunded with circulated criticism order",
           "time": "2026-10-12"
         },
         {
           "id": "CMP-2026-1081",
-          "type": "少发漏发",
-          "province": "Basra Province阿沙尔区",
-          "agent": "滨海第二代销点",
-          "applicant": "萨巴赫·卡西姆",
+          "type": "Under-Delivery",
+          "province": "Al-Ashar District, Basra Province",
+          "agent": "Coastal 2nd Distribution Station",
+          "applicant": "Sabah Qasim",
           "status": "Resolved",
-          "result": "经核实当日补发2公斤Rice",
+          "result": "Verified and 2 KG of Rice re-issued the same day",
           "time": "2026-10-12"
         }
       ]

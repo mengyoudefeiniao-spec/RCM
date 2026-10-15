@@ -25,7 +25,7 @@
               </el-tag>
             </div>
             <div v-if="!isAppMode" class="text-[11px] text-[#8C958F]">
-              中央银行规费在线直接清算系统 · SSL 256-bit 加密
+              {{ $t('payment.cbiClearanceSub') }}
             </div>
           </div>
         </div>
@@ -318,7 +318,7 @@
         <!-- 返回取消按钮 (桌面端显示，APP模式下直接通过右上角关闭按钮操作) -->
         <div v-if="!isAppMode" class="flex items-center justify-end pt-1">
           <el-button size="default" @click="handleCancel">
-            返回修改申请资料
+            {{ $t('payment.cancelBtn') }}
           </el-button>
         </div>
       </div>
@@ -327,7 +327,7 @@
       <div v-else-if="paymentStatus === 'processing'" class="py-12 flex flex-col items-center justify-center space-y-4">
         <div class="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin flex items-center justify-center shadow-md" />
         <div class="text-center space-y-1">
-          <h3 class="text-base font-bold text-slate-800">正在与中央银行规费清算网络安全清算...</h3>
+          <h3 class="text-base font-bold text-slate-800">{{ $t('payment.processing') }}</h3>
           <p class="text-xs text-slate-400 font-mono">
             Channel: {{ currentChannelName }} · Verify: {{ currentVerifyLabel }} · Order: {{ orderId }}
           </p>
@@ -341,15 +341,15 @@
         </div>
 
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900">电子支付扣款成功！</h3>
-          <p class="text-xs text-emerald-700 font-medium">CBI E-Payment Clearance Verified · 国库已入账</p>
+          <h3 class="text-lg font-bold text-slate-900">{{ $t('payment.success') }}</h3>
+          <p class="text-xs text-emerald-700 font-medium">CBI E-Payment Clearance Verified · {{ $t('payment.treasuryBooked') }}</p>
           <div class="font-mono text-xs text-slate-400 mt-2">
             TXN-{{ successTxnNo || '883921' }}-IQD ({{ currentVerifyLabel }})
           </div>
         </div>
 
         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 max-w-sm">
-          规费已全额扣缴入国库配给专户，正在将您的业务正式提交系统核验与流转...
+          {{ $t('payment.successHint') }}
         </div>
       </div>
     </div>
@@ -558,7 +558,7 @@ function executePaymentProcess(method) {
 
   setTimeout(() => {
     paymentStatus.value = 'success';
-    ElMessage.success(`扣款成功！已通过【${currentVerifyLabel.value}】完成缴费`);
+    ElMessage.success(t('payment.paidToast', { channel: currentVerifyLabel.value }));
 
     setTimeout(() => {
       stopTimer();

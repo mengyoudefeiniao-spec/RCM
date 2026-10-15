@@ -340,6 +340,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -448,7 +449,7 @@ async function loadData() {
     stocks.value = sList || [];
     inventoryLedgers.value = lList || [];
   } catch (err) {
-    ElMessage.error(err.message || '加载多维库存与流水台账失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load multi-dimensional inventory and flow ledger' : '加载多维库存与流水台账失败'));
   } finally {
     loading.value = false;
   }
@@ -459,9 +460,9 @@ async function fetchSnapshot() {
   try {
     const data = await getInventorySnapshot({ time: snapshotTargetTime.value });
     snapshotList.value = data || [];
-    ElMessage.success(`历史库存快照回溯成功！已重构 ${snapshotTargetTime.value} 库位余量`);
+    ElMessage.success((isEnNow() ? `Historical stock snapshot retrospective succeeded! Slot balances as of ${snapshotTargetTime.value} reconstructed` : `历史库存快照回溯成功！已重构 ${snapshotTargetTime.value} 库位余量`));
   } catch (err) {
-    ElMessage.error(err.message || '快照回溯失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Snapshot retrospective failed' : '快照回溯失败'));
   } finally {
     loadingSnapshot.value = false;
   }

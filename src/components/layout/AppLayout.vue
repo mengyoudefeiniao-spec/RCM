@@ -7,17 +7,6 @@
         : 'min-h-screen'
     ]"
   >
-    <!-- 当在大屏幕以 APP 模式打开时，顶部提供轻量 Pixel 9 仿真视口控制条 (已移除展开全宽) -->
-    <div
-      v-if="isAppMode"
-      class="hidden sm:flex max-w-[412px] mx-auto w-full items-center justify-center px-3 py-1 mb-1.5 bg-[#1E3F35] text-white rounded-lg text-xs shadow-md select-none shrink-0"
-    >
-      <div class="flex items-center gap-1.5 font-medium">
-        <span class="w-2 h-2 rounded-full bg-[#C59D5F] animate-pulse"></span>
-        <span>{{ $t('login.appViewportTitle') || 'Google Pixel 9 (412 × 924) 移动 APP 视口' }}</span>
-      </div>
-    </div>
-
     <!-- 仿真视口容器：APP 模式下桌面端自动限制在浏览器窗口内 (自适应高度不超过 924px)，全量在 app 内下滑 -->
     <div
       class="w-full flex flex-col transition-all duration-300 relative min-h-0"
@@ -26,7 +15,7 @@
           ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:bg-white sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE]'
           : 'flex-1 w-full'
       ]"
-      :style="isAppMode ? { height: 'min(924px, calc(100vh - 46px))', maxHeight: 'calc(100vh - 46px)' } : {}"
+      :style="isAppMode ? { height: 'min(924px, calc(100vh - 20px))', maxHeight: 'calc(100vh - 20px)' } : {}"
     >
       <!-- 1. 全局顶部导航 (固定在手机顶部) -->
       <AppHeader class="shrink-0" />

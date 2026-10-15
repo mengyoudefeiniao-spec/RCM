@@ -215,6 +215,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getCitizenClaimRecords } from '../../../api/warehouse.js';
@@ -335,7 +336,7 @@ async function loadData() {
     const list = await getCitizenClaimRecords();
     claimRecords.value = list || [];
   } catch (err) {
-    ElMessage.error(err.message || '加载核销历史记录失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load verification history' : '加载核销历史记录失败'));
   } finally {
     loading.value = false;
   }

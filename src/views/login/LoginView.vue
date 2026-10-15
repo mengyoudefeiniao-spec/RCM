@@ -19,17 +19,6 @@
       <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#1E3F35]/40 blur-3xl pointer-events-none"></div>
     </template>
 
-    <!-- 当以 APP 模式打开或退出到 APP 登录页时，桌面端顶部提供轻量 Pixel 9 仿真视口控制条 -->
-    <div
-      v-if="isAppMode"
-      class="hidden sm:flex max-w-[412px] mx-auto w-full items-center justify-center px-3 py-1 mb-1.5 bg-[#1E3F35] text-white rounded-lg text-xs shadow-md select-none shrink-0"
-    >
-      <div class="flex items-center gap-1.5 font-medium">
-        <span class="w-2 h-2 rounded-full bg-[#C59D5F] animate-pulse"></span>
-        <span>{{ $t('login.appViewportTitle') || 'Google Pixel 9 (412 × 924) 移动 APP 视口' }}</span>
-      </div>
-    </div>
-
     <!-- 登录主视口容器：APP 模式下自适应 Pixel 9 手机视口 (412px 宽，最大 924px 高，内部滚动)；Web 模式下居中居宽 -->
     <div
       class="w-full transition-all duration-300 relative min-h-0 bg-white"
@@ -38,7 +27,7 @@
           ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE] flex flex-col'
           : 'max-w-md w-full rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#ECE7DE] shadow-2xl'
       ]"
-      :style="isAppMode ? { height: 'min(924px, calc(100vh - 46px))', maxHeight: 'calc(100vh - 46px)' } : { boxShadow: '0 20px 50px -10px rgba(15, 35, 29, 0.35)' }"
+      :style="isAppMode ? { height: 'min(924px, calc(100vh - 20px))', maxHeight: 'calc(100vh - 20px)' } : { boxShadow: '0 20px 50px -10px rgba(15, 35, 29, 0.35)' }"
     >
       <!-- APP 模式手机顶部微型顶栏 (固定在手机内部顶部，含 Logo 与语言选择器) -->
       <div
@@ -329,6 +318,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
@@ -373,6 +363,9 @@ onMounted(() => {
     loginForm.username = 'RC-10029381';
     loginForm.password = 'iq-pass-2026';
   }
+  if (route.query.mode === 'register' || route.query.action === 'register') {
+    registerDialogVisible.value = true;
+  }
 });
 
 // 检测是否为移动端 / 手机环境
@@ -398,11 +391,11 @@ function toggleDeviceTrust() {
   if (isTrustedDevice.value) {
     localStorage.removeItem('rcm_trusted_device');
     isTrustedDevice.value = false;
-    ElMessage.warning('已切换为【未授信新设备】状态，登录时将强制触发二次身份认证！');
+    ElMessage.warning((isEnNow() ? 'Switched to [Untrusted New Device]; secondary identity verification will be enforced at login!' : '已切换为【未授信新设备】状态，登录时将强制触发二次身份认证！'));
   } else {
     localStorage.setItem('rcm_trusted_device', 'true');
     isTrustedDevice.value = true;
-    ElMessage.success('已切换为【已授信设备】状态');
+    ElMessage.success((isEnNow() ? 'Switched to [Trusted Device] status' : '已切换为【已授信设备】状态'));
   }
 }
 
@@ -452,11 +445,11 @@ function handleSelectPreset(mode) {
   if (mode === 'citizen_b2c') {
     loginForm.username = 'RC-10029381';
     loginForm.password = 'iq-pass-2026';
-    ElMessage.success('已切换为【公民角色登录 · B2C APP模式】预设账号');
+    ElMessage.success((isEnNow() ? 'Switched to the [Citizen Role Login · B2C APP Mode] preset account' : '已切换为【公民角色登录 · B2C APP模式】预设账号'));
   } else if (mode === 'agent_c2b') {
     loginForm.username = 'FA-00128';
     loginForm.password = 'iq-pass-2026';
-    ElMessage.success('已切换为【代理登录 · C2B APP模式】预设账号');
+    ElMessage.success((isEnNow() ? 'Switched to the [Agent Login · C2B APP Mode] preset account' : '已切换为【代理登录 · C2B APP模式】预设账号'));
   } else if (mode === 'admin_web') {
     // 3. 管理员角色登录的web模式（如果是手机登录，提示请切换到浏览器操作）
     if (checkIsMobile()) {
@@ -473,13 +466,13 @@ function handleSelectPreset(mode) {
     }
     loginForm.username = 'admin';
     loginForm.password = 'iq-pass-2026';
-    ElMessage.success('已切换为【管理员角色登录 · Web模式】预设账号');
+    ElMessage.success((isEnNow() ? 'Switched to the [Administrator Role Login · Web Mode] preset account' : '已切换为【管理员角色登录 · Web模式】预设账号'));
   }
 }
 
 const loginRules = {
-  username: [{ required: true, message: '请输入配给卡号或账号', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  username: [{ required: true, message: (isEnNow() ? 'Please enter the ration card number or account' : '请输入配给卡号或账号'), trigger: 'blur' }],
+  password: [{ required: true, message: (isEnNow() ? 'Please enter the password' : '请输入密码'), trigger: 'blur' }]
 };
 
 async function handleLogin() {
@@ -555,7 +548,7 @@ function openRemoteVerify() {
 async function handleSecondaryVerifySuccess() {
   localStorage.setItem('rcm_trusted_device', 'true');
   isTrustedDevice.value = true;
-  ElMessage.success('新设备身份认证通过，已将本终端加入授信白名单！');
+  ElMessage.success((isEnNow() ? 'New device identity verification passed; this terminal has been added to the trusted whitelist!' : '新设备身份认证通过，已将本终端加入授信白名单！'));
   executeDirectLogin();
 }
 
@@ -564,7 +557,7 @@ async function simulateQuickNfcPass() {
   setTimeout(async () => {
     quickNfcLoading.value = false;
     quickNfcDialogVisible.value = false;
-    ElMessage.success('统一国民卡 NFC 读取成功，活体人脸比对一致 ✓');
+    ElMessage.success((isEnNow() ? 'Unified national card NFC read succeeded; liveness face match consistent ✓' : '统一国民卡 NFC 读取成功，活体人脸比对一致 ✓'));
     await authStore.login('RC-10029381', 'iq-pass-2026');
     localStorage.setItem('rcm_trusted_device', 'true');
     if (isAppMode.value) {

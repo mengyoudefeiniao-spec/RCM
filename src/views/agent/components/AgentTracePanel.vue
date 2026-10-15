@@ -4,16 +4,21 @@
     <div class="p-5 bg-gradient-to-r from-slate-900 to-indigo-900 text-white rounded-2xl space-y-3 shadow-xs">
       <div class="flex items-center gap-2">
         <el-icon class="text-xl text-blue-400"><Compass /></el-icon>
-        <h3 class="font-bold text-sm tracking-wide">多维流转与审计追溯引擎 (全生命周期穿透倒查)</h3>
+        <h3 class="font-bold text-sm tracking-wide">{{ isEn ? 'Multi-Dimensional Flow & Audit Traceability Engine (Full-Lifecycle Penetration Lookup)' : '多维流转与审计追溯引擎 (全生命周期穿透倒查)' }}</h3>
       </div>
       <p class="text-[12px] text-slate-300 leading-relaxed max-w-3xl">
-        涵盖“政府国家中心仓 $\rightarrow$ 街道代理网点 $\rightarrow$ 辖区居民家庭”的端到端完整链路。支持使用<strong>物资批次号</strong>、<strong>G2B/B2C订单号</strong>或<strong>公民身份证号</strong>进行双向穿透倒查。
+        <template v-if="isEn">
+          Covers the end-to-end full chain of "Government National Central Warehouse → Street Agent Station → Resident Households". Supports bidirectional penetration lookup by <strong>material batch number</strong>, <strong>G2B/B2C order number</strong> or <strong>citizen national ID</strong>.
+        </template>
+        <template v-else>
+          涵盖“政府国家中心仓 → 街道代理网点 → 辖区居民家庭”的端到端完整链路。支持使用<strong>物资批次号</strong>、<strong>G2B/B2C订单号</strong>或<strong>公民身份证号</strong>进行双向穿透倒查。
+        </template>
       </p>
 
       <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <el-input
           v-model="keyword"
-          placeholder="请输入批次号 (BatchNo) / G2B订单号 / B2C预约单号 / 国民身份证号 (National ID)"
+          :placeholder="isEn ? 'Enter Batch No. / G2B Order No. / B2C Reservation No. / National ID' : '请输入批次号 (BatchNo) / G2B订单号 / B2C预约单号 / 国民身份证号 (National ID)'"
           size="large"
           clearable
           class="flex-1"
@@ -23,21 +28,21 @@
         </el-input>
         <el-button type="primary" size="large" class="font-bold shrink-0" :loading="loading" @click="handleSearch">
           <el-icon class="mr-1"><Search /></el-icon>
-          全链路穿透倒查
+          {{ isEn ? 'Full-Chain Penetration Lookup' : '全链路穿透倒查' }}
         </el-button>
       </div>
 
       <!-- 快捷示范查询标签 -->
       <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-400">
-        <span>快捷测试链条：</span>
+        <span>{{ isEn ? 'Quick Test Chains:' : '快捷测试链条：' }}</span>
         <el-tag size="small" type="info" effect="plain" class="cursor-pointer hover:text-white" @click="fillQuickSearch('BATCH-20261012-EXP202710-RC01')">
-          按批次: BATCH-20261012-RC01 (大米)
+          {{ isEn ? 'By Batch: BATCH-20261012-RC01 (Rice)' : '按批次: BATCH-20261012-RC01 (大米)' }}
         </el-tag>
         <el-tag size="small" type="info" effect="plain" class="cursor-pointer hover:text-white" @click="fillQuickSearch('198504110023')">
-          按身份证: 198504110023 (艾哈迈德)
+          {{ isEn ? 'By National ID: 198504110023 (Ahmed)' : '按身份证: 198504110023 (艾哈迈德)' }}
         </el-tag>
         <el-tag size="small" type="info" effect="plain" class="cursor-pointer hover:text-white" @click="fillQuickSearch('G2B-ORD-20261012-004')">
-          按采购单: G2B-ORD-20261012-004
+          {{ isEn ? 'By Purchase Order: G2B-ORD-20261012-004' : '按采购单: G2B-ORD-20261012-004' }}
         </el-tag>
       </div>
     </div>
@@ -58,22 +63,22 @@
               <span class="text-slate-400 font-mono text-[11px]">({{ chain.itemCode }})</span>
             </div>
             <div class="text-slate-500 text-[11px] font-mono">
-              国家战略储备批次：<strong class="text-slate-800">{{ chain.batchNo }}</strong>
+              {{ isEn ? 'National Strategic Reserve Batch:' : '国家战略储备批次：' }}<strong class="text-slate-800">{{ chain.batchNo }}</strong>
             </div>
           </div>
 
           <!-- 三大节点实体徽章 -->
           <div class="flex flex-wrap items-center gap-2">
             <div class="px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold text-[11px]">
-              仓：{{ chain.centerWarehouse }}
+              {{ isEn ? 'WH:' : '仓：' }}{{ chain.centerWarehouse }}
             </div>
             <el-icon class="text-slate-400"><Right /></el-icon>
             <div class="px-2.5 py-1 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 font-semibold text-[11px]">
-              店：{{ chain.agentShop }}
+              {{ isEn ? 'Shop:' : '店：' }}{{ chain.agentShop }}
             </div>
             <el-icon class="text-slate-400"><Right /></el-icon>
             <div class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 font-semibold text-[11px]">
-              户：{{ chain.citizenName }} ({{ chain.cardNo }})
+              {{ isEn ? 'Family:' : '户：' }}{{ chain.citizenName }} ({{ chain.cardNo }})
             </div>
           </div>
         </div>
@@ -92,7 +97,7 @@
               <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
                 <div class="font-bold text-slate-800 text-[12px] flex items-center justify-between">
                   <span>{{ t.title }}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">节点 #{{ idx + 1 }}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">{{ isEn ? `Node #${idx + 1}` : `节点 #${idx + 1}` }}</span>
                 </div>
                 <div class="text-[11px] text-slate-600 leading-relaxed">{{ t.detail }}</div>
               </div>
@@ -104,16 +109,20 @@
 
     <!-- 无结果空态 -->
     <div v-else-if="!loading" class="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs">
-      <el-empty description="未检索到流转追溯记录，请更换批次号、订单号或身份证号重试" />
+      <el-empty :description="isEn ? 'No traceability records found; please retry with a different batch number, order number or national ID' : '未检索到流转追溯记录，请更换批次号、订单号或身份证号重试'" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Compass, Search, Right } from '@element-plus/icons-vue';
 import { traceFullPipeline } from '../../../api/agent.js';
+
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
 
 const keyword = ref('BATCH-20261012-EXP202710-RC01');
 const loading = ref(false);
@@ -125,7 +134,7 @@ const handleSearch = async () => {
     const res = await traceFullPipeline(keyword.value);
     traceList.value = res.data || [];
   } catch (error) {
-    ElMessage.error('查询全链路追溯失败');
+    ElMessage.error(t('agent.traceQueryFailed'));
   } finally {
     loading.value = false;
   }

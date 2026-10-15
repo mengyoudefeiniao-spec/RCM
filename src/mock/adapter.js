@@ -1,4 +1,5 @@
 // 中文测试数据源
+import { i18n } from '../locales/index.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -437,11 +438,12 @@ export async function mockDispatch(config) {
   }
 
   if (url.includes('/auth/logout') && method === 'POST') {
-    return createResponse({ success: true }, 200, '登出成功');
+    return createResponse({ success: true }, 200, (isEn ? 'Signed out successfully' : '登出成功'));
   }
 
-  // 1.1 纸质配给卡 OCR 扫描识别与有效性比对校验
+  // 1.1 纸质配给卡 OCR 扫描识别与有效性比对校验 (返回信息按当前语言国际化)
   if (url.includes('/auth/ocr-paper-card') && method === 'POST') {
+    const rt = (key, params) => i18n.global.t(`register.api.${key}`, params);
     if (data.mockInvalid) {
       return createResponse({
         paperCardNo: 'IQ-P-1988-001928',
@@ -450,14 +452,14 @@ export async function mockDispatch(config) {
         district: '曼苏尔区',
         memberCount: 0,
         isValid: false,
-        validationStatus: '已注销失效',
-        validationNotice: '核验未通过：该纸质配给卡存根已于历史系统完成注销注记，存在重卡风险，禁止申领新卡。'
-      }, 400, '纸质配给卡已被注销或存根失效，无法升级注册！');
+        validationStatus: rt('ocrInvalidStatus'),
+        validationNotice: rt('ocrInvalidNotice')
+      }, 400, rt('ocrInvalidMsg'));
     }
 
     return createResponse({
       paperCardNo: 'IQ-P-1994-082194',
-      headName: data.headName || '艾哈迈德·哈桑·萨利赫',
+      headName: data.headName || i18n.global.t('register.defaultUserName'),
       province: '巴格达省',
       district: '卡尔赫区 (Al-Karkh)',
       memberCount: 5,
@@ -465,9 +467,9 @@ export async function mockDispatch(config) {
       branchCode: 'BAG-KARKH-01',
       confidenceScore: 0.985,
       isValid: true,
-      validationStatus: '有效在册',
-      validationNotice: '内政部底账存根真实有效，经防重筛查无历史重复建卡记录，准予进入数字化建档。'
-    }, 200, '纸质配给卡 OCR 识别完成并通过有效性校验！');
+      validationStatus: rt('ocrValidStatus'),
+      validationNotice: rt('ocrValidNotice')
+    }, 200, rt('ocrValidMsg'));
   }
 
   // 1.2 发送手机短信验证码
@@ -477,7 +479,7 @@ export async function mockDispatch(config) {
       smsCode: code,
       phone: data.phone,
       expireSeconds: 300
-    }, 200, `验证码已发送至手机 ${data.phone || ''}，演示验证码：${code}`);
+    }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
   // 1.3 纸质卡升级换发与公民账号注册
@@ -497,7 +499,7 @@ export async function mockDispatch(config) {
       user: newUser,
       token: newUser.token,
       cardNo: newCardNo
-    }, 200, `恭喜！纸质配给卡数字化升级成功，已签发新电子配给卡【${newCardNo}】！`);
+    }, 200, i18n.global.t('register.api.registerSuccessMsg', { cardNo: newCardNo }));
   }
 
   // 1.4 活体人脸识别与统一国民卡双因子核验
@@ -506,30 +508,33 @@ export async function mockDispatch(config) {
       passed: true,
       similarityScore: '99.4%',
       chipStatus: 'AUTHENTIC',
-      matchNotice: '生物活体人脸与统一国民卡 ICAO-9303 防伪芯片匹配通过',
+      matchNotice: i18n.global.t('register.api.biometricMatchNotice'),
       timestamp: new Date().toISOString()
-    }, 200, '生物活体及统一卡双因子对碰成功！');
+    }, 200, i18n.global.t('register.api.biometricSuccessMsg'));
   }
 
   // 1.5 异地家庭成员 GPS 与邀请码远程核查
   if (url.includes('/auth/verify-remote') && method === 'POST') {
-    const { memberName, location } = data;
+    const { memberName, location, locationLabel } = data;
     if (location === 'same' || location === '同一住址') {
       return createResponse({
         passed: false,
-        message: '核验未通过：定位检测该成员与户主处于同一物理位置，不属于异地居住情形，拒绝授权。'
-      }, 400, '非异地成员定位异常');
+        message: i18n.global.t('register.api.remoteSameMsg')
+      }, 400, i18n.global.t('register.api.remoteSameTitle'));
     }
     if (!memberName || memberName.trim().length < 2) {
       return createResponse({
         passed: false,
-        message: '核验未通过：姓名与家庭存根不吻合。'
-      }, 400, '姓名核对未通过');
+        message: i18n.global.t('register.api.remoteNameMsg')
+      }, 400, i18n.global.t('register.api.remoteNameTitle'));
     }
     return createResponse({
       passed: true,
-      message: `异地基站与 GPS 核验通过！已确认家庭成员【${memberName}】在【${location || '异地'}】的合法配给授信。`
-    }, 200, '异地远程验证通过！');
+      message: i18n.global.t('register.api.remoteSuccessMsg', {
+        name: memberName,
+        location: locationLabel || location || ''
+      })
+    }, 200, i18n.global.t('register.api.remoteSuccessTitle'));
   }
 
   // ==========================================
@@ -583,7 +588,7 @@ export async function mockDispatch(config) {
       }
     });
 
-    return createResponse(newMember, 200, `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`);
+    return createResponse(newMember, 200, (isEn ? `New member [${newMember.name}] has been successfully registered and added to the electronic ration card!` : `新成员【${newMember.name}】已成功申报登记并纳入电子配给卡！`));
   }
 
   // 更新成员信息与状态（支持冻结/解冻/资料修改）(PUT)
@@ -618,11 +623,11 @@ export async function mockDispatch(config) {
 
     const isFreezeAction = data.status === '已冻结' || data.status === 'Frozen' || data.status === '冻结';
     const isUnfreezeAction = data.status === '正常' || data.status === 'Active';
-    let msg = '家庭成员信息已成功更新';
+    let msg = (isEn ? 'Family member information updated successfully' : '家庭成员信息已成功更新');
     if (isFreezeAction) {
-      msg = `已成功冻结该成员纳保资格 (原因: ${data.freezeReason || '监管合规冻结'})`;
+      msg = (isEn ? `Coverage qualification of the member frozen successfully (Reason: ${data.freezeReason || 'regulatory compliance freeze'})` : `已成功冻结该成员纳保资格 (原因: ${data.freezeReason || (isEn ? 'regulatory compliance freeze' : '监管合规冻结')})`);
     } else if (isUnfreezeAction) {
-      msg = '已成功解除该成员冻结状态，恢复口粮配给保障';
+      msg = (isEn ? 'The member freeze has been lifted successfully; ration supply coverage restored' : '已成功解除该成员冻结状态，恢复口粮配给保障');
     }
 
     return createResponse({ success: true, memberId }, 200, msg);
@@ -730,7 +735,7 @@ export async function mockDispatch(config) {
       return createResponse({
         passed: true,
         newCardNo,
-        message: `【系统自动判别通过】识别为标准合法夫妻，已自动批准分户并签发新配给卡号：${newCardNo}！`
+        message: (isEn ? `[Automatic Judge Passed] Identified as a standard legal couple; household split auto-approved and new ration card number issued: ${newCardNo}!` : `【系统自动判别通过】识别为标准合法夫妻，已自动批准分户并签发新配给卡号：${newCardNo}！`)
       });
     } else {
       // 判别未通过
@@ -798,10 +803,10 @@ export async function mockDispatch(config) {
 
     // 1. 容量红线检查 (1,500户上限)
     if (toFlourAgent?.currentHouseholds >= 1500) {
-      return createResponse({}, 400, `所选面粉代理【${toFlourAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`);
+      return createResponse({}, 400, (isEn ? `The selected flour agent [${toFlourAgent.name}] has reached the 1,500-household service ceiling; transfer-in prohibited, please choose another station!` : `所选面粉代理【${toFlourAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`));
     }
     if (toFoodAgent?.currentHouseholds >= 1500) {
-      return createResponse({}, 400, `所选食品代理【${toFoodAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`);
+      return createResponse({}, 400, (isEn ? `The selected food agent [${toFoodAgent.name}] has reached the 1,500-household service ceiling; transfer-in prohibited, please choose another station!` : `所选食品代理【${toFoodAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`));
     }
 
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
@@ -826,26 +831,26 @@ export async function mockDispatch(config) {
       return createResponse({
         autoApproved: true,
         passed: true,
-        message: `【省内转移自动核准通过】已自动将配给卡转移至【${toFlourAgent?.name}】与【${toFoodAgent?.name}】，配给卡代理及供货点已即时更新生效！`
+        message: (isEn ? `[Intra-Governorate Transfer Auto-Approved] The ration card has been automatically transferred to [${toFlourAgent?.name}] and [${toFoodAgent?.name}]; card agents and supply points updated instantly!` : `【省内转移自动核准通过】已自动将配给卡转移至【${toFlourAgent?.name}】与【${toFoodAgent?.name}】，配给卡代理及供货点已即时更新生效！`)
       }, 200, '省内转移全自动批准生效！');
     } else {
       // 路径 B: 跨省转移 (流转至转入分部两级电子审核工作台)
       const ticketId = `REV-TRF-${Date.now().toString().slice(-4)}`;
       const newTicket = {
         id: ticketId,
-        source: '代理转移',
-        categoryType: '跨省代理转移两级审批',
-        appType: `跨省代理转移 (${fromProvince} → ${toProvince})`,
+        source: isEn ? 'Transfer Agent' : '代理转移',
+        categoryType: isEn ? 'Cross-Governorate Agent Transfer Two-Tier Approval' : '跨省代理转移两级审批',
+        appType: isEn ? `Cross-Governorate Agent Transfer (${fromProvince} → ${toProvince})` : `跨省代理转移 (${fromProvince} → ${toProvince})`,
         cardNo: cardNo || family.rationCardNo,
         applicantName: family.headName,
-        targetMemberName: `${family.headName} (全户 ${family.memberCount} 人)`,
-        reason: `因工作/家庭迁居由【${fromProvince}】跨省迁往【${toProvince} · ${toBranch} · ${toCenter?.centerName}】，申请就近转移面粉代理【${toFlourAgent?.name}】与食品代理【${toFoodAgent?.name}】。`,
-        status: '待分部初审',
+        targetMemberName: isEn ? `${family.headName} (Whole Household, ${family.memberCount} Members)` : `${family.headName} (全户 ${family.memberCount} 人)`,
+        reason: isEn ? `Relocated cross-governorate from [${fromProvince}] to [${toProvince} · ${toBranch} · ${toCenter?.centerName}] for work/family reasons; requesting nearby flour agent [${toFlourAgent?.name}] and food agent [${toFoodAgent?.name}] transfer.` : `因工作/家庭迁居由【${fromProvince}】跨省迁往【${toProvince} · ${toBranch} · ${toCenter?.centerName}】，申请就近转移面粉代理【${toFlourAgent?.name}】与食品代理【${toFoodAgent?.name}】。`,
+        status: isEn ? 'Pending Staff Review' : '待分部初审',
         submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
         staffOpinion: '',
-        managerDecision: '待决',
+        managerDecision: isEn ? 'Pending' : '待决',
         attachments: [
-          { name: residenceProofDoc || '新迁入地居住证及确认证明公函.pdf', type: 'required', verified: true },
+          { name: residenceProofDoc || (isEn ? 'Residence_Certificate_of_New_Destination_Confirmation_Letter.pdf' : '新迁入地居住证及确认证明公函.pdf'), type: 'required', verified: true },
           ...(article140Doc ? [{ name: article140Doc, type: 'required', verified: true }] : [])
         ],
         payload: {
@@ -856,7 +861,7 @@ export async function mockDispatch(config) {
           toCenterName: toCenter?.centerName,
           toFlourAgent,
           toFoodAgent,
-          newAddress: `${toProvince} ${district || ''} ${subDistrict || ''} (地标: ${nearestLandmark || '就近街区'})`
+          newAddress: isEn ? `${toProvince} ${district || ''} ${subDistrict || ''} (Landmark: ${nearestLandmark || 'Nearby Block'})` : `${toProvince} ${district || ''} ${subDistrict || ''} (地标: ${nearestLandmark || '就近街区'})`
         }
       };
       ticketsStore.unshift(newTicket);
@@ -866,8 +871,8 @@ export async function mockDispatch(config) {
         autoApproved: false,
         passed: true,
         ticketId,
-        message: `跨省代理转移申请已提交！已流转至【${toProvince}】转入分部审核工作台，工单编号：${ticketId}。`
-      }, 200, `跨省转移申报已转入分部审核工作台 (工单号 ${ticketId})`);
+        message: isEn ? `Cross-governorate agent transfer application submitted! Routed to the receiving branch audit workbench of [${toProvince}], Ticket No.: ${ticketId}.` : `跨省代理转移申请已提交！已流转至【${toProvince}】转入分部审核工作台，工单编号：${ticketId}。`
+      }, 200, isEn ? `Cross-governorate transfer routed to branch audit workbench (Ticket No. ${ticketId})` : `跨省转移申报已转入分部审核工作台 (工单号 ${ticketId})`);
     }
   }
 
@@ -886,7 +891,7 @@ export async function mockDispatch(config) {
 
     const found = transferableMembersStore.find((m) => m.nationalId === nationalId);
     if (!found) {
-      return createResponse({}, 404, `国家人口在册档案数据库未查找到国民编号为【${nationalId}】的在册公民档案，请核对后重试。`);
+      return createResponse({}, 404, (isEn ? `The national population registry database found no registered citizen file for national number [${nationalId}]; please verify and retry.` : `国家人口在册档案数据库未查找到国民编号为【${nationalId}】的在册公民档案，请核对后重试。`));
     }
     return createResponse(found);
   }
@@ -931,7 +936,7 @@ export async function mockDispatch(config) {
 
     // 核心前置拦截：未在系统中更新的成员禁止转移
     if (member.isUpdatedInSystem === false) {
-      return createResponse({}, 400, '【前置条件未满足】：该成员未在配给卡系统中完成登记更新，国家法令严禁办理转移业务！');
+      return createResponse({}, 400, (isEn ? '[Precondition Not Met]: The member has not completed registration update in the ration card system; national law strictly prohibits transfer processing!' : '【前置条件未满足】：该成员未在配给卡系统中完成登记更新，国家法令严禁办理转移业务！'));
     }
 
     const currentFamily = familiesStore.find((f) => f.rationCardNo === targetCardNo) || familiesStore[0];
@@ -947,33 +952,33 @@ export async function mockDispatch(config) {
       const isIdentified = (member.familyCode === currentFamily.familyCode) && (member.fatherName !== '哈桑·萨利赫');
       if (isIdentified) {
         autoApproved = true;
-        reasonText = '【妻子自动识别通过】：妻子与新卡户主同属已登记家庭档案，且双方父亲姓名不同（排除近亲），系统自动核准通过。';
+        reasonText = (isEn ? '[Wife Auto-Identification Passed]: The wife and the new card head belong to registered family files with different father names (excluding close kin); automatically approved.' : '【妻子自动识别通过】：妻子与新卡户主同属已登记家庭档案，且双方父亲姓名不同（排除近亲），系统自动核准通过。');
       } else {
         autoApproved = false;
-        reasonText = '系统未能自动匹配妻子关联信息（家庭档案未同步或近亲识别异常），申请转交配给分部两级电子审核。';
+        reasonText = (isEn ? 'The system could not auto-match wife association information (family files out of sync or kinship identification anomaly); the application is routed to the ration branch two-tier electronic review.' : '系统未能自动匹配妻子关联信息（家庭档案未同步或近亲识别异常），申请转交配给分部两级电子审核。');
       }
     } else if (transferType === 'child') {
       // 5.2 子女转移
       if (isArticle140) {
         // 在第140号决议地区以内：子女转移始终须经配给分部员工电子审核，并上传第140号决议无异议文件
         autoApproved = false;
-        reasonText = '涉及第140号决议争议覆盖区域，依据国家法规，子女转移必须转交转入分部两级人工电子审核并备案无异议公函。';
+        reasonText = (isEn ? 'The area falls under Article 140 disputed coverage; per national regulations, child transfer must be routed to the receiving branch two-tier manual electronic review with a no-objection letter filed.' : '涉及第140号决议争议覆盖区域，依据国家法规，子女转移必须转交转入分部两级人工电子审核并备案无异议公函。');
       } else {
         // 在第140号决议地区以外：同时满足 1.家庭编号一致 2.父亲名字与新卡户主一致
         const famCodeMatch = member.familyCode === currentFamily.familyCode;
         const fatherNameMatch = member.fatherName === currentFamily.headName;
         if (famCodeMatch && fatherNameMatch) {
           autoApproved = true;
-          reasonText = '【子女自动识别通过】：子女与新卡家庭编号一致且生父姓名与新卡户主一致，系统自动批准转移。';
+          reasonText = (isEn ? '[Child Auto-Identification Passed]: The child matches the new card family code and the biological father name matches the new card head; transfer auto-approved.' : '【子女自动识别通过】：子女与新卡家庭编号一致且生父姓名与新卡户主一致，系统自动批准转移。');
         } else {
           autoApproved = false;
-          reasonText = '子女亲属比对信息未完全吻合，申请转交配给分部员工进行电子审核。';
+          reasonText = (isEn ? 'Kinship comparison information does not fully match; the application is routed to ration branch staff for electronic review.' : '子女亲属比对信息未完全吻合，申请转交配给分部员工进行电子审核。');
         }
       }
     } else {
       // 5.3 其他情况（监护、抚养或其他原因）：始终须经配给分部员工电子审核
       autoApproved = false;
-      reasonText = `转移事由属于【${transferType === 'guardianship' ? '法定监护' : transferType === 'support' ? '亲属抚养' : '特殊法定原因'}】，依法须经配给分部两级人工审查法定证明公文。`;
+      reasonText = (isEn ? `The transfer reason falls under [${transferType === 'guardianship' ? 'Legal Guardianship' : transferType === 'support' ? 'Kinship Support' : 'Special Statutory Reasons'}]; two-tier manual review of statutory certification documents by the ration branch is required by law.` : `转移事由属于【${transferType === 'guardianship' ? (isEn ? 'Legal Guardianship' : '法定监护') : transferType === 'support' ? (isEn ? 'Kinship Support' : '亲属抚养') : (isEn ? 'Special Statutory Reasons' : '特殊法定原因')}】，依法须经配给分部两级人工审查法定证明公文。`);
     }
 
     if (autoApproved) {
@@ -1004,26 +1009,26 @@ export async function mockDispatch(config) {
         autoApproved: true,
         passed: true,
         member: newMember,
-        message: `【成员转移全自动批准生效】${reasonText}，新成员【${member.name}】已成功移入您的电子配给卡！`
+        message: (isEn ? `[Member Transfer Fully Auto-Approved] ${reasonText}; new member [${member.name}] has been successfully moved into your electronic ration card!` : `【成员转移全自动批准生效】${reasonText}，新成员【${member.name}】已成功移入您的电子配给卡！`)
       }, 200, '成员转移已自动批准并即刻生效！');
     } else {
       // 路径 2: 电子审核：转入配给分部工作台 (分部初审 -> 经理终审)
       const ticketId = `REV-MEM-${Date.now().toString().slice(-4)}`;
       const newTicket = {
         id: ticketId,
-        source: '成员转移',
-        categoryType: transferType === 'wife' ? '妻子转移人工核验' : transferType === 'child' ? '子女跨卡转移审核' : '法定监护/抚养跨卡转移',
-        appType: `跨卡成员转移 (${member.name})`,
+        source: isEn ? 'Member Entry' : '成员转移',
+        categoryType: transferType === 'wife' ? (isEn ? 'Wife Transfer Manual Verification' : '妻子转移人工核验') : transferType === 'child' ? (isEn ? 'Child Cross-Card Transfer Audit' : '子女跨卡转移审核') : (isEn ? 'Legal Guardianship/Support Cross-Card Transfer' : '法定监护/抚养跨卡转移'),
+        appType: isEn ? `Cross-Card Member Transfer (${member.name})` : `跨卡成员转移 (${member.name})`,
         cardNo: targetCardNo || currentFamily.rationCardNo,
         applicantName: currentFamily.headName,
-        targetMemberName: `${member.name} (国民号: ${member.nationalId})`,
-        reason: `${reasonText} 原持卡所属【${member.currentProvince} · ${member.currentCenterName}】`,
-        status: '待分部初审',
+        targetMemberName: isEn ? `${member.name} (National ID: ${member.nationalId})` : `${member.name} (国民号: ${member.nationalId})`,
+        reason: isEn ? `${reasonText} Original card registered at [${member.currentProvince} · ${member.currentCenterName}]` : `${reasonText} 原持卡所属【${member.currentProvince} · ${member.currentCenterName}】`,
+        status: isEn ? 'Pending Staff Review' : '待分部初审',
         submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
         staffOpinion: '',
-        managerDecision: '待决',
+        managerDecision: isEn ? 'Pending' : '待决',
         attachments: [
-          { name: reasonDoc || '亲属法律关系证明公函.pdf', type: 'required', verified: true },
+          { name: reasonDoc || (isEn ? 'Kinship_Legal_Relationship_Certificate_Letter.pdf' : '亲属法律关系证明公函.pdf'), type: 'required', verified: true },
           ...(article140Doc ? [{ name: article140Doc, type: 'required', verified: true }] : [])
         ],
         payload: {
@@ -1040,8 +1045,8 @@ export async function mockDispatch(config) {
         autoApproved: false,
         passed: true,
         ticketId,
-        message: `成员转移申请已受理！工单号【${ticketId}】，已转入接收分部审核工作台，请等待分部专员与经理两级终审签批。`
-      }, 200, `已成功转入分部电子审核工作台 (工单号 ${ticketId})`);
+        message: isEn ? `Member transfer application accepted! Ticket No. [${ticketId}], routed to the receiving branch audit workbench; pending two-tier endorsement by branch officer and manager.` : `成员转移申请已受理！工单号【${ticketId}】，已转入接收分部审核工作台，请等待分部专员与经理两级终审签批。`
+      }, 200, isEn ? `Successfully routed to branch electronic audit workbench (Ticket No. ${ticketId})` : `已成功转入分部电子审核工作台 (工单号 ${ticketId})`);
     }
   }
 
@@ -1156,7 +1161,7 @@ export async function mockDispatch(config) {
   // 2. 查询公民购买历史与提货订单列表 (GET)
   if (url.includes('/citizen/ration/orders') && method === 'GET') {
     const cardNo = params.cardNo;
-    const sharedOrders = getSharedOrders();
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
     let list = sharedOrders && sharedOrders.length > 0 ? [...sharedOrders] : [...citizenPurchaseOrdersStore];
     if (cardNo) {
       list = list.filter((o) => o.cardNo === cardNo);
@@ -1178,7 +1183,7 @@ export async function mockDispatch(config) {
     } = data;
 
     if (!selectedItems || selectedItems.length === 0) {
-      return createResponse({}, 400, '请至少选择一种保供配给口粮物资！');
+      return createResponse({}, 400, (isEn ? 'Please select at least one supply ration item!' : '请至少选择一种保供配给口粮物资！'));
     }
 
     // 校验限额逻辑
@@ -1194,7 +1199,7 @@ export async function mockDispatch(config) {
     };
 
     // 累计已购
-    const currentOrdersPool = getSharedOrders() || citizenPurchaseOrdersStore;
+    const currentOrdersPool = getSharedOrders(isEn ? 'en' : 'zh') || citizenPurchaseOrdersStore;
     const cardOrders = currentOrdersPool.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
     const alreadyConsumedMap = { 'FLOUR-WHT-02': 0, 'RICE-BAS-01': 0, 'OIL-SUN-03': 0, 'SUGAR-WHT-04': 0 };
     cardOrders.forEach((ord) => {
@@ -1208,7 +1213,7 @@ export async function mockDispatch(config) {
     for (const item of selectedItems) {
       const allowed = (maxLimitMap[item.itemCode] || 999) - (alreadyConsumedMap[item.itemCode] || 0);
       if (item.qty > allowed) {
-        return createResponse({}, 400, `【配额超限拦截】：${item.itemName} 申请购买量 (${item.qty}${item.unit}) 已超出本月法定剩余可用额度 (${allowed}${item.unit})！`);
+        return createResponse({}, 400, (isEn ? `[Quota Overrun Interception]: The requested purchase quantity of ${item.itemName} (${item.qty}${item.unit}) exceeds the legal remaining monthly quota (${allowed}${item.unit})!` : `【配额超限拦截】：${item.itemName} 申请购买量 (${item.qty}${item.unit}) 已超出本月法定剩余可用额度 (${allowed}${item.unit})！`));
       }
     }
 
@@ -1256,12 +1261,12 @@ export async function mockDispatch(config) {
       phone,
       memberCount,
       agentId: family?.agentId || 'FA-00128',
-      agentName: family?.agentName || '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+      agentName: family?.agentName || (isEn ? 'Baghdad Karkh 1st Distribution Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)'),
       centerId: '101',
       deliveryType, // 'PICKUP' | 'HOME_DELIVERY'
-      deliveryAddress: deliveryAddress || family?.address || '巴格达省卡尔赫区海法街88号 3号楼201',
+      deliveryAddress: deliveryAddress || family?.address || (isEn ? 'Bldg 3, Apt 201, No.88 Haifa St, Al-Karkh District, Baghdad' : '巴格达省卡尔赫区海法街88号 3号楼201'),
       deliveryFee,
-      notes: notes || (deliveryType === 'PICKUP' ? '到店出示二维码提货' : '送货上门出示二维码签收'),
+      notes: notes || (deliveryType === 'PICKUP' ? (isEn ? 'Present the QR code at the station for pickup' : '到店出示二维码提货') : (isEn ? 'Sign for home delivery by presenting the QR code' : '送货上门出示二维码签收')),
       items: validatedItems,
       totalWeight,
       goodsAmount,
@@ -1269,7 +1274,7 @@ export async function mockDispatch(config) {
       selfPayAmount: finalSelfPay,
       subsidyAmount,
       payStatus: 'PAID',
-      payChannel: paymentInfo.channel || 'Qi Card 电子钱包',
+      payChannel: paymentInfo.channel || (isEn ? 'Qi Card E-Wallet' : 'Qi Card 电子钱包'),
       txnNo: paymentInfo.txnNo || `TXN-${Math.floor(100000 + Math.random() * 900000)}-CBI`,
       paidAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
       createdAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
@@ -1277,7 +1282,7 @@ export async function mockDispatch(config) {
     };
 
     citizenPurchaseOrdersStore.unshift(newOrder);
-    addSharedOrder(newOrder);
+    addSharedOrder(newOrder, isEn ? 'en' : 'zh');
 
     // 同步到代理端 B2C 预约/核销流中，让代理商端后续阶段直接看到并能扫码核销
     const b2cItem = {
@@ -1324,7 +1329,7 @@ export async function mockDispatch(config) {
       success: true,
       order: newOrder,
       pickupCode: newOrder.pickupCode,
-      message: `配给品选购成功并已完成电子支付！已为您生成专属防伪取货二维码 (核验码: ${newOrder.pickupCode})。`
+      message: (isEn ? `Ration purchase succeeded with electronic payment! Your exclusive anti-forgery pickup QR code has been generated (Verification code: ${newOrder.pickupCode}).` : `配给品选购成功并已完成电子支付！已为您生成专属防伪取货二维码 (核验码: ${newOrder.pickupCode})。`)
     });
   }
 
@@ -1333,7 +1338,7 @@ export async function mockDispatch(config) {
     const sharedTickets = getSharedTickets();
     const sourcePool = sharedTickets && sharedTickets.length > 0 ? sharedTickets : ticketsStore;
     const source = params.source;
-    if (!source || source === '全部') {
+    if (!source || source === '全部' || source === 'All') {
       return createResponse(sourcePool);
     }
     const filtered = sourcePool.filter((t) => t.source === source);
@@ -1365,7 +1370,7 @@ export async function mockDispatch(config) {
       staffReviewedAt: ticket?.staffReviewedAt || new Date().toISOString().replace('T', ' ').slice(0, 16)
     });
 
-    return createResponse(ticket, 200, '初审意见已提交，工单已流转至经理终审阶段');
+    return createResponse(ticket, 200, (isEn ? 'Staff opinion submitted; the ticket has moved to the manager final-review stage' : '初审意见已提交，工单已流转至经理终审阶段'));
   }
 
   // 提交第二级经理终审裁决 (POST)
@@ -1479,7 +1484,7 @@ export async function mockDispatch(config) {
       managerDecidedAt: ticket?.managerDecidedAt || new Date().toISOString().replace('T', ' ').slice(0, 16)
     });
 
-    return createResponse(ticket, 200, `终审已裁决为【${decision}】！`);
+    return createResponse(ticket, 200, (isEn ? `Final review adjudicated as [${decision}]!` : `终审已裁决为【${decision}】！`));
   }
 
   // ==========================================
@@ -1496,22 +1501,22 @@ export async function mockDispatch(config) {
     const newPlan = {
       id: `PLAN-${Date.now().toString().slice(-4)}`,
       planNo: data.planNo || `PLAN-2026-N${rationPlansStore.length + 1}`,
-      title: data.title || '新增战略物资口粮保供计划',
-      periodName: data.periodName || '2026年保供周期',
+      title: data.title || (isEn ? 'New Strategic Material Ration Supply Plan' : '新增战略物资口粮保供计划'),
+      periodName: data.periodName || (isEn ? '2026 Supply Cycle' : '2026年保供周期'),
       startDate: data.startDate || '2026-10-01',
       endDate: data.endDate || '2026-12-31',
-      scope: data.scope || '全国全域覆盖',
+      scope: data.scope || (isEn ? 'Nationwide Coverage' : '全国全域覆盖'),
       targetHouseholds: data.targetHouseholds || 1200000,
       targetBeneficiaries: data.targetBeneficiaries || 5400000,
-      issuer: data.issuer || '贸易部食品配给署',
+      issuer: data.issuer || (isEn ? 'Ministry of Trade Food Rationing Authority' : '贸易部食品配给署'),
       issueDate: new Date().toISOString().split('T')[0],
-      status: '执行中',
-      allocationStatus: '待分解排程',
+      status: isEn ? 'In Execution' : '执行中',
+      allocationStatus: isEn ? 'Pending Breakdown Scheduling' : '待分解排程',
       quotaStandards: data.quotaStandards || [
-        { itemName: '精制大米', itemCode: 'RICE-BAS-01', quotaPerPerson: 3.0, unit: 'KG/人/月', totalQty: 48000000 },
-        { itemName: '特级面粉', itemCode: 'FLOUR-WHT-02', quotaPerPerson: 9.0, unit: 'KG/人/月', totalQty: 144000000 },
-        { itemName: '食用植物油', itemCode: 'OIL-SUN-03', quotaPerPerson: 1.0, unit: 'L/人/月', totalQty: 16000000 },
-        { itemName: '纯精白糖', itemCode: 'SUGAR-WHT-04', quotaPerPerson: 1.0, unit: 'KG/人/月', totalQty: 16000000 }
+        { itemName: isEn ? 'Premium Rice' : '精制大米', itemCode: 'RICE-BAS-01', quotaPerPerson: 3.0, unit: isEn ? 'KG/Person/Month' : 'KG/人/月', totalQty: 48000000 },
+        { itemName: isEn ? 'Premium Flour' : '特级面粉', itemCode: 'FLOUR-WHT-02', quotaPerPerson: 9.0, unit: isEn ? 'KG/Person/Month' : 'KG/人/月', totalQty: 144000000 },
+        { itemName: isEn ? 'Edible Vegetable Oil' : '食用植物油', itemCode: 'OIL-SUN-03', quotaPerPerson: 1.0, unit: isEn ? 'L/Person/Month' : 'L/人/月', totalQty: 16000000 },
+        { itemName: isEn ? 'Refined White Sugar' : '纯精白糖', itemCode: 'SUGAR-WHT-04', quotaPerPerson: 1.0, unit: isEn ? 'KG/Person/Month' : 'KG/人/月', totalQty: 16000000 }
       ],
       overallProgress: {
         totalPlanWeightTon: 224000,
@@ -1524,7 +1529,7 @@ export async function mockDispatch(config) {
       }
     };
     rationPlansStore.unshift(newPlan);
-    return createResponse(newPlan, 200, '配给总计划制定并下发成功！');
+    return createResponse(newPlan, 200, isEn ? 'Ration master plan formulated and issued successfully!' : '配给总计划制定并下发成功！');
   }
 
   // 4.2 查询代理网点配额分解与排程任务单 (联动“我的代理中心列表”)
@@ -1643,16 +1648,16 @@ export async function mockDispatch(config) {
   if (url.includes('/warehouse/inbound-orders') && method === 'POST') {
     // [P1 校验 1] 必须校验贸易部计划编号
     if (!data.tradePlanNo || String(data.tradePlanNo).trim() === '') {
-      return createResponse(null, 400, '【P1 规则校验拦截】采购入库单必须校验并关联贸易部物资配给总计划编号 (tradePlanNo)！');
+      return createResponse(null, 400, isEn ? '[P1 Rule Validation Interception] The purchase inbound order must be validated against and linked to the Ministry of Trade material ration master plan number (tradePlanNo)!' : '【P1 规则校验拦截】采购入库单必须校验并关联贸易部物资配给总计划编号 (tradePlanNo)！');
     }
     const planExists = rationPlansStore.some((p) => p.planNo === data.tradePlanNo);
     if (!planExists) {
-      return createResponse(null, 400, `【P1 规则校验拦截】贸易部计划编号【${data.tradePlanNo}】在总规系统不存在或已失效！`);
+      return createResponse(null, 400, isEn ? `[P1 Rule Validation Interception] Ministry of Trade plan number [${data.tradePlanNo}] does not exist in the master-plan system or has expired!` : `【P1 规则校验拦截】贸易部计划编号【${data.tradePlanNo}】在总规系统不存在或已失效！`);
     }
 
     // [P1 校验 2] 批次号生成时必须包含生产日期及效期字段
     if (!data.batchNo || !data.productionDate || !data.expiryDate) {
-      return createResponse(null, 400, '【P1 规则校验拦截】强制登记物资生产批次号、生产日期及有效截止日期！');
+      return createResponse(null, 400, isEn ? '[P1 Rule Validation Interception] Material production batch number, production date and expiry date registration is mandatory!' : '【P1 规则校验拦截】强制登记物资生产批次号、生产日期及有效截止日期！');
     }
     const prodClean = data.productionDate.replace(/-/g, '');
     const expClean = data.expiryDate.replace(/-/g, '').slice(0, 6);
@@ -1660,7 +1665,7 @@ export async function mockDispatch(config) {
       return createResponse(
         null,
         400,
-        `【P1 规则校验拦截】批次号生成规则不合规！批次号必须包含生产日期（${prodClean}）及效期字段（如 EXP${expClean}）！当前批次号：${data.batchNo}`
+        isEn ? `[P1 Rule Validation Interception] Batch number generation rule violated! The batch number must contain the production date (${prodClean}) and the expiry field (e.g. EXP${expClean})! Current batch number: ${data.batchNo}` : `【P1 规则校验拦截】批次号生成规则不合规！批次号必须包含生产日期（${prodClean}）及效期字段（如 EXP${expClean}）！当前批次号：${data.batchNo}`
       );
     }
 
@@ -1766,7 +1771,7 @@ export async function mockDispatch(config) {
       afterSnapshot: JSON.stringify(newInbound)
     });
 
-    return createResponse(newInbound, 200, `入库质检合格！已生成唯一箱码标签【${traceCode}】并完成货位绑定。`);
+    return createResponse(newInbound, 200, (isEn ? `Inbound QC passed! Unique box-code label [${traceCode}] generated and slot binding completed.` : `入库质检合格！已生成唯一箱码标签【${traceCode}】并完成货位绑定。`));
   }
 
   // 4.4 配给配送出库单列表 (SCM)
@@ -1780,7 +1785,7 @@ export async function mockDispatch(config) {
     const targetStock = stocksStore.find((s) => s.id === data.stockId || s.batchNo === data.batchNo) || stocksStore[0];
 
     if (targetStock.availableQty < outQty) {
-      return createResponse(null, 400, `库位可用库存不足！当前可用：${targetStock.availableQty} ${targetStock.unit}，申请出库：${outQty} ${targetStock.unit}`);
+      return createResponse(null, 400, isEn ? `Insufficient available stock at the storage location! Currently available: ${targetStock.availableQty} ${targetStock.unit}, requested outbound: ${outQty} ${targetStock.unit}` : `库位可用库存不足！当前可用：${targetStock.availableQty} ${targetStock.unit}，申请出库：${outQty} ${targetStock.unit}`);
     }
 
     // [P2 规则] 必须生成唯一的全局交付流水号
@@ -1883,7 +1888,7 @@ export async function mockDispatch(config) {
       afterSnapshot: `{"available":${targetStock.availableQty},"locked":${targetStock.lockedQty}}`
     });
 
-    return createResponse(newOutbound, 200, `波次出库复核完成！已生成唯一交付流水单【${deliveryFlowNo}】，${outQty} ${targetStock.unit} 在途库存已成功锁定！`);
+    return createResponse(newOutbound, 200, (isEn ? `Wave outbound review completed! Unique delivery flow order [${deliveryFlowNo}] generated; ${outQty} ${targetStock.unit} in-transit stock locked successfully!` : `波次出库复核完成！已生成唯一交付流水单【${deliveryFlowNo}】，${outQty} ${targetStock.unit} 在途库存已成功锁定！`));
   }
 
   // 4.5 跨库调拨单列表 (SCM)
@@ -1905,7 +1910,7 @@ export async function mockDispatch(config) {
       fromWarehouseName: data.fromWarehouseName || '巴格达第一国家储备粮库 (中心仓)',
       toWarehouseId: data.toWarehouseId || 'WH-DIY-01',
       toWarehouseName: data.toWarehouseName || '迪亚拉哈奈根前置战略保供仓 (前置仓)',
-      reason: data.reason || '跨区域战略保供调拨',
+      reason: data.reason || (isEn ? 'Cross-Region Strategic Supply Transfer' : '跨区域战略保供调拨'),
       currentStage: '阶段1: 调出出库完成',
       stage1Outbound: {
         outboundFlowNo: `TRF-OUT-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -1928,7 +1933,7 @@ export async function mockDispatch(config) {
       }
     };
     transferOrdersStore.unshift(newTrf);
-    return createResponse(newTrf, 200, '跨库调拨申请已创建，第一阶段【调出出库】已完成！');
+    return createResponse(newTrf, 200, (isEn ? 'Cross-warehouse transfer application created; Stage 1 [Outbound] completed!' : '跨库调拨申请已创建，第一阶段【调出出库】已完成！'));
   }
 
   // 4.5.2 推进调拨单流转阶段 (三段式流水)
@@ -1937,7 +1942,7 @@ export async function mockDispatch(config) {
     const trfId = transferAdvanceMatch[1];
     const trf = transferOrdersStore.find((t) => t.id === trfId || t.transferNo === trfId);
     if (!trf) {
-      return createResponse(null, 404, '调拨单据未找到！');
+      return createResponse(null, 404, isEn ? 'Transfer order not found!' : '调拨单据未找到！');
     }
     if (trf.currentStage.includes('阶段1')) {
       trf.currentStage = '阶段2: 在途管理';
@@ -1950,7 +1955,7 @@ export async function mockDispatch(config) {
       trf.stage3Inbound.inspectStatus = '验收合格';
       trf.stage3Inbound.time = new Date().toISOString().replace('T', ' ').slice(0, 19);
     }
-    return createResponse(trf, 200, `调拨流转成功！当前推进至【${trf.currentStage}】！`);
+    return createResponse(trf, 200, (isEn ? `Transfer flow succeeded! Advanced to [${trf.currentStage}]!` : `调拨流转成功！当前推进至【${trf.currentStage}】！`));
   }
 
   // 4.6 盘点记录列表 (SCM)
@@ -1998,7 +2003,7 @@ export async function mockDispatch(config) {
   // 4.7.1 登记报损报溢记录 (强制损耗原因与存证影像，双人审批)
   if (url.includes('/warehouse/loss-records') && method === 'POST') {
     if (!data.damageReason || String(data.damageReason).trim() === '') {
-      return createResponse(null, 400, '报损与报溢操作必须强制录入损耗原因与现场事实说明！');
+      return createResponse(null, 400, isEn ? 'Loss/surplus operations require mandatory entry of loss reason and on-site factual statement!' : '报损与报溢操作必须强制录入损耗原因与现场事实说明！');
     }
     const newLoss = {
       id: `LOSS-${Date.now().toString().slice(-4)}`,
@@ -2019,7 +2024,7 @@ export async function mockDispatch(config) {
       approvers: []
     };
     lossRecordsStore.unshift(newLoss);
-    return createResponse(newLoss, 200, '报损申请已受理并绑定存证影像！依据安全合规机制，需经双人签批后方可核销入账。');
+    return createResponse(newLoss, 200, (isEn ? 'Loss report accepted with evidence imagery bound! Per the security compliance mechanism, dual sign-off is required before write-off booking.' : '报损申请已受理并绑定存证影像！依据安全合规机制，需经双人签批后方可核销入账。'));
   }
 
   // 4.8 六维多维库存实时视图 (SCM)
@@ -2183,7 +2188,7 @@ export async function mockDispatch(config) {
       );
     }
 
-    return createResponse(newReceipt, 200, '代理网点终端扫码核收成功！账单点对点对账完全相符。');
+    return createResponse(newReceipt, 200, (isEn ? 'Agent station terminal scan receipt succeeded! Bill point-to-point reconciliation fully matched.' : '代理网点终端扫码核收成功！账单点对点对账完全相符。'));
   }
 
   // 4.12 差异核查工单列表 (SCM)
@@ -2197,12 +2202,12 @@ export async function mockDispatch(config) {
     const tId = discResolveMatch[1];
     const ticket = discrepancyTicketsStore.find((t) => t.id === tId || t.ticketNo === tId);
     if (!ticket) {
-      return createResponse(null, 404, '核查工单不存在！');
+      return createResponse(null, 404, isEn ? 'Verification ticket not found!' : '核查工单不存在！');
     }
     ticket.resolutionStatus = '核查完结 (责任已定)';
     ticket.quarantineStatus = '已解除阻断并执行折损认定';
     ticket.investigationReport += `\n[处理批示]: ${data.resolutionNote || '责任认定完毕，已由承运保险全额理赔。'}`;
-    return createResponse(ticket, 200, '差异核查工单已闭环处置！');
+    return createResponse(ticket, 200, (isEn ? 'Discrepancy verification ticket closed-loop resolved!' : '差异核查工单已闭环处置！'));
   }
 
   // 4.13 末端配给智能读卡核验 (SCM / UNICODE)
@@ -2246,7 +2251,7 @@ export async function mockDispatch(config) {
       return createResponse(
         null,
         400,
-        `【P4 防重领安全拦截】电子配给卡【${cardNo}】在【${period}】已于 ${exists.claimTime} 完成核销领取！防伪凭证：${exists.claimVoucherNo}。严禁跨期重领、冒领与超额申领！`
+        isEn ? `[P4 Anti-Duplicate-Claim Safety Interception] Electronic ration card [${cardNo}] for [${period}] was already claimed and verified at ${exists.claimTime}! Anti-forgery voucher: ${exists.claimVoucherNo}. Cross-period duplicate claiming, impersonated claiming and over-quota claiming are strictly prohibited!` : `【P4 防重领安全拦截】电子配给卡【${cardNo}】在【${period}】已于 ${exists.claimTime} 完成核销领取！防伪凭证：${exists.claimVoucherNo}。严禁跨期重领、冒领与超额申领！`
       );
     }
 
@@ -2355,7 +2360,7 @@ export async function mockDispatch(config) {
   // 4.17.1 高风险操作双人复核审批 (强制 P5 校验: 双人签批记录)
   if (url.includes('/warehouse/security/double-approval') && method === 'POST') {
     if (!data.approver1 || !data.approver2) {
-      return createResponse(null, 400, '【P5 规则拦截】高风险操作（大额报损/盘点差异调整）必须具备主操作人与复核主管双人签批记录！');
+      return createResponse(null, 400, isEn ? '[P5 Rule Interception] High-risk operations (large write-offs / stocktake variance adjustments) require dual sign-off records from both the primary operator and the reviewing supervisor!' : '【P5 规则拦截】高风险操作（大额报损/盘点差异调整）必须具备主操作人与复核主管双人签批记录！');
     }
 
     if (data.lossId) {
@@ -2394,7 +2399,7 @@ export async function mockDispatch(config) {
       afterSnapshot: JSON.stringify(data)
     });
 
-    return createResponse({ success: true }, 200, `【P5 双人签批完成】主操作人【${data.approver1}】与复核主管【${data.approver2}】双重验证通过！`);
+    return createResponse({ success: true }, 200, (isEn ? `[P5 Dual Sign-off Completed] Primary operator [${data.approver1}] and review supervisor [${data.approver2}] passed dual verification!` : `【P5 双人签批完成】主操作人【${data.approver1}】与复核主管【${data.approver2}】双重验证通过！`));
   }
 
   // 4.18 P1 ~ P5 阶段验证规则列表与在线测试 (验证中心)
@@ -2407,7 +2412,7 @@ export async function mockDispatch(config) {
     const rCode = pTestMatch[1].toUpperCase();
     const rule = validationRulesStore.find((r) => r.code === rCode);
     if (!rule) {
-      return createResponse(null, 404, '规则不存在！');
+      return createResponse(null, 404, isEn ? 'Rule not found!' : '规则不存在！');
     }
     // 仿真验证成功
     return createResponse(
@@ -2416,7 +2421,7 @@ export async function mockDispatch(config) {
         verified: true,
         testTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
         complianceRate: '100%',
-        message: `【${rCode}阶段规则仿真验证通过】${rule.ruleDescription}`
+        message: (isEn ? `[${rCode} Stage Rule Simulation Verified] ${rule.ruleDescription}` : `【${rCode}阶段规则仿真验证通过】${rule.ruleDescription}`)
       },
       200,
       `阶段规则【${rCode}】仿真验证通过！符合国家战略保供与审计规范。`
@@ -2493,70 +2498,72 @@ export async function mockDispatch(config) {
     const targetCenter = article140CentersStore.find((c) => c.centerId === String(centerId));
 
     if (!targetCenter) {
-      return createResponse({}, 404, '拟申请的配给中心不存在，请重新选择！');
+      return createResponse({}, 404, isEn ? 'The ration center to apply for does not exist, please select again!' : '拟申请的配给中心不存在，请重新选择！');
     }
 
     // 核心前置拦截：已被代理的中心不能申请，必须先注销
-    if (targetCenter.status === '已被代理') {
+    if (targetCenter.status === '已被代理' || targetCenter.status === 'Delegated') {
       return createResponse(
         {},
         400,
-        `【合规红线拦截】：配给中心【${targetCenter.centerName}】当前已被代理！依照第140号决议与贸易部规定，已被代理的中心须先注销代理，方可提出授予申请。`
+        isEn
+          ? `[Compliance Redline Interception]: Ration center [${targetCenter.centerName}] is currently delegated! Per Article 140 resolution and Ministry of Trade regulations, a delegated center must deregister its agency before a grant application can be filed.`
+          : `【合规红线拦截】：配给中心【${targetCenter.centerName}】当前已被代理！依照第140号决议与贸易部规定，已被代理的中心须先注销代理，方可提出授予申请。`
       );
     }
 
     // 年龄红线拦截：18 至 48 周岁之间
     const age = Number(applicantAge) || 30;
     if (age < 18 || age > 48) {
-      return createResponse({}, 400, `【资格不符】：候选人年龄须在 18 至 48 周岁之间（当前填写为 ${age} 周岁）。`);
+      return createResponse({}, 400, isEn ? `[Eligibility Failure]: Candidate age must be between 18 and 48 (currently entered: ${age}).` : `【资格不符】：候选人年龄须在 18 至 48 周岁之间（当前填写为 ${age} 周岁）。`);
     }
 
     // 公职人员/军人/学生排他拦截
     if (!isNonPublicEmployee) {
-      return createResponse({}, 400, '【资格不符】：申请人不得为学生、雇员、军人、公司所有者或股东或承包商，且不得以任何名义领取国家工资！');
+      return createResponse({}, 400, isEn ? '[Eligibility Failure]: The applicant must not be a student, employee, serviceman, company owner/shareholder or contractor, and must not draw any state salary in any capacity!' : '【资格不符】：申请人不得为学生、雇员、军人、公司所有者或股东或承包商，且不得以任何名义领取国家工资！');
     }
 
     // 部长批准文号校验
     if (!ministerApprovalNo) {
-      return createResponse({}, 400, '【缺少前置批件】：申请代理权须已获得贸易部长批准（食品或面粉）并填写批件号及上传原件！');
+      return createResponse({}, 400, isEn ? '[Missing Prerequisite Approval]: An agency application requires prior approval by the Minister of Trade (Food or Flour); fill in the approval number and upload the original!' : '【缺少前置批件】：申请代理权须已获得贸易部长批准（食品或面粉）并填写批件号及上传原件！');
     }
 
     const ticketNo = `AGT-APP-${Date.now()}`;
     const newApp = {
       ticketNo,
       type: 'GRANT',
-      typeName: '新代理权授予申请',
+      typeName: isEn ? 'New Agency Grant Application' : '新代理权授予申请',
       centerId: targetCenter.centerId,
       centerName: targetCenter.centerName,
       province: targetCenter.province,
       isArticle140: targetCenter.isArticle140,
-      category: category || targetCenter.category || '面粉',
+      category: category || targetCenter.category || (isEn ? 'Flour' : '面粉'),
       applicantName: applicantName || MOCK_CURRENT_AGENT_PROFILE.name,
       applicantNationalId: applicantNationalId || MOCK_CURRENT_AGENT_PROFILE.idCardNo,
       applicantPhone: data.applicantPhone || MOCK_CURRENT_AGENT_PROFILE.phone,
-      status: '待电子支付', // 预先生成待缴规费环节
+      status: isEn ? 'Pending E-Payment' : '待电子支付', // 预先生成待缴规费环节
       currentStep: 3,
       feeAmount: 250000, // 二十五万伊拉克第纳尔
       feePaid: false,
       payChannel: null,
       submitTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
-      auditNotes: '自动审核通过（年龄与非公职身份校验合格），委员会现场联合抽查合格，准予进入电子缴纳250,000 IQD规费阶段。',
+      auditNotes: isEn ? 'Automatic review passed (age and non-public-official identity checks qualified); on-site joint sampling by the committee passed; approved to proceed to the electronic payment stage of the 250,000 IQD fee.' : '自动审核通过（年龄与非公职身份校验合格），委员会现场联合抽查合格，准予进入电子缴纳250,000 IQD规费阶段。',
       committeeMembers: [
-        { dept: targetCenter.province.includes('巴格达') ? '巴格达配给分部' : `${targetCenter.province}配给分部`, status: '实地核查通过', officer: '拉希姆·扎希德' },
-        { dept: '规划与跟进司', status: '配额合规审核通过', officer: '阿德南·巴希尔' },
-        { dept: '商业监督司 (观察员)', status: '观察员现场签字核准', officer: '海德尔·法蒂赫' }
+        { dept: isEn ? (targetCenter.province.includes('Baghdad') || targetCenter.province.includes('巴格达') ? 'Baghdad Ration Branch' : `${targetCenter.province} Ration Branch`) : (targetCenter.province.includes('巴格达') ? '巴格达配给分部' : `${targetCenter.province}配给分部`), status: isEn ? 'On-Site Verification Passed' : '实地核查通过', officer: isEn ? 'Rahim Zahid' : '拉希姆·扎希德' },
+        { dept: isEn ? 'Planning & Follow-up Directorate' : '规划与跟进司', status: isEn ? 'Quota Compliance Review Passed' : '配额合规审核通过', officer: isEn ? 'Adnan Bashir' : '阿德南·巴希尔' },
+        { dept: isEn ? 'Commercial Supervision Directorate (Observer)' : '商业监督司 (观察员)', status: isEn ? 'Observer On-Site Sign-off Approved' : '观察员现场签字核准', officer: isEn ? 'Haider Fatih' : '海德尔·法蒂赫' }
       ],
       documents: [
-        { name: '贸易部长批准公函.pdf', size: '1.5MB', verified: true },
-        { name: '30%服务家庭拇指印同意书.pdf', size: '4.2MB', verified: true },
-        { name: '申请人国民身份证与小学及以上毕业证.pdf', size: '2.0MB', verified: true },
-        { name: '营业用房产权证或公证租赁合同.pdf', size: '3.1MB', verified: true }
+        { name: isEn ? 'Minister_of_Trade_Approval_Letter.pdf' : '贸易部长批准公函.pdf', size: '1.5MB', verified: true },
+        { name: isEn ? '30%_Served_Families_Thumbprint_Consent.pdf' : '30%服务家庭拇指印同意书.pdf', size: '4.2MB', verified: true },
+        { name: isEn ? 'Applicant_National_ID_and_Primary_Education_Certificate.pdf' : '申请人国民身份证与小学及以上毕业证.pdf', size: '2.0MB', verified: true },
+        { name: isEn ? 'Business_Premises_Property_Deed_or_Notarized_Lease.pdf' : '营业用房产权证或公证租赁合同.pdf', size: '3.1MB', verified: true }
       ],
       payload: { ...data }
     };
 
     agentApplicationsStore.unshift(newApp);
-    return createResponse(newApp, 200, '代理权授予申请提交成功，已完成资格自动核验，进入规费缴纳与证书颁发环节！');
+    return createResponse(newApp, 200, isEn ? 'Agency grant application submitted successfully; automatic eligibility verification completed, proceeding to fee payment and certificate issuance!' : '代理权授予申请提交成功，已完成资格自动核验，进入规费缴纳与证书颁发环节！');
   }
 
   // 5.6 提交代理权轮替 (转移) 申请 (BPM / SCM)
@@ -2565,7 +2572,7 @@ export async function mockDispatch(config) {
     const targetCenter = article140CentersStore.find((c) => c.centerId === String(centerId));
 
     if (!targetCenter) {
-      return createResponse({}, 404, '拟办理轮替的配给中心不存在！');
+      return createResponse({}, 404, isEn ? 'The ration center to rotate does not exist!' : '拟办理轮替的配给中心不存在！');
     }
 
     // 已故轮替时限校验：12个月内完成轮替
@@ -2574,7 +2581,7 @@ export async function mockDispatch(config) {
       const now = new Date();
       const diffMonths = (now.getFullYear() - deathDateObj.getFullYear()) * 12 + (now.getMonth() - deathDateObj.getMonth());
       if (diffMonths > 12) {
-        return createResponse({}, 400, '【时限超期拦截】：已故代理轮替必须在代理死亡之日起 12 个月内完成，超期代理权将被依法立即注销！');
+        return createResponse({}, 400, isEn ? '[Deadline Exceeded Interception]: Deceased agent rotation must be completed within 12 months from the agent\'s date of death; overdue agency will be deregistered immediately by law!' : '【时限超期拦截】：已故代理轮替必须在代理死亡之日起 12 个月内完成，超期代理权将被依法立即注销！');
       }
     }
 
@@ -2582,37 +2589,37 @@ export async function mockDispatch(config) {
     const newApp = {
       ticketNo,
       type: 'ROTATION',
-      typeName: rotationScenario === 'DECEASED' ? '代理权轮替 (已故代理亲属轮替)' : '代理权轮替 (应代理申请转让)',
+      typeName: rotationScenario === 'DECEASED' ? (isEn ? 'Agency Rotation (Deceased Agent Kin Succession)' : '代理权轮替 (已故代理亲属轮替)') : (isEn ? 'Agency Rotation (Agent-Requested Transfer)' : '代理权轮替 (应代理申请转让)'),
       centerId: targetCenter.centerId,
       centerName: targetCenter.centerName,
       province: targetCenter.province,
       isArticle140: targetCenter.isArticle140,
-      category: targetCenter.category || '面粉',
-      applicantName: successorName || '受让人',
+      category: targetCenter.category || (isEn ? 'Flour' : '面粉'),
+      applicantName: successorName || (isEn ? 'Transferee' : '受让人'),
       originalAgentName: targetCenter.currentAgentName || MOCK_CURRENT_AGENT_PROFILE.name,
-      kinship: successorKinship || '三代以内直系亲属',
-      status: '待电子支付',
+      kinship: successorKinship || (isEn ? 'Direct Relative Within Three Generations' : '三代以内直系亲属'),
+      status: isEn ? 'Pending E-Payment' : '待电子支付',
       currentStep: 3,
       feeAmount: 50000, // 五万伊拉克第纳尔
       feePaid: false,
       payChannel: null,
       submitTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
-      auditNotes: '公司法务部及规划跟进司审查通过：亲属继承材料完备，逝者配给份额已核销，请支付50,000 IQD法定公文规费以完成证书更新。',
+      auditNotes: isEn ? 'Reviewed and approved by the company legal department and the Planning & Follow-up Directorate: kinship inheritance documents complete, deceased quota written off; please pay the 50,000 IQD statutory document fee to complete certificate renewal.' : '公司法务部及规划跟进司审查通过：亲属继承材料完备，逝者配给份额已核销，请支付50,000 IQD法定公文规费以完成证书更新。',
       committeeMembers: [
-        { dept: '粮食及谷物加工公司法务部', status: isWifeSuccession ? '配偶轮替免予继承人放弃声明，直接合规核准' : '继承证书与法务放弃声明核验通过', officer: '萨利姆·努里' },
-        { dept: '规划与跟进司', status: '逝者配额注销报告核查无误', officer: '阿里·哈立德' }
+        { dept: isEn ? 'Legal Department, Grain & Cereal Processing Company' : '粮食及谷物加工公司法务部', status: isWifeSuccession ? (isEn ? 'Spouse rotation exempt from heir waiver declaration; directly approved as compliant' : '配偶轮替免予继承人放弃声明，直接合规核准') : (isEn ? 'Inheritance certificate and legal waiver declaration verified' : '继承证书与法务放弃声明核验通过'), officer: isEn ? 'Salim Nouri' : '萨利姆·努里' },
+        { dept: isEn ? 'Planning & Follow-up Directorate' : '规划与跟进司', status: isEn ? 'Deceased quota deregistration report verified' : '逝者配额注销报告核查无误', officer: isEn ? 'Ali Khalid' : '阿里·哈立德' }
       ],
       documents: [
-        { name: '合法继承证书(教法分割证书 qassam shar-i).pdf', size: '2.1MB', verified: true },
-        { name: '死亡证明及4个月内逝者配额注销回执.pdf', size: '1.8MB', verified: true },
-        { name: '受让亲属专职投入与非公职公证承诺书.pdf', size: '1.2MB', verified: true },
-        { name: '双方有效身份证明及同地区居民证明.pdf', size: '2.3MB', verified: true }
+        { name: isEn ? 'Legal_Inheritance_Certificate_(qassam_shar-i).pdf' : '合法继承证书(教法分割证书 qassam shar-i).pdf', size: '2.1MB', verified: true },
+        { name: isEn ? 'Death_Certificate_and_4-Month_Quota_Deregistration_Receipt.pdf' : '死亡证明及4个月内逝者配额注销回执.pdf', size: '1.8MB', verified: true },
+        { name: isEn ? 'Transferee_Full-Time_Dedication_and_Non-Public_Official_Notarized_Undertaking.pdf' : '受让亲属专职投入与非公职公证承诺书.pdf', size: '1.2MB', verified: true },
+        { name: isEn ? 'Valid_ID_Documents_and_Same-Area_Residence_Certificate.pdf' : '双方有效身份证明及同地区居民证明.pdf', size: '2.3MB', verified: true }
       ],
       payload: { ...data }
     };
 
     agentApplicationsStore.unshift(newApp);
-    return createResponse(newApp, 200, '代理权轮替申请已受理并经法务审核，请缴纳50,000 IQD规费完成转移！');
+    return createResponse(newApp, 200, isEn ? 'Agency rotation application accepted and cleared by legal review; please pay the 50,000 IQD fee to complete the transfer!' : '代理权轮替申请已受理并经法务审核，请缴纳50,000 IQD规费完成转移！');
   }
 
   // 5.7 提交恢复已注销代理权申请 (BPM / SCM)
@@ -2621,12 +2628,12 @@ export async function mockDispatch(config) {
     const targetCenter = article140CentersStore.find((c) => c.centerId === String(centerId));
 
     if (!targetCenter) {
-      return createResponse({}, 404, '目标中心不存在！');
+      return createResponse({}, 404, isEn ? 'Target center does not exist!' : '目标中心不存在！');
     }
 
     // 核心前置拦截：该代理权未被合并
     if (targetCenter.isMerged) {
-      return createResponse({}, 400, '【合规拦截】：该代理权已被并入其他配给中心网点，依照贸易部规定禁止恢复！');
+      return createResponse({}, 400, isEn ? '[Compliance Interception]: This agency has been merged into another ration center station; restoration is prohibited per Ministry of Trade regulations!' : '【合规拦截】：该代理权已被并入其他配给中心网点，依照贸易部规定禁止恢复！');
     }
 
     // 负面清单一票否决：已被法院判决、道德败坏/恐怖主义罪行、篡改或替换物资
@@ -2634,7 +2641,7 @@ export async function mockDispatch(config) {
       return createResponse(
         {},
         400,
-        '【法定义务一票否决】：已被法院判决、涉及道德败坏或恐怖主义罪行、或查实篡改替换贸易部物资的代理，法律明令禁止恢复代理权！'
+        isEn ? '[Statutory Veto]: Agents convicted by court, involved in immoral or terrorism offenses, or found to have tampered with or substituted Ministry of Trade materials are explicitly prohibited by law from agency restoration!' : '【法定义务一票否决】：已被法院判决、涉及道德败坏或恐怖主义罪行、或查实篡改替换贸易部物资的代理，法律明令禁止恢复代理权！'
       );
     }
 
@@ -2644,7 +2651,7 @@ export async function mockDispatch(config) {
       return createResponse(
         {},
         400,
-        `【民意支持率不足】：因处罚注销的代理权恢复，须有不低于 25% 的辖区家庭联署支持（当前上报为 ${supportPct}%）。`
+        isEn ? `[Insufficient Public Support]: Restoration of a agency deregistered by punishment requires joint endorsement by no less than 25% of households in the district (currently reported: ${supportPct}%).` : `【民意支持率不足】：因处罚注销的代理权恢复，须有不低于 25% 的辖区家庭联署支持（当前上报为 ${supportPct}%）。`
       );
     }
 
@@ -2652,35 +2659,35 @@ export async function mockDispatch(config) {
     const newApp = {
       ticketNo,
       type: 'RESTORATION',
-      typeName: restorationType === 'PUNISHMENT' ? '恢复已注销代理权 (违规处罚整改恢复)' : '恢复已注销代理权 (应代理申请恢复)',
+      typeName: restorationType === 'PUNISHMENT' ? (isEn ? 'Restore Deregistered Agency (Violation Punishment Rectification)' : '恢复已注销代理权 (违规处罚整改恢复)') : (isEn ? 'Restore Deregistered Agency (Agent-Requested Restoration)' : '恢复已注销代理权 (应代理申请恢复)'),
       centerId: targetCenter.centerId,
       centerName: targetCenter.centerName,
       province: targetCenter.province,
       isArticle140: targetCenter.isArticle140,
-      category: targetCenter.category || '面粉',
+      category: targetCenter.category || (isEn ? 'Flour' : '面粉'),
       applicantName: data.applicantName || MOCK_CURRENT_AGENT_PROFILE.name,
-      status: '待电子支付',
+      status: isEn ? 'Pending E-Payment' : '待电子支付',
       currentStep: 3,
       feeAmount: 50000,
       feePaid: false,
       payChannel: null,
       submitTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
-      auditNotes: '规划与跟进司联合商业财务监督司联合调查完毕：未被合并、无一票否决司法污点且家庭支持率达标。准予支付规费恢复！',
+      auditNotes: isEn ? 'Joint investigation by the Planning & Follow-up Directorate and the Commercial & Financial Supervision Directorate completed: not merged, no judicial veto record, and household support rate meets the threshold. Approved to pay the fee for restoration!' : '规划与跟进司联合商业财务监督司联合调查完毕：未被合并、无一票否决司法污点且家庭支持率达标。准予支付规费恢复！',
       committeeMembers: [
-        { dept: '规划与跟进司', status: `联合调查核实家庭支持率通过 (${supportPct || 28}%)`, officer: '努尔丁·穆尔塔达' },
-        { dept: '商业和财务监督司', status: '整改现场验收合格', officer: '海德尔·法蒂赫' }
+        { dept: isEn ? 'Planning & Follow-up Directorate' : '规划与跟进司', status: isEn ? `Joint investigation verified household support rate passed (${supportPct || 28}%)` : `联合调查核实家庭支持率通过 (${supportPct || 28}%)`, officer: isEn ? 'Nur al-Din al-Murtada' : '努尔丁·穆尔塔达' },
+        { dept: isEn ? 'Commercial & Financial Supervision Directorate' : '商业和财务监督司', status: isEn ? 'Rectification on-site acceptance passed' : '整改现场验收合格', officer: isEn ? 'Haider Fatih' : '海德尔·法蒂赫' }
       ],
       documents: [
-        { name: '恢复代理权正式申请公函.pdf', size: '1.2MB', verified: true },
-        { name: '专职经营及整改违规书面承诺书.pdf', size: '1.4MB', verified: true },
-        { name: '辖区25%以上家庭联署支持拇指印证明底册.pdf', size: '3.8MB', verified: true },
-        { name: '司法无刑事罪行与无物资篡改公函.pdf', size: '1.1MB', verified: true }
+        { name: isEn ? 'Agency_Restoration_Formal_Application_Letter.pdf' : '恢复代理权正式申请公函.pdf', size: '1.2MB', verified: true },
+        { name: isEn ? 'Full-Time_Operation_and_Rectification_Written_Undertaking.pdf' : '专职经营及整改违规书面承诺书.pdf', size: '1.4MB', verified: true },
+        { name: isEn ? '25%+_Household_Thumbprint_Support_Roster.pdf' : '辖区25%以上家庭联署支持拇指印证明底册.pdf', size: '3.8MB', verified: true },
+        { name: isEn ? 'Judicial_No-Criminal-Record_and_No-Material-Tampering_Letter.pdf' : '司法无刑事罪行与无物资篡改公函.pdf', size: '1.1MB', verified: true }
       ],
       payload: { ...data }
     };
 
     agentApplicationsStore.unshift(newApp);
-    return createResponse(newApp, 200, '恢复申请已通过双司联合调查，请缴纳规费完成代理权恢复！');
+    return createResponse(newApp, 200, isEn ? 'Restoration application passed the joint investigation of both directorates; please pay the fee to complete agency restoration!' : '恢复申请已通过双司联合调查，请缴纳规费完成代理权恢复！');
   }
 
   // 5.8 代理权主动注销申请 (SCM) - 满足“已被代理的中心需要先注销代理，才能申请”
@@ -2695,14 +2702,14 @@ export async function mockDispatch(config) {
       targetCenter.canRestore = true;
       targetCenter.currentAgentId = null;
       targetCenter.currentAgentName = `原代理：${data.agentName || MOCK_CURRENT_AGENT_PROFILE.name} (已注销)`;
-      targetCenter.lastCancellationReason = data.reason || '代理人主动申报注销或转让清退';
+      targetCenter.lastCancellationReason = data.reason || (isEn ? 'Agent voluntary deregistration or transfer clearance declaration' : '代理人主动申报注销或转让清退');
       targetCenter.cancellationDate = new Date().toISOString().slice(0, 10);
     }
 
     if (targetMyCenter) {
       targetMyCenter.status = '已注销';
       targetMyCenter.isCurrentActive = false;
-      targetMyCenter.cancellationReason = data.reason || '已主动注销';
+      targetMyCenter.cancellationReason = data.reason || (isEn ? 'Voluntarily deregistered' : '已主动注销');
     }
 
     // 记录一条注销工单
@@ -2738,7 +2745,7 @@ export async function mockDispatch(config) {
     const targetApp = agentApplicationsStore.find((a) => a.ticketNo === ticketNo);
 
     if (!targetApp) {
-      return createResponse({}, 404, '未找到指定申请单！');
+      return createResponse({}, 404, (isEn ? 'The specified application not found!' : '未找到指定申请单！'));
     }
 
     targetApp.feePaid = true;
@@ -2868,7 +2875,7 @@ export async function mockDispatch(config) {
       return createResponse(
         {},
         400,
-        `【单中心物理归属拦截】：街道代理【${targetAgent.name}】物理上仅隶属于中心【${targetAgent.centerName}】，严禁跨中心采购订货！`
+        isEn ? `[Single-Center Physical Affiliation Interception]: Street agent [${targetAgent.name}] is physically affiliated only with center [${targetAgent.centerName}]; cross-center procurement orders are strictly prohibited!` : `【单中心物理归属拦截】：街道代理【${targetAgent.name}】物理上仅隶属于中心【${targetAgent.centerName}】，严禁跨中心采购订货！`
       );
     }
 
@@ -2886,21 +2893,21 @@ export async function mockDispatch(config) {
       return createResponse(
         {},
         400,
-        `【配额超限拦截】：本次面粉订货量 (${requestedFlour} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedFlourKg.toFixed(0)} KG)！`
+        isEn ? `[Quota Overrun Interception]: This flour order quantity (${requestedFlour} KG) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedFlourKg.toFixed(0)} KG) for the current grid of ${households} households!` : `【配额超限拦截】：本次面粉订货量 (${requestedFlour} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedFlourKg.toFixed(0)} KG)！`
       );
     }
     if (requestedRice > maxAllowedRiceKg) {
       return createResponse(
         {},
         400,
-        `【配额超限拦截】：本次大米订货量 (${requestedRice} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedRiceKg.toFixed(0)} KG)！`
+        isEn ? `[Quota Overrun Interception]: This rice order quantity (${requestedRice} KG) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedRiceKg.toFixed(0)} KG) for the current grid of ${households} households!` : `【配额超限拦截】：本次大米订货量 (${requestedRice} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedRiceKg.toFixed(0)} KG)！`
       );
     }
     if (requestedOil > maxAllowedOilL) {
       return createResponse(
         {},
         400,
-        `【配额超限拦截】：本次食用油订货量 (${requestedOil} L) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedOilL.toFixed(0)} L)！`
+        isEn ? `[Quota Overrun Interception]: This edible oil order quantity (${requestedOil} L) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedOilL.toFixed(0)} L) for the current grid of ${households} households!` : `【配额超限拦截】：本次食用油订货量 (${requestedOil} L) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedOilL.toFixed(0)} L)！`
       );
     }
 
@@ -2941,7 +2948,7 @@ export async function mockDispatch(config) {
     if (activeStores.g2bOrdersStore && !activeStores.g2bOrdersStore.some(o => o.orderNo === newOrder.orderNo)) {
       activeStores.g2bOrdersStore.unshift(newOrder);
     }
-    return createResponse(newOrder, 200, 'G2B 集中采购预约单已提交！请尽快完成货款支付以启动中心仓拣货排期。');
+    return createResponse(newOrder, 200, (isEn ? 'G2B centralized procurement reservation submitted! Please complete the payment promptly to start central warehouse picking scheduling.' : 'G2B 集中采购预约单已提交！请尽快完成货款支付以启动中心仓拣货排期。'));
   }
 
   // 5.13 支付 G2B 集中采购货款 (V3 资金入专管账户触发仓储出库)
@@ -2950,7 +2957,7 @@ export async function mockDispatch(config) {
     const targetOrder = g2bOrdersStore.find((o) => o.orderNo === orderNo);
 
     if (!targetOrder) {
-      return createResponse({}, 404, '指定的 G2B 采购单不存在！');
+      return createResponse({}, 404, isEn ? 'The specified G2B purchase order does not exist!' : '指定的 G2B 采购单不存在！');
     }
 
     targetOrder.payStatus = 'PAID';
@@ -2972,9 +2979,9 @@ export async function mockDispatch(config) {
   if (url.includes('/agent/citizen-orders/lookup') && method === 'GET') {
     const code = (params.code || '').trim().toLowerCase();
     if (!code) {
-      return createResponse({}, 400, '请输入提货凭证码或扫描二维码');
+      return createResponse({}, 400, isEn ? 'Please enter the pickup voucher code or scan the QR code' : '请输入提货凭证码或扫描二维码');
     }
-    const sharedOrders = getSharedOrders();
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
     const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
     const matched = sourcePool.find((o) =>
       (o.pickupCode && o.pickupCode.toLowerCase() === code) ||
@@ -2984,14 +2991,14 @@ export async function mockDispatch(config) {
       (o.orderId && o.orderId.toLowerCase().includes(code))
     );
     if (!matched) {
-      return createResponse({}, 404, `未检索到匹配的提货订单凭证【${code}】，请核对防伪二维码`);
+      return createResponse({}, 404, isEn ? `No matching pickup order voucher found for [${code}]; please check the anti-forgery QR code` : `未检索到匹配的提货订单凭证【${code}】，请核对防伪二维码`);
     }
     return createResponse(matched);
   }
 
   // 5.13.2 代理端查询公民购买配给订单列表 (GET)
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
-    const sharedOrders = getSharedOrders() || [];
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
     const map = new Map();
     // 优先读取共享持久化订单
     sharedOrders.forEach((o) => {
@@ -3034,12 +3041,12 @@ export async function mockDispatch(config) {
   if (url.includes('/agent/citizen-orders') && url.includes('/dispatch') && method === 'POST') {
     const parts = url.split('/');
     const orderId = parts[parts.indexOf('citizen-orders') + 1];
-    const sharedOrders = getSharedOrders();
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
     const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
     const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId);
 
     if (!targetOrder) {
-      return createResponse({}, 404, `未找到编号为 ${orderId} 的配给订单`);
+      return createResponse({}, 404, isEn ? `Ration order with No. ${orderId} not found` : `未找到编号为 ${orderId} 的配给订单`);
     }
 
     const {
@@ -3091,16 +3098,16 @@ export async function mockDispatch(config) {
   if (url.includes('/agent/citizen-orders') && url.includes('/verify-claim') && method === 'POST') {
     const parts = url.split('/');
     const orderId = parts[parts.indexOf('citizen-orders') + 1];
-    const sharedOrders = getSharedOrders();
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
     const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
     const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.pickupCode === orderId || (data && (data.orderId === o.orderId || data.pickupCode === o.pickupCode)));
 
     if (!targetOrder) {
-      return createResponse({}, 404, `未检索到需核销交割的订单凭据`);
+      return createResponse({}, 404, isEn ? `No order voucher pending verification & delivery was found` : `未检索到需核销交割的订单凭据`);
     }
 
     if (targetOrder.status === 'DELIVERED') {
-      return createResponse({ order: targetOrder, alreadyDelivered: true }, 200, `【注意】：该订单此前已完成核验交付，提货凭证号【${targetOrder.claimVoucherNo || targetOrder.orderId}】。`);
+      return createResponse({ order: targetOrder, alreadyDelivered: true }, 200, (isEn ? `[Notice]: This order has already been verified and delivered; pickup voucher No. [${targetOrder.claimVoucherNo || targetOrder.orderId}].` : `【注意】：该订单此前已完成核验交付，提货凭证号【${targetOrder.claimVoucherNo || targetOrder.orderId}】。`));
     }
 
     const nowStr = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
@@ -3216,14 +3223,14 @@ export async function mockDispatch(config) {
     );
 
     if (!targetReservation) {
-      return createResponse({}, 404, '【严禁无单发货】：未检索到有效匹配的预约单或提货码，禁止交付物资！');
+      return createResponse({}, 404, isEn ? '[No Delivery Without Order]: No valid matching reservation or pickup code found; delivery of materials is prohibited!' : '【严禁无单发货】：未检索到有效匹配的预约单或提货码，禁止交付物资！');
     }
 
     if (targetReservation.status === 'VERIFIED') {
       return createResponse(
         {},
         400,
-        `【防重复核销拦截】：预约单【${targetReservation.ticketNo}】已于 ${targetReservation.verifiedAt} 完成实物核销，严禁重复发货！`
+        isEn ? `[Anti-Duplicate-Verification Interception]: Reservation [${targetReservation.ticketNo}] was already physically verified at ${targetReservation.verifiedAt}; duplicate dispatch is strictly prohibited!` : `【防重复核销拦截】：预约单【${targetReservation.ticketNo}】已于 ${targetReservation.verifiedAt} 完成实物核销，严禁重复发货！`
       );
     }
 
@@ -3279,7 +3286,7 @@ export async function mockDispatch(config) {
       target.lastInventoryDate = new Date().toLocaleString('zh-CN', { hour12: false }).slice(0, 16);
       target.reconciledStatus = 'BALANCED';
     }
-    return createResponse(target, 200, '库存盘点与残损报损已同步至台账，账实校准完成！');
+    return createResponse(target, 200, (isEn ? 'Stocktake and damage loss synchronized to the ledger; book-to-physical calibration completed!' : '库存盘点与残损报损已同步至台账，账实校准完成！'));
   }
 
   // 5.19 多维流转追溯穿透倒查 (TRACE)
@@ -3506,9 +3513,9 @@ export async function mockDispatch(config) {
     if (target) {
       target.status = data.status;
       target.freezeReason = data.reason || '';
-      return createResponse(target, 200, `配给卡【${target.cardNo}】状态已变更为【${data.status}】`);
+      return createResponse(target, 200, (isEn ? `Ration card [${target.cardNo}] status changed to [${data.status}]` : `配给卡【${target.cardNo}】状态已变更为【${data.status}】`));
     }
-    return createResponse({}, 404, '未找到指定配给卡记录');
+    return createResponse({}, 404, (isEn ? 'The specified ration card record not found' : '未找到指定配给卡记录'));
   }
 
   // 7.3 调整月度配额
@@ -3517,9 +3524,9 @@ export async function mockDispatch(config) {
     const target = adminCardsStore.find((c) => c.id === cardId || c.cardNo === cardId);
     if (target) {
       target.quotas = { ...target.quotas, ...data.quotas };
-      return createResponse(target, 200, `配给卡【${target.cardNo}】月度定额已更新成功`);
+      return createResponse(target, 200, (isEn ? `Monthly quota of ration card [${target.cardNo}] updated successfully` : `配给卡【${target.cardNo}】月度定额已更新成功`));
     }
-    return createResponse({}, 404, '未找到指定配给卡记录');
+    return createResponse({}, 404, (isEn ? 'The specified ration card record not found' : '未找到指定配给卡记录'));
   }
 
   // 7.4 换发新卡 / 重置 NFC
@@ -3529,9 +3536,9 @@ export async function mockDispatch(config) {
     if (target) {
       target.rfidChipUid = `NFC-IQ-${Math.floor(1000000 + Math.random() * 8999999)}X`;
       target.lastVerifiedAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
-      return createResponse(target, 200, `配给卡【${target.cardNo}】已完成芯片重置并换发新卡`);
+      return createResponse(target, 200, (isEn ? `Ration card [${target.cardNo}] chip reset completed and new card issued` : `配给卡【${target.cardNo}】已完成芯片重置并换发新卡`));
     }
-    return createResponse({}, 404, '未找到指定配给卡记录');
+    return createResponse({}, 404, (isEn ? 'The specified ration card record not found' : '未找到指定配给卡记录'));
   }
 
   // 7.5 家庭户籍档案列表
@@ -3576,7 +3583,7 @@ export async function mockDispatch(config) {
       members: data.members || []
     };
     adminFamiliesStore.unshift(newFamily);
-    return createResponse(newFamily, 200, `家庭户籍档案【${newFamily.familyCode}】登记成功！`);
+    return createResponse(newFamily, 200, (isEn ? `Household file [${newFamily.familyCode}] registered successfully!` : `家庭户籍档案【${newFamily.familyCode}】登记成功！`));
   }
 
   // 7.7 编辑家庭档案
@@ -3585,16 +3592,16 @@ export async function mockDispatch(config) {
     const target = adminFamiliesStore.find((f) => f.id === familyId || f.familyCode === familyId);
     if (target) {
       Object.assign(target, data);
-      return createResponse(target, 200, `家庭档案【${target.familyCode}】已更新！`);
+      return createResponse(target, 200, (isEn ? `Family file [${target.familyCode}] updated!` : `家庭档案【${target.familyCode}】已更新！`));
     }
-    return createResponse({}, 404, '未找到指定家庭档案');
+    return createResponse({}, 404, (isEn ? 'The specified family file not found' : '未找到指定家庭档案'));
   }
 
   // 7.8 删除家庭档案
   if (url.match(/\/admin\/families\/([^/]+)/) && method === 'DELETE') {
     const familyId = url.split('/').pop();
     adminFamiliesStore = adminFamiliesStore.filter((f) => f.id !== familyId && f.familyCode !== familyId); activeStores.adminFamiliesStore = adminFamiliesStore;
-    return createResponse({ success: true }, 200, '家庭户籍档案已注销注销成功');
+    return createResponse({ success: true }, 200, (isEn ? 'Household file deregistered successfully' : '家庭户籍档案已注销注销成功'));
   }
 
   // 7.9 代理网点管理列表
@@ -3618,9 +3625,9 @@ export async function mockDispatch(config) {
     const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
     if (target) {
       target.status = data.status;
-      return createResponse(target, 200, `代理网点【${target.name}】状态已切换为【${data.status}】`);
+      return createResponse(target, 200, (isEn ? `Agent station [${target.name}] status switched to [${data.status}]` : `代理网点【${target.name}】状态已切换为【${data.status}】`));
     }
-    return createResponse({}, 404, '未找到指定代理网点');
+    return createResponse({}, 404, (isEn ? 'The specified agent station not found' : '未找到指定代理网点'));
   }
 
   // 7.11 新增代理网点
@@ -3641,7 +3648,7 @@ export async function mockDispatch(config) {
       lastInspectedAt: new Date().toISOString().split('T')[0]
     };
     adminAgentsStore.unshift(newAgent);
-    return createResponse(newAgent, 200, `代理网点【${newAgent.name}】入网登记成功！`);
+    return createResponse(newAgent, 200, (isEn ? `Agent station [${newAgent.name}] registered successfully!` : `代理网点【${newAgent.name}】入网登记成功！`));
   }
 
   // 7.12 更新代理网点资料
@@ -3650,9 +3657,9 @@ export async function mockDispatch(config) {
     const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
     if (target) {
       Object.assign(target, data);
-      return createResponse(target, 200, `代理网点资料已更新成功`);
+      return createResponse(target, 200, (isEn ? `Agent station profile updated successfully` : `代理网点资料已更新成功`));
     }
-    return createResponse({}, 404, '未找到指定代理网点');
+    return createResponse({}, 404, (isEn ? 'The specified agent station not found' : '未找到指定代理网点'));
   }
 
   // 7.13 仓储中心管理列表 (GET)
@@ -3693,7 +3700,7 @@ export async function mockDispatch(config) {
       address: data.address || '示范储备库区'
     };
     adminWarehousesStore.unshift(newWh);
-    return createResponse(newWh, 200, '储备仓库已成功创建！');
+    return createResponse(newWh, 200, (isEn ? 'Reserve warehouse created successfully!' : '储备仓库已成功创建！'));
   }
 
   // 7.13.2 编辑仓库资料 (PUT)
@@ -3702,9 +3709,9 @@ export async function mockDispatch(config) {
     const target = adminWarehousesStore.find((w) => w.id === id || w.code === id);
     if (target) {
       Object.assign(target, data);
-      return createResponse(target, 200, '仓库信息更新成功！');
+      return createResponse(target, 200, (isEn ? 'Warehouse information updated successfully!' : '仓库信息更新成功！'));
     }
-    return createResponse({}, 404, '未找到指定仓库！');
+    return createResponse({}, 404, (isEn ? 'The specified warehouse not found!' : '未找到指定仓库！'));
   }
 
   // 7.13.3 删除仓库 (DELETE)
@@ -3713,9 +3720,9 @@ export async function mockDispatch(config) {
     const idx = adminWarehousesStore.findIndex((w) => w.id === id || w.code === id);
     if (idx !== -1) {
       adminWarehousesStore.splice(idx, 1);
-      return createResponse({}, 200, '仓库已成功注销删除！');
+      return createResponse({}, 200, (isEn ? 'Warehouse deregistered and deleted successfully!' : '仓库已成功注销删除！'));
     }
-    return createResponse({}, 404, '未找到指定仓库！');
+    return createResponse({}, 404, (isEn ? 'The specified warehouse not found!' : '未找到指定仓库！'));
   }
 
   // ========================================================
@@ -3733,9 +3740,9 @@ export async function mockDispatch(config) {
       target.status = '正常营业';
       target.licenseNo = licenseNo || `LIC-MIN-${Date.now().toString().slice(-4)}`;
       if (approvedHouseholds) target.servedHouseholds = Number(approvedHouseholds);
-      return createResponse(target, 200, `【配给中心部长令】：已成功向网点【${target.name}】正式授予代理权并颁发许可！`);
+      return createResponse(target, 200, (isEn ? `[Ministerial Order of Ration Center]: Agency officially granted to station [${target.name}] with license issued!` : `【配给中心部长令】：已成功向网点【${target.name}】正式授予代理权并颁发许可！`));
     }
-    return createResponse({}, 200, `【配给中心部长令】：代理权授予申请已签署核准并颁发国家统一许可证！`);
+    return createResponse({}, 200, (isEn ? `[Ministerial Order of Ration Center]: The agency grant application has been signed, approved and issued the national unified license!` : `【配给中心部长令】：代理权授予申请已签署核准并颁发国家统一许可证！`));
   }
 
   // 8.1.2 统一代理权 (POST)
@@ -3767,7 +3774,7 @@ export async function mockDispatch(config) {
       isEstablishedByMinister: true
     };
     adminAgentsStore.unshift(newAgent);
-    return createResponse(newAgent, 200, `【配给中心部长令】：已依法新设立配给代销网点【${newAgent.name}】（编号: ${newAgent.code}）！`);
+    return createResponse(newAgent, 200, (isEn ? `[Ministerial Order of Ration Center]: New ration distribution station [${newAgent.name}] legally established (Code: ${newAgent.code})!` : `【配给中心部长令】：已依法新设立配给代销网点【${newAgent.name}】（编号: ${newAgent.code}）！`));
   }
 
   // 8.1.4 拆分大型代理权 (POST) - 解决超过 1,500 户红线问题
@@ -3775,7 +3782,7 @@ export async function mockDispatch(config) {
     const agentId = url.split('/').pop();
     const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
     if (!target) {
-      return createResponse({}, 404, '未找到拟拆分的大型代理网点！');
+      return createResponse({}, 404, (isEn ? 'The large agent station to split not found!' : '未找到拟拆分的大型代理网点！'));
     }
 
     const originalHouseholds = target.servedHouseholds || 1800;
@@ -3849,7 +3856,7 @@ export async function mockDispatch(config) {
         `【行政次长签发令】：基于规划与跟进司联合调查确认结论，网点【${target.name}】已注销代理权已由行政次长正式签署令核准恢复！配给物资通道即刻解冻。`
       );
     }
-    return createResponse({}, 200, `【行政次长签发令】：已注销代理权恢复命令签署生效！`);
+    return createResponse({}, 200, (isEn ? `[Deputy Ministerial Signing Order]: The deregistered agency restoration order has been signed and taken effect!` : `【行政次长签发令】：已注销代理权恢复命令签署生效！`));
   }
 
   // --------------------------------------------------------
@@ -3861,10 +3868,10 @@ export async function mockDispatch(config) {
     const target = adminAgentsStore.find((a) => a.id === agentId || a.code === agentId);
     if (target) {
       target.status = '已注销(空置)';
-      target.cancelReason = data.reason || '规划与跟进司执行法定清退注销';
-      return createResponse(target, 200, `【规划与跟进司总干事决议】：网点【${target.name}】代理权已注销清退，已释放为空置状态并向社会公示！`);
+      target.cancelReason = data.reason || (isEn ? 'Planning & Follow-up Directorate executes statutory clearance deregistration' : '规划与跟进司执行法定清退注销');
+      return createResponse(target, 200, (isEn ? `[Director-General Resolution]: The agency of station [${target.name}] has been deregistered and cleared, released as vacant and publicly announced!` : `【规划与跟进司总干事决议】：网点【${target.name}】代理权已注销清退，已释放为空置状态并向社会公示！`));
     }
-    return createResponse({}, 404, '未找到指定网点！');
+    return createResponse({}, 404, (isEn ? 'The specified station not found!' : '未找到指定网点！'));
   }
 
   // 8.3.2 代理轮替/转移审批 (POST)
@@ -3884,7 +3891,7 @@ export async function mockDispatch(config) {
     const secondary = adminAgentsStore.find((a) => a.id === secondaryAgentId || a.code === secondaryAgentId);
 
     if (!primary || !secondary) {
-      return createResponse({}, 400, '必须选择两处待合并的有效网点！');
+      return createResponse({}, 400, (isEn ? 'Two valid stations to merge must be selected!' : '必须选择两处待合并的有效网点！'));
     }
 
     const totalHouseholds = (primary.servedHouseholds || 0) + (secondary.servedHouseholds || 0);
@@ -3916,12 +3923,12 @@ export async function mockDispatch(config) {
       target.penaltyRecord = {
         date: new Date().toISOString().split('T')[0],
         type: data.penaltyType,
-        reason: data.reason || '违反配额发售准则或克扣群众物资',
+        reason: data.reason || (isEn ? 'Violation of quota sales guidelines or withholding of public materials' : '违反配额发售准则或克扣群众物资'),
         officer: '规划与跟进司总干事'
       };
-      return createResponse(target, 200, `【规划与跟进司总干事处罚决定书】：已对网点【${target.name}】执行行政处罚（状态变更为【${target.status}】）！`);
+      return createResponse(target, 200, (isEn ? `[Director-General Punishment Decision]: Administrative punishment executed on station [${target.name}] (status changed to [${target.status}])!` : `【规划与跟进司总干事处罚决定书】：已对网点【${target.name}】执行行政处罚（状态变更为【${target.status}】）！`));
     }
-    return createResponse({}, 404, '未找到指定网点！');
+    return createResponse({}, 404, (isEn ? 'The specified station not found!' : '未找到指定网点！'));
   }
 
   // 8.3.5 规划与跟进司联合调查确认 (恢复前置) (POST)
@@ -3937,7 +3944,7 @@ export async function mockDispatch(config) {
         `【规划与跟进司确认通过】：网点【${target.name}】已完成双司联合入户调查与整改复核，正式确认为【合规准予恢复】！已转交行政次长签发恢复命令。`
       );
     }
-    return createResponse({}, 404, '未找到指定网点！');
+    return createResponse({}, 404, (isEn ? 'The specified station not found!' : '未找到指定网点！'));
   }
 
   // ==========================================
@@ -3968,7 +3975,7 @@ export async function mockDispatch(config) {
     if (chunk) {
       return createResponse(chunk);
     }
-    return createResponse({}, 404, '未找到指定的政策条文切片');
+    return createResponse({}, 404, (isEn ? 'The specified policy clause slice not found' : '未找到指定的政策条文切片'));
   }
 
   // 9.3 RAG 检索增强智能问答
@@ -4155,25 +4162,25 @@ export async function mockDispatch(config) {
     const newId = `CMP-2026-${String(1085 + complaintsStore.length).padStart(4, '0')}`;
     const newComplaint = {
       id: newId,
-      channel: data.channel || '1919政务热线电话',
+      channel: data.channel || (isEn ? '1919 Government Hotline' : '1919政务热线电话'),
       callPhone: data.callPhone || '',
-      applicantName: data.applicantName || '匿名来电群众',
+      applicantName: data.applicantName || (isEn ? 'Anonymous Hotline Caller' : '匿名来电群众'),
       nationalId: data.nationalId || '',
-      province: data.province || '巴格达省',
-      center: data.center || '卡尔赫第一粮食供应分部',
-      agentName: data.agentName || '辖区所属代销网点',
-      type: data.type || '服务态度差/排队耗时',
-      title: data.title || '群众致电投诉登记',
+      province: data.province || (isEn ? 'Baghdad Governorate' : '巴格达省'),
+      center: data.center || (isEn ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
+      agentName: data.agentName || (isEn ? 'District Distribution Station' : '辖区所属代销网点'),
+      type: data.type || (isEn ? 'Poor Service Attitude / Long Queue Time' : '服务态度差/排队耗时'),
+      title: data.title || (isEn ? 'Hotline Complaint Registration' : '群众致电投诉登记'),
       content: data.content || '',
-      status: '待分配',
+      status: isEn ? 'Pending Assignment' : '待分配',
       handlerName: '',
       handledAt: '',
       result: '',
-      satisfaction: '待评价',
+      satisfaction: isEn ? 'Pending Rating' : '待评价',
       submittedAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
     };
     complaintsStore.unshift(newComplaint);
-    return createResponse(newComplaint, 200, '投诉工单已成功立案登记');
+    return createResponse(newComplaint, 200, isEn ? 'Complaint ticket successfully registered' : '投诉工单已成功立案登记');
   }
 
   // 10.3 督办并办结工单
@@ -4181,13 +4188,13 @@ export async function mockDispatch(config) {
     const id = url.split('/complaint/handle/')[1]?.split('?')[0];
     const item = complaintsStore.find((c) => c.id === id);
     if (item) {
-      item.status = data.status || '已办结';
-      item.handlerName = data.handlerName || '规划与跟进司总干事';
+      item.status = data.status || (isEn ? 'Resolved' : '已办结');
+      item.handlerName = data.handlerName || (isEn ? 'Director General, Planning & Follow-up Directorate' : '规划与跟进司总干事');
       item.handledAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
-      item.result = data.result || '已落实行政监督与整改闭环';
-      item.satisfaction = data.satisfaction || '满意';
+      item.result = data.result || (isEn ? 'Administrative supervision and rectification closed loop implemented' : '已落实行政监督与整改闭环');
+      item.satisfaction = data.satisfaction || (isEn ? 'Satisfied' : '满意');
     }
-    return createResponse(item, 200, '投诉案件已办结');
+    return createResponse(item, 200, isEn ? 'Complaint case resolved' : '投诉案件已办结');
   }
 
   // ========================================================

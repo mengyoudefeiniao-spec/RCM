@@ -185,6 +185,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
@@ -215,7 +216,7 @@ const loadStocks = async () => {
     const res = await getAgentLocalStocks('FA-00128');
     stocks.value = res.data || [];
   } catch (error) {
-    ElMessage.error('加载本地库存失败');
+    ElMessage.error((isEnNow() ? 'Failed to load local inventory' : '加载本地库存失败'));
   } finally {
     loading.value = false;
   }
@@ -242,11 +243,11 @@ const handleSubmitInventory = async () => {
       lossReason: inventoryForm.value.lossReason
     };
     const res = await submitStockInventory(payload);
-    ElMessage.success(res.message || '盘点已生效');
+    ElMessage.success(res.message || (isEnNow() ? 'Stocktake has taken effect' : '盘点已生效'));
     inventoryModalVisible.value = false;
     await loadStocks();
   } catch (error) {
-    ElMessage.error('提交失败');
+    ElMessage.error((isEnNow() ? 'Submit failed' : '提交失败'));
   } finally {
     submitting.value = false;
   }

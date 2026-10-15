@@ -383,6 +383,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
@@ -486,7 +487,7 @@ const canProceedNextStep = computed(() => {
 
 function handleFileChange(key, file) {
   docs[key] = { name: file.name };
-  ElMessage.success(`文件【${file.name}】已选定`);
+  ElMessage.success((isEnNow() ? `File [${file.name}] selected` : `文件【${file.name}】已选定`));
 }
 
 async function handleSubmitAndPay() {
@@ -500,7 +501,7 @@ async function handleSubmitAndPay() {
     await payAgentApplicationFee(res.ticketNo, { channel: payChannel.value });
 
     ElMessage.success({
-      message: '代理权轮替申请已生效，50,000 IQD 规费缴纳成功，已更新法定经营负责人！',
+      message: (isEnNow() ? 'Agency rotation application has taken effect; the 50,000 IQD fee was paid successfully and the legal operator has been updated!' : '代理权轮替申请已生效，50,000 IQD 规费缴纳成功，已更新法定经营负责人！'),
       duration: 4000
     });
 

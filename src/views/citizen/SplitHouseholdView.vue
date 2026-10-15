@@ -425,6 +425,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
@@ -527,7 +528,7 @@ function handlePrevStep() {
 function handleNextStep() {
   if (currentStep.value === 1) {
     if (selectedMemberIds.value.length === 0) {
-      ElMessage.warning('请勾选移入独立新户的家庭成员！');
+      ElMessage.warning((isEnNow() ? 'Please select family members to move into the new independent household!' : '请勾选移入独立新户的家庭成员！'));
       return;
     }
     currentStep.value = 2;
@@ -535,7 +536,7 @@ function handleNextStep() {
   }
   if (currentStep.value === 2) {
     if (!marriageCertUploaded.value) {
-      ElMessage.warning('结婚证明或同等效力公文为法定必需材料，请上传后重试！');
+      ElMessage.warning((isEnNow() ? 'A marriage certificate or equivalent official document is legally required; please upload it and retry!' : '结婚证明或同等效力公文为法定必需材料，请上传后重试！'));
       return;
     }
     currentStep.value = 3;
@@ -551,12 +552,12 @@ function handleNextStep() {
  */
 function handleStartSplitPayment() {
   if (selectedMemberIds.value.length === 0) {
-    ElMessage.error('请勾选移入新户的家庭成员！');
+    ElMessage.error((isEnNow() ? 'Please select family members to move into the new household!' : '请勾选移入新户的家庭成员！'));
     return;
   }
 
   if (!marriageCertUploaded.value) {
-    ElMessage.error('结婚证明或同等效力公文为必需材料，请上传后重试！');
+    ElMessage.error((isEnNow() ? 'A marriage certificate or equivalent document is required; please upload it and retry!' : '结婚证明或同等效力公文为必需材料，请上传后重试！'));
     return;
   }
 
@@ -580,9 +581,9 @@ async function handlePaymentSuccess(paymentInfo) {
     await citizenStore.fetchFamilies();
 
     if (res.passed) {
-      ElMessage.success(res.message || '分户成功，已为您签发新卡！');
+      ElMessage.success(res.message || (isEnNow() ? 'Household split succeeded; a new card has been issued for you!' : '分户成功，已为您签发新卡！'));
     } else {
-      ElMessage.warning('系统自动判别未通过，已为您开启分部电子审核入口');
+      ElMessage.warning((isEnNow() ? 'Automatic judge failed; the branch electronic review entrance has been opened for you' : '系统自动判别未通过，已为您开启分部电子审核入口'));
     }
   } finally {
     judging.value = false;
@@ -615,7 +616,7 @@ async function handleTransferToElectronicReview() {
       ]
     });
 
-    ElMessage.success('已转入目标分部两级电子审核工作台');
+    ElMessage.success((isEnNow() ? 'Routed to the target branch two-tier electronic audit workbench' : '已转入目标分部两级电子审核工作台'));
     handleGoBack();
   } finally {
     reviewSubmitting.value = false;

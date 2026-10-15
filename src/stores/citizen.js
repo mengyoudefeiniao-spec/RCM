@@ -1,3 +1,4 @@
+import { isEnNow } from '../utils/langHint.js';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
@@ -50,7 +51,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function updateMember(memberId, payload) {
     const res = await updateMemberInfo(memberId, payload);
-    ElMessage.success(res.message || '成员信息已成功更新并建档');
+    ElMessage.success(res.message || (isEnNow() ? 'Member information updated and filed successfully' : '成员信息已成功更新并建档'));
     await fetchFamilies();
     return res;
   }
@@ -60,7 +61,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function changeHead(payload) {
     const res = await submitChangeHouseholdHead(payload);
-    ElMessage.success(res.message || '户主变更申请已提交');
+    ElMessage.success(res.message || (isEnNow() ? 'Change-head application submitted' : '户主变更申请已提交'));
     await fetchFamilies();
     return res;
   }
@@ -70,7 +71,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function applyUnfreeze(payload) {
     const res = await submitApplyUnfreeze(payload);
-    ElMessage.success(res.message || '解冻申请已提交');
+    ElMessage.success(res.message || (isEnNow() ? 'Unfreeze application submitted' : '解冻申请已提交'));
     await fetchFamilies();
     return res;
   }
@@ -89,7 +90,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function submitSplitReview(payload) {
     const res = await submitSplitHouseholdForReview(payload);
-    ElMessage.success(res.message || '已提交分部电子审核');
+    ElMessage.success(res.message || (isEnNow() ? 'Submitted to branch electronic review' : '已提交分部电子审核'));
     await fetchFamilies();
     return res;
   }
@@ -99,7 +100,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function addMember(cardNo, payload) {
     const res = await addFamilyMember(cardNo, payload);
-    ElMessage.success(res.message || '新成员添加成功并纳保');
+    ElMessage.success(res.message || (isEnNow() ? 'New member added and covered successfully' : '新成员添加成功并纳保'));
     await fetchFamilies();
     return res;
   }

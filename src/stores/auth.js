@@ -1,3 +1,4 @@
+import { isEnNow } from '../utils/langHint.js';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { loginUser, logoutUser } from '../api/auth.js';
@@ -201,7 +202,7 @@ export const useAuthStore = defineStore('auth', () => {
       sessionStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
       localStorage.setItem('rcm_auth_token', res.token);
 
-      ElMessage.success(`欢迎进入系统，${res.user.name}`);
+      ElMessage.success((isEnNow() ? `Welcome to the system, ${res.user.name}` : `欢迎进入系统，${res.user.name}`));
       return true;
     } catch (err) {
       return false;
@@ -228,7 +229,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       // ignore
     }
-    ElMessage.info('已安全退出登录');
+    ElMessage.info((isEnNow() ? 'Signed out securely' : '已安全退出登录'));
   }
 
   /**
@@ -258,7 +259,7 @@ export const useAuthStore = defineStore('auth', () => {
     ElMessage.closeAll();
 
     const msgInstance = ElMessage({
-      message: `角色已切换为【${updated.title}】模式`,
+      message: (isEnNow() ? `Role switched to [${updated.title}] mode` : `角色已切换为【${updated.title}】模式`),
       type: 'success',
       duration: 1500,
       showClose: true,

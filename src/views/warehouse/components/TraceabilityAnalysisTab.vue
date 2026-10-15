@@ -268,6 +268,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import {
   getTraceChain,
@@ -319,14 +320,14 @@ async function loadData() {
     analyticsReports.value = rep || [];
     lossStats.value = lStat || {};
   } catch (err) {
-    ElMessage.error(err.message || '加载溯源报表失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load traceability report' : '加载溯源报表失败'));
   } finally {
     loading.value = false;
   }
 }
 
 function handleRunTrace() {
-  ElMessage.success(`端到端穿透溯源检索成功！已构建全生命周期链路`);
+  ElMessage.success((isEnNow() ? `End-to-end penetration traceability search succeeded! Full lifecycle chain constructed` : `端到端穿透溯源检索成功！已构建全生命周期链路`));
 }
 
 onMounted(() => {

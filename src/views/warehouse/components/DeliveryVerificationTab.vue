@@ -554,6 +554,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../../stores/auth.js';
@@ -815,7 +816,7 @@ function onScanSuccess(rawCode) {
     rawCode: rawCode || ''
   };
   scanSuccess.value = true;
-  ElMessage.success('二维码核验成功！请确认物资无误并完成签收。');
+  ElMessage.success((isEnNow() ? 'QR code verified! Please confirm the materials are correct and complete the sign-off.' : '二维码核验成功！请确认物资无误并完成签收。'));
 }
 
 // 重置扫描状态
@@ -838,12 +839,12 @@ async function submitConfirmReceipt() {
 
     // 立即就地更新当前行状态为“已签收”
     currentScanRow.value.status = '已签收';
-    ElMessage.success(`扫码签收成功！配送单【${flowNo}】状态已更新为“已签收”。`);
+    ElMessage.success((isEnNow() ? `Scan sign-off succeeded! Delivery order [${flowNo}] status updated to Signed Off.` : `扫码签收成功！配送单【${flowNo}】状态已更新为“已签收”。`));
 
     handleCloseScanDialog();
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '签收失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Sign-off failed' : '签收失败'));
   } finally {
     submittingReceipt.value = false;
   }
@@ -897,7 +898,7 @@ async function loadData() {
     receipts.value = rList || [];
     discrepancyTickets.value = dList || [];
   } catch (err) {
-    ElMessage.error(err.message || '加载配送交接数据失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load delivery handover data' : '加载配送交接数据失败'));
   } finally {
     loading.value = false;
   }
@@ -915,14 +916,14 @@ async function submitReceiptForm() {
   submitting.value = true;
   try {
     const res = await submitAgentReceipt(receiptForm.value);
-    ElMessage.success(res?.message || '移动终端扫码核收对账完成！');
+    ElMessage.success(res?.message || (isEnNow() ? 'Mobile terminal scan reconciliation completed!' : '移动终端扫码核收对账完成！'));
     receiptDialogVisible.value = false;
     await loadData();
     if (receiptForm.value.receivedQty !== receiptForm.value.shippedQty) {
       activeView.value = 'discrepancy';
     }
   } catch (err) {
-    ElMessage.error(err.message || '核收对账失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Reconciliation failed' : '核收对账失败'));
   } finally {
     submitting.value = false;
   }
@@ -933,10 +934,10 @@ async function handleResolveTicket(ticket) {
     await resolveDiscrepancyTicket(ticket.id, {
       resolutionNote: '物流车队已认可责任并完成定损理赔协议签署，解除阻断。'
     });
-    ElMessage.success('核查工单处置闭环成功！');
+    ElMessage.success((isEnNow() ? 'Verification ticket closed-loop handling succeeded!' : '核查工单处置闭环成功！'));
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '处理工单失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Ticket handling failed' : '处理工单失败'));
   }
 }
 

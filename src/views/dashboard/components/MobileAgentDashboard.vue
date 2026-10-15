@@ -499,6 +499,11 @@ onMounted(() => {
 
     ElMessage.success(`${t('mobileAgent.toastOrderReceived')} [#${newOrder.id}]，${newOrder.headName} ${t('mobileAgent.toastCitizenClaimed')}`);
   });
+
+  // 若路由指定进入扫码核销，自动弹出扫码取景框
+  if (route.query.action === 'scan' || route.query.tab === 'verify') {
+    handleTriggerScan();
+  }
 });
 
 onUnmounted(() => {

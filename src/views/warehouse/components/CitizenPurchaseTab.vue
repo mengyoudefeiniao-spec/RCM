@@ -741,6 +741,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -1023,7 +1024,7 @@ onMounted(() => {
       currentQrOrder.value.status = 'DELIVERED';
       currentQrOrder.value.deliveredAt = verifiedOrder.deliveredAt;
     }
-    ElMessage.success(`【核销通知】您的配给订单 ${verifiedOrder.orderId} 已由代销网点现场成功核销发放！`);
+    ElMessage.success((isEnNow() ? `[Verification Notice] Your ration order ${verifiedOrder.orderId} has been verified and released on-site by the distribution station!` : `【核销通知】您的配给订单 ${verifiedOrder.orderId} 已由代销网点现场成功核销发放！`));
   });
 
   const unsubUpdated = onTabMessage('ORDER_UPDATED', (updatedOrder) => {
@@ -1081,6 +1082,14 @@ async function loadOrders() {
     const res = await getCitizenPurchaseOrders({ cardNo: quotaInfo.cardNo });
     if (Array.isArray(res)) {
       myOrders.value = res;
+    }
+    // 若路由指定查看取货码或记录，自动打开最新订单的二维码
+    if (route.query.action === 'showQr' || route.query.subTab === 'records') {
+      nextTick(() => {
+        if (myOrders.value.length > 0 && !showQrDialog.value) {
+          openQrModal(myOrders.value[0]);
+        }
+      });
     }
   } catch (e) {
     console.error('加载订单历史失败', e);
@@ -1184,7 +1193,7 @@ async function handlePaymentSuccess(payResult) {
       agentName: quotaInfo.agentName
     });
 
-    ElMessage.success(res.message || '配给品下单成功并完成电子缴费！');
+    ElMessage.success(res.message || (isEnNow() ? 'Ration order placed and electronic payment completed successfully!' : '配给品下单成功并完成电子缴费！'));
 
     // 清空当前所选并重置回步骤 1
     handleClearSelected();
@@ -1200,7 +1209,7 @@ async function handlePaymentSuccess(payResult) {
       showQrDialog.value = true;
     }
   } catch (err) {
-    ElMessage.error(err.message || '下单提交异常');
+    ElMessage.error(err.message || (isEnNow() ? 'Order submission error' : '下单提交异常'));
   } finally {
     submitting.value = false;
   }

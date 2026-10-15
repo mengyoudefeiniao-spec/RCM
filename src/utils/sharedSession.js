@@ -92,8 +92,8 @@ function getCurrentFormattedTime() {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
-// 预设基准选购订单 (供代理配送与现场核销初始演示)
-const INITIAL_DEMO_ORDERS = [
+// 预设基准选购订单 (供代理配送与现场核销初始演示) —— 中文版
+const INITIAL_DEMO_ORDERS_ZH = [
   {
     orderId: 'RC-ORD-881920',
     id: 'RC-ORD-881920',
@@ -148,6 +148,68 @@ const INITIAL_DEMO_ORDERS = [
     deliveredAt: '2026-10-13 16:30'
   }
 ];
+
+// 预设基准选购订单 —— 英文版
+const INITIAL_DEMO_ORDERS_EN = [
+  {
+    orderId: 'RC-ORD-881920',
+    id: 'RC-ORD-881920',
+    ticketNo: 'RC-ORD-881920',
+    cardNo: 'RC-10029381',
+    headName: 'Ahmed Hassan Saleh',
+    phone: '07701234567',
+    memberCount: 5,
+    agentId: 'FA-00128',
+    agentName: 'Baghdad Karkh 1st Distribution Station (Mohammed Jabbar)',
+    deliveryType: 'PICKUP',
+    deliveryAddress: 'No.14 Mansour Block, Al-Karkh District, Baghdad',
+    pickupCode: 'PK-991204',
+    items: [
+      { itemCode: 'FLOUR-WHT-02', itemName: 'Strategic Reserve Premium Wheat Flour', qty: 45, unit: 'kg', unitPrice: 250, subtotal: 11250 },
+      { itemCode: 'OIL-SUN-03', itemName: 'Grade-1 Refined Sunflower Edible Oil', qty: 5, unit: 'L', unitPrice: 1000, subtotal: 5000 }
+    ],
+    totalWeightKg: 50,
+    selfPayAmount: 16250,
+    subsidyAmount: 67750,
+    amount: 16250,
+    status: 'PAID',
+    payStatus: 'PAID',
+    createdAt: '2026-10-14 09:30',
+    paidAt: '2026-10-14 09:32'
+  },
+  {
+    orderId: 'RC-ORD-881014',
+    id: 'RC-ORD-881014',
+    ticketNo: 'RC-ORD-881014',
+    cardNo: 'RC-10029382',
+    headName: 'Yassin Taha Majid',
+    phone: '07709988771',
+    memberCount: 4,
+    agentId: 'FA-00128',
+    agentName: 'Baghdad Karkh 1st Distribution Station (Mohammed Jabbar)',
+    deliveryType: 'HOME_DELIVERY',
+    deliveryAddress: 'No.88 Haifa St, Al-Karkh District, Baghdad',
+    pickupCode: 'PK-881014',
+    items: [
+      { itemCode: 'RICE-BAS-01', itemName: 'Premium Basmati Ration Long-Grain Rice', qty: 12, unit: 'kg', unitPrice: 500, subtotal: 6000 },
+      { itemCode: 'SUGAR-WHT-04', itemName: 'Pure Refined White Sugar', qty: 8, unit: 'kg', unitPrice: 500, subtotal: 4000 }
+    ],
+    totalWeightKg: 20,
+    selfPayAmount: 10000,
+    subsidyAmount: 42000,
+    amount: 10000,
+    status: 'DELIVERED',
+    payStatus: 'PAID',
+    createdAt: '2026-10-13 14:15',
+    paidAt: '2026-10-13 14:18',
+    deliveredAt: '2026-10-13 16:30'
+  }
+];
+
+function getInitialOrders(lang) {
+  if (lang === 'en') return JSON.parse(JSON.stringify(INITIAL_DEMO_ORDERS_EN));
+  return JSON.parse(JSON.stringify(INITIAL_DEMO_ORDERS_ZH));
+}
 
 // =====================================================================
 // 1. 审核公文共享池 (Tickets) —— 与 Families 保持一致：按语言分 key 持久化
@@ -272,28 +334,43 @@ export function updateSharedTicket(ticketId, updates) {
 }
 
 // =====================================================================
-// 2. 配给订单共享池 (Orders)
+// 2. 配给订单共享池 (Orders) —— 与 Tickets/Families 保持一致：按语言分 key 持久化
 // =====================================================================
 
-export function getSharedOrders() {
+export function getSharedOrders(langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const storageKey = `${STORAGE_KEY_ORDERS}_${lang}`;
+
+  // 一次性迁移清理历史不分语言的旧缓存
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_ORDERS);
-    if (raw) return JSON.parse(raw);
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY_ORDERS)) {
+      localStorage.removeItem(STORAGE_KEY_ORDERS);
+    }
   } catch (e) {
     // ignore
   }
 
-  const initial = JSON.parse(JSON.stringify(INITIAL_DEMO_ORDERS));
   try {
-    localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(initial));
+    const raw = localStorage.getItem(storageKey);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[SharedSession] Failed to parse orders', e);
+  }
+
+  const initial = getInitialOrders(lang);
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(initial));
   } catch (e) {
     // ignore
   }
   return initial;
 }
 
-export function addSharedOrder(orderData) {
-  const orders = getSharedOrders();
+export function addSharedOrder(orderData, langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const isEn = lang === 'en';
+  const orders = getSharedOrders(lang);
+  const storageKey = `${STORAGE_KEY_ORDERS}_${lang}`;
   const idSuffix = String(Date.now()).slice(-6);
   const newOrder = {
     orderId: orderData.orderId || `RC-ORD-${idSuffix}`,
@@ -301,13 +378,13 @@ export function addSharedOrder(orderData) {
     ticketNo: orderData.ticketNo || `RC-ORD-${idSuffix}`,
     createdAt: getCurrentFormattedTime(),
     cardNo: orderData.cardNo || 'RC-10029381',
-    headName: orderData.headName || '艾哈迈德·哈桑·萨利赫',
+    headName: orderData.headName || (isEn ? 'Ahmed Hassan Saleh' : '艾哈迈德·哈桑·萨利赫'),
     phone: orderData.phone || '07701234567',
     memberCount: orderData.memberCount || 5,
     agentId: orderData.agentId || 'FA-00128',
-    agentName: orderData.agentName || '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
+    agentName: orderData.agentName || (isEn ? 'Baghdad Karkh 1st Distribution Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)'),
     deliveryType: orderData.deliveryType || 'PICKUP',
-    deliveryAddress: orderData.deliveryAddress || '巴格达市卡尔赫区曼苏尔街区14号',
+    deliveryAddress: orderData.deliveryAddress || (isEn ? 'No.14 Mansour Block, Al-Karkh District, Baghdad' : '巴格达市卡尔赫区曼苏尔街区14号'),
     pickupCode: orderData.pickupCode || `PK-${idSuffix}`,
     items: orderData.items || [],
     amount: orderData.amount || orderData.selfPayAmount || 0,
@@ -321,7 +398,7 @@ export function addSharedOrder(orderData) {
   orders.unshift(newOrder);
 
   try {
-    localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
+    localStorage.setItem(storageKey, JSON.stringify(orders));
   } catch (e) {
     // ignore
   }
@@ -332,25 +409,36 @@ export function addSharedOrder(orderData) {
 }
 
 export function updateSharedOrder(orderId, updates) {
-  const orders = getSharedOrders();
-  const index = orders.findIndex((o) => o.orderId === orderId || o.id === orderId || o.pickupCode === orderId);
+  // 与 Tickets/Families 一致：同步更新所有语言副本，保证跨语言状态一致
+  const langs = ['zh', 'en'];
+  let currentResult = null;
+  const currentLang = getActiveLanguage();
 
-  if (index !== -1) {
-    orders[index] = { ...orders[index], ...updates };
-    try {
-      localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
-    } catch (e) {
-      // ignore
-    }
+  langs.forEach((lang) => {
+    const orders = getSharedOrders(lang);
+    const storageKey = `${STORAGE_KEY_ORDERS}_${lang}`;
+    const index = orders.findIndex((o) => o.orderId === orderId || o.id === orderId || o.pickupCode === orderId);
 
-    // 跨标签页广播：订单核销/状态更新！
-    safeBroadcast('ORDER_UPDATED', orders[index]);
-    if (updates.status === 'DELIVERED') {
-      safeBroadcast('ORDER_VERIFIED', orders[index]);
+    if (index !== -1) {
+      orders[index] = { ...orders[index], ...updates };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(orders));
+      } catch (e) {
+        // ignore
+      }
+
+      if (lang === currentLang) {
+        currentResult = orders[index];
+      }
     }
-    return orders[index];
+  });
+
+  // 跨标签页广播：订单核销/状态更新！
+  safeBroadcast('ORDER_UPDATED', currentResult || { orderId, ...updates });
+  if (updates.status === 'DELIVERED') {
+    safeBroadcast('ORDER_VERIFIED', currentResult || { orderId, ...updates });
   }
-  return null;
+  return currentResult;
 }
 
 // =====================================================================

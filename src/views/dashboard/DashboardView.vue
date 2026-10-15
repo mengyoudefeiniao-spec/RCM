@@ -82,6 +82,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -159,7 +160,7 @@ function handleTimeRangeChange(val) {
     week: '近7天',
     day: '近1天'
   };
-  ElMessage.success(`已切换至【${map[val] || val}】统计数据透视`);
+  ElMessage.success((isEnNow() ? `Switched to the [${map[val] || val}] statistics pivot` : `已切换至【${map[val] || val}】统计数据透视`));
 }
 
 async function handleRefresh() {
@@ -170,9 +171,9 @@ async function handleRefresh() {
     } else if (isAdminRole.value) {
       await adminDashboardRef.value?.refresh();
     }
-    ElMessage.success('看板数据已刷新！');
+    ElMessage.success((isEnNow() ? 'Dashboard data refreshed!' : '看板数据已刷新！'));
   } catch (e) {
-    ElMessage.error('刷新数据失败');
+    ElMessage.error((isEnNow() ? 'Failed to refresh data' : '刷新数据失败'));
   } finally {
     refreshing.value = false;
   }

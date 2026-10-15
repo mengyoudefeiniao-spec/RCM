@@ -791,6 +791,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -1119,7 +1120,7 @@ async function takePhotoAndVerify() {
     stopCamera();
     verifiedOrder.value = targetPresetOrder.value;
     claimStep.value = 'confirm';
-    ElMessage.success('拍照扫描成功！已核验匹配公民动态二维码凭证，请核对交接单。');
+    ElMessage.success((isEnNow() ? 'Photo scan succeeded! The dynamic citizen QR voucher matched; please check the handover order.' : '拍照扫描成功！已核验匹配公民动态二维码凭证，请核对交接单。'));
     return;
   }
 
@@ -1138,9 +1139,9 @@ async function takePhotoAndVerify() {
     stopCamera();
     verifiedOrder.value = candidate;
     claimStep.value = 'confirm';
-    ElMessage.success(`拍照扫描成功！已识别提货码【${candidate.pickupCode}】，请核对交接单。`);
+    ElMessage.success((isEnNow() ? `Photo scan succeeded! Pickup code [${candidate.pickupCode}] recognized; please check the handover order.` : `拍照扫描成功！已识别提货码【${candidate.pickupCode}】，请核对交接单。`));
   } else {
-    ElMessage.warning('未能识别到有效二维码，请将镜头对准公民手机或手动输入提货码');
+    ElMessage.warning((isEnNow() ? 'No valid QR code recognized; point the camera at the citizen phone or enter the pickup code manually' : '未能识别到有效二维码，请将镜头对准公民手机或手动输入提货码'));
   }
 }
 
@@ -1154,7 +1155,7 @@ function simulateScanCurrentCitizenCode() {
     scanInputCode.value = candidate.pickupCode;
     takePhotoAndVerify();
   } else {
-    ElMessage.info('暂无可识别的提货凭证');
+    ElMessage.info((isEnNow() ? 'No recognizable pickup voucher available' : '暂无可识别的提货凭证'));
   }
 }
 
@@ -1171,7 +1172,7 @@ async function handleLookupCode() {
     stopCamera();
     verifiedOrder.value = res?.data || res;
     claimStep.value = 'confirm';
-    ElMessage.success('提货凭证核验匹配成功！请核对物资与实物库存并签署交接。');
+    ElMessage.success((isEnNow() ? 'Pickup voucher matched successfully! Please verify materials against physical stock and sign the handover.' : '提货凭证核验匹配成功！请核对物资与实物库存并签署交接。'));
   } catch (err) {
     console.error('检索提货订单失败', err);
     ElMessage.error(t('orderClaim.scanError'));
@@ -1215,11 +1216,11 @@ async function submitConfirmClaim() {
       });
     }
 
-    ElMessage.success(res?.message || '交接核销成功！代销站现货库存已同步扣减。');
+    ElMessage.success(res?.message || (isEnNow() ? 'Handover verification succeeded! Station on-hand stock deducted synchronously.' : '交接核销成功！代销站现货库存已同步扣减。'));
     await loadOrders();
   } catch (err) {
     console.error('确认交货核销失败', err);
-    ElMessage.error('确认交货核销失败，请重试');
+    ElMessage.error((isEnNow() ? 'Delivery verification confirmation failed, please retry' : '确认交货核销失败，请重试'));
   } finally {
     claiming.value = false;
   }
@@ -1227,7 +1228,7 @@ async function submitConfirmClaim() {
 
 function printReceipt() {
   window.print?.();
-  ElMessage.success('已发送至代销站热敏小票打印机！');
+  ElMessage.success((isEnNow() ? 'Sent to the station thermal receipt printer!' : '已发送至代销站热敏小票打印机！'));
 }
 
 function closeScanVerifyModal() {
@@ -1255,7 +1256,7 @@ async function loadOrders() {
     orders.value = Array.isArray(res) ? res : (res?.data || []);
   } catch (err) {
     console.error('加载配给订单失败', err);
-    ElMessage.error('加载订单列表失败，请重试');
+    ElMessage.error((isEnNow() ? 'Failed to load order list, please retry' : '加载订单列表失败，请重试'));
   } finally {
     loading.value = false;
   }
@@ -1382,12 +1383,12 @@ async function confirmDispatch() {
       estimatedTime: dispatchForm.value.estimatedTime
     });
 
-    ElMessage.success('已指派保供车队出车派送，订单状态已同步更新！');
+    ElMessage.success((isEnNow() ? 'Supply fleet dispatched for delivery; order status updated synchronously!' : '已指派保供车队出车派送，订单状态已同步更新！'));
     dispatchModalVisible.value = false;
     await loadOrders();
   } catch (err) {
     console.error('指派派送失败', err);
-    ElMessage.error('指派派送失败，请稍后重试');
+    ElMessage.error((isEnNow() ? 'Dispatch assignment failed, please retry later' : '指派派送失败，请稍后重试'));
   } finally {
     dispatching.value = false;
   }
@@ -1414,7 +1415,7 @@ async function handleMarkReady(order) {
       estimatedTime: '随时到店可提'
     });
 
-    ElMessage.success('已标记网点备货就绪，等待居民到店出示二维码！');
+    ElMessage.success((isEnNow() ? 'Station marked stock-ready; awaiting residents to present the QR code on-site!' : '已标记网点备货就绪，等待居民到店出示二维码！'));
     await loadOrders();
   } catch (err) {
     if (err !== 'cancel') {
@@ -1430,7 +1431,7 @@ function copyText(val) {
   if (!val) return;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(val);
-    ElMessage.success(t('citizenPurchase.copySuccess') || '已复制到剪贴板');
+    ElMessage.success(t('citizenPurchase.copySuccess') || (isEnNow() ? 'Copied to clipboard' : '已复制到剪贴板'));
   } else {
     ElMessage.info(val);
   }
@@ -1444,7 +1445,7 @@ onMounted(() => {
   // 跨标签页监听公民端下单通知
   const unsubPurchased = onTabMessage('ORDER_PURCHASED', (newOrder) => {
     loadOrders();
-    ElMessage.info(`【新订单提醒】收到公民【${newOrder.headName}】提交的新配给领配订单 ${newOrder.orderId}`);
+    ElMessage.info((isEnNow() ? `[New Order Alert] New ration order ${newOrder.orderId} submitted by citizen [${newOrder.headName}]` : `【新订单提醒】收到公民【${newOrder.headName}】提交的新配给领配订单 ${newOrder.orderId}`));
   });
 
   const unsubUpdated = onTabMessage('ORDER_UPDATED', () => {

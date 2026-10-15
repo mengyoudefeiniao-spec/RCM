@@ -9,7 +9,7 @@
         <ModuleDescTip
           :title="$t('complaint.title')"
           :content="$t('complaint.subtitle')"
-          badge="双轨督办接入"
+          :badge="$t('complaint.badgeDualTrack')"
           badge-type="danger"
           title-class="text-sm font-bold text-slate-900"
         >
@@ -65,13 +65,13 @@
     <!-- 检索筛选区 (移动端支持折叠，保持首屏整洁) -->
     <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3 text-xs">
       <div class="flex items-center justify-between">
-        <span class="font-bold text-slate-700 text-xs">条件筛选与搜索</span>
+        <span class="font-bold text-slate-700 text-xs">{{ $t('complaint.filterSearch') }}</span>
         <button
           type="button"
           class="sm:hidden text-blue-600 text-[11px] underline"
           @click="showMobileFilter = !showMobileFilter"
         >
-          {{ showMobileFilter ? '收起高级筛选' : '展开多维筛选' }}
+          {{ showMobileFilter ? $t('complaint.collapseFilters') : $t('complaint.expandFilters') }}
         </button>
       </div>
 
@@ -83,39 +83,28 @@
         >
           <!-- 渠道来源 -->
           <el-select v-model="query.channel" :placeholder="$t('complaint.channelSource')" class="w-full sm:w-[140px]" size="small" @change="handleSearch">
-            <el-option :label="$t('complaint.allChannels')" value="全部" />
-            <el-option :label="$t('complaint.aiOnline')" value="AI智能客服助手" />
-            <el-option :label="$t('complaint.phoneHotline')" value="1919政务热线电话" />
+            <el-option v-for="opt in channelOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 诉求类型 -->
           <el-select v-model="query.type" :placeholder="$t('complaint.appealType')" class="w-full sm:w-[150px]" size="small" @change="handleSearch">
-            <el-option :label="$t('complaint.allTypes')" value="全部" />
-            <el-option :label="$t('complaint.typeOvercharge')" value="私自加价/违规收费" />
-            <el-option :label="$t('complaint.typeShortage')" value="缺斤短两/克扣" />
-            <el-option :label="$t('complaint.typeQuality')" value="物资品质口感异议" />
-            <el-option :label="$t('complaint.typeService')" value="服务态度差/排队耗时" />
-            <el-option :label="$t('complaint.typeQuota')" value="配给份额核定有误" />
+            <el-option v-for="opt in typeFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 办理状态 -->
           <el-select v-model="query.status" :placeholder="$t('complaint.handleStatus')" class="w-full sm:w-[120px]" size="small" @change="handleSearch">
-            <el-option :label="$t('complaint.allStatuses')" value="全部" />
-            <el-option :label="$t('complaint.statusPendingAssign')" value="待分配" />
-            <el-option :label="$t('complaint.statusInvestigating')" value="核查中" />
-            <el-option :label="$t('complaint.statusSupervising')" value="督办整改中" />
-            <el-option :label="$t('complaint.statusResolved')" value="已办结" />
+            <el-option v-for="opt in statusFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 省市 -->
           <el-select v-model="query.province" :placeholder="$t('common.province')" class="w-full sm:w-[130px]" size="small" @change="handleProvinceChange">
-            <el-option :label="$t('complaint.allProvinces')" value="全部" />
+            <el-option :label="$t('complaint.allProvinces')" value="" />
             <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
           </el-select>
 
           <!-- 中心 -->
           <el-select v-model="query.center" :placeholder="$t('common.center')" class="w-full sm:w-[150px]" size="small" @change="handleSearch">
-            <el-option :label="$t('complaint.allCenters')" value="全部" />
+            <el-option :label="$t('complaint.allCenters')" value="" />
             <el-option v-for="c in currentCenterOptions" :key="c" :label="c" :value="c" />
           </el-select>
         </div>
@@ -140,7 +129,7 @@
     <!-- 列表数据区 (移动端提供卡片流与传统表格双视图) -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden p-3 sm:p-0">
       <div class="sm:hidden flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
-        <span class="text-xs font-bold text-slate-800">工单列表 ({{ filteredList.length }})</span>
+        <span class="text-xs font-bold text-slate-800">{{ $t('complaint.ticketList') }} ({{ filteredList.length }})</span>
         <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-[10px]">
           <button
             type="button"
@@ -148,7 +137,7 @@
             :class="viewMode === 'card' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500'"
             @click="viewMode = 'card'"
           >
-            卡片
+            {{ $t('complaint.cardView') }}
           </button>
           <button
             type="button"
@@ -156,7 +145,7 @@
             :class="viewMode === 'table' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500'"
             @click="viewMode = 'table'"
           >
-            表格
+            {{ $t('complaint.tableView') }}
           </button>
         </div>
       </div>
@@ -173,7 +162,7 @@
             <div class="flex items-center gap-1.5">
               <span class="font-mono font-bold text-blue-600 text-xs">{{ item.id }}</span>
               <el-tag size="small" :type="item.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="scale-90 origin-left">
-                {{ item.channel.includes('AI') ? 'AI渠道' : '1919热线' }}
+                {{ item.channel.includes('AI') ? $t('complaint.channelAiTag') : $t('complaint.channelPhoneTag') }}
               </el-tag>
             </div>
             <el-tag size="small" :type="getStatusTag(item.status)" effect="light">
@@ -193,25 +182,25 @@
           <!-- 市民信息与归属网点 -->
           <div class="p-2 rounded-lg bg-slate-50 text-[11px] grid grid-cols-2 gap-1.5">
             <div>
-              <span class="text-slate-400 block text-[10px]">反映群众</span>
+              <span class="text-slate-400 block text-[10px]">{{ $t('complaint.cardCitizen') }}</span>
               <span class="font-medium text-slate-700">{{ item.applicantName }} ({{ item.callPhone || '—' }})</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[10px]">涉事辖区与网点</span>
+              <span class="text-slate-400 block text-[10px]">{{ $t('complaint.cardArea') }}</span>
               <span class="text-slate-700 truncate block">{{ item.province }} · {{ item.agentName }}</span>
             </div>
           </div>
 
           <!-- 操作按钮行 -->
           <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
-            <el-button size="small" plain @click="openDetail(item)">查看详情</el-button>
+            <el-button size="small" plain @click="openDetail(item)">{{ $t('complaint.viewDetail') }}</el-button>
             <el-button
               size="small"
               :type="item.status === '已办结' || item.status === 'Resolved' ? 'info' : 'danger'"
               :plain="item.status === '已办结' || item.status === 'Resolved'"
               @click="openHandleModal(item)"
             >
-              {{ item.status === '已办结' || item.status === 'Resolved' ? '查阅处置' : '督办整改' }}
+              {{ item.status === '已办结' || item.status === 'Resolved' ? $t('complaint.viewHandling') : $t('complaint.handleSupervise') }}
             </el-button>
           </div>
         </div>
@@ -314,7 +303,7 @@
       <div v-if="currentDetail" class="space-y-4 text-xs">
         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-slate-400">{{ $t('review.ticketId') }}</div>
+            <div class="text-[11px] text-slate-400">{{ $t('complaint.ticketIdLabel') }}</div>
             <div class="text-sm font-mono font-bold text-blue-600">{{ currentDetail.id }}</div>
           </div>
           <el-tag :type="currentDetail.status === '已办结' || currentDetail.status === 'Resolved' ? 'success' : 'warning'">{{ currentDetail.status }}</el-tag>
@@ -382,7 +371,7 @@
             v-model="handleForm.result"
             type="textarea"
             :rows="3"
-            placeholder="填写核查事实与责令整改/行政处罚结论..."
+            :placeholder="$t('complaint.handleResultPlaceholder')"
           />
         </div>
 
@@ -390,16 +379,13 @@
           <div>
             <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.handleStatus') }}：</label>
             <el-select v-model="handleForm.status" class="w-full" size="small">
-              <el-option :label="$t('complaint.statusResolved')" value="已办结" />
-              <el-option :label="$t('complaint.statusSupervising')" value="督办整改中" />
+              <el-option v-for="opt in statusHandleOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
           <div>
             <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.satisfaction') }}：</label>
             <el-select v-model="handleForm.satisfaction" class="w-full" size="small">
-              <el-option label="非常满意" value="非常满意" />
-              <el-option label="满意" value="满意" />
-              <el-option label="基本满意" value="基本满意" />
+              <el-option v-for="opt in satisfactionOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
         </div>
@@ -419,7 +405,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.citizenName') }}：</label>
-            <el-input v-model="createForm.applicantName" placeholder="来电公民姓名" size="small" />
+            <el-input v-model="createForm.applicantName" :placeholder="$t('complaint.citizenNamePlaceholder')" size="small" />
           </div>
           <div>
             <label class="block font-medium text-slate-700 mb-1">{{ $t('common.phone') }}：</label>
@@ -437,18 +423,14 @@
           <div>
             <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.appealType') }}：</label>
             <el-select v-model="createForm.type" class="w-full" size="small">
-              <el-option :label="$t('complaint.typeOvercharge')" value="私自加价/违规收费" />
-              <el-option :label="$t('complaint.typeShortage')" value="缺斤短两/克扣" />
-              <el-option :label="$t('complaint.typeQuality')" value="物资品质口感异议" />
-              <el-option :label="$t('complaint.typeService')" value="服务态度差/排队耗时" />
-              <el-option :label="$t('complaint.typeQuota')" value="配给份额核定有误" />
+              <el-option v-for="opt in typeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
         </div>
 
         <div>
           <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.targetArea') }}：</label>
-          <el-input v-model="createForm.agentName" placeholder="网点名称" size="small" />
+          <el-input v-model="createForm.agentName" :placeholder="$t('complaint.outletNamePlaceholder')" size="small" />
         </div>
 
         <div>
@@ -457,7 +439,7 @@
             v-model="createForm.content"
             type="textarea"
             :rows="3"
-            placeholder="记录来电群众反映的具体事实、时间、地点与诉求..."
+            :placeholder="$t('complaint.contentPlaceholder')"
           />
         </div>
       </div>
@@ -523,6 +505,40 @@ const provinceOptions = computed(() => {
   ];
 });
 
+// 选项值按当前语言对齐数据源（en 数据为英文值，zh 数据为中文值），"全部" 使用空值
+const channelOptions = computed(() => [
+  { value: '', label: t('complaint.allChannels') },
+  { value: isEn.value ? 'AI Smart Assistant' : 'AI智能客服助手', label: t('complaint.aiOnline') },
+  { value: isEn.value ? '1919 Government Hotline' : '1919政务热线电话', label: t('complaint.phoneHotline') }
+]);
+
+const typeOptions = computed(() => [
+  { value: isEn.value ? 'Unauthorized Overcharge / Illegal Fees' : '私自加价/违规收费', label: t('complaint.typeOvercharge') },
+  { value: isEn.value ? 'Short Weight / Deductions' : '缺斤短两/克扣', label: t('complaint.typeShortage') },
+  { value: isEn.value ? 'Quality / Odor Complaints' : '物资品质口感异议', label: t('complaint.typeQuality') },
+  { value: isEn.value ? 'Poor Service / Long Waiting Queues' : '服务态度差/排队耗时', label: t('complaint.typeService') },
+  { value: isEn.value ? 'Quota Calculation Dispute' : '配给份额核定有误', label: t('complaint.typeQuota') }
+]);
+
+const typeFilterOptions = computed(() => [{ value: '', label: t('complaint.allTypes') }, ...typeOptions.value]);
+
+const statusOptions = computed(() => [
+  { value: isEn.value ? 'Pending Assignment' : '待分配', label: t('complaint.statusPendingAssign') },
+  { value: isEn.value ? 'Under Investigation' : '核查中', label: t('complaint.statusInvestigating') },
+  { value: isEn.value ? 'Rectification in Progress' : '督办整改中', label: t('complaint.statusSupervising') },
+  { value: isEn.value ? 'Resolved' : '已办结', label: t('complaint.statusResolved') }
+]);
+
+const statusFilterOptions = computed(() => [{ value: '', label: t('complaint.allStatuses') }, ...statusOptions.value]);
+
+const statusHandleOptions = computed(() => statusOptions.value.filter((o) => o.value !== (isEn.value ? 'Pending Assignment' : '待分配') && o.value !== (isEn.value ? 'Under Investigation' : '核查中')));
+
+const satisfactionOptions = computed(() => [
+  { value: isEn.value ? 'Very Satisfied' : '非常满意', label: isEn.value ? 'Very Satisfied' : '非常满意' },
+  { value: isEn.value ? 'Satisfied' : '满意', label: isEn.value ? 'Satisfied' : '满意' },
+  { value: isEn.value ? 'Basically Satisfied' : '基本满意', label: isEn.value ? 'Basically Satisfied' : '基本满意' }
+]);
+
 const centerMap = {
   '巴格达省': ['卡尔赫第一粮食供应分部', '鲁萨法第二粮食供应分部', '曼苏尔配给中心'],
   '巴士拉省': ['巴士拉港口配给保障站', '阿沙尔滨海服务中心'],
@@ -543,11 +559,11 @@ const centerMap = {
 };
 
 const query = ref({
-  channel: '全部',
-  type: '全部',
-  status: '全部',
-  province: '全部',
-  center: '全部',
+  channel: '',
+  type: '',
+  status: '',
+  province: '',
+  center: '',
   keyword: ''
 });
 
@@ -556,7 +572,7 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 
 const currentCenterOptions = computed(() => {
-  if (query.value.province && query.value.province !== '全部') {
+  if (query.value.province) {
     return centerMap[query.value.province] || [];
   }
   const relevantKeys = isEn.value
@@ -577,20 +593,20 @@ const resolvedRate = computed(() => {
 // 前端联合多维筛选
 const filteredList = computed(() => {
   let list = [...complaintsList.value];
-  if (query.value.channel !== '全部') {
+  if (query.value.channel) {
     list = list.filter(item => item.channel.includes(query.value.channel) || (query.value.channel.includes('AI') && item.channel.includes('AI')));
   }
-  if (query.value.type !== '全部') {
+  if (query.value.type) {
     list = list.filter(item => item.type === query.value.type);
   }
-  if (query.value.status !== '全部') {
+  if (query.value.status) {
     list = list.filter(item => item.status === query.value.status);
   }
-  if (query.value.province !== '全部') {
+  if (query.value.province) {
     const pVal = query.value.province.replace(/省| Province/g, '');
     list = list.filter(item => item.province.includes(pVal));
   }
-  if (query.value.center !== '全部') {
+  if (query.value.center) {
     list = list.filter(item => item.center.includes(query.value.center));
   }
   if (query.value.keyword.trim()) {
@@ -612,7 +628,7 @@ const paginatedList = computed(() => {
 });
 
 function handleProvinceChange() {
-  query.value.center = '全部';
+  query.value.center = '';
   handleSearch();
 }
 
@@ -622,11 +638,11 @@ function handleSearch() {
 
 function resetQuery() {
   query.value = {
-    channel: '全部',
-    type: '全部',
-    status: '全部',
-    province: '全部',
-    center: '全部',
+    channel: '',
+    type: '',
+    status: '',
+    province: '',
+    center: '',
     keyword: ''
   };
   currentPage.value = 1;

@@ -145,7 +145,7 @@ router.beforeEach((to, from, next) => {
   let currentRole = userProfile.role || 'citizen';
 
   // 0. 自动识别 URL 查询参数中的目标角色身份并无缝同步至当前标签页专属 sessionStorage (Portal 新开标签页直达)
-  if (to.query.role) {
+  if (to.query.role && to.path !== '/login') {
     const targetRole = String(to.query.role);
     const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
     if (validRoles.includes(targetRole)) {
@@ -162,6 +162,14 @@ router.beforeEach((to, from, next) => {
         // ignore
       }
     }
+  }
+
+  // 若明确要求进入注册或切换模式，清除旧 session 避免被已登录拦截
+  if (to.path === '/login' && (to.query.mode === 'register' || to.query.action === 'register')) {
+    sessionStorage.removeItem('rcm_auth_token');
+    sessionStorage.removeItem('rcm_user_profile');
+    localStorage.removeItem('rcm_auth_token');
+    token = null;
   }
 
   if (to.meta?.title) {

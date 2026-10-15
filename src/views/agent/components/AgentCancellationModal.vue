@@ -76,6 +76,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { cancelAgentCenter } from '../../../api/agent.js';
@@ -107,7 +108,7 @@ async function handleConfirmCancel() {
     });
 
     ElMessage.success({
-      message: `网点【${center.value.centerName || center.value.name}】代理权已注销！现已变更为【已注销(空置待申请)】，可重新发起申请。`,
+      message: (isEnNow() ? `The agency of station [${center.value.centerName || center.value.name}] has been deregistered! Status changed to [Deregistered (Vacant, Open for Application)]; a new application may be filed.` : `网点【${center.value.centerName || center.value.name}】代理权已注销！现已变更为【已注销(空置待申请)】，可重新发起申请。`),
       duration: 4000
     });
 

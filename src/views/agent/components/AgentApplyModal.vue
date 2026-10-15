@@ -363,6 +363,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -456,13 +457,13 @@ const canProceedNextStep = computed(() => {
 function handleCenterSelect(id) {
   const target = props.centerOptions.find((c) => c.centerId === id);
   if (target && target.status === '已被代理') {
-    ElMessage.warning(`【合规拦截】：中心【${target.centerName}】当前已被代理，须先注销代理方可申请！`);
+    ElMessage.warning((isEnNow() ? `[Compliance Interception]: Center [${target.centerName}] is currently delegated; deregister the agency before applying!` : `【合规拦截】：中心【${target.centerName}】当前已被代理，须先注销代理方可申请！`));
   }
 }
 
 function handleFileChange(key, file) {
   docs[key] = { name: file.name };
-  ElMessage.success(`文件【${file.name}】已成功选定`);
+  ElMessage.success((isEnNow() ? `File [${file.name}] selected successfully` : `文件【${file.name}】已成功选定`));
 }
 
 function handleNext() {

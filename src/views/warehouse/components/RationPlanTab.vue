@@ -1192,6 +1192,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../../stores/auth.js';
@@ -1636,7 +1637,7 @@ async function loadData() {
       }
     }
   } catch (err) {
-    ElMessage.error('加载配给计划数据失败');
+    ElMessage.error((isEnNow() ? 'Failed to load ration plan data' : '加载配给计划数据失败'));
   } finally {
     loading.value = false;
   }
@@ -1742,7 +1743,7 @@ async function submitAutoDecompose() {
     taskMonth.value = targetDecomposeMonth.value;
     await loadData();
   } catch (err) {
-    ElMessage.error('自动分解排程失败');
+    ElMessage.error((isEnNow() ? 'Automatic breakdown scheduling failed' : '自动分解排程失败'));
   } finally {
     decomposing.value = false;
   }
@@ -1758,7 +1759,7 @@ function openCreatePlanDialog() {
 
 async function submitCreatePlan() {
   if (!newPlanForm.value.title) {
-    ElMessage.warning('请填写计划名称');
+    ElMessage.warning((isEnNow() ? 'Please fill in the plan name' : '请填写计划名称'));
     return;
   }
   newPlanForm.value.scope = newPlanForm.value.provinces?.length
@@ -1767,11 +1768,11 @@ async function submitCreatePlan() {
   submitting.value = true;
   try {
     await createRationPlan({ ...newPlanForm.value });
-    ElMessage.success('成功签署并下发月度物资配给计划！');
+    ElMessage.success((isEnNow() ? 'Monthly material ration plan signed and issued successfully!' : '成功签署并下发月度物资配给计划！'));
     createDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error('创建计划失败');
+    ElMessage.error((isEnNow() ? 'Plan creation failed' : '创建计划失败'));
   } finally {
     submitting.value = false;
   }

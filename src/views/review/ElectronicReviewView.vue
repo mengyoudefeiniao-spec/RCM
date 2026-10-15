@@ -6,7 +6,7 @@
         <ModuleDescTip
           :title="$t('review.title')"
           :content="$t('review.subtitle')"
-          badge="全流程合规裁决"
+          :badge="$t('review.badgeFullProcess')"
           badge-type="warning"
           title-class="text-sm font-bold text-slate-900"
         >
@@ -45,7 +45,7 @@
                 class="lg:hidden text-[11px] text-blue-600 font-normal underline ml-1"
                 @click="showMobileFilter = !showMobileFilter"
               >
-                {{ showMobileFilter ? '收起过滤' : '展开过滤' }}
+                {{ showMobileFilter ? $t('review.collapseFilters') : $t('review.expandFilters') }}
               </button>
             </span>
             <span class="text-[11px] text-slate-400 font-mono">
@@ -207,7 +207,7 @@
             @click="mobileTab = 'list'"
           >
             <el-icon class="text-sm"><Back /></el-icon>
-            <span>返回工单列表 ({{ filteredTickets.length }})</span>
+            <span>{{ $t('review.backToList') }} ({{ filteredTickets.length }})</span>
           </button>
           <span class="text-[11px] font-mono font-semibold text-amber-800">{{ reviewStore.selectedTicket?.id }}</span>
         </div>

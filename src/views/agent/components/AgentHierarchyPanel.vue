@@ -3,9 +3,9 @@
     <!-- 移动端专属模式切换分段按钮 (仅在移动端小屏显示) -->
     <div class="block lg:hidden">
       <el-radio-group v-model="mobileViewMode" size="small" class="w-full flex">
-        <el-radio-button value="HIERARCHY" class="flex-1 text-center">🏢 三级代理联动</el-radio-button>
-        <el-radio-button value="FAMILIES" class="flex-1 text-center">👥 管辖公民列表 ({{ currentScopeFamilies.length }})</el-radio-button>
-        <el-radio-button value="MAP" class="flex-1 text-center">🗺️ 真实GIS热力图</el-radio-button>
+        <el-radio-button value="HIERARCHY" class="flex-1 text-center">🏢 {{ isEn ? '3-Level Agent Linkage' : '三级代理联动' }}</el-radio-button>
+        <el-radio-button value="FAMILIES" class="flex-1 text-center">👥 {{ isEn ? 'Registered Citizens' : '管辖公民列表' }} ({{ currentScopeFamilies.length }})</el-radio-button>
+        <el-radio-button value="MAP" class="flex-1 text-center">🗺️ {{ isEn ? 'Real GIS Heatmap' : '真实GIS热力图' }}</el-radio-button>
       </el-radio-group>
     </div>
 
@@ -23,9 +23,9 @@
           <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 text-xs">
             <div class="flex items-center gap-2 font-bold text-slate-800">
               <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-              <span>三级代理架构联动列表</span>
+              <span>{{ isEn ? 'Three-Level Agent Architecture Linkage List' : '三级代理架构联动列表' }}</span>
             </div>
-            <span class="text-[11px] text-slate-400 font-mono">省 $\rightarrow$ 区 $\rightarrow$ 街 逐级穿透</span>
+            <span class="text-[11px] text-slate-400 font-mono">{{ isEn ? 'Province → District → Street Penetration' : '省 → 区 → 街 逐级穿透' }}</span>
           </div>
 
           <!-- 3级联动选择面板 -->
@@ -33,8 +33,8 @@
             <!-- 1. 第一级：省级代理列表 -->
             <div class="space-y-1.5">
               <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
-                <span>① 省级代理 (宏观监控审批)</span>
-                <span class="font-mono text-indigo-600 text-[10px]">1 个省管总督</span>
+                <span>{{ isEn ? '① Provincial Agent (Macro Monitoring & Approval)' : '① 省级代理 (宏观监控审批)' }}</span>
+                <span class="font-mono text-indigo-600 text-[10px]">{{ isEn ? '1 Provincial Governor' : '1 个省管总督' }}</span>
               </div>
               <div
                 v-for="prov in hierarchyTree"
@@ -46,18 +46,18 @@
                 @click="onSelectProvince(prov)"
               >
                 <div class="flex items-center gap-2">
-                  <el-tag size="small" type="primary" effect="dark" class="font-bold scale-90">省级</el-tag>
+                  <el-tag size="small" type="primary" effect="dark" class="font-bold scale-90">{{ isEn ? 'Prov.' : '省级' }}</el-tag>
                   <div>
                     <div class="font-bold text-slate-900 flex items-center gap-1.5">
                       <span>{{ prov.name }}</span>
-                      <el-tag v-if="prov.isSelf" size="small" type="warning" effect="plain" class="scale-75 font-bold">我</el-tag>
+                      <el-tag v-if="prov.isSelf" size="small" type="warning" effect="plain" class="scale-75 font-bold">{{ isEn ? 'Me' : '我' }}</el-tag>
                     </div>
-                    <div class="text-[10px] text-slate-400">{{ prov.province }} · 辖区 {{ prov.totalDistricts }} 区</div>
+                    <div class="text-[10px] text-slate-400">{{ prov.province }} · {{ isEn ? `${prov.totalDistricts} districts` : `辖区 ${prov.totalDistricts} 区` }}</div>
                   </div>
                 </div>
                 <div class="text-right font-mono">
-                  <div class="font-bold text-indigo-700">{{ prov.totalHouseholdsServed }} 户</div>
-                  <div class="text-[10px] text-slate-400">负荷率 {{ prov.overallSaturationRate }}%</div>
+                  <div class="font-bold text-indigo-700">{{ isEn ? `${prov.totalHouseholdsServed} HH` : `${prov.totalHouseholdsServed} 户` }}</div>
+                  <div class="text-[10px] text-slate-400">{{ isEn ? `Load ${prov.overallSaturationRate}%` : `负荷率 ${prov.overallSaturationRate}%` }}</div>
                 </div>
               </div>
             </div>
@@ -65,8 +65,8 @@
             <!-- 2. 第二级：区域代理列表 (根据选中的省联动) -->
             <div class="space-y-1.5 pt-1 border-t border-slate-100">
               <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
-                <span>② 区域代理 (多中心协调调度)</span>
-                <span class="font-mono text-blue-600 text-[10px]">下辖 {{ currentDistrictsList.length }} 个区域</span>
+                <span>{{ isEn ? '② Regional Agent (Multi-Center Coordination)' : '② 区域代理 (多中心协调调度)' }}</span>
+                <span class="font-mono text-blue-600 text-[10px]">{{ isEn ? `${currentDistrictsList.length} regions` : `下辖 ${currentDistrictsList.length} 个区域` }}</span>
               </div>
               <div class="space-y-1.5">
                 <div
@@ -79,15 +79,15 @@
                   @click="onSelectDistrict(dist)"
                 >
                   <div class="flex items-center gap-2">
-                    <el-tag size="small" type="info" effect="plain" class="scale-90 font-bold">区级</el-tag>
+                    <el-tag size="small" type="info" effect="plain" class="scale-90 font-bold">{{ isEn ? 'Reg.' : '区级' }}</el-tag>
                     <div>
                       <div class="font-bold text-slate-900">{{ dist.district }}</div>
-                      <div class="text-[10px] text-slate-400">经理: {{ dist.name }} | {{ dist.children?.length }} 个终端站</div>
+                      <div class="text-[10px] text-slate-400">{{ isEn ? `Manager: ${dist.name} | ${dist.children?.length} stations` : `经理: ${dist.name} | ${dist.children?.length} 个终端站` }}</div>
                     </div>
                   </div>
                   <div class="text-right font-mono">
-                    <div class="font-bold text-blue-700">{{ dist.totalHouseholdsServed }} 户</div>
-                    <div class="text-[10px] text-slate-400">{{ dist.overallSaturationRate }}% 负荷</div>
+                    <div class="font-bold text-blue-700">{{ isEn ? `${dist.totalHouseholdsServed} HH` : `${dist.totalHouseholdsServed} 户` }}</div>
+                    <div class="text-[10px] text-slate-400">{{ isEn ? `${dist.overallSaturationRate}% Load` : `${dist.overallSaturationRate}% 负荷` }}</div>
                   </div>
                 </div>
               </div>
@@ -96,8 +96,8 @@
             <!-- 3. 第三级：街道代理列表 (根据选中的区域联动，1500户硬上限强约束) -->
             <div class="space-y-1.5 pt-1 border-t border-slate-100">
               <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
-                <span>③ 街道代理 (终端服务门店 · 上限1,500户)</span>
-                <span class="font-mono text-emerald-600 text-[10px]">当前区 {{ currentStreetStationsList.length }} 个网点</span>
+                <span>{{ isEn ? '③ Street Agents (Terminal Stores · 1,500-Household Ceiling)' : '③ 街道代理 (终端服务门店 · 上限1,500户)' }}</span>
+                <span class="font-mono text-emerald-600 text-[10px]">{{ isEn ? `${currentStreetStationsList.length} stations in district` : `当前区 ${currentStreetStationsList.length} 个网点` }}</span>
               </div>
               <div class="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
                 <div
@@ -111,9 +111,9 @@
                 >
                   <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-1.5 font-bold truncate">
-                      <el-tag size="small" type="success" effect="plain" class="scale-85">街道</el-tag>
+                      <el-tag size="small" type="success" effect="plain" class="scale-85">{{ isEn ? 'Street' : '街道' }}</el-tag>
                       <span class="truncate text-slate-900">{{ st.storeName }}</span>
-                      <el-tag v-if="st.isSelf" size="small" type="warning" effect="dark" class="scale-75 origin-left">我经营</el-tag>
+                      <el-tag v-if="st.isSelf" size="small" type="warning" effect="dark" class="scale-75 origin-left">{{ isEn ? 'Mine' : '我经营' }}</el-tag>
                     </div>
 
                     <el-tag
@@ -129,7 +129,7 @@
                   <div class="flex items-center justify-between text-[10px]">
                     <span class="text-slate-500 truncate">{{ st.streetName }} ({{ st.name }})</span>
                     <span class="font-mono font-bold" :class="st.lockStatus === 'SATURATED_LOCKED' ? 'text-rose-600' : 'text-slate-700'">
-                      {{ st.householdsCount }} / 1,500 户 ({{ st.saturationRate }}%)
+                      {{ isEn ? `${st.householdsCount} / 1,500 HH` : `${st.householdsCount} / 1,500 户` }} ({{ st.saturationRate }}%)
                     </span>
                   </div>
 
@@ -150,7 +150,7 @@
           <div class="flex items-center justify-between pb-2 border-b border-slate-200">
             <span class="font-bold text-slate-800 flex items-center gap-1.5">
               <el-icon class="text-blue-600"><OfficeBuilding /></el-icon>
-              <span>当前选中代理的法定管辖范围</span>
+              <span>{{ isEn ? 'Legal Jurisdiction of Selected Agent' : '当前选中代理的法定管辖范围' }}</span>
             </span>
             <el-tag size="small" :type="currentScopeLevelTagType" effect="dark" class="font-bold">
               {{ currentScopeLevelTitle }}
@@ -159,26 +159,26 @@
 
           <div class="space-y-1.5 text-slate-600 leading-relaxed text-[11px]">
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">代理责任人：</span>
+              <span class="text-slate-400 shrink-0">{{ isEn ? 'Agent Responsible:' : '代理责任人：' }}</span>
               <span class="font-bold text-slate-800 text-right">{{ currentScopeAgentName }} ({{ currentScopeAgentPhone }})</span>
             </div>
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">管辖行政范围：</span>
+              <span class="text-slate-400 shrink-0">{{ isEn ? 'Administrative Scope:' : '管辖行政范围：' }}</span>
               <span class="font-semibold text-blue-700 text-right">{{ currentScopeJurisdiction }}</span>
             </div>
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">物理绑定配给中心：</span>
+              <span class="text-slate-400 shrink-0">{{ isEn ? 'Bound Ration Center:' : '物理绑定配给中心：' }}</span>
               <span class="text-slate-800 text-right">{{ currentScopeCenterName }}</span>
             </div>
             <div class="flex justify-between items-center pt-1 border-t border-slate-200/60 font-mono">
-              <span class="text-slate-400">管辖服务户数：</span>
+              <span class="text-slate-400">{{ isEn ? 'Served Households:' : '管辖服务户数：' }}</span>
               <span class="font-bold text-base text-slate-900">
                 {{ currentScopeHouseholdsCount.toLocaleString() }}
-                <span class="text-[10px] text-slate-500 font-normal">/ {{ currentScopeCapacityLimit.toLocaleString() }} 户上限</span>
+                <span class="text-[10px] text-slate-500 font-normal">/ {{ currentScopeCapacityLimit.toLocaleString() }} {{ isEn ? 'HH ceiling' : '户上限' }}</span>
               </span>
             </div>
             <div v-if="currentScopeIsLocked" class="p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-[10px] leading-normal font-medium">
-              ⚠️ 【V1 网格饱和拦截】：已达 1,500 户硬上限饱和锁定，禁止新户迁入，必须由区域经理分流设立新代理点！
+              ⚠️ {{ isEn ? '[V1 Grid Saturation Interception]: The 1,500-household hard ceiling has been reached and saturation-locked; new household immigration is prohibited — a regional manager must split off and establish a new agent station!' : '【V1 网格饱和拦截】：已达 1,500 户硬上限饱和锁定，禁止新户迁入，必须由区域经理分流设立新代理点！' }}
             </div>
           </div>
         </div>
@@ -198,21 +198,21 @@
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <h4 class="font-bold text-slate-800 text-xs sm:text-sm">
-                  【{{ currentScopeAgentName }}】管辖范围内的在册公民列表
+                  {{ isEn ? `Registered Citizens under [${currentScopeAgentName}]` : `【${currentScopeAgentName}】管辖范围内的在册公民列表` }}
                 </h4>
                 <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
-                  共 {{ filteredFamilies.length }} 户
+                  {{ isEn ? `${filteredFamilies.length} HH` : `共 ${filteredFamilies.length} 户` }}
                 </el-tag>
               </div>
               <p class="text-[11px] text-slate-400 mt-0.5">
-                管辖区域：{{ currentScopeJurisdiction }} | 包含全部已核验配给家庭与在册公民
+                {{ isEn ? `Jurisdiction: ${currentScopeJurisdiction} | Includes all verified ration families and registered citizens` : `管辖区域：${currentScopeJurisdiction} | 包含全部已核验配给家庭与在册公民` }}
               </p>
             </div>
 
             <!-- 搜索框 -->
             <el-input
               v-model="familySearchKeyword"
-              placeholder="搜索户主姓名 / 户号 / 身份证号"
+              :placeholder="isEn ? 'Search head name / family code / national ID' : '搜索户主姓名 / 户号 / 身份证号'"
               clearable
               size="small"
               style="width: 210px"
@@ -230,53 +230,53 @@
             class="text-xs"
             max-height="250"
           >
-            <el-table-column prop="familyCode" label="家庭编号 / 配给卡号" width="165">
+            <el-table-column prop="familyCode" :label="isEn ? 'Family / Ration Card No.' : '家庭编号 / 配给卡号'" width="165">
               <template #default="{ row }">
                 <div class="font-mono font-bold text-blue-700">{{ row.familyCode }}</div>
                 <div class="text-[10px] text-slate-400 font-mono">{{ row.rationCardNo }}</div>
               </template>
             </el-table-column>
 
-            <el-table-column label="户主姓名与公民身份" min-width="155">
+            <el-table-column :label="isEn ? 'Head Name & Identity' : '户主姓名与公民身份'" min-width="155">
               <template #default="{ row }">
                 <div class="font-bold text-slate-900">{{ row.headName }}</div>
-                <div class="text-[10px] text-slate-400 font-mono">国民卡: {{ row.nationalId }}</div>
+                <div class="text-[10px] text-slate-400 font-mono">{{ isEn ? 'National Card:' : '国民卡:' }} {{ row.nationalId }}</div>
               </template>
             </el-table-column>
 
-            <el-table-column prop="memberCount" label="人口" width="75" align="center">
+            <el-table-column prop="memberCount" :label="isEn ? 'Members' : '人口'" width="75" align="center">
               <template #default="{ row }">
                 <el-tag size="small" type="info" effect="plain" class="font-mono font-bold">
-                  {{ row.memberCount }} 人
+                  {{ isEn ? `${row.memberCount} ppl` : `${row.memberCount} 人` }}
                 </el-tag>
               </template>
             </el-table-column>
 
-            <el-table-column label="核定月配额 (面粉/米/油)" min-width="180">
+            <el-table-column :label="isEn ? 'Monthly Quota (Flour/Rice/Oil)' : '核定月配额 (面粉/米/油)'" min-width="180">
               <template #default="{ row }">
                 <div class="text-[11px] text-slate-600 font-mono">
-                  面粉: <strong>{{ row.quotaFlourKg }}</strong> KG | 大米: <strong>{{ row.quotaRiceKg }}</strong> KG
-                  <div class="text-slate-400 text-[10px]">食用油: <strong>{{ row.quotaOilL }}</strong> L</div>
+                  {{ isEn ? 'Flour:' : '面粉:' }} <strong>{{ row.quotaFlourKg }}</strong> KG | {{ isEn ? 'Rice:' : '大米:' }} <strong>{{ row.quotaRiceKg }}</strong> KG
+                  <div class="text-slate-400 text-[10px]">{{ isEn ? 'Oil:' : '食用油:' }} <strong>{{ row.quotaOilL }}</strong> L</div>
                 </div>
               </template>
             </el-table-column>
 
-            <el-table-column prop="assignedDate" label="签约日期" width="105" align="center">
+            <el-table-column prop="assignedDate" :label="isEn ? 'Contract Date' : '签约日期'" width="105" align="center">
               <template #default="{ row }">
                 <span class="font-mono text-slate-600 text-[11px]">{{ row.assignedDate }}</span>
               </template>
             </el-table-column>
 
-            <el-table-column label="配给状态" width="95" align="center">
+            <el-table-column :label="isEn ? 'Ration Status' : '配给状态'" width="95" align="center">
               <template #default="{ row }">
                 <el-tag size="small" type="success" effect="light">{{ row.cardStatus }}</el-tag>
               </template>
             </el-table-column>
 
-            <el-table-column label="操作" width="85" fixed="right" align="center">
+            <el-table-column :label="isEn ? 'Action' : '操作'" width="85" fixed="right" align="center">
               <template #default="{ row }">
                 <el-button size="small" type="primary" link @click="viewFamilyDetail(row)">
-                  档案
+                  {{ isEn ? 'Dossier' : '档案' }}
                 </el-button>
               </template>
             </el-table-column>
@@ -285,7 +285,7 @@
           <!-- 分页器 -->
           <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
             <span class="text-slate-400 text-[11px]">
-              当前显示第 {{ familyCurrentPage }} 页 / 共 {{ Math.ceil(filteredFamilies.length / familyPageSize) || 1 }} 页
+              {{ isEn ? `Page ${familyCurrentPage} of ${Math.ceil(filteredFamilies.length / familyPageSize) || 1}` : `当前显示第 ${familyCurrentPage} 页 / 共 ${Math.ceil(filteredFamilies.length / familyPageSize) || 1} 页` }}
             </span>
             <el-pagination
               v-model:current-page="familyCurrentPage"
@@ -314,7 +314,7 @@
     <!-- 公民家庭档案抽屉 -->
     <el-drawer
       v-model="familyDrawerVisible"
-      title="配给公民家庭档案详情"
+      :title="isEn ? 'Ration Citizen Family Dossier Details' : '配给公民家庭档案详情'"
       direction="rtl"
       size="400px"
       destroy-on-close
@@ -322,46 +322,46 @@
       <div v-if="activeFamilyRow" class="space-y-4 text-xs">
         <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
           <div class="font-bold text-blue-900 flex items-center justify-between">
-            <span>{{ activeFamilyRow.headName }} (户主)</span>
+            <span>{{ activeFamilyRow.headName }} {{ isEn ? '(Head)' : '(户主)' }}</span>
             <el-tag size="small" type="success" effect="dark">{{ activeFamilyRow.complianceStatus }}</el-tag>
           </div>
           <div class="text-[11px] text-blue-700 font-mono">
-            家庭编号: {{ activeFamilyRow.familyCode }} | 配给卡: {{ activeFamilyRow.rationCardNo }}
+            {{ isEn ? 'Family Code:' : '家庭编号:' }} {{ activeFamilyRow.familyCode }} | {{ isEn ? 'Ration Card:' : '配给卡:' }} {{ activeFamilyRow.rationCardNo }}
           </div>
         </div>
 
         <div class="space-y-2 text-slate-600">
           <div class="flex justify-between py-1 border-b border-slate-100">
-            <span>国民身份识别号：</span>
+            <span>{{ isEn ? 'National ID Number:' : '国民身份识别号：' }}</span>
             <span class="font-mono text-slate-800">{{ activeFamilyRow.nationalId }}</span>
           </div>
           <div class="flex justify-between py-1 border-b border-slate-100">
-            <span>联系电话：</span>
+            <span>{{ isEn ? 'Contact Phone:' : '联系电话：' }}</span>
             <span class="font-mono text-slate-800">{{ activeFamilyRow.phone }}</span>
           </div>
           <div class="flex justify-between py-1 border-b border-slate-100">
-            <span>常住居所地址：</span>
+            <span>{{ isEn ? 'Residential Address:' : '常住居所地址：' }}</span>
             <span class="text-slate-800 text-right">{{ activeFamilyRow.address }}</span>
           </div>
           <div class="flex justify-between py-1 border-b border-slate-100">
-            <span>归属街道代销站：</span>
-            <span class="font-bold text-blue-700">{{ currentSelectedStreetStation?.storeName || '曼苏尔综合代销站' }}</span>
+            <span>{{ isEn ? 'Affiliated Street Station:' : '归属街道代销站：' }}</span>
+            <span class="font-bold text-blue-700">{{ currentSelectedStreetStation?.storeName || (isEn ? 'Mansour Comprehensive Distribution Station' : '曼苏尔综合代销站') }}</span>
           </div>
         </div>
 
         <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-          <div class="font-bold text-slate-800">法定月度补给额定标准：</div>
+          <div class="font-bold text-slate-800">{{ isEn ? 'Statutory Monthly Supply Standards:' : '法定月度补给额定标准：' }}</div>
           <div class="grid grid-cols-3 gap-2 text-center pt-1 font-mono">
             <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">特级面粉</div>
+              <div class="text-[10px] text-slate-400">{{ isEn ? 'Premium Flour' : '特级面粉' }}</div>
               <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaFlourKg }} KG</div>
             </div>
             <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">精制大米</div>
+              <div class="text-[10px] text-slate-400">{{ isEn ? 'Premium Rice' : '精制大米' }}</div>
               <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaRiceKg }} KG</div>
             </div>
             <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">植物油</div>
+              <div class="text-[10px] text-slate-400">{{ isEn ? 'Vegetable Oil' : '植物油' }}</div>
               <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaOilL }} L</div>
             </div>
           </div>
@@ -373,6 +373,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
   OfficeBuilding,
@@ -380,6 +381,9 @@ import {
 } from '@element-plus/icons-vue';
 import AgentRealGISMap from './AgentRealGISMap.vue';
 import { getAgentHierarchyTree, getAgentFamilies } from '../../../api/agent.js';
+
+const { t, locale } = useI18n();
+const isEn = computed(() => locale.value === 'en');
 
 const loadingHierarchy = ref(false);
 const loadingFamilies = ref(false);
@@ -461,9 +465,9 @@ const currentAvailableStations = computed(() => {
 
 // 动态计算管辖范围档案卡中的字段
 const currentScopeLevelTitle = computed(() => {
-  if (selectedLevel.value === 'PROVINCE') return '省级总管';
-  if (selectedLevel.value === 'DISTRICT') return '区域调度';
-  return '终端街道门店';
+  if (selectedLevel.value === 'PROVINCE') return isEn.value ? 'Provincial Governor' : '省级总管';
+  if (selectedLevel.value === 'DISTRICT') return isEn.value ? 'Regional Dispatch' : '区域调度';
+  return isEn.value ? 'Terminal Street Store' : '终端街道门店';
 });
 
 const currentScopeLevelTagType = computed(() => {
@@ -473,9 +477,9 @@ const currentScopeLevelTagType = computed(() => {
 });
 
 const currentScopeAgentName = computed(() => {
-  if (selectedLevel.value === 'PROVINCE') return currentProvince.value?.name || '穆罕默德·贾巴尔';
-  if (selectedLevel.value === 'DISTRICT') return currentDistrict.value?.name || '区域经理';
-  return currentSelectedStreetStation.value?.name || '街道代理';
+  if (selectedLevel.value === 'PROVINCE') return currentProvince.value?.name || (isEn.value ? 'Mohammed Jabbar' : '穆罕默德·贾巴尔');
+  if (selectedLevel.value === 'DISTRICT') return currentDistrict.value?.name || (isEn.value ? 'Regional Manager' : '区域经理');
+  return currentSelectedStreetStation.value?.name || (isEn.value ? 'Street Agent' : '街道代理');
 });
 
 const currentScopeAgentPhone = computed(() => {
@@ -485,15 +489,17 @@ const currentScopeAgentPhone = computed(() => {
 });
 
 const currentScopeJurisdiction = computed(() => {
-  if (selectedLevel.value === 'PROVINCE') return currentProvince.value?.jurisdictionScope || '巴格达全境 14 个行政区';
-  if (selectedLevel.value === 'DISTRICT') return `${currentDistrict.value?.district || '卡尔赫区'}全境 (下辖 ${currentDistrict.value?.children?.length || 3} 个街道)`;
+  if (selectedLevel.value === 'PROVINCE') return currentProvince.value?.jurisdictionScope || (isEn.value ? 'All 14 districts of Baghdad' : '巴格达全境 14 个行政区');
+  if (selectedLevel.value === 'DISTRICT') return isEn.value
+    ? `${currentDistrict.value?.district || 'Karkh District'} (covering ${currentDistrict.value?.children?.length || 3} streets)`
+    : `${currentDistrict.value?.district || '卡尔赫区'}全境 (下辖 ${currentDistrict.value?.children?.length || 3} 个街道)`;
   return `${currentSelectedStreetStation.value?.district} · ${currentSelectedStreetStation.value?.streetName} (${currentSelectedStreetStation.value?.address})`;
 });
 
 const currentScopeCenterName = computed(() => {
-  if (selectedLevel.value === 'PROVINCE') return '巴格达国家粮食第一储备总仓 / 战略调度中心';
-  if (selectedLevel.value === 'DISTRICT') return currentDistrict.value?.centerBindingName || '卡尔赫第一配给中心';
-  return currentSelectedStreetStation.value?.centerName || '卡尔赫第一配给中心 (曼苏尔)';
+  if (selectedLevel.value === 'PROVINCE') return isEn.value ? 'Baghdad National Grain No.1 Reserve Master Warehouse / Strategic Dispatch Center' : '巴格达国家粮食第一储备总仓 / 战略调度中心';
+  if (selectedLevel.value === 'DISTRICT') return currentDistrict.value?.centerBindingName || (isEn.value ? 'Karkh 1st Ration Center' : '卡尔赫第一配给中心');
+  return currentSelectedStreetStation.value?.centerName || (isEn.value ? 'Karkh 1st Ration Center (Mansour)' : '卡尔赫第一配给中心 (曼苏尔)');
 });
 
 const currentScopeHouseholdsCount = computed(() => {
@@ -575,7 +581,7 @@ const onSelectProvince = (prov) => {
     }
   }
   fetchScopeFamilies(prov.id);
-  ElMessage.success(`已切换至省级宏观视角：${prov.name}`);
+  ElMessage.success(isEn.value ? `Switched to provincial macro view: ${prov.name}` : `已切换至省级宏观视角：${prov.name}`);
 };
 
 // 2. 点击选择第二级：区域代理
@@ -586,7 +592,7 @@ const onSelectDistrict = (dist) => {
     selectedStationId.value = dist.children[0].id;
   }
   fetchScopeFamilies(dist.id);
-  ElMessage.success(`已下钻至区域级调度视角：${dist.district}`);
+  ElMessage.success(isEn.value ? `Drilled down to regional dispatch view: ${dist.district}` : `已下钻至区域级调度视角：${dist.district}`);
 };
 
 // 3. 点击选择第三级：街道代理
@@ -604,7 +610,7 @@ const fetchScopeFamilies = async (scopeId) => {
     const res = await getAgentFamilies(scopeId);
     currentScopeFamilies.value = Array.isArray(res) ? res : (res?.data || []);
   } catch (error) {
-    ElMessage.error('加载管辖公民列表失败');
+    ElMessage.error(t('agent.familiesLoadFailed'));
   } finally {
     loadingFamilies.value = false;
   }
@@ -627,7 +633,7 @@ const loadHierarchyData = async () => {
       fetchScopeFamilies(selectedStationId.value);
     }
   } catch (error) {
-    ElMessage.error('加载代理层级拓扑失败');
+    ElMessage.error(t('agent.hierarchyLoadFailed'));
   } finally {
     loadingHierarchy.value = false;
   }

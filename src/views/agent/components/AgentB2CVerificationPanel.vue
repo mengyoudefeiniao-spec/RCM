@@ -295,6 +295,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
@@ -329,7 +330,7 @@ const loadSlots = async () => {
     const res = await getAgentTimeSlots('FA-00128', '2026-10-13');
     timeSlots.value = res.data || [];
   } catch (error) {
-    ElMessage.error('加载接待排期失败');
+    ElMessage.error((isEnNow() ? 'Failed to load reception schedule' : '加载接待排期失败'));
   }
 };
 
@@ -339,7 +340,7 @@ const loadReservations = async () => {
     const res = await getB2CReservations({ status: tableStatusFilter.value });
     reservations.value = res.data || [];
   } catch (error) {
-    ElMessage.error('加载 B2C 预约流水失败');
+    ElMessage.error((isEnNow() ? 'Failed to load B2C reservation flow' : '加载 B2C 预约流水失败'));
   } finally {
     loadingReservations.value = false;
   }
@@ -348,7 +349,7 @@ const loadReservations = async () => {
 const handleQueryReservation = async () => {
   const code = scanInput.value.trim();
   if (!code) {
-    ElMessage.warning('请输入提货码、卡号或扫描二维码');
+    ElMessage.warning((isEnNow() ? 'Please enter the pickup code, card number or scan the QR code' : '请输入提货码、卡号或扫描二维码'));
     return;
   }
   querying.value = true;
@@ -356,16 +357,16 @@ const handleQueryReservation = async () => {
     const res = await getB2CReservations({ keyword: code });
     const list = res.data || [];
     if (list.length === 0) {
-      ElMessage.error('【严禁无单发货】：未检索到有效匹配的预约单，禁止发货！');
+      ElMessage.error((isEnNow() ? '[No Delivery Without Order]: No valid matching reservation found; dispatch is prohibited!' : '【严禁无单发货】：未检索到有效匹配的预约单，禁止发货！'));
       currentRedeemTicket.value = null;
     } else {
       const match = list[0];
       currentRedeemTicket.value = match;
       isSlotMatched.value = match.timeSlot.includes('08:00') || match.timeSlot.includes('10:00');
-      ElMessage.success(`检索成功：户主【${match.headName}】`);
+      ElMessage.success((isEnNow() ? `Search succeeded: Head [${match.headName}]` : `检索成功：户主【${match.headName}】`));
     }
   } catch (error) {
-    ElMessage.error('查询异常');
+    ElMessage.error((isEnNow() ? 'Query error' : '查询异常'));
   } finally {
     querying.value = false;
   }
@@ -403,13 +404,13 @@ const handleExecuteRedeem = async (forceOverride = false) => {
       forceOverride
     };
     const res = await verifyAndRedeemReservation(payload);
-    ElMessage.success(res.message || '核销出库发货成功！代理本地现货已扣减。');
+    ElMessage.success(res.message || (isEnNow() ? 'Verification and dispatch succeeded! Local agent stock has been deducted.' : '核销出库发货成功！代理本地现货已扣减。'));
     currentRedeemTicket.value = null;
     scanInput.value = '';
     await loadSlots();
     await loadReservations();
   } catch (error) {
-    ElMessage.error(error.message || '核销失败');
+    ElMessage.error(error.message || (isEnNow() ? 'Verification failed' : '核销失败'));
   } finally {
     redeeming.value = false;
   }

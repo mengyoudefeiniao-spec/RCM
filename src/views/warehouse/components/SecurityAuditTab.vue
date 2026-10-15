@@ -179,6 +179,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getAuditLogs, submitDoubleApproval } from '../../../api/warehouse.js';
@@ -262,7 +263,7 @@ async function loadData() {
     const list = await getAuditLogs();
     auditLogs.value = list || [];
   } catch (err) {
-    ElMessage.error(err.message || '加载安全审计日志失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load security audit logs' : '加载安全审计日志失败'));
   } finally {
     loading.value = false;
   }
@@ -279,11 +280,11 @@ async function submitDoubleSign() {
   submitting.value = true;
   try {
     await submitDoubleApproval(doubleSignForm.value);
-    ElMessage.success('高风险业务双人签批通过！已完成不可篡改审计留痕入账');
+    ElMessage.success((isEnNow() ? 'High-risk operation dual sign-off passed! Tamper-proof audit trail has been booked' : '高风险业务双人签批通过！已完成不可篡改审计留痕入账'));
     doubleSignDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '双人签批失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Dual sign-off failed' : '双人签批失败'));
   } finally {
     submitting.value = false;
   }

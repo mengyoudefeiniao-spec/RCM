@@ -4,9 +4,21 @@
     <div class="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-5 space-y-4 sm:space-y-6 flex-1 flex flex-col justify-between">
       
       <!-- ======================================================== -->
-      <!-- 0. 顶栏操作区：仅在最右侧增加切换国际化语言的下拉框 (无返回按钮) -->
+      <!-- 0. 顶栏操作区：国际化语言切换 + 全流程演示按钮 -->
       <!-- ======================================================== -->
-      <div class="flex items-center justify-end w-full">
+      <div class="flex items-center justify-end w-full gap-2.5">
+        <!-- 全流程演示按钮 -->
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 shadow-2xs border bg-white text-[#1E3F35] border-[#ECE7DE] hover:bg-[#1E3F35] hover:text-white hover:border-[#1E3F35] hover:shadow-md cursor-pointer group"
+          @click="showFlowDemoDialog = true"
+        >
+          <el-icon :size="15" class="text-[#C59D5F] group-hover:text-amber-300 transition-colors">
+            <VideoPlay />
+          </el-icon>
+          <span>{{ $t('portal.flowDemo.btnText') }}</span>
+        </button>
+
         <LanguageSwitcher />
       </div>
 
@@ -209,11 +221,127 @@
       </footer>
 
     </div>
+
+    <!-- ======================================================== -->
+    <!-- 4. 公民电子配给卡全流程操作演示弹窗 (E-Ration Flow Demo) -->
+    <!-- ======================================================== -->
+    <el-dialog
+      v-model="showFlowDemoDialog"
+      :title="null"
+      width="940px"
+      align-center
+      append-to-body
+      class="flow-demo-dialog"
+      :show-close="false"
+    >
+      <div class="p-3 sm:p-5 space-y-4" :dir="isRtl ? 'rtl' : 'ltr'">
+        <!-- 头部 Header：标题与关闭按钮 -->
+        <div class="flex items-start justify-between gap-4 border-b border-[#ECE7DE] pb-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF5ED] border border-[#E8D9BF] text-[#B88B4A] text-[11px] font-bold">
+              <el-icon :size="12"><VideoPlay /></el-icon>
+              <span>E-RATION WORKFLOW GUIDE</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-[#1E3F35] tracking-tight">
+              {{ $t('portal.flowDemo.dialogTitle') }}
+            </h2>
+            <p class="text-xs text-[#5E6862] leading-relaxed">
+              {{ $t('portal.flowDemo.dialogSubtitle') }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            @click="showFlowDemoDialog = false"
+          >
+            <el-icon :size="16"><Close /></el-icon>
+          </button>
+        </div>
+
+        <!-- 流程提示指引条 -->
+        <div class="p-3 rounded-xl bg-gradient-to-r from-[#FAF6EE] to-[#F4EFE6] border border-[#E8DCC6] text-xs text-[#7A5B22] flex items-start gap-2.5 shadow-2xs">
+          <div class="w-5 h-5 rounded-full bg-[#C59D5F] text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+            💡
+          </div>
+          <div class="leading-relaxed">
+            {{ $t('portal.flowDemo.bannerTip') }}
+          </div>
+        </div>
+
+        <!-- 6 个流程卡片网格列表 (桌面端 2 列 x 3 行，移动端 1 列 x 6 行) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+          <div
+            v-for="item in flowSteps"
+            :key="item.step"
+            class="flow-step-card group relative bg-[#FCFBF9] hover:bg-white border border-[#ECE7DE] hover:border-[#C59D5F] rounded-2xl p-4 transition-all duration-300 cursor-pointer shadow-2xs hover:shadow-lg hover:-translate-y-0.5 flex flex-col justify-between"
+            @click="openFlowStep(item)"
+          >
+            <!-- 卡片顶栏：步骤编号与角色视口徽章 -->
+            <div class="flex items-center justify-between pb-2.5 border-b border-[#F4EFE6]">
+              <div class="inline-flex items-center gap-1.5">
+                <span class="w-6 h-6 rounded-lg bg-[#1E3F35] text-white text-xs font-mono font-bold flex items-center justify-center shadow-2xs group-hover:bg-[#C59D5F] transition-colors">
+                  0{{ item.step }}
+                </span>
+                <span class="text-xs font-bold text-[#1E3F35] font-mono tracking-tight">
+                  {{ $t('portal.flowDemo.stepBadge', { step: `0${item.step}` }) }}
+                </span>
+              </div>
+
+              <!-- 终端与角色胶囊 -->
+              <span
+                class="px-2 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border"
+                :class="item.roleType === 'citizen' ? 'bg-[#EBF3EE] text-[#1E3F35] border-[#CDE1D4]' : item.roleType === 'agent' ? 'bg-[#FAF5ED] text-[#966C2E] border-[#E8D9BF]' : 'bg-[#EEF2F6] text-[#2C4875] border-[#D0DDEB]'"
+              >
+                <el-icon :size="12">
+                  <Cellphone v-if="item.roleType === 'citizen'" />
+                  <FullScreen v-else-if="item.roleType === 'agent'" />
+                  <Monitor v-else />
+                </el-icon>
+                <span>{{ $t(item.roleLabelKey) }}</span>
+              </span>
+            </div>
+
+            <!-- 卡片核心内容：标题与说明 -->
+            <div class="py-3 space-y-1.5 flex-1" :class="isRtl ? 'text-right' : 'text-left'">
+              <h3 class="text-sm font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors flex items-center gap-1">
+                <span>{{ $t(item.titleKey) }}</span>
+              </h3>
+              <p class="text-xs text-[#5E6862] leading-relaxed">
+                {{ $t(item.descKey) }}
+              </p>
+            </div>
+
+            <!-- 卡片底栏：操作指引与新标签页跳转按钮 -->
+            <div class="pt-2.5 border-t border-[#F4EFE6] flex items-center justify-between gap-2 text-xs">
+              <span class="text-[11px] text-[#8C958F] truncate max-w-[200px] sm:max-w-[240px]">
+                {{ $t(item.actionHintKey) }}
+              </span>
+
+              <div class="inline-flex items-center gap-1 font-bold text-xs text-[#1E3F35] group-hover:text-[#C59D5F] transition-colors shrink-0">
+                <span>{{ $t('portal.flowDemo.openInNewTab') }}</span>
+                <el-icon class="transform group-hover:translate-x-0.5 transition-transform"><TopRight /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹窗底栏 -->
+        <div class="pt-3 border-t border-[#ECE7DE] flex items-center justify-between">
+          <div class="text-[11px] text-[#8C958F]">
+            © 2026 Republic of Iraq · National Food Support System
+          </div>
+          <el-button @click="showFlowDemoDialog = false">
+            {{ $t('common.close') || '关闭' }}
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import {
   Check,
   Cellphone,
@@ -221,7 +349,11 @@ import {
   DataAnalysis,
   Back,
   Right,
-  OfficeBuilding
+  OfficeBuilding,
+  VideoPlay,
+  Close,
+  Monitor,
+  TopRight
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
@@ -234,6 +366,86 @@ const authStore = useAuthStore();
 
 // 是否为 RTL 语言环境 (阿语、库尔德语)
 const isRtl = computed(() => ['ar', 'ku'].includes(currentLang.value));
+
+// 流程演示弹窗控制
+const showFlowDemoDialog = ref(false);
+
+// 6 大核心流程步骤定义
+const flowSteps = [
+  {
+    step: 1,
+    roleType: 'citizen',
+    layout: 'app',
+    roleLabelKey: 'portal.flowDemo.roleCitizenApp',
+    titleKey: 'portal.flowDemo.steps.step1.title',
+    descKey: 'portal.flowDemo.steps.step1.desc',
+    actionHintKey: 'portal.flowDemo.steps.step1.actionHint',
+    targetPath: '/login?layout=app&mode=register'
+  },
+  {
+    step: 2,
+    roleType: 'citizen',
+    layout: 'app',
+    roleLabelKey: 'portal.flowDemo.roleCitizenApp',
+    titleKey: 'portal.flowDemo.steps.step2.title',
+    descKey: 'portal.flowDemo.steps.step2.desc',
+    actionHintKey: 'portal.flowDemo.steps.step2.actionHint',
+    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase'
+  },
+  {
+    step: 3,
+    roleType: 'admin',
+    layout: 'web',
+    roleLabelKey: 'portal.flowDemo.roleAdminWeb',
+    titleKey: 'portal.flowDemo.steps.step3.title',
+    descKey: 'portal.flowDemo.steps.step3.desc',
+    actionHintKey: 'portal.flowDemo.steps.step3.actionHint',
+    targetPath: '/warehouse?role=minister_center&layout=web&tab=orderStats'
+  },
+  {
+    step: 4,
+    roleType: 'agent',
+    layout: 'app',
+    roleLabelKey: 'portal.flowDemo.roleAgentApp',
+    titleKey: 'portal.flowDemo.steps.step4.title',
+    descKey: 'portal.flowDemo.steps.step4.desc',
+    actionHintKey: 'portal.flowDemo.steps.step4.actionHint',
+    targetPath: '/warehouse?role=agent&layout=app&tab=orderStats'
+  },
+  {
+    step: 5,
+    roleType: 'citizen',
+    layout: 'app',
+    roleLabelKey: 'portal.flowDemo.roleCitizenApp',
+    titleKey: 'portal.flowDemo.steps.step5.title',
+    descKey: 'portal.flowDemo.steps.step5.desc',
+    actionHintKey: 'portal.flowDemo.steps.step5.actionHint',
+    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase&action=showQr'
+  },
+  {
+    step: 6,
+    roleType: 'agent',
+    layout: 'app',
+    roleLabelKey: 'portal.flowDemo.roleAgentApp',
+    titleKey: 'portal.flowDemo.steps.step6.title',
+    descKey: 'portal.flowDemo.steps.step6.desc',
+    actionHintKey: 'portal.flowDemo.steps.step6.actionHint',
+    targetPath: '/dashboard?role=agent&mode=mobile&layout=app&action=scan'
+  }
+];
+
+/**
+ * 点击某个步骤卡片后，自动在新标签页中打开对应流程模块
+ * @param {object} stepItem 
+ */
+function openFlowStep(stepItem) {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const fullUrl = `${baseUrl}#${stepItem.targetPath}`;
+  const title = t(stepItem.titleKey);
+
+  ElMessage.success(t('portal.openingNotice', { title }));
+  window.open(fullUrl, '_blank');
+}
 
 /**
  * 点击对应卡片模块后，自动设置好目标角色身份，并在新标签页中打开对应终端
@@ -281,5 +493,29 @@ function openTerminal(terminalType) {
 .portal-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 28px -4px rgba(60, 48, 25, 0.08);
+}
+
+.flow-step-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flow-step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -2px rgba(60, 48, 25, 0.08);
+}
+
+:deep(.el-dialog.flow-demo-dialog) {
+  border-radius: 24px;
+  overflow: hidden;
+  max-width: 95vw !important;
+  box-shadow: 0 25px 60px -15px rgba(20, 35, 28, 0.3);
+}
+
+:deep(.el-dialog.flow-demo-dialog .el-dialog__header) {
+  display: none;
+}
+
+:deep(.el-dialog.flow-demo-dialog .el-dialog__body) {
+  padding: 0;
 }
 </style>

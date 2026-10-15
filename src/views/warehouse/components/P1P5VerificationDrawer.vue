@@ -73,6 +73,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref } from 'vue';
 import { getPhaseValidationRules, runPhaseRuleValidation } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
@@ -89,7 +90,7 @@ async function open() {
     const list = await getPhaseValidationRules();
     rules.value = list || [];
   } catch (err) {
-    ElMessage.error('加载验证规则失败');
+    ElMessage.error((isEnNow() ? 'Failed to load verification rules' : '加载验证规则失败'));
   }
 }
 
@@ -98,9 +99,9 @@ async function handleRunTest(rule) {
   try {
     const res = await runPhaseRuleValidation(rule.code, rule.testInput);
     testResults.value[rule.code] = `✓ ${res.message} (验证时间: ${res.testTime})`;
-    ElMessage.success(`【${rule.code} 阶段验证】仿真校验通过！`);
+    ElMessage.success((isEnNow() ? `[${rule.code} Stage Verification] Simulation check passed!` : `【${rule.code} 阶段验证】仿真校验通过！`));
   } catch (err) {
-    ElMessage.error(err.message || '仿真测试失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Simulation test failed' : '仿真测试失败'));
   } finally {
     testingCode.value = '';
   }

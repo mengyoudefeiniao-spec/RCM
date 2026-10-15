@@ -1062,7 +1062,7 @@
         <div v-else-if="selectedMemberToFreeze" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
-            <span>当前选中成员【{{ formatMemberName(selectedMemberToFreeze.name) }}】目前为已冻结状态 (原因: {{ formatFreezeReason(selectedMemberToFreeze.freezeReason) }})</span>
+            <span>{{ $t('admin.memberCurrentlyFrozen', { name: formatMemberName(selectedMemberToFreeze.name), reason: formatFreezeReason(selectedMemberToFreeze.freezeReason) }) }}</span>
           </div>
           <el-button type="success" size="small" :loading="freezeLoading" @click="handleDirectUnfreeze(selectedMemberToFreeze)">
             {{ $t('admin.unfreezeCard') || '立即解除冻结' }}
@@ -1219,6 +1219,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -1364,22 +1365,51 @@ function formatCardStatus(status) {
   return status;
 }
 
+// 冻结原因双语映射（含历史持久化数据兼容）
+const FREEZE_REASON_I18N = {
+  '商业': 'Commercial Activity',
+  '旅行': 'Overseas Travel',
+  '高收入': 'High Income Threshold',
+  '住址不明': 'Unknown Residence Address',
+  '更新': 'Civil Registry Update Required',
+  '重复': 'Duplicate Registration',
+  '临时': 'Temporary Biometric Audit',
+  '地理位置': 'Geographic Discrepancy',
+  '冻结': 'Frozen',
+  '监管合规冻结': 'Regulatory Compliance Freeze',
+  'Commercial Activity': '商业',
+  'Overseas Travel': '旅行',
+  'High Income Threshold': '高收入',
+  'Unknown Residence Address': '住址不明',
+  'Civil Registry Update Required': '更新',
+  'Duplicate Registration': '重复',
+  'Temporary Biometric Audit': '临时',
+  'Geographic Discrepancy': '地理位置',
+  'Regulatory Compliance Freeze': '监管合规冻结',
+  'Commercial': '商业',
+  'Travel': '旅行',
+  'Frozen': '冻结'
+};
+
 function formatFreezeReason(reason) {
   if (!reason) return '—';
+  const str = String(reason);
   if (isEn.value) {
-    const map = {
-      '商业': 'Commercial Activity',
-      '旅行': 'Overseas Travel',
-      '高收入': 'High Income Threshold',
-      '住址不明': 'Unknown Residence Address',
-      '更新': 'Civil Registry Update Required',
-      '重复': 'Duplicate Registration',
-      '临时': 'Temporary Biometric Audit',
-      '地理位置': 'Geographic Discrepancy'
-    };
-    return map[reason] || reason;
+    // 组合式 "原因 (备注)"：分别翻译原因词根，保留备注原文
+    const m = str.match(/^(.*?)\s*\((.*)\)$/);
+    if (m) {
+      const head = FREEZE_REASON_I18N[m[1]] || m[1];
+      return `${head} (${m[2]})`;
+    }
+    return FREEZE_REASON_I18N[str] || str;
   }
-  return reason;
+  // 中文模式：兼容英文持久化值反查
+  const m = str.match(/^(.*?)\s*\((.*)\)$/);
+  if (m) {
+    const head = FREEZE_REASON_I18N[m[1]] || m[1];
+    return `${head} (${m[2]})`;
+  }
+  return FREEZE_REASON_I18N[str] || str;
 }
 
 // ----------------------------------------------------
@@ -1408,7 +1438,7 @@ function openMemberFreezeDialogFromMember(memberRow) {
   const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
   selectedCardForFreeze.value = currentCard;
   selectedMemberToFreeze.value = memberRow;
-  freezeForm.reasonType = memberRow.freezeReason || '商业';
+  freezeForm.reasonType = FREEZE_REASON_I18N[memberRow.freezeReason] || memberRow.freezeReason || '商业';
   freezeForm.customReason = '';
   memberFreezeDialogVisible.value = true;
 }
@@ -1434,29 +1464,32 @@ function handleSelectMemberForFreeze(row) {
   if (!row) return;
   selectedMemberToFreeze.value = row;
   if (row.freezeReason) {
-    freezeForm.reasonType = row.freezeReason;
+    freezeForm.reasonType = FREEZE_REASON_I18N[row.freezeReason] || row.freezeReason;
   }
 }
 
 async function handleConfirmFreezeMember() {
   if (!selectedMemberToFreeze.value) {
-    ElMessage.warning('请选择需要冻结的家庭成员');
+    ElMessage.warning((isEnNow() ? 'Please select a family member to freeze' : '请选择需要冻结的家庭成员'));
     return;
   }
   const member = selectedMemberToFreeze.value;
-  const targetReason = freezeForm.customReason ? `${freezeForm.reasonType} (${freezeForm.customReason})` : freezeForm.reasonType;
+  const en = isEnNow();
+  // 原因值按当前语言写入，保证各语言共享池数据一致可读
+  const reasonBase = en ? (FREEZE_REASON_I18N[freezeForm.reasonType] || freezeForm.reasonType) : freezeForm.reasonType;
+  const targetReason = freezeForm.customReason ? `${reasonBase} (${freezeForm.customReason})` : reasonBase;
 
   freezeLoading.value = true;
   try {
     const payload = {
-      status: '已冻结',
+      status: en ? 'Frozen' : '已冻结',
       freezeReason: targetReason,
       freezeDate: new Date().toISOString().slice(0, 10)
     };
     await updateMemberInfo(member.id || member.nationalId, payload);
-    
+
     // 同步本地对象
-    member.status = '已冻结';
+    member.status = payload.status;
     member.freezeReason = targetReason;
     member.freezeDate = payload.freezeDate;
 
@@ -1464,9 +1497,9 @@ async function handleConfirmFreezeMember() {
     await loadCards();
     await loadFamilies();
 
-    ElMessage.success(`家庭成员【${formatMemberName(member.name)}】已成功执行资格冻结 (原因: ${formatFreezeReason(targetReason)})`);
+    ElMessage.success((isEnNow() ? `Family member [${formatMemberName(member.name)}] has been frozen successfully (Reason: ${formatFreezeReason(targetReason)})` : `家庭成员【${formatMemberName(member.name)}】已成功执行资格冻结 (原因: ${formatFreezeReason(targetReason)})`));
   } catch (e) {
-    ElMessage.error('冻结操作失败，请重试');
+    ElMessage.error((isEnNow() ? 'Freeze operation failed, please retry' : '冻结操作失败，请重试'));
   } finally {
     freezeLoading.value = false;
   }
@@ -1476,22 +1509,22 @@ async function handleDirectUnfreeze(member) {
   freezeLoading.value = true;
   try {
     const payload = {
-      status: '正常',
+      status: isEnNow() ? 'Active' : '正常',
       freezeReason: '',
       freezeDate: ''
     };
     await updateMemberInfo(member.id || member.nationalId, payload);
 
-    member.status = '正常';
+    member.status = payload.status;
     member.freezeReason = '';
     member.freezeDate = '';
 
     await loadCards();
     await loadFamilies();
 
-    ElMessage.success(`家庭成员【${formatMemberName(member.name)}】已解除冻结，恢复正常纳保！`);
+    ElMessage.success((isEnNow() ? `Family member [${formatMemberName(member.name)}] has been unfrozen and restored to normal coverage!` : `家庭成员【${formatMemberName(member.name)}】已解除冻结，恢复正常纳保！`));
   } catch (e) {
-    ElMessage.error('解除冻结失败，请重试');
+    ElMessage.error((isEnNow() ? 'Unfreeze operation failed, please retry' : '解除冻结失败，请重试'));
   } finally {
     freezeLoading.value = false;
   }
@@ -1672,7 +1705,7 @@ async function loadCards() {
     const res = await getCitizenCards();
     cardsList.value = res || [];
   } catch (e) {
-    ElMessage.error('加载配给卡列表失败');
+    ElMessage.error((isEnNow() ? 'Failed to load ration card list' : '加载配给卡列表失败'));
   } finally {
     cardsLoading.value = false;
   }
@@ -1744,7 +1777,7 @@ async function loadFamilies() {
     const res = await getFamilyList();
     familiesList.value = res || [];
   } catch (e) {
-    ElMessage.error('加载家庭档案列表失败');
+    ElMessage.error((isEnNow() ? 'Failed to load family file list' : '加载家庭档案列表失败'));
   } finally {
     familiesLoading.value = false;
   }
@@ -1821,7 +1854,7 @@ async function loadAgents() {
     const res = await getAdminAgentList();
     agentsList.value = res || [];
   } catch (e) {
-    ElMessage.error('加载代理网点列表失败');
+    ElMessage.error((isEnNow() ? 'Failed to load agent station list' : '加载代理网点列表失败'));
   } finally {
     agentsLoading.value = false;
   }
@@ -1898,7 +1931,7 @@ async function loadWarehouses() {
     const res = await getAdminWarehouses();
     warehousesList.value = res || [];
   } catch (e) {
-    ElMessage.error('加载储备仓库列表失败');
+    ElMessage.error((isEnNow() ? 'Failed to load reserve warehouse list' : '加载储备仓库列表失败'));
   } finally {
     warehousesLoading.value = false;
   }
@@ -1964,11 +1997,11 @@ async function confirmExecuteSplit() {
       subdivisionCount: 2,
       splitReason: '单网点突破 1,500 户容量红线，执行行政分流重组'
     });
-    ElMessage.success(`【部长令已生效】：网点【${activeSplitAgent.value.name}】已成功分立重组！`);
+    ElMessage.success((isEnNow() ? `[Ministerial Order Effective]: Station [${activeSplitAgent.value.name}] has been successfully split and reorganized!` : `【部长令已生效】：网点【${activeSplitAgent.value.name}】已成功分立重组！`));
     splitDialogVisible.value = false;
     await loadAgents();
   } catch (e) {
-    ElMessage.error(e.message || '拆分失败');
+    ElMessage.error(e.message || (isEnNow() ? 'Split failed' : '拆分失败'));
   } finally {
     splitSubmitting.value = false;
   }
@@ -1990,10 +2023,10 @@ async function confirmExecuteUnify() {
   unifySubmitting.value = true;
   try {
     await unifyAgency(unifyForm);
-    ElMessage.success('【部长令已生效】：辖区代理权标准化整顿方案已签发执行！');
+    ElMessage.success((isEnNow() ? '[Ministerial Order Effective]: The district agency standardization rectification plan has been signed and executed!' : '【部长令已生效】：辖区代理权标准化整顿方案已签发执行！'));
     unifyDialogVisible.value = false;
   } catch (e) {
-    ElMessage.error(e.message || '统一规程失败');
+    ElMessage.error(e.message || (isEnNow() ? 'Standardization failed' : '统一规程失败'));
   } finally {
     unifySubmitting.value = false;
   }
@@ -2021,17 +2054,17 @@ function openEstablishAgencyModal() {
 
 async function confirmExecuteEstablish() {
   if (!establishForm.name || !establishForm.manager) {
-    ElMessage.warning('请填写新设网点名称与负责人');
+    ElMessage.warning((isEnNow() ? 'Please fill in the new station name and manager' : '请填写新设网点名称与负责人'));
     return;
   }
   establishSubmitting.value = true;
   try {
     await establishAgency(establishForm);
-    ElMessage.success(`【部长令已生效】：已成功批准新设代理网点【${establishForm.name}】！`);
+    ElMessage.success((isEnNow() ? `[Ministerial Order Effective]: The new agent station [${establishForm.name}] has been approved successfully!` : `【部长令已生效】：已成功批准新设代理网点【${establishForm.name}】！`));
     establishDialogVisible.value = false;
     await loadAgents();
   } catch (e) {
-    ElMessage.error(e.message || '设立失败');
+    ElMessage.error(e.message || (isEnNow() ? 'Establishment failed' : '设立失败'));
   } finally {
     establishSubmitting.value = false;
   }
@@ -2039,7 +2072,7 @@ async function confirmExecuteEstablish() {
 
 // 授予代理权
 function openGrantAgencyModal(row) {
-  ElMessageBox.prompt(`正在为网点【${row.name}】授予官方口粮代销许可。请输入核发许可证号：`, '【配给中心部长】核准授予代理权', {
+  ElMessageBox.prompt((isEnNow() ? `Granting the official ration distribution license to station [${row.name}]. Please enter the license number to issue:` : `正在为网点【${row.name}】授予官方口粮代销许可。请输入核发许可证号：`), (isEnNow() ? 'Minister of Ration Center - Agency Grant Approval' : '【配给中心部长】核准授予代理权'), {
     confirmButtonText: '核发许可',
     cancelButtonText: '取消',
     inputValue: `LIC-MIN-BAG-${Date.now().toString().slice(-4)}`
@@ -2050,17 +2083,17 @@ function openGrantAgencyModal(row) {
         licenseNo: value,
         approvedHouseholds: row.servedHouseholds || 800
       });
-      ElMessage.success(`【部长令】：已成功向【${row.name}】正式授予代理权并颁发许可！`);
+      ElMessage.success((isEnNow() ? `[Ministerial Order]: Agency has been officially granted to [${row.name}] with license issued!` : `【部长令】：已成功向【${row.name}】正式授予代理权并颁发许可！`));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('授予失败');
+      ElMessage.error((isEnNow() ? 'Grant failed' : '授予失败'));
     }
   });
 }
 
 // 已故轮替终审批复
 function openDeceasedRotationModal(row) {
-  ElMessageBox.confirm(`确认针对网点【${row?.name || '指定网点'}】签署代理人已故继承轮替终审批复？依据教法三代直系亲属顺位轮替。`, '【行政次长】终审签署已故继承轮替', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm signing the final approval for deceased-agent kinship rotation for station [${row?.name || 'the designated station'}]? Rotation follows the three-generation direct kinship order per religious law.` : `确认针对网点【${row?.name || '指定网点'}】签署代理人已故继承轮替终审批复？依据教法三代直系亲属顺位轮替。`), (isEnNow() ? 'Deputy Minister - Final Signing of Deceased Rotation' : '【行政次长】终审签署已故继承轮替'), {
     type: 'warning',
     confirmButtonText: '签发终审批复',
     cancelButtonText: '取消'
@@ -2069,10 +2102,10 @@ function openDeceasedRotationModal(row) {
       await approveDeceasedRotation(`TICK-ROT-${Date.now().toString().slice(-4)}`, {
         successorRelation: '法定第一顺位直系继承人'
       });
-      ElMessage.success('【行政次长令】：已故代理轮替申请已完成终审裁决并核发批复！');
+      ElMessage.success((isEnNow() ? '[Deputy Ministerial Order]: The deceased agent rotation application has completed final adjudication with approval issued!' : '【行政次长令】：已故代理轮替申请已完成终审裁决并核发批复！'));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('审批失败');
+      ElMessage.error((isEnNow() ? 'Approval failed' : '审批失败'));
     }
   });
 }
@@ -2080,46 +2113,46 @@ function openDeceasedRotationModal(row) {
 // 恢复代理权
 function handleRestoreWithCheck(row) {
   if (!row.planningConfirmed) {
-    ElMessageBox.alert('【法定强制前置拦截】：依据贸易部第402号令，已注销代理权恢复前，必须由规划与跟进司先行出具【联合调查确认书】。当前网点尚未完成规划司确认，行政次长依法禁止核准！', '合规前置未达标', {
+    ElMessageBox.alert((isEnNow() ? '[Statutory Mandatory Pre-Interception]: Per Ministry of Trade Order No. 402, before restoring a deregistered agency, the Planning & Follow-up Directorate must first issue the [Joint Investigation Confirmation Letter]. This station has not completed the directorate confirmation; the Deputy Minister is legally prohibited from approval!' : '【法定强制前置拦截】：依据贸易部第402号令，已注销代理权恢复前，必须由规划与跟进司先行出具【联合调查确认书】。当前网点尚未完成规划司确认，行政次长依法禁止核准！'), (isEnNow() ? 'Compliance Precondition Not Met' : '合规前置未达标'), {
       type: 'error',
       confirmButtonText: '知晓'
     });
     return;
   }
-  ElMessageBox.confirm(`规划与跟进司已完成实地核查，确认恢复【${row.name}】的代理权资格？`, '【行政次长】恢复已注销代理权', {
+  ElMessageBox.confirm((isEnNow() ? `The Planning & Follow-up Directorate has completed on-site verification. Confirm restoring the agency qualification of [${row.name}]?` : `规划与跟进司已完成实地核查，确认恢复【${row.name}】的代理权资格？`), (isEnNow() ? 'Deputy Minister - Restore Deregistered Agency' : '【行政次长】恢复已注销代理权'), {
     type: 'warning',
     confirmButtonText: '签署恢复令',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await restoreRevokedAgency(row.id, { reason: '规划司联合入户调查符合复权指标，特批恢复' });
-      ElMessage.success(`【行政次长令】：网点【${row.name}】代理经营权已正式核准恢复！`);
+      ElMessage.success((isEnNow() ? `[Deputy Ministerial Order]: The agency operation right of station [${row.name}] has been officially approved for restoration!` : `【行政次长令】：网点【${row.name}】代理经营权已正式核准恢复！`));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('恢复失败');
+      ElMessage.error((isEnNow() ? 'Restoration failed' : '恢复失败'));
     }
   });
 }
 
 // 规划司确认
 function handleConfirmPlanning(row) {
-  ElMessageBox.confirm(`确认完成对网点【${row.name}】的联合实地入户调查，并出具法务合规确认书？`, '【规划与跟进司】入户调查确认', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm completing the joint on-site household survey of station [${row.name}] and issuing the legal compliance confirmation letter?` : `确认完成对网点【${row.name}】的联合实地入户调查，并出具法务合规确认书？`), (isEnNow() ? 'Planning & Follow-up Directorate - Household Survey Confirmation' : '【规划与跟进司】入户调查确认'), {
     confirmButtonText: '出具确认书',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await confirmPlanningReview(row.id, { inspectionPassed: true });
-      ElMessage.success('【规划与跟进司】：联合实地入户调查确认书已签发入卷！');
+      ElMessage.success((isEnNow() ? '[Planning & Follow-up Directorate]: The joint on-site household survey confirmation letter has been signed and filed!' : '【规划与跟进司】：联合实地入户调查确认书已签发入卷！'));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('确认失败');
+      ElMessage.error((isEnNow() ? 'Confirmation failed' : '确认失败'));
     }
   });
 }
 
 // 合并代理权
 function handleMergePrompt(row) {
-  ElMessageBox.prompt(`网点【${row.name}】服务户数为 ${row.servedHouseholds} 户（≤750户），请输入待吸收合并的邻近小型网点编号（如 FA-00389）：`, '【规划与跟进司】合并优化小型代理点', {
+  ElMessageBox.prompt((isEnNow() ? `Station [${row.name}] serves ${row.servedHouseholds} households (≤750). Please enter the code of the nearby small station to be merged in (e.g. FA-00389):` : `网点【${row.name}】服务户数为 ${row.servedHouseholds} 户（≤750户），请输入待吸收合并的邻近小型网点编号（如 FA-00389）：`), (isEnNow() ? 'Planning & Follow-up Directorate - Merge & Optimize Small Stations' : '【规划与跟进司】合并优化小型代理点'), {
     confirmButtonText: '合并重组',
     cancelButtonText: '取消',
     inputValue: 'FA-00389'
@@ -2129,17 +2162,17 @@ function handleMergePrompt(row) {
         primaryAgentId: row.id,
         secondaryAgentId: value
       });
-      ElMessage.success('【总干事决议】：小型网点合并重组成功！');
+      ElMessage.success((isEnNow() ? '[Director-General Resolution]: Small station merger and reorganization succeeded!' : '【总干事决议】：小型网点合并重组成功！'));
       await loadAgents();
     } catch (e) {
-      ElMessage.error(e.message || '合并失败');
+      ElMessage.error(e.message || (isEnNow() ? 'Merge failed' : '合并失败'));
     }
   });
 }
 
 // 行政处罚
 function handlePenalizePrompt(row) {
-  ElMessageBox.prompt(`对违规违纪网点【${row.name}】下达行政处罚令。请输入处罚裁决事由：`, '【规划与跟进司】下达行政处罚裁决', {
+  ElMessageBox.prompt((isEnNow() ? `Issuing an administrative punishment order for the violating station [${row.name}]. Please enter the adjudication grounds:` : `对违规违纪网点【${row.name}】下达行政处罚令。请输入处罚裁决事由：`), (isEnNow() ? 'Planning & Follow-up Directorate - Administrative Punishment Adjudication' : '【规划与跟进司】下达行政处罚裁决'), {
     confirmButtonText: '下达处罚令',
     cancelButtonText: '取消',
     inputValue: '责令停业整顿15天，扣减年度信用分10分'
@@ -2149,43 +2182,43 @@ function handlePenalizePrompt(row) {
         penaltyType: '停业整顿',
         reason: value
       });
-      ElMessage.success(`【规划与跟进司】：对网点【${row.name}】的处罚裁决已生效！`);
+      ElMessage.success((isEnNow() ? `[Planning & Follow-up Directorate]: The punishment adjudication for station [${row.name}] has taken effect!` : `【规划与跟进司】：对网点【${row.name}】的处罚裁决已生效！`));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('处罚失败');
+      ElMessage.error((isEnNow() ? 'Punishment failed' : '处罚失败'));
     }
   });
 }
 
 // 代理注销
 function handleCancelAgencyPrompt(row) {
-  ElMessageBox.confirm(`确认清退并正式注销网点【${row.name}】的代销经营权？注销后网点将释放为空置公示状态。`, '【规划与跟进司】代理权清退注销', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm clearing and officially deregistering the distribution operation right of station [${row.name}]? After deregistration the station will be released as a vacant publicly-listed status.` : `确认清退并正式注销网点【${row.name}】的代销经营权？注销后网点将释放为空置公示状态。`), (isEnNow() ? 'Planning & Follow-up Directorate - Agency Deregistration' : '【规划与跟进司】代理权清退注销'), {
     type: 'warning',
     confirmButtonText: '执行注销',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await cancelAgency(row.id, { reason: '主动清退注销' });
-      ElMessage.success(`网点【${row.name}】已成功清退注销！`);
+      ElMessage.success((isEnNow() ? `Station [${row.name}] has been successfully cleared and deregistered!` : `网点【${row.name}】已成功清退注销！`));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('注销失败');
+      ElMessage.error((isEnNow() ? 'Deregistration failed' : '注销失败'));
     }
   });
 }
 
 // 轮替转移审批入口
 function openRotateTransferModal() {
-  ElMessageBox.confirm('是否调阅当前规划司名下所有代理人自愿轮替与区域迁居转移申请工单？', '【规划与跟进司】代理轮替与转移审批', {
+  ElMessageBox.confirm((isEnNow() ? 'Retrieve all voluntary rotation and regional relocation transfer application tickets under the current Planning Directorate?' : '是否调阅当前规划司名下所有代理人自愿轮替与区域迁居转移申请工单？'), (isEnNow() ? 'Planning & Follow-up Directorate - Rotation & Transfer Approval' : '【规划与跟进司】代理轮替与转移审批'), {
     confirmButtonText: '进入批量核批',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await rotateTransferAgency('TICK-TRF-001', { approved: true });
-      ElMessage.success('规划与跟进司已完成自愿轮替转移与法务清算核准！');
+      ElMessage.success((isEnNow() ? 'The Planning & Follow-up Directorate has completed voluntary rotation transfer and legal liquidation approval!' : '规划与跟进司已完成自愿轮替转移与法务清算核准！'));
       await loadAgents();
     } catch (e) {
-      ElMessage.error('审批失败');
+      ElMessage.error((isEnNow() ? 'Approval failed' : '审批失败'));
     }
   });
 }
@@ -2209,11 +2242,11 @@ async function saveQuotaChange() {
   quotaSaving.value = true;
   try {
     await updateCitizenCardQuota(currentEditingCard.value.id, { quotas: quotaForm });
-    ElMessage.success('月度口粮定额调整已生效');
+    ElMessage.success((isEnNow() ? 'Monthly ration quota adjustment has taken effect' : '月度口粮定额调整已生效'));
     quotaDialogVisible.value = false;
     await loadCards();
   } catch (e) {
-    ElMessage.error('调整失败');
+    ElMessage.error((isEnNow() ? 'Adjustment failed' : '调整失败'));
   } finally {
     quotaSaving.value = false;
   }
@@ -2224,25 +2257,25 @@ async function handleToggleCardStatus(row) {
   const newStatus = row.status === '已冻结' ? '正常' : '已冻结';
   try {
     await updateCitizenCardStatus(row.id, { status: newStatus });
-    ElMessage.success(`配给卡状态已切换为【${newStatus}】`);
+    ElMessage.success((isEnNow() ? `Ration card status has been switched to [${newStatus}]` : `配给卡状态已切换为【${newStatus}】`));
     await loadCards();
   } catch (e) {
-    ElMessage.error('更新失败');
+    ElMessage.error((isEnNow() ? 'Update failed' : '更新失败'));
   }
 }
 
 // 补换发卡
 async function handleReissueCard(row) {
-  ElMessageBox.confirm(`确认对户主【${row.headName}】换发新卡？系统将重新写入安全芯片。`, '补换发配给卡', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm reissuing a new card for head of household [${row.headName}]? The system will rewrite the secure chip.` : `确认对户主【${row.headName}】换发新卡？系统将重新写入安全芯片。`), (isEnNow() ? 'Ration Card Reissue' : '补换发配给卡'), {
     confirmButtonText: '确认换发',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await reissueCitizenCard(row.id);
-      ElMessage.success('新电子配给卡芯片已重新绑定下发！');
+      ElMessage.success((isEnNow() ? 'The new electronic ration card chip has been re-bound and issued!' : '新电子配给卡芯片已重新绑定下发！'));
       await loadCards();
     } catch (e) {
-      ElMessage.error('换发失败');
+      ElMessage.error((isEnNow() ? 'Reissue failed' : '换发失败'));
     }
   });
 }
@@ -2289,39 +2322,39 @@ function openEditFamilyDialog(row) {
 
 async function saveFamily() {
   if (!familyForm.headName || !familyForm.headNationalId) {
-    ElMessage.warning('请填写户主姓名与国民卡号');
+    ElMessage.warning((isEnNow() ? 'Please fill in the head name and national card number' : '请填写户主姓名与国民卡号'));
     return;
   }
   familySaving.value = true;
   try {
     if (isEditFamily.value) {
       await updateFamily(familyForm.id, familyForm);
-      ElMessage.success('家庭档案已更新');
+      ElMessage.success((isEnNow() ? 'Family file updated' : '家庭档案已更新'));
     } else {
       await createFamily(familyForm);
-      ElMessage.success('家庭档案建档成功');
+      ElMessage.success((isEnNow() ? 'Family file created successfully' : '家庭档案建档成功'));
     }
     familyDialogVisible.value = false;
     await loadFamilies();
   } catch (e) {
-    ElMessage.error('保存失败');
+    ElMessage.error((isEnNow() ? 'Save failed' : '保存失败'));
   } finally {
     familySaving.value = false;
   }
 }
 
 async function handleDeleteFamily(row) {
-  ElMessageBox.confirm(`确认注销户主【${row.headName}】的家庭户籍档案？`, '注销家庭档案', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm deregistering the household file of head [${row.headName}]?` : `确认注销户主【${row.headName}】的家庭户籍档案？`), (isEnNow() ? 'Deregister Family File' : '注销家庭档案'), {
     type: 'warning',
     confirmButtonText: '确认注销',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await deleteFamily(row.id);
-      ElMessage.success('家庭户籍档案已注销');
+      ElMessage.success((isEnNow() ? 'Household file has been deregistered' : '家庭户籍档案已注销'));
       await loadFamilies();
     } catch (e) {
-      ElMessage.error('注销失败');
+      ElMessage.error((isEnNow() ? 'Deregistration failed' : '注销失败'));
     }
   });
 }
@@ -2352,11 +2385,11 @@ async function saveAgent() {
   agentSaving.value = true;
   try {
     await updateAdminAgent(agentForm.id, agentForm);
-    ElMessage.success('网点资料已更新');
+    ElMessage.success((isEnNow() ? 'Station profile updated' : '网点资料已更新'));
     agentDialogVisible.value = false;
     await loadAgents();
   } catch (e) {
-    ElMessage.error('更新失败');
+    ElMessage.error((isEnNow() ? 'Update failed' : '更新失败'));
   } finally {
     agentSaving.value = false;
   }
@@ -2419,39 +2452,39 @@ function openEditWarehouseDialog(row) {
 
 async function saveWarehouse() {
   if (!warehouseForm.name || !warehouseForm.code) {
-    ElMessage.warning('请填写仓库编号与仓库官方名称');
+    ElMessage.warning((isEnNow() ? 'Please fill in the warehouse code and official name' : '请填写仓库编号与仓库官方名称'));
     return;
   }
   warehouseSaving.value = true;
   try {
     if (isEditWarehouse.value) {
       await updateAdminWarehouse(warehouseForm.id, warehouseForm);
-      ElMessage.success(`仓库【${warehouseForm.name}】信息已更新！`);
+      ElMessage.success((isEnNow() ? `Warehouse [${warehouseForm.name}] information updated!` : `仓库【${warehouseForm.name}】信息已更新！`));
     } else {
       await createAdminWarehouse(warehouseForm);
-      ElMessage.success(`战略储备仓库【${warehouseForm.name}】已成功建档录入！`);
+      ElMessage.success((isEnNow() ? `Strategic reserve warehouse [${warehouseForm.name}] has been successfully registered!` : `战略储备仓库【${warehouseForm.name}】已成功建档录入！`));
     }
     warehouseDialogVisible.value = false;
     await loadWarehouses();
   } catch (e) {
-    ElMessage.error('保存仓库失败');
+    ElMessage.error((isEnNow() ? 'Failed to save warehouse' : '保存仓库失败'));
   } finally {
     warehouseSaving.value = false;
   }
 }
 
 async function handleDeleteWarehouse(row) {
-  ElMessageBox.confirm(`确认清退注销储备仓库【${row.name} (${row.code})】？此操作将移除该物理库容档案。`, '注销储备仓库', {
+  ElMessageBox.confirm((isEnNow() ? `Confirm clearing and deregistering reserve warehouse [${row.name} (${row.code})]? This will remove the physical storage file.` : `确认清退注销储备仓库【${row.name} (${row.code})】？此操作将移除该物理库容档案。`), (isEnNow() ? 'Deregister Reserve Warehouse' : '注销储备仓库'), {
     type: 'warning',
     confirmButtonText: '确认注销',
     cancelButtonText: '取消'
   }).then(async () => {
     try {
       await deleteAdminWarehouse(row.id);
-      ElMessage.success(`仓库【${row.name}】已成功注销删除！`);
+      ElMessage.success((isEnNow() ? `Warehouse [${row.name}] has been successfully deregistered and deleted!` : `仓库【${row.name}】已成功注销删除！`));
       await loadWarehouses();
     } catch (e) {
-      ElMessage.error('删除失败');
+      ElMessage.error((isEnNow() ? 'Delete failed' : '删除失败'));
     }
   });
 }

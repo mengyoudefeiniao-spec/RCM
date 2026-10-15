@@ -740,6 +740,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -934,7 +935,7 @@ const loadOrders = async () => {
     const list = Array.isArray(res) ? res : (res?.data || []);
     orders.value = list;
   } catch (error) {
-    ElMessage.error(t('agentG2B.loadOrdersError') || '加载采购订单失败');
+    ElMessage.error(t('agentG2B.loadOrdersError') || (isEnNow() ? 'Failed to load purchase orders' : '加载采购订单失败'));
   } finally {
     loading.value = false;
   }
@@ -989,13 +990,13 @@ const openCreateModal = () => {
 const handleProceedToPayment = () => {
   // 1. 时间窗口校验
   if (!form.value.deliveryDate || !form.value.deliverySlot) {
-    ElMessage.warning(t('agentG2B.selectDateTimeWarning') || '请完整选择预约履约/到货日期与时段窗口');
+    ElMessage.warning(t('agentG2B.selectDateTimeWarning') || (isEnNow() ? 'Please fully select the reservation fulfillment/arrival date and time-slot window' : '请完整选择预约履约/到货日期与时段窗口'));
     return;
   }
 
   // 2. 数量非空校验
   if (form.value.flourQty <= 0 && form.value.riceQty <= 0 && form.value.oilQty <= 0) {
-    ElMessage.warning(t('agentG2B.atLeastOneItemWarning') || '请至少填报一项采购物资数量');
+    ElMessage.warning(t('agentG2B.atLeastOneItemWarning') || (isEnNow() ? 'Please enter a quantity for at least one procurement item' : '请至少填报一项采购物资数量'));
     return;
   }
 
@@ -1054,7 +1055,7 @@ const handlePaymentSuccess = async () => {
   try {
     const res = await createG2BPurchaseOrder(pendingPayload.value);
     const newOrder = res?.data || res;
-    ElMessage.success(t('agentG2B.paymentSuccessMsg') || '采购货款电子支付成功！采购记录已新增入库。');
+    ElMessage.success(t('agentG2B.paymentSuccessMsg') || (isEnNow() ? 'Procurement payment succeeded electronically! The purchase record has been added to the ledger.' : '采购货款电子支付成功！采购记录已新增入库。'));
 
     // 本地优先追加，确保列表即时呈现
     if (newOrder && newOrder.orderNo) {
@@ -1074,7 +1075,7 @@ const handlePaymentSuccess = async () => {
       showOrderQRCode(newOrder);
     }
   } catch (error) {
-    ElMessage.error(error.message || (t('agentG2B.generateOrderError') || '生成采购订单异常'));
+    ElMessage.error(error.message || (t('agentG2B.generateOrderError') || (isEnNow() ? 'Purchase order generation error' : '生成采购订单异常')));
   } finally {
     loading.value = false;
   }
@@ -1082,7 +1083,7 @@ const handlePaymentSuccess = async () => {
 
 const handlePaymentCancel = () => {
   paymentDialogVisible.value = false;
-  ElMessage.info(t('agentG2B.cancelPaymentMsg') || '已取消电子支付，采购单未提交。');
+  ElMessage.info(t('agentG2B.cancelPaymentMsg') || (isEnNow() ? 'Electronic payment cancelled; the purchase order was not submitted.' : '已取消电子支付，采购单未提交。'));
 };
 
 // 3. 点击操作栏展示二维码
@@ -1094,12 +1095,12 @@ const showOrderQRCode = (row) => {
 const copyPickupCode = () => {
   if (activeQRRow.value) {
     navigator.clipboard?.writeText(activeQRRow.value.pickupVoucherCode);
-    ElMessage.success(t('agentG2B.codeCopiedMsg', { code: activeQRRow.value.pickupVoucherCode }) || `提货码已复制！`);
+    ElMessage.success(t('agentG2B.codeCopiedMsg', { code: activeQRRow.value.pickupVoucherCode }) || (isEnNow() ? `Pickup code copied!` : `提货码已复制！`));
   }
 };
 
 const handlePrintVoucher = () => {
-  ElMessage.success(t('agentG2B.printTaskSentMsg') || '出库提货凭证打印任务已发送至本地打印机');
+  ElMessage.success(t('agentG2B.printTaskSentMsg') || (isEnNow() ? 'The outbound pickup voucher print job has been sent to the local printer' : '出库提货凭证打印任务已发送至本地打印机'));
 };
 
 const handlePayOrder = (row) => {

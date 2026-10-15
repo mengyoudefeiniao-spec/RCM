@@ -1,9 +1,10 @@
 <template>
   <el-dialog
     v-model="visible"
-    title="生物人脸识别与统一国民卡双因子核验"
-    width="720px"
+    :title="$t('register.bio.title')"
+    :width="dialogWidth"
     align-center
+    :class="{ 'rcm-compact-dialog': isCompact }"
     :before-close="handleClose"
   >
     <div class="space-y-5">
@@ -11,26 +12,26 @@
       <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl flex items-center justify-between text-xs text-blue-800">
         <div class="flex items-center gap-2">
           <el-icon :size="16" class="text-blue-600"><Lock /></el-icon>
-          <span>核验受访人员：<strong class="text-slate-900">{{ userName }}</strong> (配给卡号: {{ userCardNo || '待绑定' }})</span>
+          <span>{{ $t('register.bio.verifySubject') }}<strong class="text-slate-900">{{ displayName }}</strong> ({{ $t('register.labelPaperCardNo') }} {{ userCardNo || $t('register.bio.pendingBind') }})</span>
         </div>
         <el-tag size="small" type="primary" effect="plain" class="font-mono">NID-CHIP · ICAO-9303</el-tag>
       </div>
 
       <!-- 三要素采集卡片网格 -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'">
         <!-- 1. 现场活体人脸 -->
         <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">① 现场活体人脸</span>
+            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.faceTitle') }}</span>
             <el-icon v-if="faceCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">调用高清摄像终端，采集活体微表情与瞳孔反光。</p>
+          <p class="text-[11px] text-slate-400">{{ $t('register.bio.faceDesc') }}</p>
 
           <!-- 模拟取景器画面 -->
           <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center relative">
             <div v-if="faceCaptured" class="w-full h-full relative">
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80"
+                :src="faceImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'"
                 alt="Face Preview"
                 class="w-full h-full object-cover"
               />
@@ -40,22 +41,22 @@
             </div>
             <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
               <el-icon :size="24"><Camera /></el-icon>
-              <div>待采像</div>
+              <div>{{ $t('register.bio.awaitingCapture') }}</div>
             </div>
           </div>
 
           <el-button size="small" type="primary" plain class="w-full" @click="faceLivenessDialogVisible = true">
-            {{ faceCaptured ? '重新进行活体人脸动作核验' : '启动活体人脸动作核验' }}
+            {{ faceCaptured ? $t('register.bio.livenessBtnRedo') : $t('register.bio.livenessBtn') }}
           </el-button>
         </div>
 
         <!-- 2. 统一国民卡正面 -->
         <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">② 国民卡正面</span>
+            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.frontTitle') }}</span>
             <el-icon v-if="cardFrontCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">光学核验卡面防伪暗纹、姓名存根与证件头像。</p>
+          <p class="text-[11px] text-slate-400">{{ $t('register.bio.frontDesc') }}</p>
 
           <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center p-2 relative">
             <div v-if="cardFrontCaptured" class="w-full h-full flex flex-col justify-between text-[9px] font-mono text-slate-300">
@@ -64,29 +65,29 @@
                 <span>NID-FRONT</span>
               </div>
               <div>
-                <div class="text-white font-bold">{{ userName }}</div>
+                <div class="text-white font-bold">{{ displayName }}</div>
                 <div class="text-[8px] text-slate-400">NID: 198004198271</div>
               </div>
-              <div class="text-[8px] text-slate-500">内政部国籍与民事总局</div>
+              <div class="text-[8px] text-slate-500">{{ $t('register.bio.authorityLine') }}</div>
             </div>
             <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
               <el-icon :size="24"><Postcard /></el-icon>
-              <div>待扫描正面</div>
+              <div>{{ $t('register.bio.awaitingFront') }}</div>
             </div>
           </div>
 
           <el-button size="small" type="primary" plain class="w-full" @click="cardFrontCaptured = !cardFrontCaptured">
-            {{ cardFrontCaptured ? '重新扫描正面' : '扫描国民卡正面' }}
+            {{ cardFrontCaptured ? $t('register.bio.scanFrontBtnRedo') : $t('register.bio.scanFrontBtn') }}
           </el-button>
         </div>
 
         <!-- 3. 统一国民卡背面芯片 -->
         <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">③ 实体卡背面芯片</span>
+            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.chipTitle') }}</span>
             <el-icon v-if="cardBackCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">读取 ICAO-9303 机读码与非接触式加密芯片序列。</p>
+          <p class="text-[11px] text-slate-400">{{ $t('register.bio.chipDesc') }}</p>
 
           <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center p-2 relative">
             <div v-if="cardBackCaptured" class="w-full h-full flex flex-col justify-between text-[8px] font-mono text-slate-400">
@@ -102,12 +103,12 @@
             </div>
             <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
               <el-icon :size="24"><CreditCard /></el-icon>
-              <div>待感应芯片</div>
+              <div>{{ $t('register.bio.awaitingChip') }}</div>
             </div>
           </div>
 
           <el-button size="small" type="primary" plain class="w-full" @click="cardBackCaptured = !cardBackCaptured">
-            {{ cardBackCaptured ? '重新感应芯片' : '感应卡片背面芯片' }}
+            {{ cardBackCaptured ? $t('register.bio.chipBtnRedo') : $t('register.bio.chipBtn') }}
           </el-button>
         </div>
       </div>
@@ -116,24 +117,24 @@
       <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs">
         <div v-if="verifying" class="flex items-center gap-2 text-indigo-400">
           <el-icon class="is-loading"><Loading /></el-icon>
-          <span>正在将活体特征向量与内政部公民身份数据库进行安全专线对碰比对...</span>
+          <span>{{ $t('register.bio.verifyingText') }}</span>
         </div>
         <div v-else-if="verificationPassed" class="space-y-2">
           <div class="flex items-center gap-2 text-emerald-400 font-bold">
             <el-icon><CircleCheckFilled /></el-icon>
-            <span>双因子生物特征比对全要素通过！已建立终端授信存根。</span>
+            <span>{{ $t('register.bio.passedTitle') }}</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-400 border-t border-slate-800 pt-2 font-mono">
-            <div>特征比对度: <strong class="text-white">99.4%</strong></div>
-            <div>芯片防伪: <strong class="text-white">通过 (Valid)</strong></div>
-            <div>内政部底账: <strong class="text-white">一致吻合</strong></div>
-            <div>终端授信: <strong class="text-emerald-400">已绑定存根</strong></div>
+            <div>{{ $t('register.bio.statSimilarity') }} <strong class="text-white">99.4%</strong></div>
+            <div>{{ $t('register.bio.statChip') }} <strong class="text-white">{{ $t('register.bio.chipPass') }}</strong></div>
+            <div>{{ $t('register.bio.statLedger') }} <strong class="text-white">{{ $t('register.bio.ledgerMatch') }}</strong></div>
+            <div>{{ $t('register.bio.statTrust') }} <strong class="text-emerald-400">{{ $t('register.bio.trustBound') }}</strong></div>
           </div>
         </div>
         <div v-else class="flex items-center justify-between text-slate-400">
-          <span>请完成人脸拍摄与国民卡正反面采集，系统将自动进行身份核验。</span>
+          <span>{{ $t('register.bio.idleHint') }}</span>
           <el-button type="success" text size="small" @click="handleQuickCollectAll">
-            一键全要素快速模拟填充
+            {{ $t('register.bio.quickFillBtn') }}
           </el-button>
         </div>
       </div>
@@ -141,14 +142,14 @@
 
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
         <el-button
           type="primary"
           :disabled="!allCaptured"
           :loading="verifying"
           @click="handleExecuteVerify"
         >
-          确认核验并放行进入
+          {{ $t('register.bio.confirmBtn') }}
         </el-button>
       </div>
     </template>
@@ -164,6 +165,8 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { verifyBiometricFace } from '../../api/auth.js';
 import { ElMessage } from 'element-plus';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
@@ -178,25 +181,34 @@ import {
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  userName: { type: String, default: '艾哈迈德·哈桑·萨利赫' },
+  userName: { type: String, default: '' },
   userCardNo: { type: String, default: 'RC-10029381' }
 });
 
 const emit = defineEmits(['update:modelValue', 'success']);
+
+const { t } = useI18n();
+const { isCompact, dialogWidth } = useCompactDialog(720);
+
+// 展示名称：外部未传入时回退到 i18n 默认演示姓名
+const displayName = computed(() => props.userName || t('register.defaultUserName'));
 
 const visible = ref(props.modelValue);
 watch(() => props.modelValue, (val) => { visible.value = val; });
 
 const faceLivenessDialogVisible = ref(false);
 const faceCaptured = ref(false);
+// 活体核验通过后由摄像头视频流抓取的人脸截图 (Base64)
+const faceImage = ref('');
 const cardFrontCaptured = ref(false);
 const cardBackCaptured = ref(false);
 const verifying = ref(false);
 const verificationPassed = ref(false);
 
-function handleFaceLivenessSuccess() {
+function handleFaceLivenessSuccess(payload) {
   faceCaptured.value = true;
-  ElMessage.success('活体人脸特征点比对完成，已采集活体样本');
+  faceImage.value = payload?.image || '';
+  ElMessage.success(t('register.bio.msgLivenessDone'));
 }
 
 const allCaptured = computed(() => faceCaptured.value && cardFrontCaptured.value && cardBackCaptured.value);
@@ -205,7 +217,7 @@ function handleQuickCollectAll() {
   faceCaptured.value = true;
   cardFrontCaptured.value = true;
   cardBackCaptured.value = true;
-  ElMessage.success('已一键模拟完成人脸自拍与国民卡正反面要素采集');
+  ElMessage.success(t('register.bio.msgQuickFill'));
 }
 
 async function handleExecuteVerify() {
@@ -216,14 +228,14 @@ async function handleExecuteVerify() {
       cardNo: props.userCardNo
     });
     verificationPassed.value = true;
-    ElMessage.success('生物识别与国民卡对碰核验通过！');
+    ElMessage.success(res.message || t('register.bio.msgVerifySuccess'));
     setTimeout(() => {
       visible.value = false;
       emit('update:modelValue', false);
       emit('success', res);
     }, 800);
   } catch (e) {
-    ElMessage.error('生物核验失败，请重试');
+    ElMessage.error(t('register.bio.msgVerifyFail'));
   } finally {
     verifying.value = false;
   }

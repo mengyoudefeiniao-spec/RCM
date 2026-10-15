@@ -2,12 +2,12 @@
   <el-dialog
     :model-value="modelValue"
     :title="null"
-    width="520px"
+    :width="dialogWidth"
     align-center
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="status !== 'verifying'"
-    class="face-liveness-dialog"
+    :class="['face-liveness-dialog', { 'rcm-compact-dialog': isCompact }]"
     @update:model-value="(val) => emit('update:modelValue', val)"
     @closed="handleDialogClosed"
   >
@@ -21,13 +21,13 @@
           </div>
           <div>
             <div class="text-xs sm:text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-              <span>{{ title || '在线人脸生物特征与活体防伪核验' }}</span>
+              <span>{{ title || $t('register.liveness.title') }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                 ICAO-9303
               </el-tag>
             </div>
             <div class="text-[10px] text-[#8C958F]">
-              内政部统一公民身份对碰系统 · 自动活体动作识别
+              {{ $t('register.liveness.subtitle') }}
             </div>
           </div>
         </div>
@@ -38,7 +38,7 @@
             class="text-[11px] text-[#5E6862] hover:text-[#1E3F35] transition-colors cursor-pointer px-2 py-0.5 rounded border border-[#ECE7DE] bg-[#FAF8F4]"
             @click="handleQuickBypassPass"
           >
-            快速通过
+            {{ $t('register.liveness.quickPass') }}
           </button>
         </div>
       </div>
@@ -116,19 +116,19 @@
             <!-- 动作文字 (加大加粗，高亮易读) -->
             <div class="text-xs sm:text-sm font-extrabold tracking-wide truncate">
               <template v-if="status === 'success'">
-                核验通过！正在生成国家防伪凭证...
+                {{ $t('register.liveness.actionSuccess') }}
               </template>
               <template v-else-if="currentStep === 'shake'">
-                【动作 2/3】请缓慢左右摇头
+                {{ $t('register.liveness.actionShake') }}
               </template>
               <template v-else-if="currentStep === 'mouth'">
-                【动作 3/3】请做张嘴动作
+                {{ $t('register.liveness.actionMouth') }}
               </template>
               <template v-else-if="currentStep === 'comparing'">
-                【比对中】底账向量对碰核验...
+                {{ $t('register.liveness.actionComparing') }}
               </template>
               <template v-else>
-                【动作 1/3】请正视屏幕，面部放入框内
+                {{ $t('register.liveness.actionLook') }}
               </template>
             </div>
           </div>
@@ -136,16 +136,16 @@
           <!-- 副标题提示微文案 -->
           <div class="mt-1 px-3 py-0.5 rounded-full bg-slate-950/70 backdrop-blur-sm text-[10px] font-medium text-slate-300 border border-slate-800/80">
             <template v-if="currentStep === 'shake'">
-              请向左转头，再向右转头，保持在框内
+              {{ $t('register.liveness.hintShake') }}
             </template>
             <template v-else-if="currentStep === 'mouth'">
-              张开嘴巴，检验面部下颌微表情
+              {{ $t('register.liveness.hintMouth') }}
             </template>
             <template v-else-if="status === 'success'">
-              活体防伪置信度 99.8% · ICAO-9303 合规
+              {{ $t('register.liveness.hintSuccess') }}
             </template>
             <template v-else>
-              系统已自动开启检测，无需点击任何按键
+              {{ $t('register.liveness.hintAuto') }}
             </template>
           </div>
         </div>
@@ -188,10 +188,10 @@
           >
             <div class="flex items-center gap-1 bg-amber-500/90 text-slate-950 font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-left">
               <span>⇦</span>
-              <span>向左</span>
+              <span>{{ $t('register.liveness.turnLeft') }}</span>
             </div>
             <div class="flex items-center gap-1 bg-amber-500/90 text-slate-950 font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-right">
-              <span>向右</span>
+              <span>{{ $t('register.liveness.turnRight') }}</span>
               <span>⇨</span>
             </div>
           </div>
@@ -203,7 +203,7 @@
           >
             <div class="px-3 py-1 bg-purple-600/90 text-white text-xs font-bold rounded-full shadow-lg border border-purple-300 animate-pulse flex items-center gap-1.5">
               <span>👄</span>
-              <span>张合嘴部动作</span>
+              <span>{{ $t('register.liveness.mouthAction') }}</span>
             </div>
           </div>
 
@@ -215,8 +215,8 @@
             <div class="w-18 h-18 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xl animate-scale-up">
               <el-icon :size="42"><Check /></el-icon>
             </div>
-            <span class="text-base font-extrabold text-emerald-400 mt-3">活体动作校验全部通过</span>
-            <span class="text-xs font-mono text-slate-300 mt-0.5">置信度: 99.8% · 底账特征吻合</span>
+            <span class="text-base font-extrabold text-emerald-400 mt-3">{{ $t('register.liveness.allPassed') }}</span>
+            <span class="text-xs font-mono text-slate-300 mt-0.5">{{ $t('register.liveness.confidenceLine') }}</span>
           </div>
         </div>
 
@@ -238,7 +238,7 @@
                     : 'bg-slate-800/60 border-slate-700 text-slate-400'
                 "
               >
-                <span>1. 正视</span>
+                <span>{{ $t('register.liveness.stepLook') }}</span>
                 <span v-if="stepDone.look" class="text-emerald-400 font-bold">✓</span>
                 <span v-else-if="currentStep === 'look_straight'" class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
               </div>
@@ -254,7 +254,7 @@
                     : 'bg-slate-800/60 border-slate-700 text-slate-400'
                 "
               >
-                <span>2. 左右摇头</span>
+                <span>{{ $t('register.liveness.stepShake') }}</span>
                 <span v-if="stepDone.shake" class="text-emerald-400 font-bold">✓</span>
                 <span v-else-if="currentStep === 'shake'" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
               </div>
@@ -270,7 +270,7 @@
                     : 'bg-slate-800/60 border-slate-700 text-slate-400'
                 "
               >
-                <span>3. 张张嘴</span>
+                <span>{{ $t('register.liveness.stepMouth') }}</span>
                 <span v-if="stepDone.mouth" class="text-emerald-400 font-bold">✓</span>
                 <span v-else-if="currentStep === 'mouth'" class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
               </div>
@@ -289,18 +289,18 @@
         <!-- 左上角摄像头在线状态指示 -->
         <div class="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-slate-700 text-[10px] text-slate-300">
           <span class="w-2 h-2 rounded-full" :class="cameraActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
-          <span>{{ cameraActive ? 'HD 摄像头在线' : '数字人仿真影像' }}</span>
+          <span>{{ cameraActive ? $t('register.liveness.camOnline') : $t('register.liveness.camSimulated') }}</span>
         </div>
       </div>
 
       <!-- 底部辅助说明与返回取消 -->
       <div class="flex items-center justify-between text-xs text-slate-400 pt-1 px-1">
         <div>
-          核验当事人：<strong class="text-slate-800">{{ targetName || '持卡公民' }}</strong>
+          {{ $t('register.liveness.verifyTarget') }}<strong class="text-slate-800">{{ targetName || $t('register.liveness.defaultTarget') }}</strong>
         </div>
         <div class="flex items-center gap-2">
           <el-button size="small" @click="handleCancel">
-            取消
+            {{ $t('common.cancel') }}
           </el-button>
           <el-button
             size="small"
@@ -308,7 +308,7 @@
             plain
             @click="restartDetection"
           >
-            重新开始
+            {{ $t('register.liveness.restart') }}
           </el-button>
         </div>
       </div>
@@ -318,6 +318,8 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { ElMessage } from 'element-plus';
 import { User, Check } from '@element-plus/icons-vue';
 
@@ -328,11 +330,11 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '在线人脸生物特征与活体防伪核验'
+    default: ''
   },
   targetName: {
     type: String,
-    default: '艾哈迈德·哈桑·萨利赫'
+    default: ''
   },
   targetNationalId: {
     type: String,
@@ -342,9 +344,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'success', 'cancel']);
 
+const { t } = useI18n();
+const { isCompact, dialogWidth } = useCompactDialog(520);
+
 const videoRef = ref(null);
 const canvasRef = ref(null);
 const cameraActive = ref(false);
+const capturedImage = ref('');
 let mediaStream = null;
 
 // 状态机: 'detecting' | 'verifying' | 'success' | 'failed'
@@ -448,7 +454,7 @@ function scheduleAutoStepTransition() {
         stepTimer = setTimeout(() => {
           currentStep.value = 'finished';
           status.value = 'success';
-          ElMessage.success('人脸与活体表情动作校验全部通过！');
+          ElMessage.success(t('register.liveness.msgAllPassed'));
 
           // 比对通过后 900ms 自动关闭并回调成功，实现全流程 100% 自动办结
           stepTimer = setTimeout(() => {
@@ -584,13 +590,34 @@ function handleQuickBypassPass() {
   stepDone.mouth = true;
   currentStep.value = 'finished';
   status.value = 'success';
-  ElMessage.success('已快速完成人脸活体动作比对');
+  ElMessage.success(t('register.liveness.msgQuickPass'));
   setTimeout(() => {
     handleCompleteAndConfirm();
   }, 400);
 }
 
+// 从摄像头视频流抓取当前帧作为人脸截图 (与预览保持一致的镜像效果)
+function captureFrameFromVideo() {
+  if (!videoRef.value || !cameraActive.value) return '';
+  try {
+    const video = videoRef.value;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 640;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+  } catch (e) {
+    return '';
+  }
+}
+
 function handleCompleteAndConfirm() {
+  // 关闭摄像头前抓取当前帧作为人脸截图
+  capturedImage.value = captureFrameFromVideo();
   stopPipeline();
   stopCamera();
   emit('update:modelValue', false);
@@ -599,7 +626,8 @@ function handleCompleteAndConfirm() {
     nationalId: props.targetNationalId,
     verifiedAt: new Date().toISOString(),
     confidence: '99.8%',
-    livenessScore: '99.9%'
+    livenessScore: '99.9%',
+    image: capturedImage.value
   });
 }
 

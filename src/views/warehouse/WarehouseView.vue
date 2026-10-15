@@ -57,7 +57,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { isEnNow } from '../../utils/langHint.js';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '../../stores/auth.js';
@@ -84,7 +85,21 @@ const isAdmin = computed(() => authStore.isAdmin);
 const isAgent = computed(() => authStore.currentRole === 'agent');
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
 
-const activeTab = ref(route.query.tab || (isCitizen.value ? 'purchase' : 'rationPlan'));
+function resolveInitialTab(tabQuery) {
+  if (tabQuery) {
+    if (['delivery', 'dispatch', 'orders'].includes(tabQuery)) return 'orderStats';
+    return tabQuery;
+  }
+  return isCitizen.value ? 'purchase' : 'rationPlan';
+}
+
+const activeTab = ref(resolveInitialTab(route.query.tab));
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    activeTab.value = resolveInitialTab(newTab);
+  }
+});
 const verificationDrawerRef = ref(null);
 const rationPlanTabRef = ref(null);
 
@@ -94,7 +109,7 @@ function openVerificationDrawer() {
 
 function refreshAll() {
   rationPlanTabRef.value?.loadData?.();
-  ElMessage.success('配给计划与供应链履约数据已同步更新！');
+  ElMessage.success((isEnNow() ? 'Ration plan and supply chain fulfillment data synchronized!' : '配给计划与供应链履约数据已同步更新！'));
 }
 </script>
 

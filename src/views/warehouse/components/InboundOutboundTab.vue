@@ -715,6 +715,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -980,7 +981,7 @@ async function loadData() {
     stocktakeRecords.value = stkList || [];
     lossRecords.value = lossList || [];
   } catch (err) {
-    ElMessage.error(err.message || '加载仓储作业数据失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Failed to load warehouse operation data' : '加载仓储作业数据失败'));
   } finally {
     loading.value = false;
   }
@@ -1013,11 +1014,11 @@ async function submitInbound() {
   submitting.value = true;
   try {
     await submitInboundOrder(inboundForm.value);
-    ElMessage.success('采购入库质检合格！已生成一物一码标签并完成库位上架绑定');
+    ElMessage.success((isEnNow() ? 'Inbound QC passed! One-item-one-code label generated and storage slot binding completed' : '采购入库质检合格！已生成一物一码标签并完成库位上架绑定'));
     inboundDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '入库失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Inbound failed' : '入库失败'));
   } finally {
     submitting.value = false;
   }
@@ -1027,11 +1028,11 @@ async function submitOutboundWave() {
   submitting.value = true;
   try {
     await createOutboundWave(outboundForm.value);
-    ElMessage.success('波次拣选出库成功！已生成全局唯一校验交付流水单，在途库存已锁定');
+    ElMessage.success((isEnNow() ? 'Wave picking outbound succeeded! A globally unique delivery flow order was generated and in-transit stock locked' : '波次拣选出库成功！已生成全局唯一校验交付流水单，在途库存已锁定'));
     outboundDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '出库失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Outbound failed' : '出库失败'));
   } finally {
     submitting.value = false;
   }
@@ -1041,11 +1042,11 @@ async function submitTransfer() {
   submitting.value = true;
   try {
     await createTransferOrder(transferForm.value);
-    ElMessage.success('跨库调拨已发起，调出出库完成');
+    ElMessage.success((isEnNow() ? 'Cross-warehouse transfer initiated; outbound leg completed' : '跨库调拨已发起，调出出库完成'));
     transferDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '调拨失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Transfer failed' : '调拨失败'));
   } finally {
     submitting.value = false;
   }
@@ -1054,10 +1055,10 @@ async function submitTransfer() {
 async function handleAdvanceTransfer(row) {
   try {
     await advanceTransferStage(row.id);
-    ElMessage.success('调拨流转成功！');
+    ElMessage.success((isEnNow() ? 'Transfer flow succeeded!' : '调拨流转成功！'));
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '推进失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Advance failed' : '推进失败'));
   }
 }
 
@@ -1065,11 +1066,11 @@ async function submitStocktakeForm() {
   submitting.value = true;
   try {
     await submitStocktake(stocktakeForm.value);
-    ElMessage.success('盘点记录已录入');
+    ElMessage.success((isEnNow() ? 'Stocktake record entered' : '盘点记录已录入'));
     stocktakeDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '盘点录入失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Stocktake entry failed' : '盘点录入失败'));
   } finally {
     submitting.value = false;
   }
@@ -1079,11 +1080,11 @@ async function submitLoss() {
   submitting.value = true;
   try {
     await submitLossRecord(lossForm.value);
-    ElMessage.success('报损申请已提交并留存存证影像！');
+    ElMessage.success((isEnNow() ? 'Loss report submitted with archived evidence imagery!' : '报损申请已提交并留存存证影像！'));
     lossDialogVisible.value = false;
     await loadData();
   } catch (err) {
-    ElMessage.error(err.message || '报损提交失败');
+    ElMessage.error(err.message || (isEnNow() ? 'Loss report submission failed' : '报损提交失败'));
   } finally {
     submitting.value = false;
   }

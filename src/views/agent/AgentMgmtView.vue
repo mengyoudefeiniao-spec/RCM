@@ -862,6 +862,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
@@ -1408,7 +1409,7 @@ function handleViewTicketDetail(ticket) {
 async function handlePayExistingTicket(ticket) {
   try {
     await payAgentApplicationFee(ticket.ticketNo, { channel: 'QI_CARD' });
-    ElMessage.success(`工单 ${ticket.ticketNo} 电子规费缴纳成功！`);
+    ElMessage.success((isEnNow() ? `Electronic fee payment for ticket ${ticket.ticketNo} succeeded!` : `工单 ${ticket.ticketNo} 电子规费缴纳成功！`));
     loadAllData();
   } catch (err) {
     // handled

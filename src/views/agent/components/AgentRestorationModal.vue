@@ -339,6 +339,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../../utils/langHint.js';
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -431,7 +432,7 @@ const canProceedNextStep = computed(() => {
 
 function handleFileChange(key, file) {
   docs[key] = { name: file.name };
-  ElMessage.success(`文件【${file.name}】已选定`);
+  ElMessage.success((isEnNow() ? `File [${file.name}] selected` : `文件【${file.name}】已选定`));
 }
 
 async function handleSubmitAndPay() {
@@ -446,7 +447,7 @@ async function handleSubmitAndPay() {
     await payAgentApplicationFee(res.ticketNo, { channel: payChannel.value });
 
     ElMessage.success({
-      message: '已注销代理权恢复成功！50,000 IQD 规费缴纳完成，配给物资供给通道已重新激活！',
+      message: (isEnNow() ? 'Deregistered agency restored successfully! The 50,000 IQD fee has been paid and the ration supply channel re-activated!' : '已注销代理权恢复成功！50,000 IQD 规费缴纳完成，配给物资供给通道已重新激活！'),
       duration: 4000
     });
 

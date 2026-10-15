@@ -874,6 +874,7 @@
 </template>
 
 <script setup>
+import { isEnNow } from '../../utils/langHint.js';
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -1076,7 +1077,7 @@ const childDocumentUploaded = ref(false);
 
 function handleNewMemberFaceSuccess(data) {
   memberBiometricVerified.value = true;
-  ElMessage.success(`家庭成员【${newMemberForm.name || '待登记成员'}】活体人脸识别与生物特征比对通过！`);
+  ElMessage.success((isEnNow() ? `Liveness face recognition and biometric matching passed for family member [${newMemberForm.name || 'pending registrant'}]!` : `家庭成员【${newMemberForm.name || (isEnNow() ? 'pending registrant' : '待登记成员')}】活体人脸识别与生物特征比对通过！`));
 }
 
 const newMemberForm = reactive({
