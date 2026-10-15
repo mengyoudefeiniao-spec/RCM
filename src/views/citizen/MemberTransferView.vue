@@ -1,16 +1,16 @@
 <template>
   <div class="member-transfer-view space-y-4 sm:space-y-6">
-    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 sm:space-y-6">
+    <div class="bg-white rounded-lg p-4 sm:p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4 sm:space-y-6">
       <!-- 顶部标题与返回导航 -->
-      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-[#E9F1EB] pb-4">
         <ModuleDescTip
           :title="$t('memberTransfer.title')"
           :content="$t('memberTransfer.subtitle')"
           badge-type="primary"
-          title-class="text-base font-bold text-slate-900"
+          title-class="text-base font-bold text-[#1B3123]"
         >
           <template #icon>
-            <el-icon class="text-indigo-600 text-lg"><User /></el-icon>
+            <el-icon class="text-[#326445] text-lg"><User /></el-icon>
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
@@ -20,38 +20,38 @@
       </div>
 
       <!-- 当前接收卡家庭概览 (布局弹性优化，适配多语言长文本) -->
-      <div v-if="citizenStore.currentFamily" class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
         <div class="min-w-0">
-          <span class="text-slate-400 block text-[11px] truncate">{{ $t('common.rationCardNo') }} ({{ $t('memberTransfer.receivingCard') }})：</span>
-          <span class="font-mono font-bold text-indigo-600 truncate block">{{ citizenStore.currentFamily.rationCardNo }}</span>
+          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('common.rationCardNo') }} ({{ $t('memberTransfer.receivingCard') }})：</span>
+          <span class="font-mono font-bold text-[#326445] truncate block">{{ citizenStore.currentFamily.rationCardNo }}</span>
         </div>
         <div class="min-w-0">
-          <span class="text-slate-400 block text-[11px] truncate">{{ $t('citizen.headName') }}：</span>
-          <span class="font-bold text-slate-800 truncate block">{{ currentHeadName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
+          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.headName') }}：</span>
+          <span class="font-bold text-[#1F3326] truncate block">{{ currentHeadName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
         </div>
         <div class="min-w-0">
-          <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.newCardFamilyCode') }}：</span>
-          <span class="font-mono font-medium text-slate-800 truncate block">{{ currentFamilyCode }}</span>
+          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.newCardFamilyCode') }}：</span>
+          <span class="font-mono font-medium text-[#1F3326] truncate block">{{ currentFamilyCode }}</span>
         </div>
         <div class="min-w-0">
-          <span class="text-slate-400 block text-[11px] truncate">{{ $t('citizen.province') }} / {{ $t('citizen.district') }}：</span>
-          <span class="font-medium text-slate-800 truncate block">{{ citizenStore.currentFamily.province }} · {{ citizenStore.currentFamily.district }}</span>
+          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.province') }} / {{ $t('citizen.district') }}：</span>
+          <span class="font-medium text-[#1F3326] truncate block">{{ citizenStore.currentFamily.province }} · {{ citizenStore.currentFamily.district }}</span>
         </div>
       </div>
 
       <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
-      <div class="process-card-wrapper relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+      <div class="process-card-wrapper relative bg-white rounded-lg border border-[#D9E5DB] overflow-hidden shadow-xs">
         <div class="flex flex-col lg:flex-row items-stretch">
           
           <!-- 左侧时间线节点 -->
-          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-slate-50/80 lg:border-r border-slate-200 lg:p-6 p-0">
+          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
-            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
-              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <el-icon class="text-indigo-600"><Guide /></el-icon>
+            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]">
+              <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+                <el-icon class="text-[#326445]"><Guide /></el-icon>
                 <span>{{ cleanMemberTransferTitle }}</span>
               </span>
-              <span class="text-[11px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 font-semibold shrink-0">
+              <span class="text-[11px] font-mono text-[#2A5440] bg-[#EFF5F1] px-2 py-0.5 rounded border border-[#C7DED0] font-semibold shrink-0">
                 {{ $t('common.stepsCount', { current: currentStep, total: 5 }) }}
               </span>
             </div>
@@ -75,10 +75,10 @@
                 </div>
 
                 <div class="node-text-wrapper hidden lg:block">
-                  <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-indigo-600' : s.step < currentStep ? 'text-slate-700' : 'text-slate-400'">
+                  <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-[#326445]' : s.step < currentStep ? 'text-[#43554B]' : 'text-[#8A9A8F]'">
                     {{ s.name }}
                   </div>
-                  <div class="node-desc text-[11px] text-slate-400 mt-0.5">
+                  <div class="node-desc text-[11px] text-[#8A9A8F] mt-0.5">
                     {{ s.desc }}
                   </div>
                 </div>
@@ -89,34 +89,34 @@
           <!-- 右侧主操作区 (针对多语言长文本优化内边距与排版) -->
           <div class="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7 space-y-6">
             <!-- 移动端顶部轻量步骤指示器 -->
-            <div class="lg:hidden flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <span class="font-bold text-slate-800 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+            <div class="lg:hidden flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs">
+              <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
                 <span>{{ $t('common.stepNumber', { step: currentStep }) }}：{{ processSteps[currentStep - 1]?.name }}</span>
               </span>
-              <span class="font-mono text-slate-400 text-[11px]">{{ $t('common.progress', { current: currentStep, total: 5 }) }}</span>
+              <span class="font-mono text-[#8A9A8F] text-[11px]">{{ $t('common.progress', { current: currentStep, total: 5 }) }}</span>
             </div>
 
             <!-- ======================================================== -->
             <!-- 步骤 1: 录入成员国民编号与资格核验 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 1" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold">1</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">1</span>
                   <span>{{ $t('memberTransfer.step1') }}</span>
                 </label>
-                <span class="text-xs text-slate-400">{{ $t('memberTransfer.step1Sub') }}</span>
+                <span class="text-xs text-[#8A9A8F]">{{ $t('memberTransfer.step1Sub') }}</span>
               </div>
 
               <!-- 关联家庭成员列表 (卡片选择) -->
               <div class="space-y-2.5">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <el-icon class="text-indigo-600"><UserFilled /></el-icon>
+                  <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+                    <el-icon class="text-[#326445]"><UserFilled /></el-icon>
                     <span>{{ $t('memberTransfer.familyMemberList') }}</span>
                   </span>
-                  <span class="text-[11px] text-slate-400">{{ $t('memberTransfer.familyMemberHint') }}</span>
+                  <span class="text-[11px] text-[#8A9A8F]">{{ $t('memberTransfer.familyMemberHint') }}</span>
                 </div>
 
                 <!-- 家庭成员卡片网格 (支持自适应长文本) -->
@@ -124,21 +124,21 @@
                   <div
                     v-for="item in familyMemberList"
                     :key="item.nationalId"
-                    class="p-3.5 rounded-xl border transition-all cursor-pointer relative flex flex-col justify-between gap-2 min-w-0"
+                    class="p-3.5 rounded-lg border transition-all cursor-pointer relative flex flex-col justify-between gap-2 min-w-0"
                     :class="selectedMember?.nationalId === item.nationalId
-                      ? 'bg-indigo-50/60 border-indigo-500 shadow-xs ring-1 ring-indigo-500'
-                      : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'"
+                      ? 'bg-[#EFF5F1]/60 border-[#5C8A6B] shadow-xs ring-1 ring-[#5C8A6B]'
+                      : 'bg-white border-[#D9E5DB] hover:border-[#C9DBCE] hover:bg-[#F3F8F4]/50'"
                     @click="handleSelectFamilyMember(item)"
                   >
                     <div class="flex items-start justify-between gap-2 min-w-0">
                       <div class="min-w-0 flex-1">
-                        <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5 flex-wrap">
+                        <div class="font-bold text-[#1F3326] text-xs flex items-center gap-1.5 flex-wrap">
                           <span class="truncate">{{ item.name }}</span>
                           <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">
                             {{ item.relationLabel || $t('memberTransfer.relatedMember') }}
                           </el-tag>
                         </div>
-                        <div class="text-[11px] font-mono text-slate-500 mt-0.5 truncate">
+                        <div class="text-[11px] font-mono text-[#58685D] mt-0.5 truncate">
                           ID: {{ item.nationalId }}
                         </div>
                       </div>
@@ -153,12 +153,12 @@
                       </el-tag>
                     </div>
 
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100/80 pt-1.5 mt-0.5">
+                    <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] border-t border-[#E9F1EB]/80 pt-1.5 mt-0.5">
                       <span class="truncate">{{ item.currentProvince }}</span>
-                      <span class="text-indigo-600 font-semibold shrink-0" v-if="selectedMember?.nationalId === item.nationalId">
+                      <span class="text-[#326445] font-semibold shrink-0" v-if="selectedMember?.nationalId === item.nationalId">
                         {{ $t('memberTransfer.selectedBadge') }}
                       </span>
-                      <span class="text-slate-400 hover:text-indigo-600 shrink-0" v-else>
+                      <span class="text-[#8A9A8F] hover:text-[#326445] shrink-0" v-else>
                         {{ $t('memberTransfer.clickToSelect') }}
                       </span>
                     </div>
@@ -168,7 +168,7 @@
 
               <!-- 国民编号查询输入框 -->
               <div class="space-y-1.5 pt-1">
-                <div class="text-xs font-semibold text-slate-700">
+                <div class="text-xs font-semibold text-[#43554B]">
                   {{ $t('memberTransfer.inputNationalId') }}：
                 </div>
                 <div class="flex gap-3">
@@ -203,52 +203,52 @@
                 <!-- 法定红线拦截警示条 -->
                 <div
                   v-if="!selectedMember.isUpdatedInSystem"
-                  class="p-4 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 space-y-1.5 animate-shake"
+                  class="p-4 bg-[#FBEAE9] border border-[#E8B7B5] rounded-lg text-[#6E2F2E] space-y-1.5 animate-shake"
                 >
-                  <div class="font-bold flex items-center gap-2 text-sm text-rose-800">
+                  <div class="font-bold flex items-center gap-2 text-sm text-[#6E2F2E]">
                     <el-icon :size="18"><CircleCloseFilled /></el-icon>
                     <span>{{ $t('memberTransfer.notUpdatedAlert') }}</span>
                   </div>
-                  <p class="text-xs text-rose-700 leading-relaxed">
+                  <p class="text-xs text-[#A93B39] leading-relaxed">
                     {{ $t('memberTransfer.notUpdatedAlertDetail') }}
                   </p>
                 </div>
 
                 <!-- 成员详情档案卡片 (针对多语言优化网格列宽与换行) -->
                 <div
-                  class="p-4 rounded-xl border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs"
-                  :class="selectedMember.isUpdatedInSystem ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/30 border-rose-200 opacity-80'"
+                  class="p-4 rounded-lg border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs"
+                  :class="selectedMember.isUpdatedInSystem ? 'bg-[#F3F8F4] border-[#D9E5DB]' : 'bg-[#FBEAE9]/30 border-[#F2D5D4] opacity-80'"
                 >
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('citizen.headName') }}：</span>
-                    <span class="font-bold text-slate-800 text-sm truncate block">{{ selectedMember.name }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.headName') }}：</span>
+                    <span class="font-bold text-[#1F3326] text-sm truncate block">{{ selectedMember.name }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.nationalIdLabel') }}：</span>
-                    <span class="font-mono font-bold text-slate-800 truncate block">{{ selectedMember.nationalId }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.nationalIdLabel') }}：</span>
+                    <span class="font-mono font-bold text-[#1F3326] truncate block">{{ selectedMember.nationalId }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('citizen.gender') }} / {{ $t('citizen.birthDate') }}：</span>
-                    <span class="text-slate-800 truncate block">{{ selectedMember.gender }} ({{ selectedMember.birthDate }})</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.gender') }} / {{ $t('citizen.birthDate') }}：</span>
+                    <span class="text-[#1F3326] truncate block">{{ selectedMember.gender }} ({{ selectedMember.birthDate }})</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.fatherNameLabel') }}：</span>
-                    <span class="font-bold text-slate-800 truncate block">{{ selectedMember.fatherName }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.fatherNameLabel') }}：</span>
+                    <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember.fatherName }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('citizen.familyCode') }}：</span>
-                    <span class="font-mono text-slate-800 truncate block">{{ selectedMember.familyCode }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.familyCode') }}：</span>
+                    <span class="font-mono text-[#1F3326] truncate block">{{ selectedMember.familyCode }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.currentCardNoLabel') }}：</span>
-                    <span class="font-mono text-slate-800 truncate block">{{ selectedMember.currentCardNo }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.currentCardNoLabel') }}：</span>
+                    <span class="font-mono text-[#1F3326] truncate block">{{ selectedMember.currentCardNo }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.currentProvinceCenter') }}：</span>
-                    <span class="text-slate-800 truncate block">{{ selectedMember.currentProvince }} · {{ selectedMember.currentCenterName }}</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.currentProvinceCenter') }}：</span>
+                    <span class="text-[#1F3326] truncate block">{{ selectedMember.currentProvince }} · {{ selectedMember.currentCenterName }}</span>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.systemUpdateStatus') }}：</span>
+                    <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.systemUpdateStatus') }}：</span>
                     <el-tag :type="selectedMember.isUpdatedInSystem ? 'success' : 'danger'" size="small">
                       {{ selectedMember.isUpdatedInSystem ? $t('memberTransfer.updatedPass') : $t('memberTransfer.statusNotUpdated') }}
                     </el-tag>
@@ -258,15 +258,15 @@
                 <!-- 生物识别核验模块 -->
                 <div
                   v-if="selectedMember.isUpdatedInSystem"
-                  class="p-4 bg-indigo-50/40 border border-indigo-200 rounded-xl space-y-3"
+                  class="p-4 bg-[#EFF5F1]/40 border border-[#C7DED0] rounded-lg space-y-3"
                 >
                   <div class="flex items-center justify-between flex-wrap gap-3">
                     <div class="space-y-0.5">
-                      <div class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                        <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+                      <div class="text-xs font-bold text-[#12241A] flex items-center gap-1.5">
+                        <el-icon class="text-[#2F7A50]"><CircleCheckFilled /></el-icon>
                         <span>{{ $t('memberTransfer.biometricTitle') }}</span>
                       </div>
-                      <div class="text-[11px] text-slate-500">
+                      <div class="text-[11px] text-[#58685D]">
                         {{ $t('memberTransfer.biometricNotice') }}
                       </div>
                     </div>
@@ -292,17 +292,17 @@
             <!-- 步骤 2: 选择转移原因与关系匹配 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 2" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold">2</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">2</span>
                   <span>{{ $t('memberTransfer.step2') }}</span>
                 </label>
-                <span class="text-xs text-slate-400">{{ $t('memberTransfer.step2Sub') }}</span>
+                <span class="text-xs text-[#8A9A8F]">{{ $t('memberTransfer.step2Sub') }}</span>
               </div>
 
               <!-- 转移情形单选组 (优化按钮尺寸与自适应多行文本排版) -->
               <div class="space-y-2">
-                <span class="block text-xs font-semibold text-slate-700">{{ $t('memberTransfer.transferTypeLabel') }}：</span>
+                <span class="block text-xs font-semibold text-[#43554B]">{{ $t('memberTransfer.transferTypeLabel') }}：</span>
                 <el-radio-group v-model="transferReasonType" class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
                   <el-radio-button value="wife" class="w-full text-left custom-radio-btn">
                     {{ $t('memberTransfer.typeWife') }}
@@ -325,7 +325,7 @@
               <!-- 规则引擎实时研判卡片 -->
               <div class="space-y-3">
                 <!-- 妻子规则比对展示 -->
-                <div v-if="transferReasonType === 'wife'" class="p-4 rounded-xl border text-xs space-y-2" :class="wifeRecognized ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'">
+                <div v-if="transferReasonType === 'wife'" class="p-4 rounded-lg border text-xs space-y-2" :class="wifeRecognized ? 'bg-[#EFF5F1] border-[#C7E0CE] text-[#12241A]' : 'bg-[#FDF3E0] border-[#F2E3C6] text-[#5A4718]'">
                   <div class="font-bold flex items-center gap-1.5 text-sm">
                     <el-icon><Connection /></el-icon>
                     <span>{{ $t('memberTransfer.wifeMatchTitle') }}</span>
@@ -340,7 +340,7 @@
                 </div>
 
                 <!-- 子女规则比对展示 -->
-                <div v-else-if="transferReasonType === 'child'" class="p-4 rounded-xl border text-xs space-y-2" :class="childRecognized ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'">
+                <div v-else-if="transferReasonType === 'child'" class="p-4 rounded-lg border text-xs space-y-2" :class="childRecognized ? 'bg-[#EFF5F1] border-[#C7E0CE] text-[#12241A]' : 'bg-[#FDF3E0] border-[#F2E3C6] text-[#5A4718]'">
                   <div class="font-bold flex items-center gap-1.5 text-sm">
                     <el-icon><Connection /></el-icon>
                     <span>{{ $t('memberTransfer.childMatchTitle') }}</span>
@@ -355,7 +355,7 @@
                 </div>
 
                 <!-- 监护 / 抚养 / 其他规则提示 -->
-                <div v-else class="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1.5">
+                <div v-else class="p-4 bg-[#EFF5F1] border border-[#C7DED0] rounded-lg text-xs text-[#1F3326] space-y-1.5">
                   <div class="font-bold flex items-center gap-1.5 text-sm">
                     <el-icon><InfoFilled /></el-icon>
                     <span>{{ $t('memberTransfer.guardianshipNoticeTitle') }}</span>
@@ -384,9 +384,9 @@
             <!-- 步骤 3: 第 140 号决议合规核验 与 智能研判业务流转路径 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 3" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold">3</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">3</span>
                   <span>{{ $t('memberTransfer.step3') }}</span>
                 </label>
                 <el-tag :type="isArticle140Area ? 'danger' : 'success'" size="small">
@@ -396,8 +396,8 @@
 
               <!-- 命中第 140 号决议的提示与公函上传 -->
               <div v-if="isArticle140Area" class="space-y-4">
-                <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5">
-                  <div class="font-bold flex items-center gap-1.5 text-sm text-rose-900">
+                <div class="p-4 bg-[#FBEAE9] border border-[#F2D5D4] rounded-lg text-xs text-[#6E2F2E] space-y-1.5">
+                  <div class="font-bold flex items-center gap-1.5 text-sm text-[#6E2F2E]">
                     <el-icon><WarningFilled /></el-icon>
                     <span>{{ $t('memberTransfer.art140AlertTitle') }}</span>
                   </div>
@@ -418,19 +418,19 @@
               </div>
 
               <!-- 未涉及第 140 号决议的提示 -->
-              <div v-else class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-xs space-y-2">
-                <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                  <el-icon class="text-emerald-600" :size="18"><CircleCheckFilled /></el-icon>
+              <div v-else class="p-6 bg-[#EFF5F1]/50 border border-[#C7E0CE] rounded-lg text-xs space-y-2">
+                <div class="flex items-center gap-2 text-[#24483A] font-bold text-sm">
+                  <el-icon class="text-[#2F7A50]" :size="18"><CircleCheckFilled /></el-icon>
                   <span>{{ $t('memberTransfer.art140ExemptTitle') }}</span>
                 </div>
-                <p class="text-emerald-700 leading-relaxed">
+                <p class="text-[#2F5B44] leading-relaxed">
                   {{ $t('memberTransfer.art140ExemptContent') }}
                 </p>
               </div>
 
               <!-- 最终研判流转路径大卡片 -->
-              <div class="p-4 rounded-xl border text-xs space-y-2" :class="finalPathDecision === 'auto' ? 'bg-emerald-50 border-emerald-300' : 'bg-amber-50 border-amber-300'">
-                <div class="font-bold text-sm flex items-center justify-between" :class="finalPathDecision === 'auto' ? 'text-emerald-900' : 'text-amber-900'">
+              <div class="p-4 rounded-lg border text-xs space-y-2" :class="finalPathDecision === 'auto' ? 'bg-[#EFF5F1] border-[#A7D9BC]' : 'bg-[#FDF3E0] border-[#E5CEA1]'">
+                <div class="font-bold text-sm flex items-center justify-between" :class="finalPathDecision === 'auto' ? 'text-[#12241A]' : 'text-[#5A4718]'">
                   <div class="flex items-center gap-1.5">
                     <el-icon><Compass /></el-icon>
                     <span>{{ $t('memberTransfer.pathDecisionTitle') }}</span>
@@ -439,7 +439,7 @@
                     {{ finalPathDecision === 'auto' ? $t('transfer.autoApprovedBadge') : $t('transfer.reviewingBadge') }}
                   </el-tag>
                 </div>
-                <p class="leading-relaxed font-medium" :class="finalPathDecision === 'auto' ? 'text-emerald-800' : 'text-amber-800'">
+                <p class="leading-relaxed font-medium" :class="finalPathDecision === 'auto' ? 'text-[#24483A]' : 'text-[#6B5321]'">
                   {{ finalPathDecision === 'auto' ? $t('memberTransfer.autoPath') : $t('memberTransfer.reviewPath') }}
                 </p>
               </div>
@@ -449,9 +449,9 @@
             <!-- 步骤 4: 确认申请摘要与规费电子支付 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 4" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold">4</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">4</span>
                   <span>{{ $t('memberTransfer.step4') }}</span>
                 </label>
                 <el-tag :type="finalPathDecision === 'auto' ? 'success' : 'warning'" effect="dark">
@@ -460,56 +460,56 @@
               </div>
 
               <!-- 申请明细摘要核对卡 -->
-              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.movingMember') }}：</span>
-                  <span class="font-bold text-slate-800 truncate block">{{ selectedMember?.name }} ({{ selectedMember?.nationalId }})</span>
+                  <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.movingMember') }}：</span>
+                  <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember?.name }} ({{ selectedMember?.nationalId }})</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.receivingRationCard') }}：</span>
-                  <span class="font-mono font-bold text-indigo-600 truncate block">{{ citizenStore.currentFamily?.rationCardNo }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.receivingRationCard') }}：</span>
+                  <span class="font-mono font-bold text-[#326445] truncate block">{{ citizenStore.currentFamily?.rationCardNo }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.legalReason') }}：</span>
-                  <span class="font-bold text-slate-800 truncate block">{{ getReasonTypeLabel(transferReasonType) }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.legalReason') }}：</span>
+                  <span class="font-bold text-[#1F3326] truncate block">{{ getReasonTypeLabel(transferReasonType) }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px] truncate">{{ $t('memberTransfer.businessPath') }}：</span>
-                  <span class="font-bold truncate block" :class="finalPathDecision === 'auto' ? 'text-emerald-600' : 'text-amber-600'">
+                  <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.businessPath') }}：</span>
+                  <span class="font-bold truncate block" :class="finalPathDecision === 'auto' ? 'text-[#2F7A50]' : 'text-[#C9A13B]'">
                     {{ finalPathDecision === 'auto' ? $t('transfer.autoApprovedBadge') : $t('transfer.reviewingBadge') }}
                   </span>
                 </div>
               </div>
 
               <!-- 规费账单提示 -->
-              <div class="p-4 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
-                  <div class="text-xs text-slate-400">{{ $t('memberTransfer.feeLabel') }}</div>
-                  <div class="text-2xl font-bold font-mono text-emerald-400">
-                    5,000 IQD <span class="text-xs text-slate-400 font-normal">({{ $t('common.iqdUnit') }})</span>
+                  <div class="text-xs text-[#8A9A8F]">{{ $t('memberTransfer.feeLabel') }}</div>
+                  <div class="text-2xl font-bold font-mono text-[#6FBF92]">
+                    5,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
                   </div>
                 </div>
-                <div class="text-xs text-slate-400 sm:text-right">
+                <div class="text-xs text-[#8A9A8F] sm:text-right">
                   <div>{{ $t('memberTransfer.payChannel') }}</div>
-                  <div class="text-[11px] text-slate-500">{{ $t('memberTransfer.payChannelSub') }}</div>
+                  <div class="text-[11px] text-[#58685D]">{{ $t('memberTransfer.payChannelSub') }}</div>
                 </div>
               </div>
 
               <!-- 引导进行扫码支付卡片 -->
-              <div class="p-6 bg-indigo-50/50 border border-indigo-200 rounded-2xl text-center space-y-3">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+              <div class="p-6 bg-[#EFF5F1]/50 border border-[#C7DED0] rounded-lg text-center space-y-3">
+                <div class="w-12 h-12 rounded-lg bg-[#E1F4E4] text-[#326445] flex items-center justify-center mx-auto">
                   <el-icon :size="24"><CreditCard /></el-icon>
                 </div>
                 <div>
-                  <h4 class="text-sm font-bold text-slate-900">{{ $t('memberTransfer.lastStepTitle') }}</h4>
-                  <p class="text-xs text-slate-500 mt-1">
+                  <h4 class="text-sm font-bold text-[#1B3123]">{{ $t('memberTransfer.lastStepTitle') }}</h4>
+                  <p class="text-xs text-[#58685D] mt-1">
                     {{ $t('memberTransfer.lastStepSub') }}
                   </p>
                 </div>
                 <el-button
                   type="primary"
                   size="large"
-                  class="px-8 font-bold shadow-md bg-indigo-600 border-indigo-600 hover:bg-indigo-500"
+                  class="px-8 font-bold shadow-md bg-[#326445] border-[#326445] hover:bg-[#5C8A6B]"
                   :loading="submitting"
                   @click="handleOpenPaymentDialog"
                 >
@@ -525,35 +525,35 @@
             <div v-show="currentStep === 5" class="space-y-6 animate-fade-in text-center py-6">
               <div
                 class="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
-                :class="finalPathDecision === 'auto' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'"
+                :class="finalPathDecision === 'auto' ? 'bg-[#E1F4E4] text-[#2F7A50]' : 'bg-[#E1F4E4] text-[#326445]'"
               >
                 <el-icon :size="36"><CircleCheckFilled /></el-icon>
               </div>
 
               <div class="space-y-2">
-                <h3 class="text-lg font-bold text-slate-900">
+                <h3 class="text-lg font-bold text-[#1B3123]">
                   {{ finalPathDecision === 'auto' ? $t('memberTransfer.autoSuccessTitle') : $t('memberTransfer.reviewSuccessTitle') }}
                 </h3>
-                <p class="text-xs text-slate-500 max-w-lg mx-auto">
+                <p class="text-xs text-[#58685D] max-w-lg mx-auto">
                   {{ transferMemberResult?.message || (finalPathDecision === 'auto' ? $t('memberTransfer.autoSuccessDesc') : $t('memberTransfer.reviewSuccessDesc')) }}
                 </p>
               </div>
 
               <!-- 凭证卡片 -->
-              <div class="max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left space-y-3 text-xs">
-                <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
-                  <span class="font-bold text-slate-800">{{ $t('memberTransfer.receiptTitle') }}</span>
+              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-left space-y-3 text-xs">
+                <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
+                  <span class="font-bold text-[#1F3326]">{{ $t('memberTransfer.receiptTitle') }}</span>
                   <el-tag :type="finalPathDecision === 'auto' ? 'success' : 'warning'" size="small">
                     {{ finalPathDecision === 'auto' ? $t('transfer.autoApprovedBadge') : $t('transfer.reviewingBadge') }}
                   </el-tag>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-slate-600">
-                  <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-slate-800">{{ transferMemberResult?.ticketId || `MT-${Date.now().toString().slice(-8)}` }}</span></div>
-                  <div>{{ $t('memberTransfer.receivingRationCard') }}：<span class="font-mono font-bold text-indigo-700">{{ citizenStore.currentFamily?.rationCardNo }}</span></div>
-                  <div>{{ $t('memberTransfer.movingMember') }}：<span class="font-bold text-slate-800">{{ selectedMember?.name }}</span></div>
-                  <div>{{ $t('memberTransfer.nationalIdLabel') }}：<span class="font-mono text-slate-800">{{ selectedMember?.nationalId }}</span></div>
-                  <div>{{ $t('memberTransfer.legalReason') }}：<span class="text-slate-800">{{ getReasonTypeLabel(transferReasonType) }}</span></div>
-                  <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-emerald-600 font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
+                <div class="grid grid-cols-2 gap-3 text-[#58685D]">
+                  <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-[#1F3326]">{{ transferMemberResult?.ticketId || `MT-${Date.now().toString().slice(-8)}` }}</span></div>
+                  <div>{{ $t('memberTransfer.receivingRationCard') }}：<span class="font-mono font-bold text-[#2A5440]">{{ citizenStore.currentFamily?.rationCardNo }}</span></div>
+                  <div>{{ $t('memberTransfer.movingMember') }}：<span class="font-bold text-[#1F3326]">{{ selectedMember?.name }}</span></div>
+                  <div>{{ $t('memberTransfer.nationalIdLabel') }}：<span class="font-mono text-[#1F3326]">{{ selectedMember?.nationalId }}</span></div>
+                  <div>{{ $t('memberTransfer.legalReason') }}：<span class="text-[#1F3326]">{{ getReasonTypeLabel(transferReasonType) }}</span></div>
+                  <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-[#2F7A50] font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
                 </div>
               </div>
 
@@ -567,7 +567,7 @@
             <!-- ======================================================== -->
             <!-- 底部步骤切换操作栏 (上一步 / 下一步) -->
             <!-- ======================================================== -->
-            <div v-if="currentStep < 5" class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div v-if="currentStep < 5" class="flex items-center justify-between pt-4 border-t border-[#E9F1EB]">
               <el-button
                 v-if="currentStep > 1"
                 size="large"
@@ -887,7 +887,7 @@ async function handlePaymentSuccess(paymentInfo) {
 
 <style scoped>
 .process-card-wrapper {
-  --theme-color: #4f46e5;
+  --theme-color: #B8934A;
   --theme-color-rgb: 79, 70, 229;
 }
 
@@ -916,7 +916,7 @@ async function handlePaymentSuccess(paymentInfo) {
     top: 24px;
     bottom: 24px;
     width: 2px;
-    background-color: #e2e8f0;
+    background-color: #D9E5DB;
     z-index: 1;
   }
   .timeline-node-item {
@@ -939,13 +939,13 @@ async function handlePaymentSuccess(paymentInfo) {
     justify-content: center;
     flex-shrink: 0;
     background-color: #ffffff;
-    border: 2px solid #cbd5e1;
-    color: #64748b;
+    border: 2px solid #C9DBCE;
+    color: #58685D;
     transition: all 0.25s ease;
   }
   .timeline-node-item.is-finish .node-icon-wrapper {
-    background-color: #10b981;
-    border-color: #10b981;
+    background-color: #3E9B68;
+    border-color: #3E9B68;
     color: #ffffff;
   }
   .timeline-node-item.is-active .node-icon-wrapper {
@@ -983,7 +983,7 @@ async function handlePaymentSuccess(paymentInfo) {
     top: 0;
     bottom: 0;
     width: 2px;
-    background-color: #cbd5e1;
+    background-color: #C9DBCE;
     z-index: 1;
   }
   .timeline-node-item {
@@ -1001,15 +1001,15 @@ async function handlePaymentSuccess(paymentInfo) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f8fafc;
-    border: 2px solid #cbd5e1;
-    color: #94a3b8;
+    background-color: #F8FBF8;
+    border: 2px solid #C9DBCE;
+    color: #8A9A8F;
     font-size: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .timeline-node-item.is-finish .node-icon-wrapper {
-    background-color: #10b981;
-    border-color: #059669;
+    background-color: #3E9B68;
+    border-color: #2F7A50;
     color: #ffffff;
   }
   .timeline-node-item.is-active .node-icon-wrapper {

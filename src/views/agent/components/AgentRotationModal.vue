@@ -9,9 +9,9 @@
   >
     <div class="space-y-5">
       <!-- 顶部政策通告栏 (已精简) -->
-      <div class="p-3 bg-blue-50/80 border border-blue-200/90 rounded-xl text-xs flex items-center justify-between text-blue-900">
+      <div class="p-3 bg-[#EFF5F1]/80 border border-[#C7DED0]/90 rounded-lg text-xs flex items-center justify-between text-[#1F3326]">
         <div class="flex items-center gap-2">
-          <el-icon class="text-blue-600"><InfoFilled /></el-icon>
+          <el-icon class="text-[#326445]"><InfoFilled /></el-icon>
           <span class="text-[11px]">已故轮替须在 12 个月内办理；自愿轮替须在法务部出具放弃声明；受让人限三代以内亲属。</span>
         </div>
         <el-tag size="small" type="primary" effect="light">规费 50,000 IQD</el-tag>
@@ -30,33 +30,33 @@
       <!-- ======================================================== -->
       <div v-if="activeStep === 0" class="space-y-4">
         <!-- 轮替情形单选 -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <span class="block text-xs font-bold text-slate-800">法定轮替情形分类 <span class="text-rose-500">*</span></span>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3">
+          <span class="block text-xs font-bold text-[#1F3326]">法定轮替情形分类 <span class="text-[#C04442]">*</span></span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div
-              class="p-3 rounded-xl border cursor-pointer transition-all"
-              :class="form.rotationScenario === 'DECEASED' ? 'bg-amber-50/80 border-amber-500 shadow-xs' : 'bg-white border-slate-200'"
+              class="p-3 rounded-lg border cursor-pointer transition-all"
+              :class="form.rotationScenario === 'DECEASED' ? 'bg-[#FDF3E0]/80 border-[#D3AF62] shadow-xs' : 'bg-white border-[#D9E5DB]'"
               @click="form.rotationScenario = 'DECEASED'"
             >
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-900">1. 已故代理的代理权轮替</span>
+                <span class="text-xs font-bold text-[#1B3123]">1. 已故代理的代理权轮替</span>
                 <el-tag size="small" type="warning" effect="plain">12个月时限</el-tag>
               </div>
-              <p class="text-[11px] text-slate-500 mt-1">
+              <p class="text-[11px] text-[#58685D] mt-1">
                 代理人不幸去世，居住在同地区的继承人依法申请继承轮替。
               </p>
             </div>
 
             <div
-              class="p-3 rounded-xl border cursor-pointer transition-all"
-              :class="form.rotationScenario === 'VOLUNTARY' ? 'bg-blue-50/80 border-blue-500 shadow-xs' : 'bg-white border-slate-200'"
+              class="p-3 rounded-lg border cursor-pointer transition-all"
+              :class="form.rotationScenario === 'VOLUNTARY' ? 'bg-[#EFF5F1]/80 border-[#5C8A6B] shadow-xs' : 'bg-white border-[#D9E5DB]'"
               @click="form.rotationScenario = 'VOLUNTARY'"
             >
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-900">2. 应代理申请的自愿轮替</span>
+                <span class="text-xs font-bold text-[#1B3123]">2. 应代理申请的自愿轮替</span>
                 <el-tag size="small" type="primary" effect="plain">生前转让</el-tag>
               </div>
-              <p class="text-[11px] text-slate-500 mt-1">
+              <p class="text-[11px] text-[#58685D] mt-1">
                 原代理年迈或申请自愿放弃，在法务部门提交放弃申请并转让给三代内亲属。
               </p>
             </div>
@@ -64,15 +64,15 @@
         </div>
 
         <!-- 目标网点与原代理 -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-blue-600"><Shop /></el-icon>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3">
+          <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><Shop /></el-icon>
             <span>拟办理轮替的原代理网点</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">选择网点中心 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">选择网点中心 <span class="text-[#C04442]">*</span></span>
               <el-select v-model="form.centerId" placeholder="选择网点 (支持输入关键字搜索)" class="w-full" filterable>
                 <el-option
                   v-for="c in centerOptions"
@@ -82,8 +82,8 @@
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span>
-                      <span v-if="c.isArticle140" class="text-amber-500 font-bold mr-1">★</span>{{ c.centerName }}
-                      <span v-if="c.city" class="text-[11px] text-slate-400 ml-1">({{ c.province }} · {{ c.city }})</span>
+                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold mr-1">★</span>{{ c.centerName }}
+                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] ml-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <div class="flex items-center gap-1">
                       <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">140号决议</el-tag>
@@ -94,7 +94,7 @@
               </el-select>
             </div>
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">原持权代理人姓名</span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">原持权代理人姓名</span>
               <el-input v-model="form.originalAgentName" placeholder="例如：纳赛尔·贾巴尔" />
             </div>
           </div>
@@ -102,7 +102,7 @@
           <!-- 已故特定时限填写 -->
           <div v-if="form.rotationScenario === 'DECEASED'" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">代理死亡日期 (起算12个月完成红线) <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">代理死亡日期 (起算12个月完成红线) <span class="text-[#C04442]">*</span></span>
               <el-date-picker
                 v-model="form.deceasedDate"
                 type="date"
@@ -113,7 +113,7 @@
               />
             </div>
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">逝者配给份额注销日期 (4个月红线) <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">逝者配给份额注销日期 (4个月红线) <span class="text-[#C04442]">*</span></span>
               <el-date-picker
                 v-model="form.quotaDeductionDate"
                 type="date"
@@ -127,19 +127,19 @@
         </div>
 
         <!-- 受让方亲属资格核查 -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-blue-600"><User /></el-icon>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3">
+          <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><User /></el-icon>
             <span>拟接任亲属资格与三代血亲审查</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <span class="block text-xs text-slate-600 mb-1">受让人姓名 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">受让人姓名 <span class="text-[#C04442]">*</span></span>
               <el-input v-model="form.successorName" placeholder="受让人全名" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">与原代理人亲属关系 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">与原代理人亲属关系 <span class="text-[#C04442]">*</span></span>
               <el-select v-model="form.successorKinship" class="w-full">
                 <el-option label="配偶 (妻子 - 享免声明特权)" value="WIFE" />
                 <el-option label="配偶 (丈夫 - 享免声明特权)" value="HUSBAND" />
@@ -149,12 +149,12 @@
               </el-select>
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">受让人国民身份证号 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">受让人国民身份证号 <span class="text-[#C04442]">*</span></span>
               <el-input v-model="form.successorNationalId" placeholder="12位国民编号" />
             </div>
           </div>
 
-          <div class="pt-2 border-t border-slate-200/60 space-y-2 text-xs text-slate-700">
+          <div class="pt-2 border-t border-[#D9E5DB]/60 space-y-2 text-xs text-[#43554B]">
             <el-checkbox v-model="form.isResidentInDistrict">
               <strong>同区域居住核验</strong>：申请人确与原代理人居住在同一地区辖区，并有家庭底账为据。
             </el-checkbox>
@@ -174,36 +174,36 @@
       <!-- 步骤 2: 上传对应证明附件 -->
       <!-- ======================================================== -->
       <div v-if="activeStep === 1" class="space-y-4">
-        <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-800">
+        <div class="p-3 bg-[#EFF5F1]/70 border border-[#C7DED0] rounded-lg text-xs text-[#24483A]">
           依据《代理权继承与法务转让条例》，系统已根据受让人身份自动配置所需材料清单：
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <!-- 附件 1 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">1. 教法分割证书 (qassam shar'i) <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">1. 教法分割证书 (qassam shar'i) <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">合法继承</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">载明代理全体合法继承人姓名与法教份额认证文件。</p>
+            <p class="text-[11px] text-[#58685D]">载明代理全体合法继承人姓名与法教份额认证文件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docQassam', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传教法继承证书</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docQassam?.name || '已自动加载默认证书' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docQassam?.name || '已自动加载默认证书' }}</span>
             </div>
           </div>
 
           <!-- 附件 2：放弃声明 (针对妻子免予提交) -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">2. 法务部门放弃声明 / 特别授权书</span>
+              <span class="font-bold text-[#1F3326]">2. 法务部门放弃声明 / 特别授权书</span>
               <el-tag size="small" :type="isExemptWaiver ? 'info' : 'success'" effect="plain">
                 {{ isExemptWaiver ? '依法免予提交' : '必需' }}
               </el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">
-              <span v-if="isExemptWaiver" class="text-amber-700 font-bold">
+            <p class="text-[11px] text-[#58685D]">
+              <span v-if="isExemptWaiver" class="text-[#7A5F21] font-bold">
                 【法规特权豁免】：轮替给已故代理妻子或已故女性之丈夫，依法无需提交其他继承人放弃声明！
               </span>
               <span v-else>
@@ -222,39 +222,39 @@
                   <el-icon class="mr-1"><Upload /></el-icon>{{ isExemptWaiver ? '免提交' : '上传放弃声明' }}
                 </el-button>
               </el-upload>
-              <span class="text-[11px] text-slate-400 font-medium truncate">
+              <span class="text-[11px] text-[#8A9A8F] font-medium truncate">
                 {{ isExemptWaiver ? '依法豁免' : (docs.docWaiver?.name || '已上传放弃声明公证书') }}
               </span>
             </div>
           </div>
 
           <!-- 附件 3 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">3. 死亡证明及逝者份额注销报告 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">3. 死亡证明及逝者份额注销报告 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">注销凭证</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">卫生部死亡证明及4个月内逝者配给份额注销报告（注销报告）。</p>
+            <p class="text-[11px] text-[#58685D]">卫生部死亡证明及4个月内逝者配给份额注销报告（注销报告）。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docDeath', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传注销回执</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docDeath?.name || '已上传份额注销回执' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docDeath?.name || '已上传份额注销回执' }}</span>
             </div>
           </div>
 
           <!-- 附件 4 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">4. 专职投入与公证处承诺书 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">4. 专职投入与公证处承诺书 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">专职公证</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">经按捺拇指印并由有权限公证人正式认证的书面专职承诺。</p>
+            <p class="text-[11px] text-[#58685D]">经按捺拇指印并由有权限公证人正式认证的书面专职承诺。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docCommitment', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传公证承诺</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docCommitment?.name || '已上传按印公证书' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docCommitment?.name || '已上传按印公证书' }}</span>
             </div>
           </div>
         </div>
@@ -265,32 +265,32 @@
       <!-- ======================================================== -->
       <div v-if="activeStep === 2" class="space-y-4">
         <!-- 时限合格研判卡片 -->
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2 text-xs">
-          <div class="flex items-center gap-2 text-emerald-800 font-bold">
+        <div class="p-4 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg space-y-2 text-xs">
+          <div class="flex items-center gap-2 text-[#24483A] font-bold">
             <el-icon class="text-base"><CircleCheckFilled /></el-icon>
             <span>法定办理时限研判结果：完全符合规程</span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-emerald-900">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#12241A]">
             <div>• 代理轮替完成周期：自死亡起 2 个月（法定上限 12 个月内，达标）</div>
             <div>• 逝者配额注销报告：死亡后 45 天完成注销（法定上限 4 个月内，达标）</div>
           </div>
         </div>
 
         <!-- 公司法务与规划跟进司审查意见 -->
-        <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 text-xs">
-          <h4 class="font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-amber-600"><Stamp /></el-icon>
+        <div class="bg-white border border-[#D9E5DB] p-4 rounded-lg space-y-3 text-xs">
+          <h4 class="font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#C9A13B]"><Stamp /></el-icon>
             <span>食品与谷物加工公司法务部 / 规划与跟进司联合审核结论</span>
           </h4>
 
           <div class="space-y-2">
-            <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">1. 食品与谷物加工总公司法务部</span>
-              <span class="text-emerald-600 font-bold flex items-center gap-1"><el-icon><Check /></el-icon>教法分割与合法继承人资格合规审验通过</span>
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] rounded-lg border border-[#E9F1EB]">
+              <span class="font-medium text-[#43554B]">1. 食品与谷物加工总公司法务部</span>
+              <span class="text-[#2F7A50] font-bold flex items-center gap-1"><el-icon><Check /></el-icon>教法分割与合法继承人资格合规审验通过</span>
             </div>
-            <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">2. 规划与跟进司配额清算科</span>
-              <span class="text-emerald-600 font-bold flex items-center gap-1"><el-icon><Check /></el-icon>逝者名下份额清零核查无误，准予换发</span>
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] rounded-lg border border-[#E9F1EB]">
+              <span class="font-medium text-[#43554B]">2. 规划与跟进司配额清算科</span>
+              <span class="text-[#2F7A50] font-bold flex items-center gap-1"><el-icon><Check /></el-icon>逝者名下份额清零核查无误，准予换发</span>
             </div>
           </div>
         </div>
@@ -300,20 +300,20 @@
       <!-- 步骤 4: 电子规费支付与完成转移 -->
       <!-- ======================================================== -->
       <div v-if="activeStep === 3" class="space-y-4">
-        <div class="p-4 bg-slate-900 text-white rounded-xl space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="p-4 bg-[#1B3123] text-white rounded-lg space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1F3326] pb-3">
             <div>
-              <span class="text-xs text-slate-400 block">法定轮替规费收取机构</span>
-              <span class="text-sm font-bold text-amber-400">规划与跟进司 / 代理分支管理科</span>
+              <span class="text-xs text-[#8A9A8F] block">法定轮替规费收取机构</span>
+              <span class="text-sm font-bold text-[#DFC08B]">规划与跟进司 / 代理分支管理科</span>
             </div>
             <div class="text-right">
-              <span class="text-xs text-slate-400 block">应缴纳法定轮替规费</span>
-              <span class="text-xl font-bold font-mono text-emerald-400">50,000 IQD</span>
-              <span class="text-[10px] text-slate-400 block">(五万伊拉克第纳尔)</span>
+              <span class="text-xs text-[#8A9A8F] block">应缴纳法定轮替规费</span>
+              <span class="text-xl font-bold font-mono text-[#6FBF92]">50,000 IQD</span>
+              <span class="text-[10px] text-[#8A9A8F] block">(五万伊拉克第纳尔)</span>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+          <div class="grid grid-cols-2 gap-2 text-xs text-[#C9DBCE]">
             <div>原持权人：{{ form.originalAgentName }}</div>
             <div>新受让亲属：{{ form.successorName }} ({{ kinshipLabel }})</div>
             <div>目标中心：{{ selectedCenter?.centerName }}</div>
@@ -321,32 +321,32 @@
           </div>
         </div>
 
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
-          <span class="block font-bold text-slate-800">选择伊拉克国家电子支付通道：</span>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3 text-xs">
+          <span class="block font-bold text-[#1F3326]">选择伊拉克国家电子支付通道：</span>
           <div class="grid grid-cols-3 gap-3">
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'QI_CARD' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'QI_CARD' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'QI_CARD'"
             >
               <div class="text-sm font-bold">QI Card</div>
-              <div class="text-[10px] text-slate-400 mt-1">国家银联数字卡</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">国家银联数字卡</div>
             </div>
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'ZAIN_CASH' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'ZAIN_CASH' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'ZAIN_CASH'"
             >
               <div class="text-sm font-bold">ZainCash</div>
-              <div class="text-[10px] text-slate-400 mt-1">移动电子钱包</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">移动电子钱包</div>
             </div>
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'CENTRAL_BANK' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'CENTRAL_BANK' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'CENTRAL_BANK'"
             >
               <div class="text-sm font-bold">国库专户直联</div>
-              <div class="text-[10px] text-slate-400 mt-1">财政统一清算号</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">财政统一清算号</div>
             </div>
           </div>
         </div>

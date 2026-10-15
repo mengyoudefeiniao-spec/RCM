@@ -3,23 +3,23 @@
     <!-- ======================================================== -->
     <!-- 1. 官方关于平台背景卡片 (对标 reference 03-about.png / 01-home.png) -->
     <!-- ======================================================== -->
-    <div class="ht-card p-5 sm:p-7 relative overflow-hidden bg-gradient-to-br from-white via-[#FCFDFD] to-[#F2F9F5]">
+    <div class="ht-card p-5 sm:p-7 relative overflow-hidden bg-gradient-to-br from-white via-[#FBFDFB] to-[#F3F9F5]">
       <!-- 装饰背景微光与麦穗纹理 -->
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#1fa35e]/5 blur-2xl pointer-events-none"></div>
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#3E8A5E]/5 blur-2xl pointer-events-none"></div>
       
       <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
         <!-- 文字介绍区 -->
         <div class="flex-1 space-y-2.5" :class="isRtl ? 'text-right' : 'text-left'">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF6EF] border border-[#C3E6D2] text-[#007A3D] text-xs font-bold">
-            <span class="w-2 h-2 rounded-full bg-[#1FA35E] animate-pulse"></span>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E1F4E4] border border-[#C7E0CE] text-[#326445] text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-[#3E8A5E] animate-pulse"></span>
             <span>{{ isRtl ? 'جمهورية العراق · وزارة التجارة' : 'Republic of Iraq · Ministry of Trade' }}</span>
           </div>
 
-          <h2 class="text-xl sm:text-2xl font-black text-[#007A3D] tracking-tight leading-snug">
+          <h2 class="text-xl sm:text-2xl font-black text-[#326445] tracking-tight leading-snug">
             {{ isRtl ? 'نبذة عن البطاقة التموينية الألكترونية' : (isZh ? '关于国家电子配给卡数字化平台' : 'About the Electronic Ration Card Platform') }}
           </h2>
 
-          <p class="text-xs sm:text-sm text-[#4A5C53] leading-relaxed max-w-3xl">
+          <p class="text-xs sm:text-sm text-[#58685D] leading-relaxed max-w-3xl">
             {{
               isRtl
                 ? 'يهدف مشروع البطاقة التموينية الإلكترونية لتحويل البطاقة التموينية الورقية الى الكترونية من خلال تطبيق خاص لكل من الوكيل والمواطن، سيسهل التطبيق عملية تسليم مواد الحصة التموينية وكذلك جميع المعاملات التي تخص التعديلات مثل إضافة او حذف الأشخاص وغيرها من التعديلات الأخرى. يقدم مشروع البطاقة التموينية الإلكترونية حلاَ أكثر موثوقية وسهولة في الإستخدام لكل من العائلات المستفيدة من البطاقة التموينية وكذلك موظفي الحكومة العراقية.'
@@ -31,15 +31,15 @@
 
           <!-- 核心原则三要点 -->
           <div class="pt-2 flex flex-wrap items-center gap-2 text-xs">
-            <span class="px-3 py-1 rounded-lg bg-white border border-[#D5E5DC] text-[#007A3D] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span class="px-3 py-1 rounded-lg bg-white border border-[#CFE2D5] text-[#326445] font-semibold flex items-center gap-1.5 shadow-2xs">
               <el-icon><Check /></el-icon>
               <span>{{ isRtl ? 'اعتماد البطاقة الوطنية الموحدة' : (isZh ? '全量互联国家统一身份档案' : 'Unified National ID Integration') }}</span>
             </span>
-            <span class="px-3 py-1 rounded-lg bg-white border border-[#D5E5DC] text-[#007A3D] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span class="px-3 py-1 rounded-lg bg-white border border-[#CFE2D5] text-[#326445] font-semibold flex items-center gap-1.5 shadow-2xs">
               <el-icon><Check /></el-icon>
               <span>{{ isRtl ? 'إلغاء الرسوم والتسجيل المجاني' : (isZh ? '申领与核验全程零收费' : '100% Free Public Service') }}</span>
             </span>
-            <span class="px-3 py-1 rounded-lg bg-white border border-[#D5E5DC] text-[#007A3D] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span class="px-3 py-1 rounded-lg bg-white border border-[#CFE2D5] text-[#326445] font-semibold flex items-center gap-1.5 shadow-2xs">
               <el-icon><Check /></el-icon>
               <span>{{ isRtl ? 'تدقيق NFC والتحقق الحيوي' : (isZh ? '支持 NFC 与活体生物核验' : 'NFC & Biometric Auditing') }}</span>
             </span>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- 官方矢量 Logo 徽标展示 -->
-        <div class="shrink-0 flex items-center justify-center p-3 bg-white rounded-2xl border-2 border-[#C3E6D2] shadow-sm">
+        <div class="shrink-0 flex items-center justify-center p-3 bg-white rounded-lg border-2 border-[#C7E0CE] shadow-sm">
           <img
             src="/logo.svg"
             alt="ht.iq Logo"
@@ -62,17 +62,17 @@
     <!-- ======================================================== -->
     <div class="space-y-4">
       <!-- 模块标题与搜索栏 -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-[#D5E5DC] shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border border-[#CFE2D5] shadow-2xs">
         <div>
           <div class="flex items-center gap-2">
-            <h3 class="text-base sm:text-lg font-black text-[#007A3D] tracking-tight">
+            <h3 class="text-base sm:text-lg font-black text-[#326445] tracking-tight">
               {{ isRtl ? 'الاسئلة الشائعة وتوجيهات الرقابة التنظيمية' : (isZh ? '官方业务制度指南与监管问答 (FAQ)' : 'Official Regulatory FAQ & Policy Guidelines') }}
             </h3>
-            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#EAF6EF] text-[#007A3D] border border-[#C3E6D2]">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E1F4E4] text-[#326445] border border-[#C7E0CE]">
               {{ filteredFaqs.length }} {{ isRtl ? 'مادة' : (isZh ? '项法规' : 'Articles') }}
             </span>
           </div>
-          <p class="text-xs text-[#5E7368] mt-0.5">
+          <p class="text-xs text-[#58685D] mt-0.5">
             {{ isRtl ? 'مرجع معتمد للإجراءات القانونية المطبقة في مراكز التموين وفروع التوزيع' : (isZh ? '伊拉克贸易部官方审定业务准则与网格代销点法定执行标准' : 'Authoritative regulatory standards for distribution centers and inspectors') }}
           </p>
         </div>
@@ -87,7 +87,7 @@
             style="width: 240px"
           >
             <template #prefix>
-              <el-icon class="text-[#007A3D]"><Search /></el-icon>
+              <el-icon class="text-[#326445]"><Search /></el-icon>
             </template>
           </el-input>
 
@@ -113,7 +113,7 @@
           <!-- 条目头部 (点击展开/收起) -->
           <div class="ht-faq-header" @click="toggleItem(item.id)">
             <div class="flex items-center gap-3">
-              <span class="w-6 h-6 rounded-full bg-[#EAF6EF] text-[#007A3D] text-xs font-mono font-bold flex items-center justify-center shrink-0 border border-[#C3E6D2]">
+              <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs font-mono font-bold flex items-center justify-center shrink-0 border border-[#C7E0CE]">
                 {{ item.num }}
               </span>
               <span class="ht-faq-question font-sans" :dir="isRtl ? 'rtl' : 'ltr'">
@@ -140,7 +140,7 @@
             <div class="space-y-1.5 font-sans leading-relaxed">
               <p>{{ getFaqAnswer(item) }}</p>
               <!-- 政策依据角标 -->
-              <div class="pt-1 flex items-center justify-end gap-2 text-[11px] text-[#7A8E84]">
+              <div class="pt-1 flex items-center justify-end gap-2 text-[11px] text-[#8A9A8F]">
                 <el-icon><InfoFilled /></el-icon>
                 <span>{{ isRtl ? 'وزارة التجارة العراقية · اللائحة التنفيذية' : (isZh ? '伊拉克贸易部 · 国家电子配给卡执行准则' : 'Ministry of Trade · Operational Guidelines') }}</span>
               </div>
@@ -149,9 +149,9 @@
         </div>
 
         <!-- 空搜索状态 -->
-        <div v-if="filteredFaqs.length === 0" class="p-8 text-center bg-white rounded-xl border border-dashed border-[#D5E5DC]">
-          <el-icon :size="32" class="text-slate-300 mb-2"><DocumentDelete /></el-icon>
-          <p class="text-xs text-slate-500 font-medium">
+        <div v-if="filteredFaqs.length === 0" class="p-8 text-center bg-white rounded-lg border border-dashed border-[#CFE2D5]">
+          <el-icon :size="32" class="text-[#C9DBCE] mb-2"><DocumentDelete /></el-icon>
+          <p class="text-xs text-[#58685D] font-medium">
             {{ isRtl ? 'لا توجد نتائج مطابقة لبحثك' : (isZh ? '未检索到与关键词匹配的法规问答' : 'No matching regulatory FAQ found') }}
           </p>
         </div>

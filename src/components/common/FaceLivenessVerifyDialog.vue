@@ -14,19 +14,19 @@
     <!-- 全屏/移动端自适应容器 -->
     <div class="p-2 sm:p-4 space-y-3 select-none">
       <!-- 顶部：抬头与核验对象 -->
-      <div class="flex items-center justify-between border-b border-[#ECE7DE] pb-2.5 px-1">
+      <div class="flex items-center justify-between border-b border-[#D9E5DB] pb-2.5 px-1">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center font-bold shadow-xs border border-[#C59D5F]/40">
+          <div class="w-8 h-8 rounded-lg bg-[#326445] text-[#D3AF62] flex items-center justify-center font-bold shadow-xs border border-[#D3AF62]/40">
             <el-icon :size="16"><User /></el-icon>
           </div>
           <div>
-            <div class="text-xs sm:text-sm font-bold text-[#18231E] flex items-center gap-1.5">
+            <div class="text-xs sm:text-sm font-bold text-[#1F3326] flex items-center gap-1.5">
               <span>{{ title || $t('register.liveness.title') }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                 ICAO-9303
               </el-tag>
             </div>
-            <div class="text-[10px] text-[#8C958F]">
+            <div class="text-[10px] text-[#8A9A8F]">
               {{ $t('register.liveness.subtitle') }}
             </div>
           </div>
@@ -35,7 +35,7 @@
           <!-- 快速跳过小按钮 (供赶时间/调试使用) -->
           <button
             type="button"
-            class="text-[11px] text-[#5E6862] hover:text-[#1E3F35] transition-colors cursor-pointer px-2 py-0.5 rounded border border-[#ECE7DE] bg-[#FAF8F4]"
+            class="text-[11px] text-[#58685D] hover:text-[#326445] transition-colors cursor-pointer px-2 py-0.5 rounded border border-[#D9E5DB] bg-[#F3F8F4]"
             @click="handleQuickBypassPass"
           >
             {{ $t('register.liveness.quickPass') }}
@@ -44,7 +44,7 @@
       </div>
 
       <!-- 核心取景器：HUD 抬头显示模式 (深墨绿夜景 + 暖砂金扫描线) -->
-      <div class="relative w-full aspect-3/4 sm:aspect-4/5 max-h-[440px] rounded-2xl sm:rounded-3xl overflow-hidden bg-[#0A1612] border-2 border-[#1E3F35] shadow-2xl flex flex-col items-center justify-center">
+      <div class="relative w-full aspect-3/4 sm:aspect-4/5 max-h-[440px] rounded-lg sm:rounded-3xl overflow-hidden bg-[#12241A] border-2 border-[#326445] shadow-2xl flex flex-col items-center justify-center">
         
         <!-- 真实摄像机视频流 -->
         <video
@@ -60,35 +60,35 @@
         <!-- 仿真人脸影像流 (当物理摄像头未开启/无权限时平滑降级) -->
         <div
           v-if="!cameraActive"
-          class="absolute inset-0 w-full h-full bg-radial from-[#122820] to-[#0A1612] flex items-center justify-center overflow-hidden"
+          class="absolute inset-0 w-full h-full bg-radial from-[#12241A] to-[#12241A] flex items-center justify-center overflow-hidden"
         >
           <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#C59D5F_1px,transparent_1px)] [background-size:16px_16px]"></div>
           <!-- 仿真人脸三维骨架轮廓 -->
           <div
-            class="relative w-44 h-56 rounded-[48%] border-2 border-[#C59D5F]/40 flex items-center justify-center transition-transform duration-300"
+            class="relative w-44 h-56 rounded-[48%] border-2 border-[#D3AF62]/40 flex items-center justify-center transition-transform duration-300"
             :class="[
               currentStep === 'shake' ? 'animate-shake-head' : '',
               currentStep === 'mouth' ? 'animate-mouth-active' : ''
             ]"
           >
-            <div class="w-36 h-48 rounded-[48%] bg-[#C59D5F]/10 backdrop-blur-xs border border-[#C59D5F]/20 relative flex flex-col items-center justify-around py-6">
+            <div class="w-36 h-48 rounded-[48%] bg-[#D3AF62]/10 backdrop-blur-xs border border-[#D3AF62]/20 relative flex flex-col items-center justify-around py-6">
               <div class="flex justify-between w-20 px-1">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#D3A757] animate-ping"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-[#D3A757] animate-ping"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#D3AF62] animate-ping"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-[#D3AF62] animate-ping"></div>
               </div>
-              <div class="w-1.5 h-3 bg-[#C59D5F]/70 rounded-full"></div>
+              <div class="w-1.5 h-3 bg-[#D3AF62]/70 rounded-full"></div>
               <div
-                class="w-8 h-2 rounded-full border border-[#C59D5F]/80 transition-all duration-300"
-                :class="currentStep === 'mouth' ? 'h-6 bg-[#C59D5F]/40 border-[#D3A757] scale-125' : 'bg-[#C59D5F]/20'"
+                class="w-8 h-2 rounded-full border border-[#D3AF62]/80 transition-all duration-300"
+                :class="currentStep === 'mouth' ? 'h-6 bg-[#D3AF62]/40 border-[#D3AF62] scale-125' : 'bg-[#D3AF62]/20'"
               ></div>
             </div>
           </div>
 
           <!-- 摄像头不可用原因提示（非 HTTPS 安全环境 / 权限被拒 / 无设备） -->
           <div v-if="cameraUnavailableReason" class="absolute bottom-3 inset-x-4 z-20">
-            <div class="px-3 py-2 rounded-xl bg-black/45 backdrop-blur-sm border border-[#C59D5F]/30 flex items-start gap-2">
+            <div class="px-3 py-2 rounded-lg bg-black/45 backdrop-blur-sm border border-[#D3AF62]/30 flex items-start gap-2">
               <span class="text-sm leading-none mt-0.5">💡</span>
-              <span class="text-[10px] leading-relaxed text-[#E2C38E] text-left">
+              <span class="text-[10px] leading-relaxed text-[#E5CEA1] text-left">
                 {{ cameraUnavailableReason === 'insecure'
                   ? $t('register.liveness.camInsecure')
                   : cameraUnavailableReason === 'denied'
@@ -111,12 +111,12 @@
             class="px-4 py-2 rounded-full shadow-2xl backdrop-blur-md border transition-all duration-300 flex items-center gap-2 max-w-[94%]"
             :class="[
               status === 'success'
-                ? 'bg-emerald-600/90 border-emerald-400 text-white'
+                ? 'bg-[#2F7A50]/90 border-[#6FBF92] text-white'
                 : currentStep === 'shake'
-                ? 'bg-amber-500/90 border-amber-300 text-slate-950 animate-pulse'
+                ? 'bg-[#D3AF62]/90 border-[#E5CEA1] text-[#12241A] animate-pulse'
                 : currentStep === 'mouth'
-                ? 'bg-purple-600/90 border-purple-300 text-white animate-pulse'
-                : 'bg-slate-900/90 border-indigo-400/80 text-white'
+                ? 'bg-[#C9A13B]/90 border-[#E5CEA1] text-white animate-pulse'
+                : 'bg-[#1B3123]/90 border-[#7FA48C]/80 text-white'
             ]"
           >
             <!-- 动作动态图标 -->
@@ -148,7 +148,7 @@
           </div>
 
           <!-- 副标题提示微文案 -->
-          <div class="mt-1 px-3 py-0.5 rounded-full bg-slate-950/70 backdrop-blur-sm text-[10px] font-medium text-slate-300 border border-slate-800/80">
+          <div class="mt-1 px-3 py-0.5 rounded-full bg-[#12241A]/70 backdrop-blur-sm text-[10px] font-medium text-[#C9DBCE] border border-[#1F3326]/80">
             <template v-if="currentStep === 'shake'">
               {{ $t('register.liveness.hintShake') }}
             </template>
@@ -173,23 +173,23 @@
           <div
             class="w-full h-full rounded-[48%] border-3 transition-all duration-500 relative flex items-center justify-center"
             :class="[
-              status === 'success' ? 'border-[#2C6E49] shadow-[0_0_35px_rgba(44,110,73,0.8)] scale-105' :
-              currentStep === 'shake' ? 'border-[#C59D5F] shadow-[0_0_25px_rgba(197,157,95,0.6)]' :
-              currentStep === 'mouth' ? 'border-[#D3A757] shadow-[0_0_25px_rgba(211,167,87,0.6)]' :
-              'border-[#C59D5F] shadow-[0_0_25px_rgba(197,157,95,0.5)]'
+              status === 'success' ? 'border-[#2F7A50] shadow-[0_0_35px_rgba(44,110,73,0.8)] scale-105' :
+              currentStep === 'shake' ? 'border-[#D3AF62] shadow-[0_0_25px_rgba(211, 175, 98,0.6)]' :
+              currentStep === 'mouth' ? 'border-[#D3AF62] shadow-[0_0_25px_rgba(211, 175, 98,0.6)]' :
+              'border-[#D3AF62] shadow-[0_0_25px_rgba(211, 175, 98,0.5)]'
             ]"
           >
             <!-- 激光上下扫描线 (暖砂金高能光束) -->
             <div
               v-if="status !== 'success'"
-              class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-[#D3A757] to-transparent shadow-[0_0_12px_#D3A757] animate-scan-line"
+              class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scan-line"
             ></div>
 
             <!-- 取景框四角高精度瞄准刻度 (暖金刻度) -->
-            <span class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-3 border-l-3 border-[#D3A757]"></span>
-            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-3 border-r-3 border-[#D3A757]"></span>
-            <span class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-3 border-l-3 border-[#D3A757]"></span>
-            <span class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-3 border-r-3 border-[#D3A757]"></span>
+            <span class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-3 border-l-3 border-[#D3AF62]"></span>
+            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-3 border-r-3 border-[#D3AF62]"></span>
+            <span class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-3 border-l-3 border-[#D3AF62]"></span>
+            <span class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-3 border-r-3 border-[#D3AF62]"></span>
           </div>
 
           <!-- ======================================================== -->
@@ -200,11 +200,11 @@
             v-if="currentStep === 'shake'"
             class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none"
           >
-            <div class="flex items-center gap-1 bg-amber-500/90 text-slate-950 font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-left">
+            <div class="flex items-center gap-1 bg-[#D3AF62]/90 text-[#12241A] font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-left">
               <span>⇦</span>
               <span>{{ $t('register.liveness.turnLeft') }}</span>
             </div>
-            <div class="flex items-center gap-1 bg-amber-500/90 text-slate-950 font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-right">
+            <div class="flex items-center gap-1 bg-[#D3AF62]/90 text-[#12241A] font-black text-xs px-2 py-1 rounded-full shadow-lg animate-bounce-right">
               <span>{{ $t('register.liveness.turnRight') }}</span>
               <span>⇨</span>
             </div>
@@ -215,7 +215,7 @@
             v-if="currentStep === 'mouth'"
             class="absolute bottom-12 inset-x-0 flex flex-col items-center pointer-events-none"
           >
-            <div class="px-3 py-1 bg-purple-600/90 text-white text-xs font-bold rounded-full shadow-lg border border-purple-300 animate-pulse flex items-center gap-1.5">
+            <div class="px-3 py-1 bg-[#C9A13B]/90 text-white text-xs font-bold rounded-full shadow-lg border border-[#E5CEA1] animate-pulse flex items-center gap-1.5">
               <span>👄</span>
               <span>{{ $t('register.liveness.mouthAction') }}</span>
             </div>
@@ -224,13 +224,13 @@
           <!-- 核验完成：大号绿色成功徽章 -->
           <div
             v-if="status === 'success'"
-            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xs rounded-2xl animate-fade-in"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/80 backdrop-blur-xs rounded-lg animate-fade-in"
           >
-            <div class="w-18 h-18 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-2xl animate-scale-up">
+            <div class="w-18 h-18 rounded-full bg-[#3E9B68] text-white flex items-center justify-center shadow-2xl animate-scale-up">
               <el-icon :size="42"><Check /></el-icon>
             </div>
-            <span class="text-base font-extrabold text-emerald-400 mt-3">{{ $t('register.liveness.allPassed') }}</span>
-            <span class="text-xs font-mono text-slate-300 mt-0.5">{{ $t('register.liveness.confidenceLine') }}</span>
+            <span class="text-base font-extrabold text-[#6FBF92] mt-3">{{ $t('register.liveness.allPassed') }}</span>
+            <span class="text-xs font-mono text-[#C9DBCE] mt-0.5">{{ $t('register.liveness.confidenceLine') }}</span>
           </div>
         </div>
 
@@ -238,7 +238,7 @@
         <!-- 黄金视线区 3：底部实时动作进度刻度指示 (带打勾动画) -->
         <!-- ======================================================== -->
         <div class="absolute bottom-3 inset-x-3 z-30">
-          <div class="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 shadow-xl space-y-2">
+          <div class="bg-[#1B3123]/95 backdrop-blur-md border border-[#43554B]/80 rounded-lg sm:rounded-lg p-2.5 sm:p-3 shadow-xl space-y-2">
             <!-- 动作打勾进度标签条 -->
             <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-[11px] font-semibold text-center">
               <!-- 动作 1 -->
@@ -246,15 +246,15 @@
                 class="py-1 px-1 rounded-lg border transition-all duration-300 flex items-center justify-center gap-1"
                 :class="
                   stepDone.look
-                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 font-bold'
+                    ? 'bg-[#3E9B68]/20 border-[#6FBF92] text-[#6FBF92] font-bold'
                     : currentStep === 'look_straight'
-                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 ring-1 ring-cyan-400/50 font-bold'
-                    : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                    ? 'bg-[#3E9B68]/20 border-[#6FBF92] text-[#A7D9BC] ring-1 ring-[#6FBF92]/50 font-bold'
+                    : 'bg-[#1F3326]/60 border-[#43554B] text-[#8A9A8F]'
                 "
               >
                 <span>{{ $t('register.liveness.stepLook') }}</span>
-                <span v-if="stepDone.look" class="text-emerald-400 font-bold">✓</span>
-                <span v-else-if="currentStep === 'look_straight'" class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                <span v-if="stepDone.look" class="text-[#6FBF92] font-bold">✓</span>
+                <span v-else-if="currentStep === 'look_straight'" class="w-1.5 h-1.5 rounded-full bg-[#6FBF92] animate-ping"></span>
               </div>
 
               <!-- 动作 2 -->
@@ -262,15 +262,15 @@
                 class="py-1 px-1 rounded-lg border transition-all duration-300 flex items-center justify-center gap-1"
                 :class="
                   stepDone.shake
-                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 font-bold'
+                    ? 'bg-[#3E9B68]/20 border-[#6FBF92] text-[#6FBF92] font-bold'
                     : currentStep === 'shake'
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-300 ring-1 ring-amber-400/50 font-bold animate-pulse'
-                    : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                    ? 'bg-[#D3AF62]/20 border-[#DFC08B] text-[#E5CEA1] ring-1 ring-[#DFC08B]/50 font-bold animate-pulse'
+                    : 'bg-[#1F3326]/60 border-[#43554B] text-[#8A9A8F]'
                 "
               >
                 <span>{{ $t('register.liveness.stepShake') }}</span>
-                <span v-if="stepDone.shake" class="text-emerald-400 font-bold">✓</span>
-                <span v-else-if="currentStep === 'shake'" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                <span v-if="stepDone.shake" class="text-[#6FBF92] font-bold">✓</span>
+                <span v-else-if="currentStep === 'shake'" class="w-1.5 h-1.5 rounded-full bg-[#DFC08B] animate-ping"></span>
               </div>
 
               <!-- 动作 3 -->
@@ -278,22 +278,22 @@
                 class="py-1 px-1 rounded-lg border transition-all duration-300 flex items-center justify-center gap-1"
                 :class="
                   stepDone.mouth
-                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 font-bold'
+                    ? 'bg-[#3E9B68]/20 border-[#6FBF92] text-[#6FBF92] font-bold'
                     : currentStep === 'mouth'
-                    ? 'bg-purple-500/20 border-purple-400 text-purple-300 ring-1 ring-purple-400/50 font-bold animate-pulse'
-                    : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                    ? 'bg-[#D3AF62]/20 border-[#DFC08B] text-[#E5CEA1] ring-1 ring-[#DFC08B]/50 font-bold animate-pulse'
+                    : 'bg-[#1F3326]/60 border-[#43554B] text-[#8A9A8F]'
                 "
               >
                 <span>{{ $t('register.liveness.stepMouth') }}</span>
-                <span v-if="stepDone.mouth" class="text-emerald-400 font-bold">✓</span>
-                <span v-else-if="currentStep === 'mouth'" class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
+                <span v-if="stepDone.mouth" class="text-[#6FBF92] font-bold">✓</span>
+                <span v-else-if="currentStep === 'mouth'" class="w-1.5 h-1.5 rounded-full bg-[#DFC08B] animate-ping"></span>
               </div>
             </div>
 
             <!-- 总进度进度条 -->
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div class="w-full bg-[#1F3326] rounded-full h-1.5 overflow-hidden">
               <div
-                class="bg-gradient-to-r from-cyan-400 via-amber-400 to-emerald-400 h-full transition-all duration-500 rounded-full"
+                class="bg-gradient-to-r from-[#6FBF92] via-[#DFC08B] to-[#6FBF92] h-full transition-all duration-500 rounded-full"
                 :style="{ width: `${progressPercent}%` }"
               ></div>
             </div>
@@ -301,16 +301,16 @@
         </div>
 
         <!-- 左上角摄像头在线状态指示 -->
-        <div class="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-slate-700 text-[10px] text-slate-300">
-          <span class="w-2 h-2 rounded-full" :class="cameraActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+        <div class="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-[#12241A]/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-[#43554B] text-[10px] text-[#C9DBCE]">
+          <span class="w-2 h-2 rounded-full" :class="cameraActive ? 'bg-[#6FBF92] animate-pulse' : 'bg-[#DFC08B]'"></span>
           <span>{{ cameraActive ? $t('register.liveness.camOnline') : $t('register.liveness.camSimulated') }}</span>
         </div>
       </div>
 
       <!-- 底部辅助说明与返回取消 -->
-      <div class="flex items-center justify-between text-xs text-slate-400 pt-1 px-1">
+      <div class="flex items-center justify-between text-xs text-[#8A9A8F] pt-1 px-1">
         <div>
-          {{ $t('register.liveness.verifyTarget') }}<strong class="text-slate-800">{{ targetName || $t('register.liveness.defaultTarget') }}</strong>
+          {{ $t('register.liveness.verifyTarget') }}<strong class="text-[#1F3326]">{{ targetName || $t('register.liveness.defaultTarget') }}</strong>
         </div>
         <div class="flex items-center gap-2">
           <el-button size="small" @click="handleCancel">

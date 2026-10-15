@@ -1,9 +1,9 @@
 <template>
   <div class="delivery-verification-tab space-y-4">
     <!-- 标头与子切换 -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB]">
       <div v-if="isCitizen" class="flex items-center gap-2">
-        <span class="text-xs font-bold text-slate-800">{{ $t('warehouse.inTransitTitle') || '在途口粮物资配送追踪与终端扫码核收' }}</span>
+        <span class="text-xs font-bold text-[#1F3326]">{{ $t('warehouse.inTransitTitle') || '在途口粮物资配送追踪与终端扫码核收' }}</span>
         <el-tag size="small" type="success" effect="plain">{{ $t('warehouse.realtimeSync') || '实时同步' }}</el-tag>
       </div>
       <el-radio-group v-else v-model="activeView" size="small">
@@ -25,14 +25,14 @@
     <!-- ======================================================== -->
     <div v-if="activeView === 'tracking'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-indigo-600"><Van /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><Van /></el-icon>
           <span>{{ $t('warehouse.viewTracking') || '在途配送时效追踪' }}</span>
         </h3>
       </div>
 
       <!-- 查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="trackingSearch"
           :placeholder="$t('warehouse.trackingSearchPlaceholder') || '搜索交付流水号 / 代理中心 / 承运车队 / 司机'"
@@ -42,7 +42,7 @@
           @input="trackingPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -54,41 +54,41 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetTrackingFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">{{ isEn ? `Total ${filteredTrackings.length} records` : `共 ${filteredTrackings.length} 条记录` }}</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredTrackings.length} records` : `共 ${filteredTrackings.length} 条记录` }}</span>
       </div>
 
       <!-- 表格 -->
-      <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedTrackings" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="deliveryFlowNo" :label="$t('warehouse.deliveryFlowNo') || '交付流水号'" min-width="180">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-indigo-700">{{ row.deliveryFlowNo }}</span>
-              <div class="text-[10px] text-slate-400 font-mono">{{ isEn ? 'Dispatch: ' : '发运: ' }}{{ row.dispatchTime }}</div>
+              <span class="font-mono font-bold text-[#2A5440]">{{ row.deliveryFlowNo }}</span>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ isEn ? 'Dispatch: ' : '发运: ' }}{{ row.dispatchTime }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="toAgentCenter" :label="$t('warehouse.toAgentCenter') || '目的代理网点'" min-width="180">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ row.toAgentCenter }}</div>
+              <div class="font-bold text-[#1F3326]">{{ row.toAgentCenter }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="carrierName" :label="$t('warehouse.carrierName') || '物流承运车队'" min-width="160">
             <template #default="{ row }">
-              <div class="text-slate-700 font-medium">{{ row.carrierName }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
+              <div class="text-[#43554B] font-medium">{{ row.carrierName }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
             </template>
           </el-table-column>
           <el-table-column :label="$t('warehouse.inTransitAging') || '在途时效'" width="130" align="center">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-slate-700">{{ row.inTransitHours }} / {{ row.maxAllowedHours }} {{ isEn ? 'hrs' : '小时' }}</span>
-              <div class="text-[10px] text-emerald-600 font-medium">● {{ isEn ? 'Normal Timing' : '时效正常' }}</div>
+              <span class="font-mono font-bold text-[#43554B]">{{ row.inTransitHours }} / {{ row.maxAllowedHours }} {{ isEn ? 'hrs' : '小时' }}</span>
+              <div class="text-[10px] text-[#2F7A50] font-medium">● {{ isEn ? 'Normal Timing' : '时效正常' }}</div>
             </template>
           </el-table-column>
           <el-table-column :label="$t('warehouse.latestTrace') || '最新轨迹'" min-width="200">
             <template #default="{ row }">
-              <div class="text-[11px] text-slate-600 truncate" :title="row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc">
+              <div class="text-[11px] text-[#58685D] truncate" :title="row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc">
                 {{ row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc || (isEn ? 'Trunk Line in Transit' : '干线运输中') }}
               </div>
-              <div class="text-[10px] text-slate-400 font-mono">
+              <div class="text-[10px] text-[#8A9A8F] font-mono">
                 {{ row.gpsNodes?.[row.gpsNodes?.length - 1]?.time }}
               </div>
             </template>
@@ -126,13 +126,13 @@
                 <el-icon class="mr-1"><FullScreen /></el-icon>
                 扫码核收
               </el-button>
-              <span v-else class="text-[11px] text-rose-500 font-bold">已阻断</span>
+              <span v-else class="text-[11px] text-[#C04442] font-bold">已阻断</span>
             </template>
           </el-table-column>
         </el-table>
 
-        <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredTrackings.length }} 笔在途任务</span>
+        <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredTrackings.length }} 笔在途任务</span>
           <el-pagination
             v-model:current-page="trackingPage"
             v-model:page-size="trackingPageSize"
@@ -150,8 +150,8 @@
     <!-- ======================================================== -->
     <div v-if="!isCitizen && activeView === 'receipt'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-blue-600"><Checked /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><Checked /></el-icon>
           <span>代理网点扫码签收与对账记录</span>
         </h3>
         <el-button type="primary" size="small" @click="openQuickReceipt">
@@ -161,7 +161,7 @@
       </div>
 
       <!-- 查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="receiptSearch"
           placeholder="搜索核收凭单 / 交付流水 / 代销网点"
@@ -171,7 +171,7 @@
           @input="receiptPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -181,30 +181,30 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetReceiptFilter">重置</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredReceipts.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredReceipts.length }} 条记录</span>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedReceipts" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="receiptNo" label="核收凭单 / 交付流水" min-width="190">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-slate-800">{{ row.receiptNo }}</span>
-              <div class="font-mono text-indigo-600 text-[11px]">{{ row.deliveryFlowNo }}</div>
+              <span class="font-mono font-bold text-[#1F3326]">{{ row.receiptNo }}</span>
+              <div class="font-mono text-[#326445] text-[11px]">{{ row.deliveryFlowNo }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="agentName" label="签收代销网点" min-width="170">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ row.agentName }}</div>
-              <div class="text-[10px] text-slate-400">{{ row.signedBy }}</div>
+              <div class="font-bold text-[#1F3326]">{{ row.agentName }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ row.signedBy }}</div>
             </template>
           </el-table-column>
           <el-table-column label="交付流水量 / 实收量" width="160" align="right">
             <template #default="{ row }">
-              <div class="font-mono text-slate-400 text-[11px]">流水应发: {{ (row.shippedQty || 0).toLocaleString() }} KG</div>
-              <div class="font-mono font-bold text-blue-600">实到签收: {{ (row.receivedQty || 0).toLocaleString() }} KG</div>
+              <div class="font-mono text-[#8A9A8F] text-[11px]">流水应发: {{ (row.shippedQty || 0).toLocaleString() }} KG</div>
+              <div class="font-mono font-bold text-[#326445]">实到签收: {{ (row.receivedQty || 0).toLocaleString() }} KG</div>
               <div
                 v-if="row.discrepancyQty !== 0"
-                class="font-mono font-bold text-[11px] text-rose-600 mt-0.5"
+                class="font-mono font-bold text-[11px] text-[#C04442] mt-0.5"
               >
                 差异差额: {{ row.discrepancyQty }} KG
               </div>
@@ -236,7 +236,7 @@
             <template #default="{ row }">
               <span
                 class="text-[11px] font-bold"
-                :class="row.status.includes('阻断') ? 'text-rose-600' : 'text-emerald-600'"
+                :class="row.status.includes('阻断') ? 'text-[#C04442]' : 'text-[#2F7A50]'"
               >
                 {{ row.status }}
               </span>
@@ -244,8 +244,8 @@
           </el-table-column>
         </el-table>
 
-        <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredReceipts.length }} 笔核收凭据</span>
+        <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredReceipts.length }} 笔核收凭据</span>
           <el-pagination
             v-model:current-page="receiptPage"
             v-model:page-size="receiptPageSize"
@@ -263,14 +263,14 @@
     <!-- ======================================================== -->
     <div v-if="!isCitizen && activeView === 'discrepancy'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-rose-600"><WarningFilled /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#C04442]"><WarningFilled /></el-icon>
           <span>差异预警与核查工单 (异常批次阻断)</span>
         </h3>
       </div>
 
       <!-- 查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="discrepancySearch"
           placeholder="搜索工单号 / 交付流水号 / 异常网点"
@@ -280,7 +280,7 @@
           @input="discrepancyPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -290,33 +290,33 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetDiscrepancyFilter">重置</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredDiscrepancies.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredDiscrepancies.length }} 条记录</span>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedDiscrepancies" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="ticketNo" label="工单编号" width="160">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-rose-600">{{ row.ticketNo }}</span>
-              <div class="text-[10px] text-slate-400 font-mono">{{ row.deliveryFlowNo }}</div>
+              <span class="font-mono font-bold text-[#C04442]">{{ row.ticketNo }}</span>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.deliveryFlowNo }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="centerName" label="异常代销网点" min-width="160">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ row.centerName }}</div>
-              <div class="text-[10px] text-slate-400">{{ row.agentCenterId }}</div>
+              <div class="font-bold text-[#1F3326]">{{ row.centerName }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ row.agentCenterId }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="discrepancyQty" label="锁定差额数量" width="140" align="right">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-rose-600 text-sm">{{ row.discrepancyQty }} {{ row.unit }}</span>
-              <div class="text-[10px] text-rose-500 font-medium">● 异常阻断锁定</div>
+              <span class="font-mono font-bold text-[#C04442] text-sm">{{ row.discrepancyQty }} {{ row.unit }}</span>
+              <div class="text-[10px] text-[#C04442] font-medium">● 异常阻断锁定</div>
             </template>
           </el-table-column>
           <el-table-column prop="investigationReport" label="调查核查进展报告" min-width="220" />
           <el-table-column prop="createdTime" label="派发时间" width="140" align="center">
             <template #default="{ row }">
-              <span class="text-slate-500 font-mono text-[11px]">{{ row.createdTime }}</span>
+              <span class="text-[#58685D] font-mono text-[11px]">{{ row.createdTime }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="quarantineStatus" label="隔离阻断状态" width="130" align="center">
@@ -340,8 +340,8 @@
           </el-table-column>
         </el-table>
 
-        <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredDiscrepancies.length }} 笔工单记录</span>
+        <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredDiscrepancies.length }} 笔工单记录</span>
           <el-pagination
             v-model:current-page="discrepancyPage"
             v-model:page-size="discrepancyPageSize"
@@ -366,21 +366,21 @@
     >
       <div class="space-y-4 text-xs">
         <!-- 待核验单据基本信息 -->
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] flex items-center justify-between">
           <div>
-            <span class="text-slate-400 text-[11px] block">待签收交付流水单号：</span>
-            <span class="font-mono font-bold text-indigo-700 text-sm">{{ currentScanRow?.deliveryFlowNo }}</span>
+            <span class="text-[#8A9A8F] text-[11px] block">待签收交付流水单号：</span>
+            <span class="font-mono font-bold text-[#2A5440] text-sm">{{ currentScanRow?.deliveryFlowNo }}</span>
           </div>
           <div class="text-right">
-            <span class="text-slate-400 text-[11px] block">目的代销网点：</span>
-            <span class="font-bold text-slate-800">{{ currentScanRow?.toAgentCenter }}</span>
+            <span class="text-[#8A9A8F] text-[11px] block">目的代销网点：</span>
+            <span class="font-bold text-[#1F3326]">{{ currentScanRow?.toAgentCenter }}</span>
           </div>
         </div>
 
         <!-- 未扫码状态：摄像头画面与上传区 -->
         <div v-if="!scanSuccess" class="space-y-3">
           <!-- 摄像头视窗 -->
-          <div class="relative bg-slate-950 rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center border border-slate-800 shadow-inner">
+          <div class="relative bg-[#12241A] rounded-lg overflow-hidden aspect-[4/3] flex items-center justify-center border border-[#1F3326] shadow-inner">
             <!-- 实际视频流 -->
             <video
               ref="scannerVideo"
@@ -393,23 +393,23 @@
 
             <!-- 扫描框与雷达扫描线动画 (摄像头运行状态) -->
             <div v-if="cameraActive" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div class="relative w-56 h-56 border-2 border-emerald-400/80 rounded-2xl shadow-[0_0_20px_rgba(52,211,153,0.3)] flex items-center justify-center overflow-hidden">
-                <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-emerald-400"></div>
-                <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-emerald-400"></div>
-                <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-emerald-400"></div>
-                <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-emerald-400"></div>
+              <div class="relative w-56 h-56 border-2 border-[#6FBF92]/80 rounded-lg shadow-[0_0_20px_rgba(111, 191, 146,0.3)] flex items-center justify-center overflow-hidden">
+                <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[#6FBF92]"></div>
+                <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[#6FBF92]"></div>
+                <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[#6FBF92]"></div>
+                <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[#6FBF92]"></div>
                 <div class="scan-laser-line"></div>
               </div>
             </div>
 
             <!-- 摄像头正在连接或未授权状态覆盖层 -->
-            <div v-if="!cameraActive" class="p-6 text-center text-slate-300 space-y-3">
-              <div class="w-12 h-12 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center mx-auto text-xl">
+            <div v-if="!cameraActive" class="p-6 text-center text-[#C9DBCE] space-y-3">
+              <div class="w-12 h-12 rounded-full bg-[#1F3326] text-[#8A9A8F] flex items-center justify-center mx-auto text-xl">
                 <el-icon><Camera /></el-icon>
               </div>
               <div>
                 <p class="font-bold text-sm text-white mb-1">{{ cameraStatusText }}</p>
-                <p class="text-[11px] text-slate-400 max-w-sm mx-auto">
+                <p class="text-[11px] text-[#8A9A8F] max-w-sm mx-auto">
                   {{ cameraErrorMessage || '请授权摄像头权限以自动扫描配给物资箱码二维码，或使用下方快捷上传图片识别' }}
                 </p>
               </div>
@@ -420,15 +420,15 @@
             </div>
 
             <!-- 状态角标 -->
-            <div v-if="cameraActive" class="absolute top-3 left-3 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-[10px] text-emerald-400 flex items-center gap-1.5 border border-emerald-500/30">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div v-if="cameraActive" class="absolute top-3 left-3 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-[10px] text-[#6FBF92] flex items-center gap-1.5 border border-[#3E9B68]/30">
+              <span class="w-2 h-2 rounded-full bg-[#3E9B68] animate-pulse"></span>
               <span>摄像头已启动，对准二维码自动识别...</span>
             </div>
           </div>
 
           <!-- 模拟自动识别成功快捷入口 -->
           <div class="flex items-center justify-between text-xs pt-1">
-            <span class="text-slate-400 text-[11px]">将配给物资二维码对准取景框即可自动识别</span>
+            <span class="text-[#8A9A8F] text-[11px]">将配给物资二维码对准取景框即可自动识别</span>
             <el-button size="small" type="success" plain @click="simulateScanSuccess">
               <el-icon class="mr-1"><Aim /></el-icon>
               模拟扫描识别成功
@@ -437,13 +437,13 @@
 
           <!-- 分隔线 -->
           <div class="relative py-2 text-center">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-            <span class="relative bg-white px-3 text-[11px] text-slate-400 font-medium">或上传二维码图片 / 凭证拍照进行签收</span>
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-[#D9E5DB]"></div></div>
+            <span class="relative bg-white px-3 text-[11px] text-[#8A9A8F] font-medium">或上传二维码图片 / 凭证拍照进行签收</span>
           </div>
 
           <!-- 图片上传解析区 -->
           <div
-            class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-blue-50/20"
+            class="border-2 border-dashed border-[#C9DBCE] hover:border-[#5C8A6B] rounded-lg p-4 text-center cursor-pointer transition-colors bg-[#F3F8F4]/50 hover:bg-[#EFF5F1]/20"
             @click="triggerImageUpload"
           >
             <input
@@ -453,49 +453,49 @@
               class="hidden"
               @change="handleImageFileSelected"
             />
-            <div class="flex flex-col items-center gap-1.5 text-slate-500">
-              <el-icon class="text-2xl text-blue-600"><Picture /></el-icon>
-              <span class="font-bold text-xs text-slate-700">点击上传二维码图片 / 物资箱码照片</span>
-              <span class="text-[10px] text-slate-400">支持 JPG、PNG、WEBP 格式，系统将自动解析二维码并核验防伪信息</span>
+            <div class="flex flex-col items-center gap-1.5 text-[#58685D]">
+              <el-icon class="text-2xl text-[#326445]"><Picture /></el-icon>
+              <span class="font-bold text-xs text-[#43554B]">点击上传二维码图片 / 物资箱码照片</span>
+              <span class="text-[10px] text-[#8A9A8F]">支持 JPG、PNG、WEBP 格式，系统将自动解析二维码并核验防伪信息</span>
             </div>
           </div>
         </div>
 
         <!-- 扫描成功结果展示卡片 -->
         <div v-else class="space-y-4">
-          <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
-            <div class="flex items-center gap-2 text-emerald-800">
-              <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">
+          <div class="p-4 bg-[#EFF5F1] rounded-lg border border-[#C7E0CE] space-y-3">
+            <div class="flex items-center gap-2 text-[#24483A]">
+              <div class="w-7 h-7 rounded-full bg-[#2F7A50] text-white flex items-center justify-center text-sm font-bold">
                 ✓
               </div>
               <div>
                 <span class="font-bold text-sm block">二维码扫码核验成功！</span>
-                <span class="text-[11px] text-emerald-700">防伪签名比对一致 · 对应配送物资信息已解析</span>
+                <span class="text-[11px] text-[#2F5B44]">防伪签名比对一致 · 对应配送物资信息已解析</span>
               </div>
             </div>
 
             <!-- 识别出的详细信息 -->
-            <div class="grid grid-cols-2 gap-2 text-xs bg-white/80 p-3 rounded-lg border border-emerald-100">
+            <div class="grid grid-cols-2 gap-2 text-xs bg-white/80 p-3 rounded-lg border border-[#E1F4E4]">
               <div>
-                <span class="text-slate-400 text-[11px] block">配送交付流水号：</span>
-                <span class="font-mono font-bold text-indigo-700">{{ scannedResult?.flowNo }}</span>
+                <span class="text-[#8A9A8F] text-[11px] block">配送交付流水号：</span>
+                <span class="font-mono font-bold text-[#2A5440]">{{ scannedResult?.flowNo }}</span>
               </div>
               <div>
-                <span class="text-slate-400 text-[11px] block">防伪箱码/校验码：</span>
-                <span class="font-mono font-bold text-emerald-700">{{ scannedResult?.securityCode }}</span>
+                <span class="text-[#8A9A8F] text-[11px] block">防伪箱码/校验码：</span>
+                <span class="font-mono font-bold text-[#2F5B44]">{{ scannedResult?.securityCode }}</span>
               </div>
               <div>
-                <span class="text-slate-400 text-[11px] block">物资品名与数量：</span>
-                <span class="font-bold text-slate-800">{{ scannedResult?.itemName }} ({{ scannedResult?.qty }} {{ scannedResult?.unit }})</span>
+                <span class="text-[#8A9A8F] text-[11px] block">物资品名与数量：</span>
+                <span class="font-bold text-[#1F3326]">{{ scannedResult?.itemName }} ({{ scannedResult?.qty }} {{ scannedResult?.unit }})</span>
               </div>
               <div>
-                <span class="text-slate-400 text-[11px] block">生产批次：</span>
-                <span class="font-mono text-slate-600">{{ scannedResult?.batchNo }}</span>
+                <span class="text-[#8A9A8F] text-[11px] block">生产批次：</span>
+                <span class="font-mono text-[#58685D]">{{ scannedResult?.batchNo }}</span>
               </div>
             </div>
           </div>
 
-          <div class="p-3 bg-blue-50/70 rounded-xl border border-blue-200 text-blue-900 text-xs flex items-center justify-between">
+          <div class="p-3 bg-[#EFF5F1]/70 rounded-lg border border-[#C7DED0] text-[#1F3326] text-xs flex items-center justify-between">
             <span>签收人身份：<strong>{{ authStore.userProfile?.name || '配给卡公民' }} (验货确认无误)</strong></span>
             <el-tag size="small" type="success" effect="plain">防伪完好率 100%</el-tag>
           </div>
@@ -522,7 +522,7 @@
 
     <!-- 弹窗 2: 代理后台传统录入核收对话框 (保留兼容) -->
     <el-dialog v-model="receiptDialogVisible" title="代理移动终端扫码核收录入 (P3 对账)" width="580px" destroy-on-close>
-      <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs mb-3 space-y-1">
+      <div class="p-3 bg-[#FDF3E0] rounded-lg border border-[#F2E3C6] text-[#5A4718] text-xs mb-3 space-y-1">
         <div class="font-bold">【对账核验提示】</div>
         <div>
           若实收数量 &lt; 交付流水数量，系统将即刻触发 P3 差异预警、自动冻结异常差额批次并派发核查工单！
@@ -970,8 +970,8 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #34d399, #10b981, transparent);
-  box-shadow: 0 0 10px #10b981, 0 0 16px #34d399;
+  background: linear-gradient(90deg, transparent, #6FBF92, #3E9B68, transparent);
+  box-shadow: 0 0 10px #3E9B68, 0 0 16px #6FBF92;
   animation: scanMove 2s infinite ease-in-out alternate;
 }
 </style>

@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --el-color-primary: #2563eb;
-  --el-color-primary-light-3: #60a5fa;
-  --el-color-primary-light-7: #bfdbfe;
-  --el-color-primary-light-9: #eff6ff;
-  --el-color-primary-dark-2: #1d4ed8;
+  --el-color-primary: #326445;
+  --el-color-primary-light-3: #5C8A6B;
+  --el-color-primary-light-7: #AECBB8;
+  --el-color-primary-light-9: #E1F4E4;
+  --el-color-primary-dark-2: #2A5440;
 }
 
 body {
   margin: 0;
   padding: 0;
   /* 统一支持现代无衬线、阿拉伯语与库尔德语的自适应字体栈，确保字形饱满且布局度量稳定 */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", "Tahoma", "Helvetica Neue", Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: "IBM Plex Sans Arabic", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", "Tahoma", "Helvetica Neue", Arial, sans-serif;
+  background-color: #F8FBF8;
+  color: #1F3326;
 }
 
 /* 统一企业级滚动条 */
@@ -28,18 +28,45 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C9DBCE;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #8A9A8F;
 }
 
 /* 保证多语言切换时布局稳定性，数字与编码统一LTR单向显示 */
 .font-mono {
   direction: ltr;
   unicode-bidi: isolate;
+}
+
+/* ======================================================== */
+/* 日期/月份选择弹层防越界 (小屏与 APP 仿真视口)              */
+/* ======================================================== */
+.el-picker__popper {
+  max-width: calc(100vw - 16px) !important;
+}
+
+.rcm-date-popper {
+  max-width: calc(100vw - 16px) !important;
+  /* 组件内渲染 (teleported=false) 时同样限制不超出所在容器 */
+  max-width: min(calc(100vw - 16px), 100%) !important;
+}
+
+@media screen and (max-width: 480px) {
+  /* 月份面板默认 322px 固定宽，在 412px 及更窄视口下自适应收缩 */
+  .el-picker__popper .el-date-picker,
+  .rcm-date-popper .el-date-picker {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .el-picker__popper .el-date-picker__header,
+  .rcm-date-popper .el-date-picker__header {
+    padding: 8px 10px !important;
+  }
 }
 
 /* ======================================================== */

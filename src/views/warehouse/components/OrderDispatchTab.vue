@@ -3,7 +3,7 @@
     <!-- ======================================================== -->
     <!-- 1. 顶部操作栏：搜索筛选 + 【📸 扫码核验交货】核心大按钮 -->
     <!-- ======================================================== -->
-    <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/80 space-y-3">
+    <div class="bg-[#F3F8F4] p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/80 space-y-3">
       <!-- 搜索、履约类型筛选与扫码交货大按钮 (自适应 APP 移动端视口) -->
       <div :class="isAppMode ? 'space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5'">
         <div :class="isAppMode ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-1'">
@@ -16,7 +16,7 @@
             @input="handleSearch"
           >
             <template #prefix>
-              <el-icon class="text-slate-400"><Search /></el-icon>
+              <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
             </template>
           </el-input>
 
@@ -37,7 +37,7 @@
           <el-button
             type="success"
             size="small"
-            class="font-bold shadow-xs px-3 bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center justify-center gap-1.5 rounded-xl !m-0"
+            class="font-bold shadow-xs px-3 bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white flex items-center justify-center gap-1.5 rounded-lg !m-0"
             :class="isAppMode ? '!h-8 !w-full' : ''"
             @click="openScanVerifyModal()"
           >
@@ -48,7 +48,7 @@
           <el-button
             size="small"
             :loading="loading"
-            class="!m-0 rounded-xl"
+            class="!m-0 rounded-lg"
             :class="isAppMode ? '!h-8 !w-full flex items-center justify-center' : ''"
             @click="loadOrders"
           >
@@ -63,15 +63,15 @@
         <button
           type="button"
           :class="[
-            'px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+            'px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
             statusFilter === 'ALL'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-[#326445] text-white shadow-xs'
+              : 'bg-white text-[#58685D] border border-[#D9E5DB] hover:bg-[#E9F1EB]'
           ]"
           @click="setStatusFilter('ALL')"
         >
           <span>{{ $t('agentOrders.filterAll') }}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'ALL' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'ALL' ? 'bg-[#5C8A6B] text-white' : 'bg-[#E9F1EB] text-[#58685D]'">
             {{ counts.all }}
           </span>
         </button>
@@ -79,15 +79,15 @@
         <button
           type="button"
           :class="[
-            'px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+            'px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
             statusFilter === 'PENDING'
-              ? 'bg-amber-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-[#C9A13B] text-white shadow-xs'
+              : 'bg-white text-[#58685D] border border-[#D9E5DB] hover:bg-[#E9F1EB]'
           ]"
           @click="setStatusFilter('PENDING')"
         >
           <span>{{ $t('agentOrders.filterPending') }}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'PENDING' ? 'bg-[#D3AF62] text-white' : 'bg-[#FDF3E0] text-[#7A5F21]'">
             {{ counts.pending }}
           </span>
         </button>
@@ -95,15 +95,15 @@
         <button
           type="button"
           :class="[
-            'px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+            'px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
             statusFilter === 'DISPATCHED'
-              ? 'bg-sky-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-[#2F7A50] text-white shadow-xs'
+              : 'bg-white text-[#58685D] border border-[#D9E5DB] hover:bg-[#E9F1EB]'
           ]"
           @click="setStatusFilter('DISPATCHED')"
         >
           <span>{{ $t('agentOrders.filterDispatched') }}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'DISPATCHED' ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700'">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'DISPATCHED' ? 'bg-[#3E9B68] text-white' : 'bg-[#E1F4E4] text-[#2F5B44]'">
             {{ counts.dispatched }}
           </span>
         </button>
@@ -111,15 +111,15 @@
         <button
           type="button"
           :class="[
-            'px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+            'px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
             statusFilter === 'READY_FOR_PICKUP'
-              ? 'bg-purple-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-[#C9A13B] text-white shadow-xs'
+              : 'bg-white text-[#58685D] border border-[#D9E5DB] hover:bg-[#E9F1EB]'
           ]"
           @click="setStatusFilter('READY_FOR_PICKUP')"
         >
           <span>{{ $t('agentOrders.filterReadyPickup') }}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'READY_FOR_PICKUP' ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'READY_FOR_PICKUP' ? 'bg-[#D3AF62] text-white' : 'bg-[#FDF3E0] text-[#7A5F21]'">
             {{ counts.readyPickup }}
           </span>
         </button>
@@ -127,15 +127,15 @@
         <button
           type="button"
           :class="[
-            'px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+            'px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
             statusFilter === 'DELIVERED'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-[#2F7A50] text-white shadow-xs'
+              : 'bg-white text-[#58685D] border border-[#D9E5DB] hover:bg-[#E9F1EB]'
           ]"
           @click="setStatusFilter('DELIVERED')"
         >
           <span>{{ $t('agentOrders.filterDelivered') }}</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'DELIVERED' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="statusFilter === 'DELIVERED' ? 'bg-[#3E9B68] text-white' : 'bg-[#E1F4E4] text-[#2F5B44]'">
             {{ counts.delivered }}
           </span>
         </button>
@@ -146,8 +146,8 @@
     <!-- 2. 订单卡片流 (极简移动端友好布局，大字号、高触控区) -->
     <!-- ======================================================== -->
     <div v-loading="loading" class="min-h-[200px]">
-      <div v-if="filteredOrders.length === 0" class="py-12 text-center text-slate-400">
-        <el-icon class="text-4xl mb-2 text-slate-300"><Document /></el-icon>
+      <div v-if="filteredOrders.length === 0" class="py-12 text-center text-[#8A9A8F]">
+        <el-icon class="text-4xl mb-2 text-[#C9DBCE]"><Document /></el-icon>
         <p class="text-sm font-medium">{{ $t('agentOrders.noOrders') }}</p>
       </div>
 
@@ -158,27 +158,27 @@
         <div
           v-for="order in filteredOrders"
           :key="order.orderId"
-          class="bg-white border border-slate-200/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5"
-          :class="isAppMode ? 'p-3 rounded-xl' : 'p-4 rounded-2xl'"
+          class="bg-white border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5"
+          :class="isAppMode ? 'p-3 rounded-lg' : 'p-4 rounded-lg'"
         >
           <!-- 卡片头部：订单单号与状态标签 (移动端优雅排列) -->
-          <div class="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-2">
+          <div class="flex items-center justify-between gap-1.5 border-b border-[#E9F1EB] pb-2">
             <div class="flex items-center gap-1.5">
-              <span class="font-mono font-bold text-slate-900 text-xs sm:text-sm">#{{ (order.orderId || '').slice(-8) }}</span>
-              <span class="text-[10px] sm:text-[11px] text-slate-400 font-mono">{{ (order.createdAt || '').slice(5, 16) }}</span>
+              <span class="font-mono font-bold text-[#1B3123] text-xs sm:text-sm">#{{ (order.orderId || '').slice(-8) }}</span>
+              <span class="text-[10px] sm:text-[11px] text-[#8A9A8F] font-mono">{{ (order.createdAt || '').slice(5, 16) }}</span>
             </div>
 
             <div class="flex items-center gap-1">
               <!-- 履约方式胶囊 -->
               <span
                 v-if="order.deliveryType === 'HOME_DELIVERY'"
-                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center gap-1"
+                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#EFF5F1] text-[#2A5440] border border-[#C7DED0]/60 flex items-center gap-1"
               >
                 🚚 <span class="truncate">{{ $t('agentOrders.typeDelivery') }}</span>
               </span>
               <span
                 v-else
-                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1"
+                class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#EFF5F1] text-[#2F5B44] border border-[#C7E0CE]/60 flex items-center gap-1"
               >
                 🏬 <span class="truncate">{{ $t('agentOrders.typePickup') }}</span>
               </span>
@@ -197,22 +197,22 @@
 
           <!-- 户主核心信息 (极简化提炼，支持一键复制电话) -->
           <div class="space-y-1.5 text-xs">
-            <div class="flex items-center justify-between text-slate-700 gap-1">
+            <div class="flex items-center justify-between text-[#43554B] gap-1">
               <div class="flex items-center gap-1.5 truncate">
-                <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">{{ formatHeadName(order.headName) }}</span>
-                <span class="text-[10px] sm:text-[11px] font-mono text-slate-400 shrink-0">({{ order.cardNo }})</span>
+                <span class="font-bold text-[#1B3123] text-xs sm:text-sm truncate">{{ formatHeadName(order.headName) }}</span>
+                <span class="text-[10px] sm:text-[11px] font-mono text-[#8A9A8F] shrink-0">({{ order.cardNo }})</span>
               </div>
-              <div class="flex items-center gap-1 text-slate-600 font-mono shrink-0">
+              <div class="flex items-center gap-1 text-[#58685D] font-mono shrink-0">
                 <span class="text-[11px]">{{ order.phone }}</span>
                 <el-button size="small" text class="p-0.5" @click="copyText(order.phone)">
-                  <el-icon class="text-xs text-blue-600"><CopyDocument /></el-icon>
+                  <el-icon class="text-xs text-[#326445]"><CopyDocument /></el-icon>
                 </el-button>
               </div>
             </div>
 
             <!-- 送货住址或自提网点 -->
-            <div class="flex items-start gap-1 text-[11px] text-slate-500">
-              <el-icon class="text-xs text-slate-400 mt-0.5 shrink-0"><Location /></el-icon>
+            <div class="flex items-start gap-1 text-[11px] text-[#58685D]">
+              <el-icon class="text-xs text-[#8A9A8F] mt-0.5 shrink-0"><Location /></el-icon>
               <span class="truncate leading-tight">{{ order.deliveryType === 'HOME_DELIVERY' ? formatDeliveryAddress(order.deliveryAddress) : formatAgentName(order.agentName) }}</span>
             </div>
 
@@ -221,28 +221,28 @@
               <span
                 v-for="(it, idx) in order.items"
                 :key="idx"
-                class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] sm:text-[11px] font-medium border border-slate-200/60"
+                class="px-2 py-0.5 rounded-md bg-[#E9F1EB] text-[#43554B] text-[10px] sm:text-[11px] font-medium border border-[#D9E5DB]/60"
               >
-                {{ formatItemName(it.itemName) }} <b class="font-mono text-slate-900 font-bold">×{{ it.qty }}{{ formatUnit(it.unit) }}</b>
+                {{ formatItemName(it.itemName) }} <b class="font-mono text-[#1B3123] font-bold">×{{ it.qty }}{{ formatUnit(it.unit) }}</b>
               </span>
             </div>
           </div>
 
           <!-- 结算金额与核验提货码栏 -->
-          <div class="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+          <div class="bg-[#F3F8F4] p-2 sm:p-2.5 rounded-lg border border-[#E9F1EB] flex items-center justify-between text-xs">
             <div>
-              <span class="text-[10px] text-slate-400 block">{{ $t('agentOrders.orderCardPaid') }}</span>
-              <span class="font-mono font-bold text-amber-600 text-xs sm:text-sm">IQD {{ (order.selfPayAmount || 0).toLocaleString() }}</span>
+              <span class="text-[10px] text-[#8A9A8F] block">{{ $t('agentOrders.orderCardPaid') }}</span>
+              <span class="font-mono font-bold text-[#C9A13B] text-xs sm:text-sm">IQD {{ (order.selfPayAmount || 0).toLocaleString() }}</span>
             </div>
 
             <div class="text-right">
-              <span class="text-[10px] text-slate-400 block">{{ $t('agentOrders.orderCardPickupCode') }}</span>
+              <span class="text-[10px] text-[#8A9A8F] block">{{ $t('agentOrders.orderCardPickupCode') }}</span>
               <div class="flex items-center gap-1">
-                <span class="font-mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200 text-xs">
+                <span class="font-mono font-bold text-[#1F3326] bg-white px-1.5 py-0.5 rounded border border-[#D9E5DB] text-xs">
                   {{ order.pickupCode }}
                 </span>
                 <el-button size="small" text class="p-0.5" @click="copyText(order.pickupCode)">
-                  <el-icon class="text-xs text-slate-500"><CopyDocument /></el-icon>
+                  <el-icon class="text-xs text-[#58685D]"><CopyDocument /></el-icon>
                 </el-button>
               </div>
             </div>
@@ -251,14 +251,14 @@
           <!-- 若已派单，展示车队指派信息微条 -->
           <div
             v-if="order.dispatchInfo && order.dispatchInfo.deliveryPerson"
-            class="p-2 rounded-xl bg-sky-50/70 border border-sky-100 text-[11px] text-sky-800 flex items-center justify-between gap-1"
+            class="p-2 rounded-lg bg-[#EFF5F1]/70 border border-[#E1F4E4] text-[11px] text-[#24483A] flex items-center justify-between gap-1"
           >
             <div class="flex items-center gap-1.5 truncate">
               <span>🚚</span>
               <span class="font-bold truncate">{{ formatDeliveryPerson(order.dispatchInfo.deliveryPerson) }}</span>
-              <span class="font-mono text-sky-600 truncate">[{{ order.dispatchInfo.vehicleNo }}]</span>
+              <span class="font-mono text-[#2F7A50] truncate">[{{ order.dispatchInfo.vehicleNo }}]</span>
             </div>
-            <span class="font-mono font-semibold shrink-0 text-sky-700 text-[10px] sm:text-[11px]">{{ formatEstimatedTime(order.dispatchInfo.estimatedTime) }}</span>
+            <span class="font-mono font-semibold shrink-0 text-[#2F5B44] text-[10px] sm:text-[11px]">{{ formatEstimatedTime(order.dispatchInfo.estimatedTime) }}</span>
           </div>
 
           <!-- 卡片底部操作大按钮 (极简触控交互) -->
@@ -267,7 +267,7 @@
             <el-button
               v-if="order.deliveryType === 'HOME_DELIVERY' && (order.status === 'PENDING_DELIVERY' || order.status === 'PAID')"
               type="primary"
-              class="w-full font-bold shadow-xs rounded-xl !h-8 sm:!h-9 text-xs"
+              class="w-full font-bold shadow-xs rounded-lg !h-8 sm:!h-9 text-xs"
               data-demo-target="btn-dispatch"
               @click="openDispatchModal(order)"
             >
@@ -279,7 +279,7 @@
             <el-button
               v-else-if="order.deliveryType === 'PICKUP' && (order.status === 'PENDING_PICKUP' || order.status === 'PAID')"
               type="warning"
-              class="w-full font-bold shadow-xs rounded-xl !h-8 sm:!h-9 text-xs"
+              class="w-full font-bold shadow-xs rounded-lg !h-8 sm:!h-9 text-xs"
               @click="handleMarkReady(order)"
             >
               <el-icon class="mr-1"><CircleCheck /></el-icon>
@@ -290,7 +290,7 @@
             <el-button
               v-else-if="order.status === 'DISPATCHED'"
               type="success"
-              class="w-full font-bold shadow-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
+              class="w-full font-bold shadow-xs rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
@@ -301,7 +301,7 @@
             <el-button
               v-else-if="order.status === 'READY_FOR_PICKUP'"
               type="success"
-              class="w-full font-bold shadow-xs rounded-xl bg-purple-600 hover:bg-purple-700 border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
+              class="w-full font-bold shadow-xs rounded-lg bg-[#C9A13B] hover:bg-[#7A5F21] border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
               @click="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
@@ -311,13 +311,13 @@
             <!-- 已交付完结 -->
             <div
               v-else-if="order.status === 'DELIVERED'"
-              class="w-full py-1.5 px-2.5 sm:py-2 sm:px-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-center text-xs font-bold flex items-center justify-between"
+              class="w-full py-1.5 px-2.5 sm:py-2 sm:px-3 rounded-lg bg-[#EFF5F1] border border-[#C7E0CE]/80 text-[#24483A] text-center text-xs font-bold flex items-center justify-between"
             >
               <div class="flex items-center gap-1.5 truncate">
-                <el-icon class="text-emerald-600 text-sm shrink-0"><SuccessFilled /></el-icon>
+                <el-icon class="text-[#2F7A50] text-sm shrink-0"><SuccessFilled /></el-icon>
                 <span class="truncate">{{ $t('agentOrders.filterDelivered') }} · {{ $t('agentOrders.deliveredStockDeducted') }}</span>
               </div>
-              <span class="font-mono text-[10px] sm:text-[11px] text-emerald-700 font-semibold shrink-0">{{ order.deliveredAt?.slice(5, 16) || '' }}</span>
+              <span class="font-mono text-[10px] sm:text-[11px] text-[#2F5B44] font-semibold shrink-0">{{ order.deliveredAt?.slice(5, 16) || '' }}</span>
             </div>
           </div>
         </div>
@@ -337,40 +337,40 @@
     >
       <div v-if="currentDispatchOrder" class="space-y-4 text-xs">
         <!-- 订单概况微横幅 -->
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+        <div class="p-3 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/70 space-y-1">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 text-sm">{{ currentDispatchOrder.headName }}</span>
-            <span class="font-mono text-slate-500 font-bold">#{{ currentDispatchOrder.orderId }}</span>
+            <span class="font-bold text-[#1F3326] text-sm">{{ currentDispatchOrder.headName }}</span>
+            <span class="font-mono text-[#58685D] font-bold">#{{ currentDispatchOrder.orderId }}</span>
           </div>
-          <div class="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-            <el-icon class="text-xs text-slate-400"><Location /></el-icon>
+          <div class="text-[11px] text-[#58685D] flex items-center gap-1 truncate">
+            <el-icon class="text-xs text-[#8A9A8F]"><Location /></el-icon>
             <span class="truncate">{{ currentDispatchOrder.deliveryAddress }}</span>
           </div>
         </div>
 
         <!-- 常用保供司机与车辆快捷点选胶囊 -->
         <div>
-          <span class="text-[11px] text-slate-500 font-bold mb-1.5 block">{{ $t('agentOrders.quickAssignDriver') }}</span>
+          <span class="text-[11px] text-[#58685D] font-bold mb-1.5 block">{{ $t('agentOrders.quickAssignDriver') }}</span>
           <div class="grid grid-cols-2 gap-2">
             <button
               type="button"
-              class="p-2 rounded-xl text-left border transition-all"
+              class="p-2 rounded-lg text-left border transition-all"
               data-demo-target="btn-quick-driver"
-              :class="dispatchForm.vehicleNo.includes('78219') ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
+              :class="dispatchForm.vehicleNo.includes('78219') ? 'bg-[#EFF5F1] border-[#7FA48C] text-[#1F3326] font-bold' : 'bg-white border-[#D9E5DB] text-[#43554B] hover:bg-[#F3F8F4]'"
               @click="applyQuickDriver(0)"
             >
               <div class="text-xs font-bold">{{ $t('agentOrders.driver1Name') || '哈希姆·阿里' }}</div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $t('agentOrders.driver1Desc') || 'BG-78219 (急送货车)' }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">{{ $t('agentOrders.driver1Desc') || 'BG-78219 (急送货车)' }}</div>
             </button>
 
             <button
               type="button"
-              class="p-2 rounded-xl text-left border transition-all"
-              :class="dispatchForm.vehicleNo.includes('33812') ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
+              class="p-2 rounded-lg text-left border transition-all"
+              :class="dispatchForm.vehicleNo.includes('33812') ? 'bg-[#EFF5F1] border-[#7FA48C] text-[#1F3326] font-bold' : 'bg-white border-[#D9E5DB] text-[#43554B] hover:bg-[#F3F8F4]'"
               @click="applyQuickDriver(1)"
             >
               <div class="text-xs font-bold">{{ $t('agentOrders.driver2Name') || '萨米尔·卡西姆' }}</div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $t('agentOrders.driver2Desc') || 'BG-33812 (冷链专车)' }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">{{ $t('agentOrders.driver2Desc') || 'BG-33812 (冷链专车)' }}</div>
             </button>
           </div>
         </div>
@@ -378,23 +378,23 @@
         <!-- 详细表单 -->
         <div class="space-y-3">
           <div>
-            <label class="block text-slate-600 font-semibold mb-1">{{ $t('agentOrders.deliveryPersonLabel') }}</label>
+            <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.deliveryPersonLabel') }}</label>
             <el-input v-model="dispatchForm.deliveryPerson" :placeholder="$t('agentOrders.dispatchPersonNamePlaceholder')" />
           </div>
 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-slate-600 font-semibold mb-1">{{ $t('agentOrders.driverPhoneLabel') }}</label>
+              <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.driverPhoneLabel') }}</label>
               <el-input v-model="dispatchForm.driverPhone" placeholder="+964 780..." />
             </div>
             <div>
-              <label class="block text-slate-600 font-semibold mb-1">{{ $t('agentOrders.vehicleNoLabel') }}</label>
+              <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.vehicleNoLabel') }}</label>
               <el-input v-model="dispatchForm.vehicleNo" placeholder="BG-..." />
             </div>
           </div>
 
           <div>
-            <label class="block text-slate-600 font-semibold mb-1">{{ $t('agentOrders.estimatedTimeLabel') }}</label>
+            <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.estimatedTimeLabel') }}</label>
             <el-select v-model="dispatchForm.estimatedTime" class="w-full">
               <el-option :label="$t('agentOrders.est30Mins')" value="30分钟内送达" />
               <el-option :label="$t('agentOrders.est1Hour')" value="1小时内送达" />
@@ -436,8 +436,8 @@
       <div
         class="flex flex-col h-[78vh] max-h-[690px] min-h-[480px] select-none relative overflow-hidden rounded-[28px] border shadow-2xl transition-all duration-300"
         :class="claimStep === 'camera'
-          ? 'bg-slate-950/80 text-white border-slate-700/60 backdrop-blur-2xl'
-          : 'bg-slate-50/85 text-slate-800 border-white/70 backdrop-blur-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)]'"
+          ? 'bg-[#12241A]/80 text-white border-[#43554B]/60 backdrop-blur-2xl'
+          : 'bg-[#F3F8F4]/85 text-[#1F3326] border-white/70 backdrop-blur-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)]'"
       >
         <!-- 模拟快门白闪动画遮罩 -->
         <div
@@ -449,8 +449,8 @@
         <div
           class="px-4 py-2.5 border-b flex items-center justify-between shrink-0 z-20 backdrop-blur-md transition-colors"
           :class="claimStep === 'camera'
-            ? 'bg-slate-900/80 border-slate-800/80 text-white'
-            : 'bg-white/80 border-slate-200/80 text-slate-900'"
+            ? 'bg-[#1B3123]/80 border-[#1F3326]/80 text-white'
+            : 'bg-white/80 border-[#D9E5DB]/80 text-[#1B3123]'"
         >
           <div class="flex items-center gap-2">
             <!-- 补光灯/手电筒开关 (仅相机步骤展示) -->
@@ -458,23 +458,23 @@
               v-if="claimStep === 'camera'"
               type="button"
               class="w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer"
-              :class="isFlashOn ? 'bg-amber-400 text-slate-900 shadow-[0_0_12px_#fbbf24]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              :class="isFlashOn ? 'bg-[#DFC08B] text-[#1B3123] shadow-[0_0_12px_#D9B567]' : 'bg-[#1F3326] text-[#C9DBCE] hover:bg-[#43554B]'"
               @click="isFlashOn = !isFlashOn"
             >
               <span>⚡</span>
             </button>
             <div
               v-else
-              class="w-7 h-7 rounded-full bg-emerald-100/90 flex items-center justify-center text-emerald-700 text-xs font-bold"
+              class="w-7 h-7 rounded-full bg-[#E1F4E4]/90 flex items-center justify-center text-[#2F5B44] text-xs font-bold"
             >
               ✓
             </div>
             <div>
-              <div class="text-xs font-bold flex items-center gap-1" :class="claimStep === 'camera' ? 'text-white' : 'text-slate-900'">
+              <div class="text-xs font-bold flex items-center gap-1" :class="claimStep === 'camera' ? 'text-white' : 'text-[#1B3123]'">
                 <span>{{ claimStep === 'camera' ? $t('agentOrders.scanCameraModalTitle') : claimStep === 'confirm' ? $t('agentOrders.confirmOrderModalTitle') : $t('agentOrders.officialVoucherModalTitle') }}</span>
                 <span
                   class="text-[9px] px-1 rounded font-mono"
-                  :class="claimStep === 'camera' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'"
+                  :class="claimStep === 'camera' ? 'bg-[#12241A] text-[#6FBF92] border border-[#3E9B68]/40' : 'bg-[#E1F4E4] text-[#24483A] border border-[#A7D9BC]'"
                 >MOT-APP</span>
               </div>
             </div>
@@ -484,7 +484,7 @@
           <button
             type="button"
             class="w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer"
-            :class="claimStep === 'camera' ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'"
+            :class="claimStep === 'camera' ? 'bg-[#1F3326] hover:bg-[#43554B] text-[#C9DBCE]' : 'bg-[#E9F1EB] hover:bg-[#D9E5DB] text-[#58685D]'"
             @click="scanVerifyModalVisible = false"
           >
             ✕
@@ -496,20 +496,20 @@
         <!-- ====================================================== -->
         <div
           v-if="claimStep === 'camera'"
-          class="flex-1 flex flex-col justify-between p-3.5 bg-slate-950 relative overflow-hidden"
+          class="flex-1 flex flex-col justify-between p-3.5 bg-[#12241A] relative overflow-hidden"
         >
           <!-- 目标订单提示微胶囊 (从卡片点进来时高亮指引) -->
           <div v-if="targetPresetOrder" class="z-20 mb-1.5 shrink-0">
-            <div class="p-2 rounded-xl bg-slate-800/90 border border-slate-700/80 text-[11px] flex items-center justify-between">
-              <span class="text-slate-300 truncate">
-                📸 {{ $t('agentOrders.verifyTarget') }}: <strong class="text-emerald-400 font-bold">{{ targetPresetOrder.headName }}</strong>
+            <div class="p-2 rounded-lg bg-[#1F3326]/90 border border-[#43554B]/80 text-[11px] flex items-center justify-between">
+              <span class="text-[#C9DBCE] truncate">
+                📸 {{ $t('agentOrders.verifyTarget') }}: <strong class="text-[#6FBF92] font-bold">{{ targetPresetOrder.headName }}</strong>
               </span>
-              <span class="font-mono text-slate-400 text-[10px]">#{{ targetPresetOrder.orderId?.slice(-6) }}</span>
+              <span class="font-mono text-[#8A9A8F] text-[10px]">#{{ targetPresetOrder.orderId?.slice(-6) }}</span>
             </div>
           </div>
 
           <!-- 核心相机取景器窗口 (自适应高度，带最大高度限制) -->
-          <div class="relative w-full flex-1 min-h-[180px] max-h-[340px] rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl flex items-center justify-center">
+          <div class="relative w-full flex-1 min-h-[180px] max-h-[340px] rounded-lg overflow-hidden bg-black border border-[#1F3326] shadow-2xl flex items-center justify-center">
             <!-- 真实摄像头视频流预览 -->
             <video
               ref="videoRef"
@@ -522,29 +522,29 @@
             />
 
             <!-- 仿真全息扫描动画网格 (当物理摄像头未开启/PC端时平滑显示) -->
-            <div v-if="!cameraActive" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90">
+            <div v-if="!cameraActive" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/90">
               <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
-              <div class="w-20 h-20 rounded-2xl border-2 border-emerald-500/20 flex items-center justify-center text-emerald-500/40 text-3xl mb-1.5">
+              <div class="w-20 h-20 rounded-lg border-2 border-[#3E9B68]/20 flex items-center justify-center text-[#3E9B68]/40 text-3xl mb-1.5">
                 <el-icon><Camera /></el-icon>
               </div>
-              <p class="text-[10px] text-slate-500">{{ $t('agentOrders.cameraReadyHint') }}</p>
+              <p class="text-[10px] text-[#58685D]">{{ $t('agentOrders.cameraReadyHint') }}</p>
             </div>
 
             <!-- 取景器四角定位框 -->
-            <div class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-emerald-400/80 rounded-2xl flex items-center justify-center pointer-events-none z-10">
+            <div class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-[#6FBF92]/80 rounded-lg flex items-center justify-center pointer-events-none z-10">
               <!-- 四角强化 L 标 -->
-              <div class="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-emerald-400"></div>
-              <div class="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-emerald-400"></div>
-              <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-emerald-400"></div>
-              <div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-emerald-400"></div>
+              <div class="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-[#6FBF92]"></div>
+              <div class="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-[#6FBF92]"></div>
+              <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-[#6FBF92]"></div>
+              <div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-[#6FBF92]"></div>
 
               <!-- 动态上下激光扫描线 -->
-              <div class="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#34d399] animate-pulse-scan"></div>
+              <div class="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-[#6FBF92] to-transparent shadow-[0_0_15px_#6FBF92] animate-pulse-scan"></div>
             </div>
 
             <!-- 取景提示浮条 -->
             <div class="absolute bottom-2.5 inset-x-4 z-20 flex justify-center">
-              <span class="px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-emerald-300 text-[10px] tracking-wide border border-emerald-500/30">
+              <span class="px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[#A7D9BC] text-[10px] tracking-wide border border-[#3E9B68]/30">
                 {{ $t('orderClaim.scanningHint') }}
               </span>
             </div>
@@ -556,23 +556,23 @@
             <div class="flex flex-col items-center justify-center">
               <button
                 type="button"
-                class="w-14 h-14 rounded-full border-4 border-white/90 bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all shadow-[0_0_16px_rgba(16,185,129,0.5)] flex items-center justify-center cursor-pointer group"
+                class="w-14 h-14 rounded-full border-4 border-white/90 bg-[#3E9B68] hover:bg-[#6FBF92] active:scale-95 transition-all shadow-[0_0_16px_rgba(62, 155, 104,0.5)] flex items-center justify-center cursor-pointer group"
                 @click="takePhotoAndVerify"
               >
-                <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-emerald-700 font-bold text-base group-hover:scale-105 transition-transform">
+                <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#2F5B44] font-bold text-base group-hover:scale-105 transition-transform">
                   📸
                 </div>
               </button>
-              <span class="text-[10px] text-slate-400 mt-1 tracking-wider font-medium">{{ $t('agentOrders.clickShutterHint') }}</span>
+              <span class="text-[10px] text-[#8A9A8F] mt-1 tracking-wider font-medium">{{ $t('agentOrders.clickShutterHint') }}</span>
             </div>
 
             <!-- 辅助功能：模拟扫码快捷键与手动输入抽屉 -->
-            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#1F3326]/80">
               <el-button
                 size="small"
                 type="success"
                 plain
-                class="text-[11px] font-bold border-emerald-500/40 text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/50"
+                class="text-[11px] font-bold border-[#3E9B68]/40 text-[#6FBF92] bg-[#12241A]/40 hover:bg-[#12241A]/50"
                 @click="simulateScanCurrentCitizenCode"
               >
                 <span>⚡ {{ $t('orderClaim.simulateScanBtn') }}</span>
@@ -580,7 +580,7 @@
 
               <button
                 type="button"
-                class="text-[11px] text-slate-400 hover:text-white underline cursor-pointer"
+                class="text-[11px] text-[#8A9A8F] hover:text-white underline cursor-pointer"
                 @click="showManualInput = !showManualInput"
               >
                 {{ showManualInput ? $t('agentOrders.collapseInput') : $t('agentOrders.manualInput') }}
@@ -613,61 +613,61 @@
           <!-- 中间自适应可滚动信息区 (带细微滚动条，不会挤压底部按钮) -->
           <div class="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-2.5 custom-scrollbar">
             <!-- 识别成功绿色彩条 -->
-            <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-sm flex items-center justify-between shadow-sm">
+            <div class="p-2.5 rounded-lg bg-[#3E9B68]/10 border border-[#3E9B68]/30 backdrop-blur-sm flex items-center justify-between shadow-sm">
               <div class="flex items-center gap-2">
-                <el-icon class="text-emerald-600 text-lg"><CircleCheck /></el-icon>
+                <el-icon class="text-[#2F7A50] text-lg"><CircleCheck /></el-icon>
                 <div>
-                  <span class="font-bold text-emerald-950 block text-xs">{{ $t('orderClaim.matchedOrderTitle') }}</span>
-                  <span class="font-mono text-[10px] text-emerald-700">{{ $t('agentOrders.codeLabel') }}: {{ verifiedOrder.pickupCode }}</span>
+                  <span class="font-bold text-[#12241A] block text-xs">{{ $t('orderClaim.matchedOrderTitle') }}</span>
+                  <span class="font-mono text-[10px] text-[#2F5B44]">{{ $t('agentOrders.codeLabel') }}: {{ verifiedOrder.pickupCode }}</span>
                 </div>
               </div>
               <el-button size="small" text type="info" @click="retakePhoto">{{ $t('agentOrders.retakePhotoBtn') }}</el-button>
             </div>
 
             <!-- 户主与送货信息卡片 -->
-            <div class="p-3 rounded-xl bg-white/80 border border-slate-200/80 backdrop-blur-sm shadow-sm space-y-1.5 text-xs">
-              <div class="flex items-center justify-between text-slate-800">
+            <div class="p-3 rounded-lg bg-white/80 border border-[#D9E5DB]/80 backdrop-blur-sm shadow-sm space-y-1.5 text-xs">
+              <div class="flex items-center justify-between text-[#1F3326]">
                 <span class="font-bold text-sm">{{ verifiedOrder.headName }}</span>
-                <span class="font-mono text-slate-600">{{ verifiedOrder.phone }}</span>
+                <span class="font-mono text-[#58685D]">{{ verifiedOrder.phone }}</span>
               </div>
-              <div class="flex items-center justify-between text-[11px] text-slate-500">
-                <span>{{ $t('orderClaim.cardNo') }}: <b class="font-mono text-slate-800">{{ verifiedOrder.cardNo }}</b></span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold" :class="verifiedOrder.deliveryType === 'HOME_DELIVERY' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'">
+              <div class="flex items-center justify-between text-[11px] text-[#58685D]">
+                <span>{{ $t('orderClaim.cardNo') }}: <b class="font-mono text-[#1F3326]">{{ verifiedOrder.cardNo }}</b></span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold" :class="verifiedOrder.deliveryType === 'HOME_DELIVERY' ? 'bg-[#E1F4E4] text-[#2A5440]' : 'bg-[#E1F4E4] text-[#2F5B44]'">
                   {{ verifiedOrder.deliveryType === 'HOME_DELIVERY' ? $t('agentOrders.typeDelivery') : $t('agentOrders.typePickup') }}
                 </span>
               </div>
-              <div class="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                <el-icon class="text-slate-400 shrink-0"><Location /></el-icon>
+              <div class="text-[11px] text-[#58685D] truncate flex items-center gap-1">
+                <el-icon class="text-[#8A9A8F] shrink-0"><Location /></el-icon>
                 <span class="truncate">{{ verifiedOrder.deliveryAddress || verifiedOrder.agentName }}</span>
               </div>
             </div>
 
             <!-- 配发物资明细与代销站现货库存实时扣减预演 -->
             <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-[11px] font-bold text-slate-700">
+              <div class="flex items-center justify-between text-[11px] font-bold text-[#43554B]">
                 <span>{{ $t('orderClaim.itemsTitle') }}</span>
-                <span class="text-emerald-700 font-mono text-[10px]">{{ $t('agentOrders.actualStockBeforeAfter') }}</span>
+                <span class="text-[#2F5B44] font-mono text-[10px]">{{ $t('agentOrders.actualStockBeforeAfter') }}</span>
               </div>
 
               <div class="space-y-1.5">
                 <div
                   v-for="(item, idx) in verifiedOrder.items"
                   :key="idx"
-                  class="p-2.5 rounded-xl bg-white/80 border border-slate-200/80 backdrop-blur-sm shadow-sm flex items-center justify-between text-xs"
+                  class="p-2.5 rounded-lg bg-white/80 border border-[#D9E5DB]/80 backdrop-blur-sm shadow-sm flex items-center justify-between text-xs"
                 >
                   <div>
-                    <div class="font-bold text-slate-800">{{ formatItemName(item.itemName) }}</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5 font-mono">
-                      {{ $t('agentOrders.actualIssued') }}: <b class="text-slate-900 font-bold">{{ item.qty }}{{ item.unit }}</b>
+                    <div class="font-bold text-[#1F3326]">{{ formatItemName(item.itemName) }}</div>
+                    <div class="text-[10px] text-[#8A9A8F] mt-0.5 font-mono">
+                      {{ $t('agentOrders.actualIssued') }}: <b class="text-[#1B3123] font-bold">{{ item.qty }}{{ item.unit }}</b>
                     </div>
                   </div>
 
                   <div class="text-right font-mono">
-                    <div class="text-[11px] text-slate-500">
+                    <div class="text-[11px] text-[#58685D]">
                       <span>{{ getStockOnHand(item.itemCode) }} {{ item.unit }}</span>
-                      <span class="text-rose-500 font-bold mx-1">-{{ item.qty }}</span>
+                      <span class="text-[#C04442] font-bold mx-1">-{{ item.qty }}</span>
                     </div>
-                    <div class="text-xs font-bold text-emerald-700 mt-0.5">
+                    <div class="text-xs font-bold text-[#2F5B44] mt-0.5">
                       {{ $t('agentOrders.stockRemaining') }}: {{ Math.max(0, getStockOnHand(item.itemCode) - item.qty) }} {{ item.unit }}
                     </div>
                   </div>
@@ -676,47 +676,47 @@
             </div>
 
             <!-- 自付规费结算与财政全额直补信息 -->
-            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm flex items-center justify-between text-xs">
-              <span class="text-amber-800 font-medium text-[11px]">{{ $t('orderClaim.subsidyNote') }}</span>
+            <div class="p-2.5 rounded-lg bg-[#D3AF62]/10 border border-[#D3AF62]/30 backdrop-blur-sm flex items-center justify-between text-xs">
+              <span class="text-[#6B5321] font-medium text-[11px]">{{ $t('orderClaim.subsidyNote') }}</span>
               <div class="text-right">
-                <span class="text-[10px] text-amber-700 block">{{ $t('agentOrders.settledPaidFee') }}</span>
-                <span class="font-mono font-bold text-amber-900 text-sm">IQD {{ (verifiedOrder.selfPayAmount || 0).toLocaleString() }}</span>
+                <span class="text-[10px] text-[#7A5F21] block">{{ $t('agentOrders.settledPaidFee') }}</span>
+                <span class="font-mono font-bold text-[#5A4718] text-sm">IQD {{ (verifiedOrder.selfPayAmount || 0).toLocaleString() }}</span>
               </div>
             </div>
 
             <!-- 数字签名交接确认区域 -->
-            <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 backdrop-blur-sm space-y-1.5 text-xs">
-              <div class="flex items-center justify-between text-indigo-900 font-bold">
+            <div class="p-3 rounded-lg bg-[#5C8A6B]/10 border border-[#5C8A6B]/30 backdrop-blur-sm space-y-1.5 text-xs">
+              <div class="flex items-center justify-between text-[#1F3326] font-bold">
                 <span>{{ $t('orderClaim.signTitle') }}</span>
                 <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono">DIGITAL SIGNED</el-tag>
               </div>
-              <div class="p-2 bg-white/90 rounded-lg border border-indigo-100 flex items-center justify-between">
+              <div class="p-2 bg-white/90 rounded-lg border border-[#E1F4E4] flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="text-base">✍️</span>
-                  <span class="font-mono italic font-bold text-slate-800 text-xs">{{ verifiedOrder.headName }} ({{ $t('agentOrders.citizenSignedNote') }})</span>
+                  <span class="font-mono italic font-bold text-[#1F3326] text-xs">{{ verifiedOrder.headName }} ({{ $t('agentOrders.citizenSignedNote') }})</span>
                 </div>
-                <span class="text-[10px] text-slate-400 font-mono">{{ new Date().toISOString().slice(0, 10) }}</span>
+                <span class="text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</span>
               </div>
-              <div class="text-[10px] text-indigo-700/80">
+              <div class="text-[10px] text-[#2A5440]/80">
                 {{ $t('orderClaim.signCitizenConfirmed') }}
               </div>
             </div>
           </div>
 
           <!-- 底部固定操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
-          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
+          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
             <el-button
               type="success"
               size="large"
               :loading="claiming"
-              class="w-full font-bold shadow-md rounded-xl bg-emerald-600 hover:bg-emerald-700 border-none text-white text-sm py-2.5"
+              class="w-full font-bold shadow-md rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white text-sm py-2.5"
               @click="submitConfirmClaim"
             >
               <el-icon class="mr-1.5"><Check /></el-icon>
               {{ $t('orderClaim.confirmDeliveryBtn') }}
             </el-button>
 
-            <el-button size="small" class="w-full text-slate-500" @click="retakePhoto">
+            <el-button size="small" class="w-full text-[#58685D]" @click="retakePhoto">
               {{ $t('agentOrders.retakePhotoBtn') }}
             </el-button>
           </div>
@@ -733,56 +733,56 @@
           <div class="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3 custom-scrollbar">
             <!-- 成功标头 -->
             <div class="text-center space-y-1 pt-1">
-              <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-sm">
+              <div class="w-12 h-12 bg-[#E1F4E4] text-[#2F7A50] rounded-full flex items-center justify-center mx-auto text-2xl shadow-sm">
                 <el-icon><SuccessFilled /></el-icon>
               </div>
-              <h3 class="text-base font-bold text-slate-900">{{ $t('orderClaim.claimSuccessTitle') }}</h3>
-              <p class="text-[11px] text-slate-500">{{ $t('agentOrders.receiptSubtitle') }}</p>
+              <h3 class="text-base font-bold text-[#1B3123]">{{ $t('orderClaim.claimSuccessTitle') }}</h3>
+              <p class="text-[11px] text-[#58685D]">{{ $t('agentOrders.receiptSubtitle') }}</p>
             </div>
 
             <!-- 伊拉克贸易部官方交接小票纸 (高纵深长小票) -->
-            <div class="p-3.5 rounded-2xl bg-white/85 backdrop-blur-sm border-2 border-dashed border-slate-300 shadow-sm space-y-2.5 relative">
+            <div class="p-3.5 rounded-lg bg-white/85 backdrop-blur-sm border-2 border-dashed border-[#C9DBCE] shadow-sm space-y-2.5 relative">
               <!-- 电子公章印戳 -->
-              <div class="absolute right-3 bottom-3 pointer-events-none opacity-85 border-2 border-emerald-600 rounded-full w-20 h-20 flex flex-col items-center justify-center text-emerald-700 rotate-[-12deg] scale-90">
+              <div class="absolute right-3 bottom-3 pointer-events-none opacity-85 border-2 border-[#2F7A50] rounded-full w-20 h-20 flex flex-col items-center justify-center text-[#2F5B44] rotate-[-12deg] scale-90">
                 <span class="text-[8px] font-bold">REPUBLIC OF IRAQ</span>
                 <span class="text-[8px] font-bold">MOT VERIFIED</span>
                 <span class="text-[7px] font-mono">100% BALANCED</span>
               </div>
 
-              <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                <span class="font-bold text-slate-800 text-xs">{{ $t('agentOrders.receiptTitle') }}</span>
-                <span class="font-mono text-emerald-700 font-bold text-xs">{{ claimReceipt.claimVoucherNo }}</span>
+              <div class="flex items-center justify-between border-b border-[#D9E5DB] pb-2">
+                <span class="font-bold text-[#1F3326] text-xs">{{ $t('agentOrders.receiptTitle') }}</span>
+                <span class="font-mono text-[#2F5B44] font-bold text-xs">{{ claimReceipt.claimVoucherNo }}</span>
               </div>
 
-              <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600">
-                <div>{{ $t('agentOrders.receivingFamily') }}: <b class="text-slate-900">{{ claimReceipt.order?.headName }}</b></div>
-                <div>{{ $t('orderClaim.cardNo') }}: <b class="text-slate-900 font-mono">{{ claimReceipt.order?.cardNo }}</b></div>
+              <div class="grid grid-cols-2 gap-1.5 text-[11px] text-[#58685D]">
+                <div>{{ $t('agentOrders.receivingFamily') }}: <b class="text-[#1B3123]">{{ claimReceipt.order?.headName }}</b></div>
+                <div>{{ $t('orderClaim.cardNo') }}: <b class="text-[#1B3123] font-mono">{{ claimReceipt.order?.cardNo }}</b></div>
                 <div>{{ $t('agentOrders.deliveryTime') }}: <span class="font-mono">{{ claimReceipt.deliveredAt }}</span></div>
-                <div>{{ $t('agentOrders.redemptionStation') }}: <span class="font-bold text-slate-800">{{ isEn ? 'Karkh 1st Station' : '卡尔赫第一代销站' }}</span></div>
+                <div>{{ $t('agentOrders.redemptionStation') }}: <span class="font-bold text-[#1F3326]">{{ isEn ? 'Karkh 1st Station' : '卡尔赫第一代销站' }}</span></div>
               </div>
 
               <!-- 扣减清单 -->
-              <div class="pt-2 border-t border-slate-200 space-y-1">
-                <div class="text-[10px] font-bold text-slate-500">{{ $t('agentOrders.deductionSummaryTitle') }}</div>
+              <div class="pt-2 border-t border-[#D9E5DB] space-y-1">
+                <div class="text-[10px] font-bold text-[#58685D]">{{ $t('agentOrders.deductionSummaryTitle') }}</div>
                 <div
                   v-for="(it, idx) in claimReceipt.deductedItems"
                   :key="idx"
-                  class="flex items-center justify-between text-[11px] bg-slate-50/80 p-1.5 rounded border border-slate-200/60"
+                  class="flex items-center justify-between text-[11px] bg-[#F3F8F4]/80 p-1.5 rounded border border-[#D9E5DB]/60"
                 >
-                  <span class="font-medium text-slate-800">{{ formatItemName(it.itemName) }}</span>
-                  <span class="font-mono font-bold text-emerald-700">-{{ it.qty }}{{ it.unit }} (余: {{ it.afterOnHand }}{{ it.unit }})</span>
+                  <span class="font-medium text-[#1F3326]">{{ formatItemName(it.itemName) }}</span>
+                  <span class="font-mono font-bold text-[#2F5B44]">-{{ it.qty }}{{ it.unit }} (余: {{ it.afterOnHand }}{{ it.unit }})</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 底部固定打印与完成操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
-          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
+          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
             <el-button class="w-full font-bold" @click="printReceipt">
               <el-icon class="mr-1"><Printer /></el-icon>
               {{ $t('orderClaim.printReceiptBtn') }}
             </el-button>
-            <el-button type="primary" size="large" class="w-full font-bold rounded-xl" @click="closeScanVerifyModal">
+            <el-button type="primary" size="large" class="w-full font-bold rounded-lg" @click="closeScanVerifyModal">
               {{ $t('orderClaim.closeBtn') }}
             </el-button>
           </div>
@@ -1337,15 +1337,15 @@ function getStatusBadgeClass(status) {
     case 'PENDING_DELIVERY':
     case 'PENDING_PICKUP':
     case 'PAID':
-      return 'bg-amber-50 text-amber-700 border border-amber-200/60';
+      return 'bg-[#FDF3E0] text-[#7A5F21] border border-[#F2E3C6]/60';
     case 'DISPATCHED':
-      return 'bg-sky-50 text-sky-700 border border-sky-200/60';
+      return 'bg-[#EFF5F1] text-[#2F5B44] border border-[#C7E0CE]/60';
     case 'READY_FOR_PICKUP':
-      return 'bg-purple-50 text-purple-700 border border-purple-200/60';
+      return 'bg-[#FDF3E0] text-[#7A5F21] border border-[#F2E3C6]/60';
     case 'DELIVERED':
-      return 'bg-emerald-50 text-emerald-700 border border-emerald-200/60';
+      return 'bg-[#EFF5F1] text-[#2F5B44] border border-[#C7E0CE]/60';
     default:
-      return 'bg-slate-100 text-slate-700';
+      return 'bg-[#E9F1EB] text-[#43554B]';
   }
 }
 
@@ -1514,7 +1514,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.app-scan-dialog-overlay) {
-  background-color: rgba(15, 23, 42, 0.42) !important;
+  background-color: rgba(31, 51, 38, 0.42) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
 }
@@ -1548,10 +1548,10 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.4);
+  background-color: rgba(138, 154, 143, 0.4);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.6);
+  background-color: rgba(88, 104, 93, 0.6);
 }
 </style>

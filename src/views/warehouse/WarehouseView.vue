@@ -1,30 +1,26 @@
 <template>
   <div class="warehouse-view space-y-4">
-    <!-- 配给管理业务模块选项卡 (去除旧版大标题横幅，列表顶格上移，支持横向平滑响应) -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <el-tabs v-model="activeTab" class="warehouse-custom-tabs px-3 sm:px-6">
-        <!-- 0. 公民专属：配给品选购与下单提货码 (新增核心模块) -->
-        <el-tab-pane v-if="isCitizen" name="purchase">
-          <template #label>
-            <div class="flex items-center gap-1.5 py-1">
-              <el-icon><ShoppingCart /></el-icon>
-              <span class="font-bold">{{ $t('citizenPurchase.moduleTitle') || '配给购买与取货' }}</span>
-              <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono">ONLINE</el-tag>
-            </div>
-          </template>
-          <div class="py-4">
-            <CitizenPurchaseTab />
-          </div>
-        </el-tab-pane>
+    <!-- ============================================== -->
+    <!-- 公民端：配给购买 (拆分后独立大模块，直接呈现，无选项卡) -->
+    <!-- ============================================== -->
+    <CitizenPurchaseTab v-if="isCitizen" />
 
+    <!-- ============================================== -->
+    <!-- 代理端 APP 视口：配给配送 (仅呈现订单配送页，不显示选项卡与标题) -->
+    <!-- ============================================== -->
+    <OrderDispatchTab v-else-if="isAgent && isAppMode" />
+
+    <!-- ============================================== -->
+    <!-- 管理/代理端 (Web)：配给管理业务模块选项卡 -->
+    <!-- ============================================== -->
+    <div v-else class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
+      <el-tabs v-model="activeTab" class="warehouse-custom-tabs px-3 sm:px-6">
         <!-- 1. 配给计划管理 (月度计划制定与上级/下级三层配额自动排程) -->
         <el-tab-pane name="rationPlan">
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Calendar /></el-icon>
-              <span class="font-bold">
-                {{ isAdmin ? ($t('warehouse.adminTitle') || '配给计划管理') : isCitizen ? ($t('warehouse.citizenTitle') || '我的配给份额') : ($t('warehouse.adminTitle') || '配给计划管理') }}
-              </span>
+              <span class="font-bold">{{ $t('warehouse.adminTitle') || '配给计划管理' }}</span>
             </div>
           </template>
           <div class="py-4">
@@ -33,7 +29,7 @@
         </el-tab-pane>
 
         <!-- 2. 订单统计 (管理角色) 或 订单配送 (代理角色) -->
-        <el-tab-pane v-if="!isCitizen" name="orderStats">
+        <el-tab-pane name="orderStats">
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><DataAnalysis v-if="isAdmin" /><Van v-else /></el-icon>
@@ -84,6 +80,13 @@ const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.isAdmin);
 const isAgent = computed(() => authStore.currentRole === 'agent');
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
+
+// APP 仿真视口判定 (与 AppLayout/AppMobileNav 保持一致的三级判定)
+const isAppMode = computed(() => {
+  if (route.query.layout === 'app') return true;
+  if (route.query.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
 
 function resolveInitialTab(tabQuery) {
   if (tabQuery) {

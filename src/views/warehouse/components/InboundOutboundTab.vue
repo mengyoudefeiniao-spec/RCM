@@ -1,7 +1,7 @@
 <template>
   <div class="inbound-outbound-tab space-y-6">
     <!-- 标头与子分类切换 (已去除冗余介绍) -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB]">
       <el-radio-group v-model="subSection" size="small">
         <el-radio-button value="inbound">{{ $t('warehouse.subInbound') || '入库质检与建档' }}</el-radio-button>
         <el-radio-button value="outbound">{{ $t('warehouse.subOutbound') || '出库波次与交付' }}</el-radio-button>
@@ -22,8 +22,8 @@
     <!-- ======================================================== -->
     <div v-if="subSection === 'inbound'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-teal-600"><Download /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#2F7A50]"><Download /></el-icon>
           <span>{{ $t('warehouse.subInbound') || '采购收货质检入库记录' }}</span>
         </h3>
         <el-button type="primary" size="small" @click="openInboundDialog">
@@ -33,7 +33,7 @@
       </div>
 
       <!-- 入库单查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="inboundSearch"
           :placeholder="isEn ? 'Search Inbound No / PO / Item Name' : '搜索入库单号 / 采购单 / 物资品名'"
@@ -43,7 +43,7 @@
           @input="inboundPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -54,16 +54,16 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetInboundFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">{{ isEn ? `Total ${filteredInboundOrders.length} records` : `共 ${filteredInboundOrders.length} 条记录` }}</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredInboundOrders.length} records` : `共 ${filteredInboundOrders.length} 条记录` }}</span>
       </div>
 
       <!-- 入库单表格 -->
-      <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedInboundOrders" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="inboundNo" :label="isEn ? 'Inbound No. / PO' : '入库单号 / 采购单'" min-width="160">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-blue-600">{{ row.inboundNo }}</span>
-              <div class="text-[11px] text-slate-400 font-mono">{{ row.purchaseOrderNo }}</div>
+              <span class="font-mono font-bold text-[#326445]">{{ row.inboundNo }}</span>
+              <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.purchaseOrderNo }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="tradePlanNo" :label="isEn ? 'Plan Link (P1)' : '关联贸易部计划 (P1校验)'" min-width="160">
@@ -71,26 +71,26 @@
               <el-tag size="small" type="primary" effect="light" class="font-mono">
                 {{ row.tradePlanNo }}
               </el-tag>
-              <div class="text-[10px] text-emerald-600 font-medium mt-0.5">● {{ isEn ? 'Verified' : '计划校验合格' }}</div>
+              <div class="text-[10px] text-[#2F7A50] font-medium mt-0.5">● {{ isEn ? 'Verified' : '计划校验合格' }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="itemName" :label="isEn ? 'Item Name & Qty' : '物资品名与实收量'" min-width="160">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ formatItemName(row.itemName) }}</div>
-              <div class="font-mono text-emerald-600 font-bold mt-0.5">
+              <div class="font-bold text-[#1F3326]">{{ formatItemName(row.itemName) }}</div>
+              <div class="font-mono text-[#2F7A50] font-bold mt-0.5">
                 {{ (row.actualQty || 0).toLocaleString() }} {{ row.unit }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="batchNo" :label="isEn ? 'Batch & Expiry' : '生产批次与效期 (强制建档)'" min-width="210">
             <template #default="{ row }">
-              <span class="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+              <span class="font-mono text-[11px] font-bold text-[#43554B] bg-[#E9F1EB] px-1.5 py-0.5 rounded">
                 {{ row.batchNo }}
               </span>
-              <div class="text-[10px] text-slate-500 font-mono mt-0.5">
+              <div class="text-[10px] text-[#58685D] font-mono mt-0.5">
                 {{ isEn ? 'MFG: ' : '生产: ' }}{{ row.productionDate }} ~ {{ isEn ? 'EXP: ' : '效期: ' }}{{ row.expiryDate }}
               </div>
-              <div class="text-[10px] text-indigo-600 font-mono mt-0.5 flex items-center gap-1">
+              <div class="text-[10px] text-[#326445] font-mono mt-0.5 flex items-center gap-1">
                 <el-icon><Tickets /></el-icon>
                 <span>{{ row.uniqueTraceCode }}</span>
               </div>
@@ -98,8 +98,8 @@
           </el-table-column>
           <el-table-column prop="warehouseName" :label="isEn ? 'Location / Shelf' : '推荐上架货位'" min-width="170">
             <template #default="{ row }">
-              <div class="text-slate-800 font-medium">{{ row.warehouseName }}</div>
-              <div class="font-mono text-blue-600 font-bold text-[11px] mt-0.5">
+              <div class="text-[#1F3326] font-medium">{{ row.warehouseName }}</div>
+              <div class="font-mono text-[#326445] font-bold text-[11px] mt-0.5">
                 {{ isEn ? 'Bin: ' : '库位: ' }}{{ row.locationCode }}
               </div>
             </template>
@@ -107,7 +107,7 @@
           <el-table-column prop="inspectStatus" label="品控质检报告" width="130" align="center">
             <template #default="{ row }">
               <el-tag size="small" type="success" effect="light">{{ row.inspectStatus }}</el-tag>
-              <div class="text-[10px] text-slate-400 mt-0.5 truncate" :title="row.inspectReport">
+              <div class="text-[10px] text-[#8A9A8F] mt-0.5 truncate" :title="row.inspectReport">
                 {{ row.inspectReport }}
               </div>
             </template>
@@ -115,8 +115,8 @@
         </el-table>
 
         <!-- 入库单分页 -->
-        <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredInboundOrders.length }} 笔入库单</span>
+        <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredInboundOrders.length }} 笔入库单</span>
           <el-pagination
             v-model:current-page="inboundPage"
             v-model:page-size="inboundPageSize"
@@ -134,8 +134,8 @@
     <!-- ======================================================== -->
     <div v-if="subSection === 'outbound'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-blue-600"><Upload /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><Upload /></el-icon>
           <span>配给配送出库波次与交付流水</span>
         </h3>
         <el-button type="primary" size="small" @click="openOutboundDialog">
@@ -145,7 +145,7 @@
       </div>
 
       <!-- 出库单查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="outboundSearch"
           placeholder="搜索流水号 / 任务单 / 物资 / 代理网点"
@@ -155,7 +155,7 @@
           @input="outboundPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -167,32 +167,32 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetOutboundFilter">重置</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredOutboundOrders.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredOutboundOrders.length }} 条记录</span>
       </div>
 
       <!-- 出库单表格 -->
-      <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedOutboundOrders" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="deliveryFlowNo" label="全局唯一交付流水号 (P2标准)" min-width="190">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+              <span class="font-mono font-bold text-[#2A5440] bg-[#EFF5F1] px-2 py-0.5 rounded border border-[#E1F4E4]">
                 {{ row.deliveryFlowNo }}
               </span>
-              <div class="text-[10px] text-slate-400 font-mono mt-1">
+              <div class="text-[10px] text-[#8A9A8F] font-mono mt-1">
                 防伪校验码: {{ row.securityCheckCode }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="taskNo" label="对应配给任务单" width="160">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-slate-700">{{ row.taskNo }}</span>
-              <div class="text-[11px] text-slate-500">{{ row.targetAgentName }}</div>
+              <span class="font-mono font-bold text-[#43554B]">{{ row.taskNo }}</span>
+              <div class="text-[11px] text-[#58685D]">{{ row.targetAgentName }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="itemName" label="出库物资与拣选批次" min-width="180">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ row.itemName }}</div>
-              <div class="font-mono text-slate-500 text-[11px] mt-0.5">{{ row.batchNo }}</div>
+              <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+              <div class="font-mono text-[#58685D] text-[11px] mt-0.5">{{ row.batchNo }}</div>
               <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left mt-0.5">
                 {{ row.pickingRule }}
               </el-tag>
@@ -200,18 +200,18 @@
           </el-table-column>
           <el-table-column prop="actualOutQty" label="出库量 / 在途锁定" width="140" align="right">
             <template #default="{ row }">
-              <div class="font-mono font-bold text-blue-600 text-sm">
+              <div class="font-mono font-bold text-[#326445] text-sm">
                 {{ (row.actualOutQty || 0).toLocaleString() }} {{ row.unit }}
               </div>
-              <div class="text-[10px] text-amber-600 font-mono mt-0.5">
+              <div class="text-[10px] text-[#C9A13B] font-mono mt-0.5">
                 已锁定在途: {{ (row.lockedInTransitQty || 0).toLocaleString() }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="carrierName" label="物流承运与车队" min-width="150">
             <template #default="{ row }">
-              <div class="text-slate-700 font-medium">{{ row.carrierName }}</div>
-              <div class="text-[11px] text-slate-400 font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
+              <div class="text-[#43554B] font-medium">{{ row.carrierName }}</div>
+              <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
             </template>
           </el-table-column>
           <el-table-column prop="status" label="交付流转状态" width="140" align="center">
@@ -228,8 +228,8 @@
         </el-table>
 
         <!-- 出库单分页 -->
-        <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredOutboundOrders.length }} 笔出库单</span>
+        <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredOutboundOrders.length }} 笔出库单</span>
           <el-pagination
             v-model:current-page="outboundPage"
             v-model:page-size="outboundPageSize"
@@ -247,8 +247,8 @@
     <!-- ======================================================== -->
     <div v-if="subSection === 'transfer'" class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <el-icon class="text-indigo-600"><Switch /></el-icon>
+        <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><Switch /></el-icon>
           <span>跨库调拨管理 (中心仓至区域前置仓)</span>
         </h3>
         <el-button type="primary" size="small" @click="openTransferDialog">
@@ -258,7 +258,7 @@
       </div>
 
       <!-- 调拨单查询过滤栏 -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+      <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="transferSearch"
           placeholder="搜索调拨单号 / 物资 / 调出仓 / 调入仓"
@@ -268,7 +268,7 @@
           @input="transferPage = 1"
         >
           <template #prefix>
-            <el-icon class="text-slate-400"><Search /></el-icon>
+            <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
           </template>
         </el-input>
 
@@ -279,52 +279,52 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetTransferFilter">重置</el-button>
-        <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredTransferOrders.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredTransferOrders.length }} 条记录</span>
       </div>
 
       <!-- 调拨卡片列表 -->
       <div class="space-y-3">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="trf in paginatedTransferOrders" :key="trf.id" class="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div v-for="trf in paginatedTransferOrders" :key="trf.id" class="p-4 bg-white rounded-lg border border-[#D9E5DB] shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2">
               <div>
-                <span class="font-mono font-bold text-blue-600">{{ trf.transferNo }}</span>
-                <span class="text-slate-400 text-xs ml-2 font-bold">{{ trf.itemName }} ({{ trf.transferQty.toLocaleString() }} {{ trf.unit }})</span>
+                <span class="font-mono font-bold text-[#326445]">{{ trf.transferNo }}</span>
+                <span class="text-[#8A9A8F] text-xs ml-2 font-bold">{{ trf.itemName }} ({{ trf.transferQty.toLocaleString() }} {{ trf.unit }})</span>
               </div>
               <el-tag size="small" type="primary" effect="dark">{{ trf.currentStage }}</el-tag>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 bg-slate-50 rounded">
-                <span class="text-[11px] text-slate-400 block">调出中心仓</span>
-                <span class="font-bold text-slate-700">{{ trf.fromWarehouseName }}</span>
+              <div class="p-2 bg-[#F3F8F4] rounded">
+                <span class="text-[11px] text-[#8A9A8F] block">调出中心仓</span>
+                <span class="font-bold text-[#43554B]">{{ trf.fromWarehouseName }}</span>
               </div>
-              <div class="p-2 bg-indigo-50/50 rounded">
-                <span class="text-[11px] text-slate-400 block">调入前置仓</span>
-                <span class="font-bold text-indigo-700">{{ trf.toWarehouseName }}</span>
+              <div class="p-2 bg-[#EFF5F1]/50 rounded">
+                <span class="text-[11px] text-[#8A9A8F] block">调入前置仓</span>
+                <span class="font-bold text-[#2A5440]">{{ trf.toWarehouseName }}</span>
               </div>
             </div>
 
             <!-- 三段式步骤指示条 -->
-            <div class="p-2.5 bg-slate-50 rounded-lg space-y-1.5 text-[11px]">
+            <div class="p-2.5 bg-[#F3F8F4] rounded-lg space-y-1.5 text-[11px]">
               <div class="flex items-center justify-between">
-                <span class="text-slate-500">1. 调出出库:</span>
-                <span class="font-mono text-slate-700">{{ trf.stage1Outbound.outboundFlowNo }} ({{ trf.stage1Outbound.status }})</span>
+                <span class="text-[#58685D]">1. 调出出库:</span>
+                <span class="font-mono text-[#43554B]">{{ trf.stage1Outbound.outboundFlowNo }} ({{ trf.stage1Outbound.status }})</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-slate-500">2. 在途管理:</span>
-                <span class="font-mono text-slate-700">{{ trf.stage2InTransit.vehicleNo }} ({{ trf.stage2InTransit.status }})</span>
+                <span class="text-[#58685D]">2. 在途管理:</span>
+                <span class="font-mono text-[#43554B]">{{ trf.stage2InTransit.vehicleNo }} ({{ trf.stage2InTransit.status }})</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-slate-500">3. 调入验收:</span>
-                <span class="font-mono" :class="trf.stage3Inbound.status === '已验收入库' ? 'text-emerald-600 font-bold' : 'text-slate-400'">
+                <span class="text-[#58685D]">3. 调入验收:</span>
+                <span class="font-mono" :class="trf.stage3Inbound.status === '已验收入库' ? 'text-[#2F7A50] font-bold' : 'text-[#8A9A8F]'">
                   {{ trf.stage3Inbound.status }}
                 </span>
               </div>
             </div>
 
             <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-500 truncate max-w-[200px]" :title="trf.reason">
+              <span class="text-[11px] text-[#58685D] truncate max-w-[200px]" :title="trf.reason">
                 事由: {{ trf.reason }}
               </span>
               <el-button
@@ -341,8 +341,8 @@
         </div>
 
         <!-- 调拨单分页 -->
-        <div class="p-3 bg-white rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between text-xs">
-          <span class="text-slate-400 text-[11px]">共 {{ filteredTransferOrders.length }} 笔调拨单</span>
+        <div class="p-3 bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs flex items-center justify-between text-xs">
+          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredTransferOrders.length }} 笔调拨单</span>
           <el-pagination
             v-model:current-page="transferPage"
             v-model:page-size="transferPageSize"
@@ -362,8 +362,8 @@
       <!-- 4.1 盘点管理 -->
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <el-icon class="text-amber-600"><Check /></el-icon>
+          <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+            <el-icon class="text-[#C9A13B]"><Check /></el-icon>
             <span>全流程盘点管理</span>
           </h3>
           <el-button type="primary" size="small" @click="openStocktakeDialog">
@@ -373,7 +373,7 @@
         </div>
 
         <!-- 盘点查询过滤栏 -->
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+        <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
           <el-input
             v-model="stocktakeSearch"
             placeholder="搜索盘点单号 / 仓库 / 货位 / 物资"
@@ -383,7 +383,7 @@
             @input="stocktakePage = 1"
           >
             <template #prefix>
-              <el-icon class="text-slate-400"><Search /></el-icon>
+              <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
             </template>
           </el-input>
 
@@ -393,38 +393,38 @@
           </el-select>
 
           <el-button size="small" link type="primary" @click="resetStocktakeFilter">重置</el-button>
-          <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredStocktakeRecords.length }} 条记录</span>
+          <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredStocktakeRecords.length }} 条记录</span>
         </div>
 
         <!-- 盘点表格 -->
-        <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
           <el-table :data="paginatedStocktakeRecords" v-loading="loading" border style="width: 100%" class="text-xs">
             <el-table-column prop="stocktakeNo" label="盘点单号" width="160">
               <template #default="{ row }">
-                <span class="font-mono font-bold text-blue-600">{{ row.stocktakeNo }}</span>
-                <div class="text-[10px] text-slate-400">{{ row.type }}</div>
+                <span class="font-mono font-bold text-[#326445]">{{ row.stocktakeNo }}</span>
+                <div class="text-[10px] text-[#8A9A8F]">{{ row.type }}</div>
               </template>
             </el-table-column>
             <el-table-column prop="warehouseName" label="所在仓库与货位" min-width="160">
               <template #default="{ row }">
-                <div class="text-slate-800">{{ row.warehouseName }}</div>
-                <div class="font-mono text-slate-500 text-[11px]">{{ row.locationCode }}</div>
+                <div class="text-[#1F3326]">{{ row.warehouseName }}</div>
+                <div class="font-mono text-[#58685D] text-[11px]">{{ row.locationCode }}</div>
               </template>
             </el-table-column>
             <el-table-column prop="itemName" label="盘点物资" min-width="150" />
             <el-table-column prop="diffQty" label="账面 / 实盘 / 差异" width="170" align="right">
               <template #default="{ row }">
-                <div class="font-mono text-slate-500 text-[11px]">账面: {{ row.bookQty.toLocaleString() }} {{ row.unit }}</div>
-                <div class="font-mono text-slate-700 font-bold">实盘: {{ row.countedQty.toLocaleString() }} {{ row.unit }}</div>
-                <div class="font-mono font-bold text-[11px]" :class="row.diffQty < 0 ? 'text-rose-600' : row.diffQty > 0 ? 'text-amber-600' : 'text-emerald-600'">
+                <div class="font-mono text-[#58685D] text-[11px]">账面: {{ row.bookQty.toLocaleString() }} {{ row.unit }}</div>
+                <div class="font-mono text-[#43554B] font-bold">实盘: {{ row.countedQty.toLocaleString() }} {{ row.unit }}</div>
+                <div class="font-mono font-bold text-[11px]" :class="row.diffQty < 0 ? 'text-[#C04442]' : row.diffQty > 0 ? 'text-[#C9A13B]' : 'text-[#2F7A50]'">
                   差异: {{ row.diffQty > 0 ? '+' : '' }}{{ row.diffQty }} {{ row.unit }}
                 </div>
               </template>
             </el-table-column>
             <el-table-column prop="diffResolution" label="处理规则与双人签批" min-width="200">
               <template #default="{ row }">
-                <div class="text-[11px] text-slate-700 font-medium">{{ row.diffResolution }}</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">
+                <div class="text-[11px] text-[#43554B] font-medium">{{ row.diffResolution }}</div>
+                <div class="text-[10px] text-[#8A9A8F] mt-0.5">
                   双人签批: {{ row.approver1 }} / {{ row.approver2 }}
                 </div>
               </template>
@@ -439,8 +439,8 @@
           </el-table>
 
           <!-- 盘点单分页 -->
-          <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span class="text-slate-400 text-[11px]">共 {{ filteredStocktakeRecords.length }} 笔盘点记录</span>
+          <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+            <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredStocktakeRecords.length }} 笔盘点记录</span>
             <el-pagination
               v-model:current-page="stocktakePage"
               v-model:page-size="stocktakePageSize"
@@ -454,10 +454,10 @@
       </div>
 
       <!-- 4.2 报损报溢与存证影像 -->
-      <div class="space-y-3 pt-3 border-t border-slate-200">
+      <div class="space-y-3 pt-3 border-t border-[#D9E5DB]">
         <div class="flex items-center justify-between">
-          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <el-icon class="text-rose-600"><Warning /></el-icon>
+          <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+            <el-icon class="text-[#C04442]"><Warning /></el-icon>
             <span>报损与报溢管理</span>
           </h3>
           <el-button type="danger" size="small" plain @click="openLossDialog">
@@ -467,7 +467,7 @@
         </div>
 
         <!-- 报损查询过滤栏 -->
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+        <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
           <el-input
             v-model="lossSearch"
             placeholder="搜索损耗单号 / 物资品名 / 损耗原因"
@@ -477,7 +477,7 @@
             @input="lossPage = 1"
           >
             <template #prefix>
-              <el-icon class="text-slate-400"><Search /></el-icon>
+              <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
             </template>
           </el-input>
 
@@ -489,21 +489,21 @@
           </el-select>
 
           <el-button size="small" link type="primary" @click="resetLossFilter">重置</el-button>
-          <span class="text-[11px] text-slate-400 ml-auto">共 {{ filteredLossRecords.length }} 条记录</span>
+          <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredLossRecords.length }} 条记录</span>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
           <el-table :data="paginatedLossRecords" v-loading="loading" border style="width: 100%" class="text-xs">
             <el-table-column prop="lossNo" label="损耗单号" width="160">
               <template #default="{ row }">
-                <span class="font-mono font-bold text-rose-600">{{ row.lossNo }}</span>
-                <div class="text-[11px] text-slate-500">{{ row.lossType }}</div>
+                <span class="font-mono font-bold text-[#C04442]">{{ row.lossNo }}</span>
+                <div class="text-[11px] text-[#58685D]">{{ row.lossType }}</div>
               </template>
             </el-table-column>
             <el-table-column prop="itemName" label="物资与损耗量" min-width="160">
               <template #default="{ row }">
-                <div class="font-bold text-slate-800">{{ row.itemName }}</div>
-                <div class="font-mono text-rose-600 font-bold mt-0.5">
+                <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+                <div class="font-mono text-[#C04442] font-bold mt-0.5">
                   损耗: {{ row.qty }} {{ row.unit }} (约 {{ row.estimatedCostIQD.toLocaleString() }} IQD)
                 </div>
               </template>
@@ -514,11 +514,11 @@
                 <el-image
                   v-if="row.evidenceImageUrl"
                   :src="row.evidenceImageUrl"
-                  class="w-14 h-10 rounded object-cover cursor-pointer border border-slate-200"
+                  class="w-14 h-10 rounded object-cover cursor-pointer border border-[#D9E5DB]"
                   :preview-src-list="[row.evidenceImageUrl]"
                   preview-teleported
                 />
-                <span v-else class="text-slate-400 text-[11px]">无影像</span>
+                <span v-else class="text-[#8A9A8F] text-[11px]">无影像</span>
               </template>
             </el-table-column>
             <el-table-column prop="approvalStatus" label="双人签批审核" width="140" align="center">
@@ -531,8 +531,8 @@
           </el-table>
 
           <!-- 报损单分页 -->
-          <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span class="text-slate-400 text-[11px]">共 {{ filteredLossRecords.length }} 笔报损记录</span>
+          <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+            <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredLossRecords.length }} 笔报损记录</span>
             <el-pagination
               v-model:current-page="lossPage"
               v-model:page-size="lossPageSize"
@@ -551,7 +551,7 @@
     <!-- ======================================================== -->
     <!-- 1. 新建采购收货质检入库对话框 (P1 规则校验) -->
     <el-dialog v-model="inboundDialogVisible" title="采购收货质检与批次一物一码建档 (P1 标准)" width="640px" destroy-on-close>
-      <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs mb-3 space-y-1">
+      <div class="p-3 bg-[#FDF3E0] rounded-lg border border-[#F2E3C6] text-[#5A4718] text-xs mb-3 space-y-1">
         <div class="font-bold">【P1 规则合规提示】</div>
         <div>1. 采购入库单必须校验并关联贸易部计划编号；</div>
         <div>2. 批次号生成时必须包含生产日期及效期字段 (系统将强制核验并自动建档一物一码)。</div>
@@ -602,7 +602,7 @@
 
     <!-- 2. 出库波次与交付流水生成对话框 (P2 规则校验) -->
     <el-dialog v-model="outboundDialogVisible" title="创建波次拣选出库与生成交付流水单 (P2 标准)" width="640px" destroy-on-close>
-      <div class="p-3 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 text-xs mb-3 space-y-1">
+      <div class="p-3 bg-[#EFF5F1] rounded-lg border border-[#C7DED0] text-[#1F3326] text-xs mb-3 space-y-1">
         <div class="font-bold">【P2 规则合规提示】</div>
         <div>依据先进先出 (FIFO) 拣选。出库单审核后将自动生成具备全局唯一校验码的【配送交付流水单】，库位可用库存同步转为在途锁定库存！</div>
       </div>

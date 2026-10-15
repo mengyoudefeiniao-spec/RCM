@@ -9,10 +9,10 @@
   >
     <div class="space-y-5">
       <!-- 官方安全提示 -->
-      <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl flex items-center justify-between text-xs text-blue-800">
+      <div class="bg-[#EFF5F1] border border-[#C7DED0] p-3 rounded-lg flex items-center justify-between text-xs text-[#24483A]">
         <div class="flex items-center gap-2">
-          <el-icon :size="16" class="text-blue-600"><Lock /></el-icon>
-          <span>{{ $t('register.bio.verifySubject') }}<strong class="text-slate-900">{{ displayName }}</strong> ({{ $t('register.labelPaperCardNo') }} {{ userCardNo || $t('register.bio.pendingBind') }})</span>
+          <el-icon :size="16" class="text-[#326445]"><Lock /></el-icon>
+          <span>{{ $t('register.bio.verifySubject') }}<strong class="text-[#1B3123]">{{ displayName }}</strong> ({{ $t('register.labelPaperCardNo') }} {{ userCardNo || $t('register.bio.pendingBind') }})</span>
         </div>
         <el-tag size="small" type="primary" effect="plain" class="font-mono">NID-CHIP · ICAO-9303</el-tag>
       </div>
@@ -20,26 +20,26 @@
       <!-- 三要素采集卡片网格 -->
       <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'">
         <!-- 1. 现场活体人脸 -->
-        <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
+        <div class="bg-[#1B3123] text-white rounded-lg p-3.5 flex flex-col justify-between border border-[#1F3326] space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.faceTitle') }}</span>
-            <el-icon v-if="faceCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
+            <span class="text-xs font-bold text-[#6FBF92]">{{ $t('register.bio.faceTitle') }}</span>
+            <el-icon v-if="faceCaptured" class="text-[#6FBF92]"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">{{ $t('register.bio.faceDesc') }}</p>
+          <p class="text-[11px] text-[#8A9A8F]">{{ $t('register.bio.faceDesc') }}</p>
 
           <!-- 模拟取景器画面 -->
-          <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center relative">
+          <div class="aspect-4/3 rounded-lg bg-[#12241A] border border-[#43554B] overflow-hidden flex items-center justify-center relative">
             <div v-if="faceCaptured" class="w-full h-full relative">
               <img
                 :src="faceImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'"
                 alt="Face Preview"
                 class="w-full h-full object-cover"
               />
-              <div class="absolute bottom-1 right-1 bg-emerald-600/90 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
+              <div class="absolute bottom-1 right-1 bg-[#2F7A50]/90 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
                 PASS: 99.8%
               </div>
             </div>
-            <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
+            <div v-else class="text-center text-[#58685D] text-[11px] space-y-1">
               <el-icon :size="24"><Camera /></el-icon>
               <div>{{ $t('register.bio.awaitingCapture') }}</div>
             </div>
@@ -51,26 +51,26 @@
         </div>
 
         <!-- 2. 统一国民卡正面 -->
-        <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
+        <div class="bg-[#1B3123] text-white rounded-lg p-3.5 flex flex-col justify-between border border-[#1F3326] space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.frontTitle') }}</span>
-            <el-icon v-if="cardFrontCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
+            <span class="text-xs font-bold text-[#6FBF92]">{{ $t('register.bio.frontTitle') }}</span>
+            <el-icon v-if="cardFrontCaptured" class="text-[#6FBF92]"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">{{ $t('register.bio.frontDesc') }}</p>
+          <p class="text-[11px] text-[#8A9A8F]">{{ $t('register.bio.frontDesc') }}</p>
 
-          <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center p-2 relative">
-            <div v-if="cardFrontCaptured" class="w-full h-full flex flex-col justify-between text-[9px] font-mono text-slate-300">
-              <div class="flex justify-between border-b border-slate-800 pb-0.5 text-emerald-400 font-bold">
+          <div class="aspect-4/3 rounded-lg bg-[#12241A] border border-[#43554B] overflow-hidden flex items-center justify-center p-2 relative">
+            <div v-if="cardFrontCaptured" class="w-full h-full flex flex-col justify-between text-[9px] font-mono text-[#C9DBCE]">
+              <div class="flex justify-between border-b border-[#1F3326] pb-0.5 text-[#6FBF92] font-bold">
                 <span>REPUBLIC OF IRAQ</span>
                 <span>NID-FRONT</span>
               </div>
               <div>
                 <div class="text-white font-bold">{{ displayName }}</div>
-                <div class="text-[8px] text-slate-400">NID: 198004198271</div>
+                <div class="text-[8px] text-[#8A9A8F]">NID: 198004198271</div>
               </div>
-              <div class="text-[8px] text-slate-500">{{ $t('register.bio.authorityLine') }}</div>
+              <div class="text-[8px] text-[#58685D]">{{ $t('register.bio.authorityLine') }}</div>
             </div>
-            <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
+            <div v-else class="text-center text-[#58685D] text-[11px] space-y-1">
               <el-icon :size="24"><Postcard /></el-icon>
               <div>{{ $t('register.bio.awaitingFront') }}</div>
             </div>
@@ -82,26 +82,26 @@
         </div>
 
         <!-- 3. 统一国民卡背面芯片 -->
-        <div class="bg-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between border border-slate-800 space-y-2.5">
+        <div class="bg-[#1B3123] text-white rounded-lg p-3.5 flex flex-col justify-between border border-[#1F3326] space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">{{ $t('register.bio.chipTitle') }}</span>
-            <el-icon v-if="cardBackCaptured" class="text-emerald-400"><CircleCheckFilled /></el-icon>
+            <span class="text-xs font-bold text-[#6FBF92]">{{ $t('register.bio.chipTitle') }}</span>
+            <el-icon v-if="cardBackCaptured" class="text-[#6FBF92]"><CircleCheckFilled /></el-icon>
           </div>
-          <p class="text-[11px] text-slate-400">{{ $t('register.bio.chipDesc') }}</p>
+          <p class="text-[11px] text-[#8A9A8F]">{{ $t('register.bio.chipDesc') }}</p>
 
-          <div class="aspect-4/3 rounded-lg bg-slate-950 border border-slate-700 overflow-hidden flex items-center justify-center p-2 relative">
-            <div v-if="cardBackCaptured" class="w-full h-full flex flex-col justify-between text-[8px] font-mono text-slate-400">
-              <div class="flex justify-between border-b border-slate-800 pb-0.5 text-amber-400">
+          <div class="aspect-4/3 rounded-lg bg-[#12241A] border border-[#43554B] overflow-hidden flex items-center justify-center p-2 relative">
+            <div v-if="cardBackCaptured" class="w-full h-full flex flex-col justify-between text-[8px] font-mono text-[#8A9A8F]">
+              <div class="flex justify-between border-b border-[#1F3326] pb-0.5 text-[#DFC08B]">
                 <span>CHIP: NFC-9941</span>
                 <span>ICAO-9303</span>
               </div>
-              <div class="bg-slate-900 p-1 rounded leading-none text-slate-300">
+              <div class="bg-[#1B3123] p-1 rounded leading-none text-[#C9DBCE]">
                 <div>I&lt;IRQ198004198271&lt;&lt;&lt;&lt;&lt;&lt;</div>
                 <div>8004194M3110298IRQ&lt;&lt;&lt;&lt;9</div>
               </div>
-              <div class="text-emerald-400 font-bold">CHIP INTEGRITY: OK</div>
+              <div class="text-[#6FBF92] font-bold">CHIP INTEGRITY: OK</div>
             </div>
-            <div v-else class="text-center text-slate-500 text-[11px] space-y-1">
+            <div v-else class="text-center text-[#58685D] text-[11px] space-y-1">
               <el-icon :size="24"><CreditCard /></el-icon>
               <div>{{ $t('register.bio.awaitingChip') }}</div>
             </div>
@@ -114,24 +114,24 @@
       </div>
 
       <!-- 对碰核验结果展示栏 -->
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs">
-        <div v-if="verifying" class="flex items-center gap-2 text-indigo-400">
+      <div class="bg-[#12241A] p-4 rounded-lg border border-[#1F3326] text-xs">
+        <div v-if="verifying" class="flex items-center gap-2 text-[#7FA48C]">
           <el-icon class="is-loading"><Loading /></el-icon>
           <span>{{ $t('register.bio.verifyingText') }}</span>
         </div>
         <div v-else-if="verificationPassed" class="space-y-2">
-          <div class="flex items-center gap-2 text-emerald-400 font-bold">
+          <div class="flex items-center gap-2 text-[#6FBF92] font-bold">
             <el-icon><CircleCheckFilled /></el-icon>
             <span>{{ $t('register.bio.passedTitle') }}</span>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-400 border-t border-slate-800 pt-2 font-mono">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-[#8A9A8F] border-t border-[#1F3326] pt-2 font-mono">
             <div>{{ $t('register.bio.statSimilarity') }} <strong class="text-white">99.4%</strong></div>
             <div>{{ $t('register.bio.statChip') }} <strong class="text-white">{{ $t('register.bio.chipPass') }}</strong></div>
             <div>{{ $t('register.bio.statLedger') }} <strong class="text-white">{{ $t('register.bio.ledgerMatch') }}</strong></div>
-            <div>{{ $t('register.bio.statTrust') }} <strong class="text-emerald-400">{{ $t('register.bio.trustBound') }}</strong></div>
+            <div>{{ $t('register.bio.statTrust') }} <strong class="text-[#6FBF92]">{{ $t('register.bio.trustBound') }}</strong></div>
           </div>
         </div>
-        <div v-else class="flex items-center justify-between text-slate-400">
+        <div v-else class="flex items-center justify-between text-[#8A9A8F]">
           <span>{{ $t('register.bio.idleHint') }}</span>
           <el-button type="success" text size="small" @click="handleQuickCollectAll">
             {{ $t('register.bio.quickFillBtn') }}

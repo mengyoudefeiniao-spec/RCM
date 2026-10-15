@@ -1,9 +1,9 @@
 <template>
   <div class="citizen-claim-tab space-y-4">
     <!-- 标头与快捷信息 (简洁化，去除冗长介绍) -->
-    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
-      <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-        <el-icon class="text-emerald-600"><Tickets /></el-icon>
+    <div class="flex items-center justify-between bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB]">
+      <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+        <el-icon class="text-[#2F7A50]"><Tickets /></el-icon>
         <span>{{ $t('warehouse.claimHistoryTitle') || '家庭末端核销历史流水记录' }}</span>
       </h3>
 
@@ -16,7 +16,7 @@
     </div>
 
     <!-- 筛选搜索与统计摘要栏 (针对 Google Pixel 9 412px 视口优化控件自适应排布) -->
-    <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3 text-xs">
+    <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/80 shadow-xs space-y-3 text-xs">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div class="flex flex-wrap items-center gap-2 flex-1">
           <el-input
@@ -27,7 +27,7 @@
             @input="resetPage"
           >
             <template #prefix>
-              <el-icon class="text-slate-400"><Search /></el-icon>
+              <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
             </template>
           </el-input>
 
@@ -54,22 +54,22 @@
           </div>
         </div>
 
-        <div class="text-[11px] text-slate-500 flex items-center justify-between sm:justify-start gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-          <span>{{ isEn ? 'Filtered:' : '筛选:' }} <strong class="text-slate-800">{{ filteredRecords.length }}</strong> {{ isEn ? 'records' : '笔' }}</span>
-          <span class="text-emerald-600 font-mono">{{ $t('warehouse.syncLatency') || '同步延迟 38ms' }}</span>
+        <div class="text-[11px] text-[#58685D] flex items-center justify-between sm:justify-start gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-[#E9F1EB]">
+          <span>{{ isEn ? 'Filtered:' : '筛选:' }} <strong class="text-[#1F3326]">{{ filteredRecords.length }}</strong> {{ isEn ? 'records' : '笔' }}</span>
+          <span class="text-[#2F7A50] font-mono">{{ $t('warehouse.syncLatency') || '同步延迟 38ms' }}</span>
         </div>
       </div>
     </div>
 
     <!-- 末端配给核销历史流水单 (移动端卡片流与传统表格双视图) -->
-    <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden p-3 sm:p-0">
-      <div class="sm:hidden flex items-center justify-between pb-2 mb-2 border-b border-slate-100 text-xs">
-        <span class="font-bold text-slate-800">{{ isEn ? 'Claim List' : '流水列表' }} ({{ filteredRecords.length }})</span>
-        <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-[10px]">
+    <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden p-3 sm:p-0">
+      <div class="sm:hidden flex items-center justify-between pb-2 mb-2 border-b border-[#E9F1EB] text-xs">
+        <span class="font-bold text-[#1F3326]">{{ isEn ? 'Claim List' : '流水列表' }} ({{ filteredRecords.length }})</span>
+        <div class="flex items-center bg-[#E9F1EB] p-0.5 rounded-lg text-[10px]">
           <button
             type="button"
             class="px-2 py-0.5 rounded-md font-medium transition-all"
-            :class="viewMode === 'card' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500'"
+            :class="viewMode === 'card' ? 'bg-white text-[#2F5B44] shadow-2xs font-bold' : 'text-[#58685D]'"
             @click="viewMode = 'card'"
           >
             {{ $t('warehouse.cardView') || '卡片' }}
@@ -77,7 +77,7 @@
           <button
             type="button"
             class="px-2 py-0.5 rounded-md font-medium transition-all"
-            :class="viewMode === 'table' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500'"
+            :class="viewMode === 'table' ? 'bg-white text-[#2F5B44] shadow-2xs font-bold' : 'text-[#58685D]'"
             @click="viewMode = 'table'"
           >
             {{ $t('warehouse.tableView') || '表格' }}
@@ -90,10 +90,10 @@
         <div
           v-for="row in paginatedRecords"
           :key="row.claimVoucherNo"
-          class="p-3 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2"
+          class="p-3 rounded-lg border border-[#D9E5DB] bg-white shadow-2xs space-y-2"
         >
-          <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
-            <span class="font-mono font-bold text-emerald-700 text-xs bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+          <div class="flex items-center justify-between pb-1.5 border-b border-[#E9F1EB]">
+            <span class="font-mono font-bold text-[#2F5B44] text-xs bg-[#EFF5F1] px-1.5 py-0.5 rounded border border-[#E1F4E4]">
               {{ row.claimVoucherNo }}
             </span>
             <el-tag size="small" type="success" effect="dark" class="scale-90 origin-right">{{ getStatusLabel(row.status) }}</el-tag>
@@ -101,34 +101,34 @@
 
           <div class="grid grid-cols-2 gap-1.5 text-[11px]">
             <div>
-              <span class="text-slate-400 block text-[10px]">{{ $t('warehouse.headAndCard') || '户主姓名 / 卡号' }}</span>
-              <span class="font-bold text-slate-800">{{ row.headName }}</span>
-              <span class="font-mono text-slate-500 block text-[10px]">{{ row.rationCardNo }}</span>
+              <span class="text-[#8A9A8F] block text-[10px]">{{ $t('warehouse.headAndCard') || '户主姓名 / 卡号' }}</span>
+              <span class="font-bold text-[#1F3326]">{{ row.headName }}</span>
+              <span class="font-mono text-[#58685D] block text-[10px]">{{ row.rationCardNo }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[10px]">{{ $t('warehouse.claimPeriodCol') || '核销配给周期' }}</span>
-              <span class="text-blue-600 font-semibold">{{ formatPeriod(row.claimPeriod) }}</span>
-              <span class="text-slate-400 block text-[10px]">{{ isEn ? `Eligible: ${row.eligibleMembers} persons` : `享受人数: ${row.eligibleMembers}人` }}</span>
+              <span class="text-[#8A9A8F] block text-[10px]">{{ $t('warehouse.claimPeriodCol') || '核销配给周期' }}</span>
+              <span class="text-[#326445] font-semibold">{{ formatPeriod(row.claimPeriod) }}</span>
+              <span class="text-[#8A9A8F] block text-[10px]">{{ isEn ? `Eligible: ${row.eligibleMembers} persons` : `享受人数: ${row.eligibleMembers}人` }}</span>
             </div>
           </div>
 
           <!-- 物资清单 -->
-          <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-            <span class="text-slate-400 block text-[10px] mb-1">{{ $t('warehouse.actualGoods') || '实发口粮物资：' }}</span>
+          <div class="p-2 rounded-lg bg-[#F3F8F4] border border-[#E9F1EB]">
+            <span class="text-[#8A9A8F] block text-[10px] mb-1">{{ $t('warehouse.actualGoods') || '实发口粮物资：' }}</span>
             <div class="flex flex-wrap gap-1">
               <span
                 v-for="item in row.claimedItems"
                 :key="item.itemName"
-                class="px-1.5 py-0.5 rounded bg-white text-slate-700 text-[10px] font-mono border border-slate-200"
+                class="px-1.5 py-0.5 rounded bg-white text-[#43554B] text-[10px] font-mono border border-[#D9E5DB]"
               >
                 {{ getItemName(item.itemName) }}: <strong>{{ item.qty }}</strong> {{ getItemUnit(item.unit) }}
               </span>
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 font-mono">
+          <div class="flex items-center justify-between text-[10px] text-[#8A9A8F] pt-1 font-mono">
             <span>{{ row.claimTime }}</span>
-            <span class="text-slate-600 font-sans truncate max-w-[160px]">{{ row.agentName }}</span>
+            <span class="text-[#58685D] font-sans truncate max-w-[160px]">{{ row.agentName }}</span>
           </div>
         </div>
       </div>
@@ -138,19 +138,19 @@
         <el-table :data="paginatedRecords" v-loading="loading" border style="width: 100%" class="text-xs">
           <el-table-column prop="claimVoucherNo" :label="$t('warehouse.voucherNo') || '数字核销凭据号'" min-width="190">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+              <span class="font-mono font-bold text-[#2F5B44] bg-[#EFF5F1] px-2 py-0.5 rounded border border-[#E1F4E4]">
                 {{ row.claimVoucherNo }}
               </span>
-              <div class="text-[10px] text-slate-400 font-mono mt-1 truncate" :title="row.digitalVoucherHash">
+              <div class="text-[10px] text-[#8A9A8F] font-mono mt-1 truncate" :title="row.digitalVoucherHash">
                 Hash: {{ row.digitalVoucherHash }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="headName" :label="$t('warehouse.headAndCard') || '受领家庭户主 / 卡号'" min-width="170">
             <template #default="{ row }">
-              <div class="font-bold text-slate-800">{{ row.headName }}</div>
-              <div class="font-mono text-slate-500 text-[11px]">{{ row.rationCardNo }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">{{ isEn ? `Quota Verified: ${row.eligibleMembers} persons` : `核定享受口粮人: ${row.eligibleMembers} 人` }}</div>
+              <div class="font-bold text-[#1F3326]">{{ row.headName }}</div>
+              <div class="font-mono text-[#58685D] text-[11px]">{{ row.rationCardNo }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ isEn ? `Quota Verified: ${row.eligibleMembers} persons` : `核定享受口粮人: ${row.eligibleMembers} 人` }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="claimPeriod" :label="$t('warehouse.claimPeriodCol') || '核销配给月份'" width="150" align="center">
@@ -176,16 +176,16 @@
           </el-table-column>
           <el-table-column prop="claimTime" :label="$t('warehouse.claimTimestamp') || '核销交付时间戳'" width="180">
             <template #default="{ row }">
-              <div class="font-mono text-slate-700 text-[11px]">{{ row.claimTime }}</div>
-              <div class="text-[10px] text-emerald-600 font-mono font-medium mt-0.5">
+              <div class="font-mono text-[#43554B] text-[11px]">{{ row.claimTime }}</div>
+              <div class="text-[10px] text-[#2F7A50] font-mono font-medium mt-0.5">
                 ● {{ $t('warehouse.cloudSync') || '云端同步' }}: {{ row.cloudSyncLatencyMs }}ms
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="agentName" :label="$t('warehouse.agentStation') || '承运核销网点'" min-width="160">
             <template #default="{ row }">
-              <div class="text-slate-800 font-medium">{{ row.agentName }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">{{ row.agentCenterId }}</div>
+              <div class="text-[#1F3326] font-medium">{{ row.agentName }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.agentCenterId }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="status" :label="$t('warehouse.deliveryStatus') || '交付状态'" width="120" align="center">
@@ -197,8 +197,8 @@
       </div>
 
       <!-- 独立分页组件 -->
-      <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-        <span class="text-slate-400 text-[11px]">
+      <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+        <span class="text-[#8A9A8F] text-[11px]">
           {{ isEn ? `Showing ${(currentPage - 1) * pageSize + 1} to ${Math.min(currentPage * pageSize, filteredRecords.length)} of ${filteredRecords.length}` : `显示第 ${(currentPage - 1) * pageSize + 1} 到 ${Math.min(currentPage * pageSize, filteredRecords.length)} 条，共 ${filteredRecords.length} 条` }}
         </span>
         <el-pagination

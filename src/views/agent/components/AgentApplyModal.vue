@@ -9,9 +9,9 @@
   >
     <div class="space-y-5">
       <!-- 顶部政策通告栏 (已精简) -->
-      <div class="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs flex items-center justify-between text-amber-900">
+      <div class="p-3 bg-[#FDF3E0]/80 border border-[#F2E3C6]/90 rounded-lg text-xs flex items-center justify-between text-[#5A4718]">
         <div class="flex items-center gap-2">
-          <el-icon class="text-amber-600"><WarningFilled /></el-icon>
+          <el-icon class="text-[#C9A13B]"><WarningFilled /></el-icon>
           <span class="text-[11px]">{{ isEn ? 'The applied center must be a vacant/cancelled outlet; priority for 3-gen relatives; pay 250,000 IQD fee upon field verification.' : '拟申请中心须为已注销空置网点；优先授予三代内亲属；实地核查通过后缴纳 250,000 IQD 规费。' }}</span>
         </div>
         <el-tag size="small" type="warning" effect="light">{{ isEn ? 'Fee: 250,000 IQD' : '规费 250,000 IQD' }}</el-tag>
@@ -29,15 +29,15 @@
       <!-- 步骤 1: 选择目标中心与申请人资格核验 -->
       <!-- ======================================================== -->
       <div v-if="activeStep === 0" class="space-y-4">
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-blue-600"><Location /></el-icon>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-4">
+          <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><Location /></el-icon>
             <span>{{ isEn ? 'Target Ration Center (Must be vacant / cancelled)' : '拟申请授予的配给中心 (必须为已注销/空置中心)' }}</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">{{ isEn ? 'Select Ration Center' : '选择配给中心' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">{{ isEn ? 'Select Ration Center' : '选择配给中心' }} <span class="text-[#C04442]">*</span></span>
               <el-select
                 v-model="form.centerId"
                 :placeholder="isEn ? 'Select target center (keyword search supported)' : '请选择拟申请配给中心 (支持输入关键字搜索)'"
@@ -52,9 +52,9 @@
                   :value="c.centerId"
                 >
                   <div class="flex items-center justify-between gap-2">
-                    <span :class="{'text-rose-600 font-bold': c.status === '已被代理' || c.status === 'Assigned'}">
-                      <span v-if="c.isArticle140" class="text-amber-500 font-bold mr-1">★</span>{{ c.centerName }}
-                      <span v-if="c.city" class="text-[11px] text-slate-400 font-normal ml-1">({{ c.province }} · {{ c.city }})</span>
+                    <span :class="{'text-[#C04442] font-bold': c.status === '已被代理' || c.status === 'Assigned'}">
+                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold mr-1">★</span>{{ c.centerName }}
+                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] font-normal ml-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <div class="flex items-center gap-1">
                       <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">{{ isEn ? 'Article 140' : '140号决议' }}</el-tag>
@@ -68,7 +68,7 @@
             </div>
 
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">{{ isEn ? 'Business Category' : '经营品类选择' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-[#58685D] mb-1">{{ isEn ? 'Business Category' : '经营品类选择' }} <span class="text-[#C04442]">*</span></span>
               <el-select v-model="form.category" class="w-full">
                 <el-option :label="isEn ? 'Flour Agency License' : '面粉专项代理权 (Flour)'" value="面粉" />
                 <el-option :label="isEn ? 'Food Strategic Supplies License' : '食品战略物资代理权 (Food)'" value="食品" />
@@ -78,9 +78,9 @@
           </div>
 
           <!-- 中心状态前置拦截提示 (已精简) -->
-          <div v-if="selectedCenter" class="p-2.5 rounded-lg border text-xs" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'">
+          <div v-if="selectedCenter" class="p-2.5 rounded-lg border text-xs" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'bg-[#FBEAE9] border-[#F2D5D4] text-[#6E2F2E]' : 'bg-[#EFF5F1] border-[#C7E0CE] text-[#24483A]'">
             <div class="flex items-center gap-2">
-              <el-icon class="text-sm" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'text-rose-600' : 'text-emerald-600'">
+              <el-icon class="text-sm" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'text-[#C04442]' : 'text-[#2F7A50]'">
                 <component :is="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'CircleCloseFilled' : 'SuccessFilled'" />
               </el-icon>
               <div class="flex-1 flex items-center justify-between">
@@ -99,35 +99,35 @@
         </div>
 
         <!-- 申请人资质与法定排他条件校验 -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-blue-600"><User /></el-icon>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3">
+          <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><User /></el-icon>
             <span>{{ isEn ? 'Applicant Info & Statutory Exclusion Verification' : '申请人基本信息与法定排他资质核查' }}</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Applicant Full Name' : '申请人真实姓名' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">{{ isEn ? 'Applicant Full Name' : '申请人真实姓名' }} <span class="text-[#C04442]">*</span></span>
               <el-input v-model="form.applicantName" :placeholder="isEn ? 'e.g., Mohammed Jabbar' : '例如：穆罕默德·贾巴尔'" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'National ID (UID)' : '国民身份证号 (National ID)' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">{{ isEn ? 'National ID (UID)' : '国民身份证号 (National ID)' }} <span class="text-[#C04442]">*</span></span>
               <el-input v-model="form.applicantNationalId" :placeholder="isEn ? '12-digit national identification number' : '12位国家统一身份编号'" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Applicant Age' : '候选人年龄 (周岁)' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">{{ isEn ? 'Applicant Age' : '候选人年龄 (周岁)' }} <span class="text-[#C04442]">*</span></span>
               <el-input-number v-model="form.applicantAge" :min="16" :max="65" class="w-full" />
-              <span class="text-[10px] text-slate-400">{{ isEn ? 'Statutory range: 18 - 48 years old' : '法定红线：18 至 48 周岁之间' }}</span>
+              <span class="text-[10px] text-[#8A9A8F]">{{ isEn ? 'Statutory range: 18 - 48 years old' : '法定红线：18 至 48 周岁之间' }}</span>
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
-              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Ministerial Approval Reference' : '部长批准公函文号' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">{{ isEn ? 'Ministerial Approval Reference' : '部长批准公函文号' }} <span class="text-[#C04442]">*</span></span>
               <el-input v-model="form.ministerApprovalNo" placeholder="MO-TRD-MIN-2026-8812" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Education Qualification' : '学历证明层级' }} <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-[#58685D] mb-1">{{ isEn ? 'Education Qualification' : '学历证明层级' }} <span class="text-[#C04442]">*</span></span>
               <el-select v-model="form.educationLevel" class="w-full">
                 <el-option :label="isEn ? 'Primary School Cert (Min Requirement)' : '经教育部认证的小学毕业证书 (最低要求)'" value="PRIMARY" />
                 <el-option :label="isEn ? 'Secondary / High School Diploma' : '初中或普通高中毕业证书'" value="SECONDARY" />
@@ -137,7 +137,7 @@
           </div>
 
           <!-- 法定排他条件承诺选择 (全部必勾) -->
-          <div class="pt-2 border-t border-slate-200/60 space-y-2 text-xs text-slate-700">
+          <div class="pt-2 border-t border-[#D9E5DB]/60 space-y-2 text-xs text-[#43554B]">
             <el-checkbox v-model="form.isResidentInDistrict">
               <strong>{{ isEn ? 'Permanent Resident Commitment' : '本辖区常住居民承诺' }}</strong>：{{ isEn ? 'The applicant is a legal permanent resident of the service district with official registry.' : '申请人确为相关家庭所在地区的法定常住居民，并持有街道户籍证明。' }}
             </el-checkbox>
@@ -161,68 +161,68 @@
       <!-- 步骤 2: 上传对应证明附件 -->
       <!-- ======================================================== -->
       <div v-if="activeStep === 1" class="space-y-4">
-        <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-800">
+        <div class="p-3 bg-[#EFF5F1]/70 border border-[#C7DED0] rounded-lg text-xs text-[#24483A]">
           依据《贸易部代理权准入规程》，请逐项上传原件高清扫描件（支持 PDF/JPG/PNG，单文件不超过 15MB）。
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <!-- 附件 1 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">1. 部长批准授予代理权公函 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">1. 部长批准授予代理权公函 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">必需批件</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">贸易部部长正式签发的食品或面粉代理权电子批准批文。</p>
+            <p class="text-[11px] text-[#58685D]">贸易部部长正式签发的食品或面粉代理权电子批准批文。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docMinister', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>点击上传公函</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docMinister?.name || '已自动装载默认批文' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docMinister?.name || '已自动装载默认批文' }}</span>
             </div>
           </div>
 
           <!-- 附件 2 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">2. 30%服务家庭拇指印同意书 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">2. 30%服务家庭拇指印同意书 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">法定民意</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">已注销代理权30%家庭同意书，按捺拇指印并附配给卡复印件。</p>
+            <p class="text-[11px] text-[#58685D]">已注销代理权30%家庭同意书，按捺拇指印并附配给卡复印件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docFamilies', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传联署名册</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docFamilies?.name || '已上传 (附240户按印底册)' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docFamilies?.name || '已上传 (附240户按印底册)' }}</span>
             </div>
           </div>
 
           <!-- 附件 3 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">3. 申请人有效身份与学历认证 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">3. 申请人有效身份与学历认证 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">身份与学历</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">国家统一国民卡正反面及教育部认证小学毕业证书扫描件。</p>
+            <p class="text-[11px] text-[#58685D]">国家统一国民卡正反面及教育部认证小学毕业证书扫描件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docIdentity', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传身份学历</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docIdentity?.name || '已上传国民卡及毕业证' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docIdentity?.name || '已上传国民卡及毕业证' }}</span>
             </div>
           </div>
 
           <!-- 附件 4 -->
-          <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <div class="p-3 bg-white border border-[#D9E5DB] rounded-lg space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800">4. 经营场所产权证或公证租赁合同 <span class="text-rose-500">*</span></span>
+              <span class="font-bold text-[#1F3326]">4. 经营场所产权证或公证租赁合同 <span class="text-[#C04442]">*</span></span>
               <el-tag size="small" type="success" effect="plain">场地证明</el-tag>
             </div>
-            <p class="text-[11px] text-slate-500">公证处认证房产合同（农业用地附卡伊马卡米亚市政外函）。</p>
+            <p class="text-[11px] text-[#58685D]">公证处认证房产合同（农业用地附卡伊马卡米亚市政外函）。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docProperty', f)">
                 <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传场地公证书</el-button>
               </el-upload>
-              <span class="text-[11px] text-emerald-600 font-medium truncate">{{ docs.docProperty?.name || '已上传公证租赁合同' }}</span>
+              <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docProperty?.name || '已上传公证租赁合同' }}</span>
             </div>
           </div>
         </div>
@@ -233,12 +233,12 @@
       <!-- ======================================================== -->
       <div v-if="activeStep === 2" class="space-y-4">
         <!-- 自动机审状态卡片 -->
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
-          <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+        <div class="p-4 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg space-y-2">
+          <div class="flex items-center gap-2 text-[#24483A] font-bold text-xs">
             <el-icon class="text-base"><CircleCheckFilled /></el-icon>
             <span>国家数字化系统第一阶段：自动规则校验全部合格</span>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-emerald-900">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-[#12241A]">
             <div>• 候选人年龄：{{ form.applicantAge }} 岁 (合格)</div>
             <div>• 非公职状态：联网核验无薪俸</div>
             <div>• 中心状态：空置已注销网点</div>
@@ -247,30 +247,30 @@
         </div>
 
         <!-- 联合委员会实地检查与考核模拟 -->
-        <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3">
+        <div class="bg-white border border-[#D9E5DB] p-4 rounded-lg space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <el-icon class="text-amber-600"><Stamp /></el-icon>
+            <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+              <el-icon class="text-[#C9A13B]"><Stamp /></el-icon>
               <span>第二阶段：巴格达/各省联合实地检查委员会核验 (代理义务第7款)</span>
             </h4>
             <el-tag size="small" type="warning" effect="light">现场检查通过</el-tag>
           </div>
-          <p class="text-[11px] text-slate-500">
+          <p class="text-[11px] text-[#58685D]">
             由配给分部、规划与跟进司、商业监督司（观察员成员）及粮食公司组成的联合委员会，已实地核查拟设网点经营面积、卫生防疫与防潮防火设施。
           </p>
 
           <div class="space-y-2 text-xs">
-            <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">1. 配给分部现场检查代表</span>
-              <span class="text-emerald-600 font-bold flex items-center gap-1"><el-icon><Check /></el-icon>实地验收通过 (营业面积 42㎡ 达标)</span>
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] rounded-lg border border-[#E9F1EB]">
+              <span class="font-medium text-[#43554B]">1. 配给分部现场检查代表</span>
+              <span class="text-[#2F7A50] font-bold flex items-center gap-1"><el-icon><Check /></el-icon>实地验收通过 (营业面积 42㎡ 达标)</span>
             </div>
-            <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">2. 规划与跟进司合规代表</span>
-              <span class="text-emerald-600 font-bold flex items-center gap-1"><el-icon><Check /></el-icon>30%家庭拇指印名单比对无误</span>
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] rounded-lg border border-[#E9F1EB]">
+              <span class="font-medium text-[#43554B]">2. 规划与跟进司合规代表</span>
+              <span class="text-[#2F7A50] font-bold flex items-center gap-1"><el-icon><Check /></el-icon>30%家庭拇指印名单比对无误</span>
             </div>
-            <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">3. 商业与财务监督司 (观察员成员)</span>
-              <span class="text-emerald-600 font-bold flex items-center gap-1"><el-icon><Check /></el-icon>观察员核签无异议</span>
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] rounded-lg border border-[#E9F1EB]">
+              <span class="font-medium text-[#43554B]">3. 商业与财务监督司 (观察员成员)</span>
+              <span class="text-[#2F7A50] font-bold flex items-center gap-1"><el-icon><Check /></el-icon>观察员核签无异议</span>
             </div>
           </div>
         </div>
@@ -280,20 +280,20 @@
       <!-- 步骤 4: 电子规费支付与完成申请 -->
       <!-- ======================================================== -->
       <div v-if="activeStep === 3" class="space-y-4">
-        <div class="p-4 bg-slate-900 text-white rounded-xl space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="p-4 bg-[#1B3123] text-white rounded-lg space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1F3326] pb-3">
             <div>
-              <span class="text-xs text-slate-400 block">法定规费收取部门</span>
-              <span class="text-sm font-bold text-amber-400">规划与跟进司 / 分支机构财务专户</span>
+              <span class="text-xs text-[#8A9A8F] block">法定规费收取部门</span>
+              <span class="text-sm font-bold text-[#DFC08B]">规划与跟进司 / 分支机构财务专户</span>
             </div>
             <div class="text-right">
-              <span class="text-xs text-slate-400 block">应缴纳法定规费</span>
-              <span class="text-xl font-bold font-mono text-emerald-400">250,000 IQD</span>
-              <span class="text-[10px] text-slate-400 block">(二十五万伊拉克第纳尔)</span>
+              <span class="text-xs text-[#8A9A8F] block">应缴纳法定规费</span>
+              <span class="text-xl font-bold font-mono text-[#6FBF92]">250,000 IQD</span>
+              <span class="text-[10px] text-[#8A9A8F] block">(二十五万伊拉克第纳尔)</span>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+          <div class="grid grid-cols-2 gap-2 text-xs text-[#C9DBCE]">
             <div>授权中心：{{ selectedCenter?.centerName }}</div>
             <div>经营品类：{{ form.category }}</div>
             <div>申请人：{{ form.applicantName }}</div>
@@ -301,32 +301,32 @@
           </div>
         </div>
 
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
-          <span class="block font-bold text-slate-800">选择伊拉克国家电子支付通道：</span>
+        <div class="bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB] space-y-3 text-xs">
+          <span class="block font-bold text-[#1F3326]">选择伊拉克国家电子支付通道：</span>
           <div class="grid grid-cols-3 gap-3">
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'QI_CARD' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'QI_CARD' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'QI_CARD'"
             >
               <div class="text-sm font-bold">QI Card</div>
-              <div class="text-[10px] text-slate-400 mt-1">国家银联数字卡</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">国家银联数字卡</div>
             </div>
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'ZAIN_CASH' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'ZAIN_CASH' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'ZAIN_CASH'"
             >
               <div class="text-sm font-bold">ZainCash</div>
-              <div class="text-[10px] text-slate-400 mt-1">移动电子钱包</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">移动电子钱包</div>
             </div>
             <div
-              class="p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="payChannel === 'CENTRAL_BANK' ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs' : 'bg-white border-slate-200 text-slate-600'"
+              class="p-3 rounded-lg border cursor-pointer text-center transition-all"
+              :class="payChannel === 'CENTRAL_BANK' ? 'bg-[#EFF5F1] border-[#326445] text-[#2A5440] font-bold shadow-xs' : 'bg-white border-[#D9E5DB] text-[#58685D]'"
               @click="payChannel = 'CENTRAL_BANK'"
             >
               <div class="text-sm font-bold">国库专户直联</div>
-              <div class="text-[10px] text-slate-400 mt-1">财政统一清算号</div>
+              <div class="text-[10px] text-[#8A9A8F] mt-1">财政统一清算号</div>
             </div>
           </div>
         </div>

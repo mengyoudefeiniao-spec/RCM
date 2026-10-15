@@ -8,32 +8,32 @@
   >
     <div class="space-y-4">
       <!-- 顶部注销通告 (已精简) -->
-      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center gap-2">
-        <el-icon class="text-amber-600"><WarningFilled /></el-icon>
+      <div class="p-3 bg-[#FDF3E0] border border-[#F2E3C6] rounded-lg text-xs text-[#5A4718] flex items-center gap-2">
+        <el-icon class="text-[#C9A13B]"><WarningFilled /></el-icon>
         <span class="text-[11px]">注销后该中心将变更为已注销空置状态，方可由其他人重新申请或办理亲属轮替。</span>
       </div>
 
-      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-2">
+      <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#D9E5DB] text-xs space-y-2">
         <div class="flex justify-between">
-          <span class="text-slate-500">拟注销中心名称：</span>
-          <span class="font-bold text-slate-800">{{ center?.centerName || center?.name }}</span>
+          <span class="text-[#58685D]">拟注销中心名称：</span>
+          <span class="font-bold text-[#1F3326]">{{ center?.centerName || center?.name }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-slate-500">所属行政省份：</span>
-          <span class="font-medium text-slate-700">{{ center?.province }}</span>
+          <span class="text-[#58685D]">所属行政省份：</span>
+          <span class="font-medium text-[#43554B]">{{ center?.province }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-slate-500">当前在册签约户数：</span>
-          <span class="font-mono font-bold text-amber-700">{{ center?.householdsCount || center?.currentHouseholds || 0 }} 户</span>
+          <span class="text-[#58685D]">当前在册签约户数：</span>
+          <span class="font-mono font-bold text-[#7A5F21]">{{ center?.householdsCount || center?.currentHouseholds || 0 }} 户</span>
         </div>
-        <div v-if="center?.isArticle140" class="flex justify-between text-amber-700 font-semibold">
+        <div v-if="center?.isArticle140" class="flex justify-between text-[#7A5F21] font-semibold">
           <span>区域性质：</span>
           <span>受宪法第 140 号决议管辖</span>
         </div>
       </div>
 
       <div class="space-y-1.5 text-xs">
-        <span class="font-semibold text-slate-700">申报注销理由 / 法定事由 <span class="text-rose-500">*</span></span>
+        <span class="font-semibold text-[#43554B]">申报注销理由 / 法定事由 <span class="text-[#C04442]">*</span></span>
         <el-select v-model="reasonCategory" class="w-full">
           <el-option label="原代理人自愿申请注销 / 清退交接" value="VOLUNTARY" />
           <el-option label="原代理人故去 / 启动继承轮替前法定清退" value="DECEASED" />
@@ -43,7 +43,7 @@
       </div>
 
       <div class="space-y-1.5 text-xs">
-        <span class="font-semibold text-slate-700">注销详细说明与善后处置承诺</span>
+        <span class="font-semibold text-[#43554B]">注销详细说明与善后处置承诺</span>
         <el-input
           v-model="detailedNotes"
           type="textarea"
@@ -53,7 +53,7 @@
       </div>
 
       <el-checkbox v-model="confirmedAgreement" class="text-xs">
-        <span class="text-xs text-slate-700 font-medium">
+        <span class="text-xs text-[#43554B] font-medium">
           本人已知晓注销后该中心物资调拨权限将立即冻结，并作为空置网点向社会或合格亲属开放申请。
         </span>
       </el-checkbox>

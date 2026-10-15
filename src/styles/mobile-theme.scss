@@ -7,43 +7,43 @@
  */
 
 // 1. 移动端核心设计令牌 (Design Tokens)
-$rcm-mobile-primary: #1E3F35;          // 主品牌色：深墨绿 (用于标题、激活态 Tab、核心大数字)
-$rcm-mobile-primary-dark: #142B24;     // 深墨绿按压态
-$rcm-mobile-primary-soft: #275A3E;     // 柔和墨绿 (胶囊文字等)
+$rcm-mobile-primary: #326445;          // 主品牌色：深墨绿 (用于标题、激活态 Tab、核心大数字)
+$rcm-mobile-primary-dark: #2A5440;     // 深墨绿按压态
+$rcm-mobile-primary-soft: #326445;     // 柔和墨绿 (胶囊文字等)
 
-$rcm-mobile-cta: #D3A757;              // 核心行动色 (CTA)：暖砂金 (用于全宽扫码核销主按钮)
-$rcm-mobile-cta-hover: #C59846;        // 砂金按压态
-$rcm-mobile-cta-light: #F7EEDB;        // 浅砂金底色
-$rcm-mobile-cta-border: #E5C888;       // 砂金描边
+$rcm-mobile-cta: #D3AF62;              // 核心行动色 (CTA)：暖砂金 (用于全宽扫码核销主按钮)
+$rcm-mobile-cta-hover: #C3A053;        // 砂金按压态
+$rcm-mobile-cta-light: #FDF3E0;        // 浅砂金底色
+$rcm-mobile-cta-border: #E5CEA1;       // 砂金描边
 
-$rcm-mobile-canvas: #F7F6F1;           // 页面背景：温润暖米白 (拒绝刺眼冷白)
-$rcm-mobile-card-summary: #EBF3EE;     // 顶部汇总卡微底色：淡灰绿
-$rcm-mobile-card-summary-border: #D6E6DC; // 顶部汇总卡细描边
+$rcm-mobile-canvas: #F8FBF8;           // 页面背景：温润暖米白 (拒绝刺眼冷白)
+$rcm-mobile-card-summary: #E2F4E4;     // 顶部汇总卡微底色：薄荷浅绿 (参考站 --secondary)
+$rcm-mobile-card-summary-border: #E5CEA1; // 顶部汇总卡细描边：砂金 (参考站 --gold-border)
 
 $rcm-mobile-card-surface: #FFFFFF;     // 列表与常规卡片：纯白
-$rcm-mobile-card-border: #EFECE6;      // 列表卡片暖灰细描边
-$rcm-mobile-card-border-focus: #DFD9CC;
+$rcm-mobile-card-border: #D9E5DB;      // 列表卡片暖灰细描边
+$rcm-mobile-card-border-focus: #C4D6C8;
 
 // 状态胶囊标签色系 (Pill Badges)
-$rcm-badge-green-bg: #E4F2E9;          // 正常/平衡：淡薄荷绿底
-$rcm-badge-green-text: #275A3E;        // 墨绿文字
+$rcm-badge-green-bg: #E1F4E4;          // 正常/平衡：淡薄荷绿底
+$rcm-badge-green-text: #326445;        // 墨绿文字
 $rcm-badge-green-dot: #2D8B57;         // 绿色小圆点
 
-$rcm-badge-pink-bg: #FDE8E8;           // 异常/差异：低饱和淡粉底
-$rcm-badge-pink-text: #D04343;         // 砖红文字
-$rcm-badge-pink-dot: #DC3545;          // 红色小圆点
+$rcm-badge-pink-bg: #FBEAE9;           // 异常/差异：低饱和淡粉底
+$rcm-badge-pink-text: #C04442;         // 砖红文字
+$rcm-badge-pink-dot: #C04442;          // 红色小圆点
 
-// 圆角与尺寸阶梯
-$rcm-mobile-radius-card: 14px;         // 卡片统一圆角 12px - 14px
-$rcm-mobile-radius-cta: 14px;          // 主按钮圆角
+// 圆角与尺寸阶梯 (对标参考站 8px 圆角体系，移动端保留轻微放大以保证触感)
+$rcm-mobile-radius-card: 12px;         // 卡片统一圆角
+$rcm-mobile-radius-cta: 12px;          // 主按钮圆角
 $rcm-mobile-radius-pill: 9999px;       // 胶囊徽章全圆角
 $rcm-mobile-padding-x: 16px;          // 页面水平内边距 16px
 $rcm-mobile-gap-card: 12px;           // 列表与卡片间距 12px - 14px
 
 // 投影阶梯 (暖色大扩散柔和阴影)
-$rcm-mobile-shadow-card: 0 4px 16px -2px rgba(60, 48, 25, 0.04), 0 2px 6px -1px rgba(60, 48, 25, 0.02);
-$rcm-mobile-shadow-cta: 0 6px 20px -3px rgba(211, 167, 87, 0.35), 0 2px 6px -1px rgba(211, 167, 87, 0.2);
-$rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px rgba(60, 48, 25, 0.02);
+$rcm-mobile-shadow-card: 0 4px 16px -2px rgba(47, 68, 52, 0.04), 0 2px 6px -1px rgba(47, 68, 52, 0.02);
+$rcm-mobile-shadow-cta: 0 6px 20px -3px rgba(211, 175, 98, 0.35), 0 2px 6px -1px rgba(211, 175, 98, 0.2);
+$rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(47, 68, 52, 0.06), 0 -1px 3px rgba(47, 68, 52, 0.02);
 
 // 2. CSS 自定义变量声明注入
 :root {
@@ -75,7 +75,7 @@ $rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px r
   padding-right: $rcm-mobile-padding-x;
   box-sizing: border-box;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #18231E;
+  color: #1F3326;
 }
 
 // 顶部汇总统计卡
@@ -110,9 +110,9 @@ $rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px r
   width: 100%;
   height: 56px;
   border-radius: $rcm-mobile-radius-cta;
-  background: linear-gradient(135deg, #DEB365 0%, #D3A757 50%, #C49646 100%);
+  background: #D3AF62;
   border: 1px solid var(--rcm-m-cta-border);
-  color: #1E3F35;
+  color: #3F3017;
   font-weight: 700;
   font-size: 17px;
   box-shadow: var(--rcm-m-shadow-cta);
@@ -161,7 +161,7 @@ $rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px r
   &.rcm-pill-danger {
     background-color: $rcm-badge-pink-bg;
     color: $rcm-badge-pink-text;
-    border: 1px solid rgba(220, 53, 69, 0.18);
+    border: 1px solid rgba(192, 68, 66, 0.18);
 
     .rcm-badge-dot {
       background-color: $rcm-badge-pink-dot;
@@ -189,7 +189,7 @@ $rcm-mobile-shadow-navbar: 0 -4px 20px -2px rgba(60, 48, 25, 0.06), 0 -1px 3px r
   left: 0;
   right: 0;
   background-color: #FFFFFF;
-  border-top: 1px solid #ECE7DE;
+  border-top: 1px solid #D9E5DB;
   box-shadow: var(--rcm-m-shadow-navbar);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 12px);

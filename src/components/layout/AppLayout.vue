@@ -1,9 +1,9 @@
 <template>
   <div
-    class="bg-[#F8F7F3] flex flex-col font-sans text-slate-800"
+    class="bg-[#F8FBF8] flex flex-col font-sans text-[#1F3326]"
     :class="[
       isAppMode
-        ? 'h-screen max-h-screen overflow-hidden bg-slate-900/10 py-1 sm:py-2.5 justify-center items-center'
+        ? 'h-screen max-h-screen overflow-hidden bg-[#1B3123]/10 py-1 sm:py-2.5 justify-center items-center'
         : 'min-h-screen'
     ]"
   >
@@ -12,7 +12,7 @@
       class="w-full flex flex-col transition-all duration-300 relative min-h-0"
       :class="[
         isAppMode
-          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:bg-white sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE]'
+          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:bg-white sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#E5CEA1]'
           : 'flex-1 w-full'
       ]"
       :style="isAppMode ? { height: 'min(924px, calc(100vh - 20px))', maxHeight: 'calc(100vh - 20px)' } : {}"
@@ -42,17 +42,17 @@
       <!-- 页脚备案与状态 (仅在桌面端且非 APP 模式下显示) -->
       <footer
         v-if="!isAppMode"
-        class="hidden sm:block border-t border-[#ECE7DE] bg-white py-3 text-center text-xs text-[#5E6862]"
+        class="hidden sm:block border-t border-[#E5CEA1] bg-white py-3 text-center text-xs text-[#58685D]"
       >
         <div
           class="w-full mx-auto px-6 flex items-center justify-between gap-2"
           :class="isWideLayout ? 'max-w-[1720px]' : 'max-w-7xl'"
         >
           <div class="flex items-center gap-2">
-            <span class="font-bold text-[#1E3F35]">RCM</span>
-            <span class="text-[#2C6E49] font-mono font-bold">● ONLINE</span>
+            <span class="font-bold text-[#326445]">RCM</span>
+            <span class="text-[#2F7A50] font-mono font-bold">● ONLINE</span>
           </div>
-          <div class="font-mono text-[#8C958F] text-[11px]">
+          <div class="font-mono text-[#8A9A8F] text-[11px]">
             © 2026 Republic of Iraq · Ministry of Trade · All Rights Reserved
           </div>
         </div>
@@ -83,7 +83,7 @@ const isAppMode = computed(() => {
 });
 
 const isWideLayout = computed(() => {
-  return ['/admin', '/dashboard', '/warehouse', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
+  return ['/admin', '/dashboard', '/warehouse', '/family-agent', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
 });
 </script>
 
@@ -102,7 +102,7 @@ const isWideLayout = computed(() => {
   width: 4px;
 }
 .custom-pixel-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(30, 63, 53, 0.2);
+  background-color: rgba(50, 100, 69, 0.2);
   border-radius: 4px;
 }
 .custom-pixel-scrollbar::-webkit-scrollbar-track {

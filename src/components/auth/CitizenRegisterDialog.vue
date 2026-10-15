@@ -19,9 +19,9 @@
     <!-- ======================================================== -->
     <div v-if="currentStep === 0" class="space-y-4">
       <!-- 顶部提示：明确指出 OCR 默认开启 -->
-      <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-800 flex items-center justify-between">
+      <div class="bg-[#EFF5F1] border border-[#C7DED0] p-3 rounded-lg text-xs text-[#24483A] flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <el-icon class="text-blue-600"><Camera /></el-icon>
+          <el-icon class="text-[#326445]"><Camera /></el-icon>
           <span>{{ $t('register.ocrAutoOnPrefix') }}<strong>{{ $t('register.ocrAutoOnHighlight') }}</strong>{{ $t('register.ocrAutoOnSuffix') }}</span>
         </div>
         <el-tag size="small" type="success" effect="dark" class="font-mono">OCR ACTIVE</el-tag>
@@ -29,43 +29,43 @@
 
       <div :class="isCompact ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'">
         <!-- 左侧：拍照/上传纸质旧卡区域 -->
-        <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 text-white flex flex-col justify-between space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-xs font-bold text-amber-400">{{ $t('register.captureTitle') }}</span>
-            <span class="text-[10px] text-slate-400 font-mono">AUTOSCAN · READY</span>
+        <div class="bg-[#1B3123] rounded-lg p-4 border border-[#1F3326] text-white flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1F3326] pb-2">
+            <span class="text-xs font-bold text-[#DFC08B]">{{ $t('register.captureTitle') }}</span>
+            <span class="text-[10px] text-[#8A9A8F] font-mono">AUTOSCAN · READY</span>
           </div>
 
           <!-- 模拟取景器 / 上传预览卡片 -->
           <div
             class="aspect-4/3 rounded-lg border-2 border-dashed transition-all relative overflow-hidden flex flex-col items-center justify-center p-3 cursor-pointer"
-            :class="hasUploadedPhoto ? 'border-emerald-500 bg-amber-950/40 text-amber-200' : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-blue-500 hover:bg-slate-900'"
+            :class="hasUploadedPhoto ? 'border-[#3E9B68] bg-[#3F3017]/40 text-[#F2E3C6]' : 'border-[#43554B] bg-[#12241A] text-[#8A9A8F] hover:border-[#5C8A6B] hover:bg-[#1B3123]'"
             @click="triggerPhotoCapture"
           >
             <!-- 正在扫描激光束动效 -->
-            <div v-if="scanning" class="absolute inset-x-0 h-1 bg-emerald-400/90 shadow-[0_0_14px_#34d399] animate-pulse top-1/2 z-20"></div>
+            <div v-if="scanning" class="absolute inset-x-0 h-1 bg-[#6FBF92]/90 shadow-[0_0_14px_#6FBF92] animate-pulse top-1/2 z-20"></div>
 
             <div v-if="hasUploadedPhoto" class="w-full h-full flex flex-col justify-between font-mono text-[10px] relative z-10">
-              <div class="flex justify-between border-b border-amber-800/40 pb-1">
+              <div class="flex justify-between border-b border-[#6B5321]/40 pb-1">
                 <span>بطاقة التموين (1994)</span>
-                <span class="text-emerald-400 font-bold">{{ $t('register.capturedImage') }}</span>
+                <span class="text-[#6FBF92] font-bold">{{ $t('register.capturedImage') }}</span>
               </div>
               <div class="space-y-1 my-auto">
                 <div>{{ $t('register.cardNoShortLabel') }} <strong class="text-white">IQ-P-1994-082194</strong></div>
                 <div>{{ $t('register.holderLabel') }} <strong class="text-white">{{ $t('register.defaultUserName') }}</strong></div>
                 <div>{{ $t('register.registeredPopLabel') }} <strong class="text-white">{{ $t('register.registeredPopValue', { count: 5 }) }}</strong></div>
               </div>
-              <div class="text-[9px] text-amber-400/80 border-t border-amber-800/40 pt-1 flex justify-between">
+              <div class="text-[9px] text-[#DFC08B]/80 border-t border-[#6B5321]/40 pt-1 flex justify-between">
                 <span>MINISTRY OF TRADE</span>
                 <span>{{ $t('register.stubSealOk') }}</span>
               </div>
             </div>
 
             <div v-else class="text-center space-y-2 py-4">
-              <div class="w-12 h-12 rounded-full bg-slate-800 text-blue-400 flex items-center justify-center mx-auto">
+              <div class="w-12 h-12 rounded-full bg-[#1F3326] text-[#7FA48C] flex items-center justify-center mx-auto">
                 <el-icon :size="24"><Camera /></el-icon>
               </div>
-              <div class="text-xs font-bold text-slate-200">{{ $t('register.clickCapture') }}</div>
-              <div class="text-[10px] text-slate-500">{{ $t('register.autoOcrHint') }}</div>
+              <div class="text-xs font-bold text-[#D9E5DB]">{{ $t('register.clickCapture') }}</div>
+              <div class="text-[10px] text-[#58685D]">{{ $t('register.autoOcrHint') }}</div>
             </div>
 
             <!-- 隐藏的真实文件选择控件，方便移动端真实调起摄像头 -->
@@ -99,10 +99,10 @@
         </div>
 
         <!-- 右侧：自动 OCR 识别与有效性校验状态卡 -->
-        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col justify-between space-y-3">
+        <div class="bg-[#F3F8F4] rounded-lg p-4 border border-[#D9E5DB] flex flex-col justify-between space-y-3">
           <div>
-            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-              <span class="text-xs font-bold text-slate-800">{{ $t('register.ocrCompareTitle') }}</span>
+            <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]">
+              <span class="text-xs font-bold text-[#1F3326]">{{ $t('register.ocrCompareTitle') }}</span>
               <el-tag v-if="scanning" size="small" type="warning" effect="dark">
                 {{ $t('register.tagScanning') }}
               </el-tag>
@@ -117,46 +117,46 @@
 
             <!-- 识别并校验成功展示 -->
             <div v-if="ocrExtracted && isValidCard" class="mt-3 space-y-2 text-xs">
-              <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-1.5">
-                <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+              <div class="p-2.5 rounded-lg bg-[#EFF5F1] border border-[#C7E0CE] text-[#24483A] font-semibold flex items-center gap-1.5">
+                <el-icon class="text-[#2F7A50]"><CircleCheckFilled /></el-icon>
                 <span>{{ $t('register.validBanner') }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">{{ $t('register.labelPaperCardNo') }}</span>
-                <span class="font-mono font-bold text-slate-800">{{ ocrData.paperCardNo }}</span>
+              <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
+                <span class="text-[#8A9A8F]">{{ $t('register.labelPaperCardNo') }}</span>
+                <span class="font-mono font-bold text-[#1F3326]">{{ ocrData.paperCardNo }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">{{ $t('register.labelLegalHead') }}</span>
-                <span class="font-bold text-slate-800">{{ ocrData.headName }}</span>
+              <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
+                <span class="text-[#8A9A8F]">{{ $t('register.labelLegalHead') }}</span>
+                <span class="font-bold text-[#1F3326]">{{ ocrData.headName }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">{{ $t('register.labelRegion') }}</span>
-                <span class="text-slate-700">{{ ocrData.province }} {{ ocrData.district }}</span>
+              <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
+                <span class="text-[#8A9A8F]">{{ $t('register.labelRegion') }}</span>
+                <span class="text-[#43554B]">{{ ocrData.province }} {{ ocrData.district }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-100">
-                <span class="text-slate-400">{{ $t('register.labelApprovedPop') }}</span>
-                <span class="font-bold text-blue-600">{{ $t('register.approvedPopValue', { count: ocrData.memberCount }) }}</span>
+              <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
+                <span class="text-[#8A9A8F]">{{ $t('register.labelApprovedPop') }}</span>
+                <span class="font-bold text-[#326445]">{{ $t('register.approvedPopValue', { count: ocrData.memberCount }) }}</span>
               </div>
               <div class="flex justify-between py-1">
-                <span class="text-slate-400">{{ $t('register.labelStubCheck') }}</span>
-                <span class="text-emerald-600 font-bold">{{ $t('register.stubValidResult') }}</span>
+                <span class="text-[#8A9A8F]">{{ $t('register.labelStubCheck') }}</span>
+                <span class="text-[#2F7A50] font-bold">{{ $t('register.stubValidResult') }}</span>
               </div>
             </div>
 
             <!-- 校验失败阻断提示 -->
             <div v-else-if="ocrExtracted && !isValidCard" class="mt-3 space-y-2 text-xs">
-              <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-semibold flex items-center gap-1.5">
-                <el-icon class="text-rose-600"><CircleCloseFilled /></el-icon>
+              <div class="p-2.5 rounded-lg bg-[#FBEAE9] border border-[#F2D5D4] text-[#6E2F2E] font-semibold flex items-center gap-1.5">
+                <el-icon class="text-[#C04442]"><CircleCloseFilled /></el-icon>
                 <span>{{ $t('register.invalidBanner') }}</span>
               </div>
-              <p class="text-rose-700 leading-relaxed text-[11px]">
+              <p class="text-[#A93B39] leading-relaxed text-[11px]">
                 {{ validationNotice || $t('register.invalidDefaultNotice') }}
               </p>
             </div>
 
             <!-- 初始待上传状态 -->
-            <div v-else class="h-32 flex flex-col items-center justify-center text-slate-400 text-xs gap-1.5">
-              <el-icon :size="28" class="text-slate-300"><Picture /></el-icon>
+            <div v-else class="h-32 flex flex-col items-center justify-center text-[#8A9A8F] text-xs gap-1.5">
+              <el-icon :size="28" class="text-[#C9DBCE]"><Picture /></el-icon>
               <span>{{ $t('register.waitingScanHint') }}</span>
             </div>
           </div>
@@ -232,8 +232,8 @@
         </div>
 
         <!-- 模拟收到的短信提示框 -->
-        <div v-if="simulatedSmsCode" class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
-          <span>{{ $t('register.smsReceived') }}<strong class="font-mono text-emerald-700 text-sm">{{ simulatedSmsCode }}</strong></span>
+        <div v-if="simulatedSmsCode" class="p-2.5 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg text-xs text-[#24483A] flex items-center justify-between">
+          <span>{{ $t('register.smsReceived') }}<strong class="font-mono text-[#2F5B44] text-sm">{{ simulatedSmsCode }}</strong></span>
           <el-button
             type="success"
             size="small"
@@ -272,20 +272,20 @@
     <!-- 步骤 3: 人脸认证 / 远程验证 -->
     <!-- ======================================================== -->
     <div v-else class="space-y-4">
-      <div class="bg-blue-50 border border-blue-200 p-3.5 rounded-xl text-xs text-blue-800 space-y-1">
+      <div class="bg-[#EFF5F1] border border-[#C7DED0] p-3.5 rounded-lg text-xs text-[#24483A] space-y-1">
         <div class="font-bold">{{ $t('register.finalBannerTitle') }}</div>
         <p>{{ $t('register.finalBannerDesc') }}</p>
       </div>
 
       <div :class="isCompact ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'">
         <!-- 方式 A: 人脸自拍与统一国民卡比对 -->
-        <div class="border rounded-xl p-4 space-y-3 bg-slate-50 flex flex-col justify-between">
+        <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4] flex flex-col justify-between">
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800 text-sm">{{ $t('register.methodATitle') }}</span>
+              <span class="font-bold text-[#1F3326] text-sm">{{ $t('register.methodATitle') }}</span>
               <el-tag v-if="biometricPassed" size="small" type="success">{{ $t('register.passedTag') }}</el-tag>
             </div>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-[#58685D]">
               {{ $t('register.methodADesc') }}
             </p>
           </div>
@@ -302,13 +302,13 @@
         </div>
 
         <!-- 方式 B: 异地成员远程邀请验证 -->
-        <div class="border rounded-xl p-4 space-y-3 bg-slate-50 flex flex-col justify-between">
+        <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4] flex flex-col justify-between">
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800 text-sm">{{ $t('register.methodBTitle') }}</span>
+              <span class="font-bold text-[#1F3326] text-sm">{{ $t('register.methodBTitle') }}</span>
               <el-tag v-if="remotePassed" size="small" type="success">{{ $t('register.passedTag') }}</el-tag>
             </div>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-[#58685D]">
               {{ $t('register.methodBDesc') }}
             </p>
           </div>

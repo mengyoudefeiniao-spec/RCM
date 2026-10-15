@@ -3,10 +3,10 @@
     <!-- ======================================================== -->
     <!-- 1. 顶部操作与宏观调度栏 (支持日终清算与导出国家审计凭单) -->
     <!-- ======================================================== -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-indigo-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div class="bg-gradient-to-r from-[#1B3123] via-[#12241A] to-[#1B3123] text-white p-4 sm:p-5 rounded-lg shadow-md border border-[#1F3326]/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="space-y-1">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#6FBF92] animate-pulse"></span>
           <h2 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
             <span>{{ $t('reconciliation.moduleTitle') }}</span>
             <el-tag size="small" type="success" effect="dark" class="font-mono font-bold scale-90">
@@ -14,7 +14,7 @@
             </el-tag>
           </h2>
         </div>
-        <p class="text-xs text-indigo-200/80 leading-relaxed max-w-3xl">
+        <p class="text-xs text-[#C7DED0]/80 leading-relaxed max-w-3xl">
           {{ $t('reconciliation.moduleSubtitle') }}
         </p>
       </div>
@@ -23,7 +23,7 @@
       <div class="flex flex-wrap items-center gap-2 shrink-0">
         <el-button
           type="warning"
-          class="font-bold border-none shadow-md bg-amber-500 hover:bg-amber-600 text-slate-900"
+          class="font-bold border-none shadow-md bg-[#D3AF62] hover:bg-[#C9A13B] text-[#1B3123]"
           @click="openAiReportModal"
         >
           <el-icon class="mr-1"><Cpu /></el-icon>
@@ -67,63 +67,63 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
       <!-- 2.1 G2B 批发采购进货款 -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-1 relative overflow-hidden">
-        <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+      <div class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs text-[#58685D] font-medium">
           <span>{{ $t('reconciliation.g2bTotal') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">🏦</span>
+          <span class="w-6 h-6 rounded-lg bg-[#EFF5F1] text-[#326445] flex items-center justify-center text-xs">🏦</span>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono text-slate-900 tracking-tight">
+        <div class="text-lg sm:text-2xl font-bold font-mono text-[#1B3123] tracking-tight">
           IQD {{ (overviewData.totalG2BAmount || 428500000).toLocaleString() }}
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
-          <span>{{ $t('reconciliation.settledWholesale') }}: <b class="text-slate-700 font-mono">{{ overviewData.totalG2BOrdersCount || 158 }}</b> {{ $t('reconciliation.unitsOrder') }}</span>
-          <span class="text-emerald-600 font-bold">{{ $t('reconciliation.treasury100') }}</span>
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
+          <span>{{ $t('reconciliation.settledWholesale') }}: <b class="text-[#43554B] font-mono">{{ overviewData.totalG2BOrdersCount || 158 }}</b> {{ $t('reconciliation.unitsOrder') }}</span>
+          <span class="text-[#2F7A50] font-bold">{{ $t('reconciliation.treasury100') }}</span>
         </div>
       </div>
 
       <!-- 2.2 B2C 公民购粮规费实收 -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-1 relative overflow-hidden">
-        <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+      <div class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs text-[#58685D] font-medium">
           <span>{{ $t('reconciliation.b2cTotal') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">🛒</span>
+          <span class="w-6 h-6 rounded-lg bg-[#EFF5F1] text-[#2F7A50] flex items-center justify-center text-xs">🛒</span>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono text-emerald-700 tracking-tight">
+        <div class="text-lg sm:text-2xl font-bold font-mono text-[#2F5B44] tracking-tight">
           IQD {{ (overviewData.totalB2CAmount || 34200000).toLocaleString() }}
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
-          <span>{{ $t('reconciliation.deliveredOrders') }}: <b class="text-slate-700 font-mono">{{ overviewData.totalDeliveredOrdersCount || 2845 }}</b> {{ $t('reconciliation.unitsOrder') }}</span>
-          <span class="text-blue-600 font-bold">{{ $t('reconciliation.directDigitalPay') }}</span>
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
+          <span>{{ $t('reconciliation.deliveredOrders') }}: <b class="text-[#43554B] font-mono">{{ overviewData.totalDeliveredOrdersCount || 2845 }}</b> {{ $t('reconciliation.unitsOrder') }}</span>
+          <span class="text-[#326445] font-bold">{{ $t('reconciliation.directDigitalPay') }}</span>
         </div>
       </div>
 
       <!-- 2.3 国家物价差额财政直补 -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-1 relative overflow-hidden">
-        <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+      <div class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs text-[#58685D] font-medium">
           <span>{{ $t('reconciliation.subsidyTotal') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">🏛️</span>
+          <span class="w-6 h-6 rounded-lg bg-[#FDF3E0] text-[#C9A13B] flex items-center justify-center text-xs">🏛️</span>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono text-amber-700 tracking-tight">
+        <div class="text-lg sm:text-2xl font-bold font-mono text-[#7A5F21] tracking-tight">
           IQD {{ (overviewData.totalSubsidyAmount || 394300000).toLocaleString() }}
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
-          <span>{{ $t('reconciliation.subsidyRatio') }}: <b class="text-amber-800 font-mono font-bold">{{ overviewData.subsidyRatio || '92.0' }}%</b></span>
-          <span class="text-amber-600 font-bold">{{ $t('reconciliation.treasuryAccepted') }}</span>
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
+          <span>{{ $t('reconciliation.subsidyRatio') }}: <b class="text-[#6B5321] font-mono font-bold">{{ overviewData.subsidyRatio || '92.0' }}%</b></span>
+          <span class="text-[#C9A13B] font-bold">{{ $t('reconciliation.treasuryAccepted') }}</span>
         </div>
       </div>
 
       <!-- 2.4 进销存 {{ $t('reconciliation.bookMatches100') }}率 -->
-      <div class="bg-gradient-to-br from-emerald-50 to-teal-50/60 p-3.5 sm:p-4 rounded-xl border border-emerald-200 shadow-2xs space-y-1 relative overflow-hidden">
-        <div class="flex items-center justify-between text-xs text-emerald-800 font-medium">
+      <div class="bg-gradient-to-br from-[#EFF5F1] to-[#EFF5F1]/60 p-3.5 sm:p-4 rounded-lg border border-[#C7E0CE] shadow-2xs space-y-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs text-[#24483A] font-medium">
           <span>{{ $t('reconciliation.balanceRate') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">⚖️</span>
+          <span class="w-6 h-6 rounded-lg bg-[#E1F4E4] text-[#2F5B44] flex items-center justify-center text-xs">⚖️</span>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono text-emerald-800 tracking-tight flex items-baseline gap-1.5">
+        <div class="text-lg sm:text-2xl font-bold font-mono text-[#24483A] tracking-tight flex items-baseline gap-1.5">
           <span>{{ overviewData.balanceRate || '100.00%' }}</span>
-          <span class="text-xs text-emerald-600 font-medium font-sans">{{ $t('reconciliation.bookMatchesPhysical') }}</span>
+          <span class="text-xs text-[#2F7A50] font-medium font-sans">{{ $t('reconciliation.bookMatchesPhysical') }}</span>
         </div>
-        <div class="flex items-center justify-between text-[11px] text-emerald-700 pt-1 border-t border-emerald-200/60">
+        <div class="flex items-center justify-between text-[11px] text-[#2F5B44] pt-1 border-t border-[#C7E0CE]/60">
           <span>{{ $t('reconciliation.varianceRate') }}: <b class="font-mono font-bold">0.00%</b></span>
-          <span class="px-1 rounded bg-emerald-200/80 text-emerald-900 font-bold text-[10px]">{{ $t('reconciliation.zeroIllegalResale') }}</span>
+          <span class="px-1 rounded bg-[#C7E0CE]/80 text-[#12241A] font-bold text-[10px]">{{ $t('reconciliation.zeroIllegalResale') }}</span>
         </div>
       </div>
     </div>
@@ -131,57 +131,57 @@
     <!-- ======================================================== -->
     <!-- 3. 多维度子功能标签页 (全景、G2B流水、B2C流水、财政直补、进销存审计) -->
     <!-- ======================================================== -->
-    <div class="bg-white rounded-xl shadow-2xs border border-slate-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-2xs border border-[#D9E5DB] overflow-hidden">
       <el-tabs v-model="subTab" class="px-3 sm:px-5 pt-2 custom-reconcile-tabs">
         <!-- 3.1 全景对账大屏 -->
         <el-tab-pane :label="$t('reconciliation.tabOverview')" name="overview">
           <div class="py-4 space-y-4 text-xs">
             <!-- 资金闭环流转全息图示 -->
-            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
-              <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                <span class="font-bold text-slate-800 text-sm">{{ $t('reconciliation.loopDiagramTitle') }}</span>
-                <span class="text-slate-400 font-mono text-[11px]">{{ $t('reconciliation.treasuryAccountLabel') }}: {{ overviewData.treasuryAccount || 'IQ-CBI-PUBLIC-TREASURY-88201' }}</span>
+            <div class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-3">
+              <div class="flex items-center justify-between border-b border-[#D9E5DB] pb-2">
+                <span class="font-bold text-[#1F3326] text-sm">{{ $t('reconciliation.loopDiagramTitle') }}</span>
+                <span class="text-[#8A9A8F] font-mono text-[11px]">{{ $t('reconciliation.treasuryAccountLabel') }}: {{ overviewData.treasuryAccount || 'IQ-CBI-PUBLIC-TREASURY-88201' }}</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
                 <!-- 阶段 A: 批发环节 -->
-                <div class="p-3 bg-white rounded-xl border border-blue-100 shadow-2xs space-y-1.5">
-                  <div class="flex items-center justify-between text-blue-900 font-bold">
+                <div class="p-3 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1.5">
+                  <div class="flex items-center justify-between text-[#1F3326] font-bold">
                     <span>{{ $t('reconciliation.stage1Title') }}</span>
-                    <span class="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage1Badge') }}</span>
+                    <span class="text-xs bg-[#EFF5F1] text-[#326445] px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage1Badge') }}</span>
                   </div>
-                  <p class="text-slate-500 text-[11px] leading-relaxed">
+                  <p class="text-[#58685D] text-[11px] leading-relaxed">
                     {{ $t('reconciliation.stage1Desc') }}
                   </p>
-                  <div class="pt-1 text-[11px] text-blue-700 font-mono font-bold">
+                  <div class="pt-1 text-[11px] text-[#2A5440] font-mono font-bold">
                     {{ $t('reconciliation.stage1Total') }}: IQD {{ (overviewData.totalG2BAmount || 428500000).toLocaleString() }}
                   </div>
                 </div>
 
                 <!-- 阶段 B: 零售交付环节 -->
-                <div class="p-3 bg-white rounded-xl border border-emerald-100 shadow-2xs space-y-1.5">
-                  <div class="flex items-center justify-between text-emerald-900 font-bold">
+                <div class="p-3 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1.5">
+                  <div class="flex items-center justify-between text-[#12241A] font-bold">
                     <span>{{ $t('reconciliation.stage2Title') }}</span>
-                    <span class="text-xs bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage2Badge') }}</span>
+                    <span class="text-xs bg-[#EFF5F1] text-[#2F7A50] px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage2Badge') }}</span>
                   </div>
-                  <p class="text-slate-500 text-[11px] leading-relaxed">
+                  <p class="text-[#58685D] text-[11px] leading-relaxed">
                     {{ $t('reconciliation.stage2Desc') }}
                   </p>
-                  <div class="pt-1 text-[11px] text-emerald-700 font-mono font-bold">
+                  <div class="pt-1 text-[11px] text-[#2F5B44] font-mono font-bold">
                     {{ $t('reconciliation.stage2Total') }}: IQD {{ (overviewData.totalB2CAmount || 34200000).toLocaleString() }}
                   </div>
                 </div>
 
                 <!-- 阶段 C: 财政兜底环节 -->
-                <div class="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs space-y-1.5">
-                  <div class="flex items-center justify-between text-amber-900 font-bold">
+                <div class="p-3 bg-white rounded-lg border border-[#FDF3E0] shadow-2xs space-y-1.5">
+                  <div class="flex items-center justify-between text-[#5A4718] font-bold">
                     <span>{{ $t('reconciliation.stage3Title') }}</span>
-                    <span class="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage3Badge') }}</span>
+                    <span class="text-xs bg-[#FDF3E0] text-[#C9A13B] px-1.5 py-0.5 rounded">{{ $t('reconciliation.stage3Badge') }}</span>
                   </div>
-                  <p class="text-slate-500 text-[11px] leading-relaxed">
+                  <p class="text-[#58685D] text-[11px] leading-relaxed">
                     {{ $t('reconciliation.stage3Desc') }}
                   </p>
-                  <div class="pt-1 text-[11px] text-amber-700 font-mono font-bold">
+                  <div class="pt-1 text-[11px] text-[#7A5F21] font-mono font-bold">
                     {{ $t('reconciliation.stage3Total') }}: IQD {{ (overviewData.totalSubsidyAmount || 394300000).toLocaleString() }}
                   </div>
                 </div>
@@ -189,9 +189,9 @@
             </div>
 
             <!-- 账实平衡与日终清算状态面板 -->
-            <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-indigo-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="p-4 rounded-lg bg-gradient-to-r from-[#12241A]/90 via-[#1B3123] to-[#12241A] text-white flex flex-col sm:flex-row items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                <div class="w-12 h-12 rounded-lg bg-[#3E9B68]/20 border border-[#6FBF92]/40 text-[#6FBF92] flex items-center justify-center text-2xl font-bold">
                   ✓
                 </div>
                 <div>
@@ -199,7 +199,7 @@
                     <span>{{ $t('reconciliation.balancedTitle') }}</span>
                     <el-tag size="small" type="success">{{ $t('reconciliation.realtimeAudit') }}</el-tag>
                   </div>
-                  <div class="text-[11px] text-slate-300 mt-0.5 font-mono">
+                  <div class="text-[11px] text-[#C9DBCE] mt-0.5 font-mono">
                     {{ $t('reconciliation.lastSettledTime') }}: {{ overviewData.lastSettledAt }} · {{ $t('reconciliation.auditSignStatus') }}
                   </div>
                 </div>
@@ -217,27 +217,27 @@
         <!-- 3.2 G2B 批发进货款对账流水 -->
         <el-tab-pane :label="$t('reconciliation.tabG2B')" name="g2b">
           <div class="py-3.5 space-y-3 text-xs">
-            <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-slate-600 font-medium">{{ $t('reconciliation.g2bOverviewTitle') }}</span>
-              <span class="font-mono text-blue-700 font-bold">{{ $t('reconciliation.g2bFlowCount', { count: g2bList.length }) }}</span>
+            <div class="flex items-center justify-between bg-[#F3F8F4] p-2.5 rounded-lg border border-[#D9E5DB]">
+              <span class="text-[#58685D] font-medium">{{ $t('reconciliation.g2bOverviewTitle') }}</span>
+              <span class="font-mono text-[#2A5440] font-bold">{{ $t('reconciliation.g2bFlowCount', { count: g2bList.length }) }}</span>
             </div>
 
             <el-table :data="g2bList" v-loading="loading" border stripe size="small" class="text-xs">
               <el-table-column prop="orderNo" :label="$t('reconciliation.orderNoLabel')" min-width="150">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-blue-600">{{ row.orderNo }}</span>
+                  <span class="font-mono font-bold text-[#326445]">{{ row.orderNo }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="agentName" :label="$t('reconciliation.agentHeader')" min-width="180">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.agentName }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.agentId }} · {{ row.province }}</div>
+                  <div class="font-bold text-[#1F3326]">{{ row.agentName }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.agentId }} · {{ row.province }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="itemsSummary" :label="$t('reconciliation.itemDetails')" min-width="200" show-overflow-tooltip />
               <el-table-column prop="totalAmount" :label="$t('reconciliation.settleAmount')" width="150" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-slate-900">IQD {{ (row.totalAmount || 0).toLocaleString() }}</span>
+                  <span class="font-mono font-bold text-[#1B3123]">IQD {{ (row.totalAmount || 0).toLocaleString() }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="payChannel" :label="$t('reconciliation.paymentChannel')" width="140" align="center">
@@ -249,7 +249,7 @@
               </el-table-column>
               <el-table-column prop="payTime" :label="$t('reconciliation.inboundPayTime')" min-width="140">
                 <template #default="{ row }">
-                  <span class="font-mono text-slate-500 text-[11px]">{{ row.payTime }}</span>
+                  <span class="font-mono text-[#58685D] text-[11px]">{{ row.payTime }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="payStatus" :label="$t('reconciliation.status')" width="100" align="center">
@@ -266,28 +266,28 @@
         <!-- 3.3 B2C 公民购粮规费与实收流水 -->
         <el-tab-pane :label="$t('reconciliation.tabB2C')" name="b2c">
           <div class="py-3.5 space-y-3 text-xs">
-            <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-slate-600 font-medium">{{ $t('reconciliation.b2cOverviewTitle') }}</span>
-              <span class="font-mono text-emerald-700 font-bold">{{ $t('reconciliation.b2cOrdersCount', { count: b2cList.length }) }}</span>
+            <div class="flex items-center justify-between bg-[#F3F8F4] p-2.5 rounded-lg border border-[#D9E5DB]">
+              <span class="text-[#58685D] font-medium">{{ $t('reconciliation.b2cOverviewTitle') }}</span>
+              <span class="font-mono text-[#2F5B44] font-bold">{{ $t('reconciliation.b2cOrdersCount', { count: b2cList.length }) }}</span>
             </div>
 
             <el-table :data="b2cList" v-loading="loading" border stripe size="small" class="text-xs">
               <el-table-column prop="orderId" :label="$t('reconciliation.orderOrPickupCode')" min-width="150">
                 <template #default="{ row }">
-                  <div class="font-mono font-bold text-slate-800">{{ row.orderId }}</div>
-                  <div class="text-[10px] text-emerald-700 font-mono">{{ $t('reconciliation.pickupCodePrefix') }}: {{ row.pickupCode }}</div>
+                  <div class="font-mono font-bold text-[#1F3326]">{{ row.orderId }}</div>
+                  <div class="text-[10px] text-[#2F5B44] font-mono">{{ $t('reconciliation.pickupCodePrefix') }}: {{ row.pickupCode }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="headName" :label="$t('reconciliation.headCardLabel')" min-width="170">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.headName }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.cardNo }}</div>
+                  <div class="font-bold text-[#1F3326]">{{ row.headName }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.cardNo }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="itemsSummary" :label="$t('reconciliation.receivedRationItems')" min-width="180" show-overflow-tooltip />
               <el-table-column prop="selfPayAmount" :label="$t('reconciliation.citizenPaidFee')" width="130" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-amber-700">IQD {{ (row.selfPayAmount || 0).toLocaleString() }}</span>
+                  <span class="font-mono font-bold text-[#7A5F21]">IQD {{ (row.selfPayAmount || 0).toLocaleString() }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="deliveryType" :label="$t('reconciliation.deliveryMode')" width="100" align="center">
@@ -306,7 +306,7 @@
               </el-table-column>
               <el-table-column prop="deliveredAt" :label="$t('reconciliation.deliveryVerifyTime')" min-width="140">
                 <template #default="{ row }">
-                  <span class="font-mono text-slate-500 text-[11px]">{{ row.deliveredAt || row.paidAt || '-' }}</span>
+                  <span class="font-mono text-[#58685D] text-[11px]">{{ row.deliveredAt || row.paidAt || '-' }}</span>
                 </template>
               </el-table-column>
             </el-table>
@@ -316,11 +316,11 @@
         <!-- 3.4 国家物价兜底财政补贴台账 -->
         <el-tab-pane :label="$t('reconciliation.tabSubsidies')" name="subsidies">
           <div class="py-3.5 space-y-3 text-xs">
-            <div class="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-amber-900 leading-relaxed flex items-center justify-between">
+            <div class="p-3 bg-[#FDF3E0]/80 rounded-lg border border-[#F2E3C6]/80 text-[#5A4718] leading-relaxed flex items-center justify-between">
               <div>
                 <strong>{{ isEn ? 'Fiscal Price Stabilization: ' : '财政平抑物价兜底机制：' }}</strong>{{ $t('reconciliation.subsidyMechanismDesc') }}
               </div>
-              <div class="font-mono font-bold text-amber-800 shrink-0 ml-2">
+              <div class="font-mono font-bold text-[#6B5321] shrink-0 ml-2">
                 {{ $t('reconciliation.subsidyGrandTotal') }}: IQD {{ (subsidiesData.grandTreasurySubsidy || 483250000).toLocaleString() }}
               </div>
             </div>
@@ -328,23 +328,23 @@
             <el-table :data="subsidiesData.items || []" v-loading="loading" border stripe size="small" class="text-xs">
               <el-table-column prop="itemName" :label="$t('reconciliation.strategicItemName')" min-width="180">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.itemName }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.itemCode }}</div>
+                  <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.itemCode }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="marketPrice" :label="$t('reconciliation.cifMarketPrice')" width="120" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono text-slate-700">IQD {{ row.marketPrice }}/{{ row.unit }}</span>
+                  <span class="font-mono text-[#43554B]">IQD {{ row.marketPrice }}/{{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="citizenPrice" :label="$t('reconciliation.citizenPrice')" width="120" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-emerald-700">IQD {{ row.citizenPrice }}/{{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#2F5B44]">IQD {{ row.citizenPrice }}/{{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="unitSubsidy" :label="$t('reconciliation.unitSubsidy')" width="130" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-amber-700">IQD {{ row.unitSubsidy }}/{{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#7A5F21]">IQD {{ row.unitSubsidy }}/{{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="subsidyRatio" :label="$t('reconciliation.subsidyRatio')" width="100" align="center">
@@ -356,12 +356,12 @@
               </el-table-column>
               <el-table-column prop="totalGovSubsidy" :label="$t('reconciliation.currentTotalSubsidy')" min-width="160" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-indigo-700">IQD {{ (row.totalGovSubsidy || 0).toLocaleString() }}</span>
+                  <span class="font-mono font-bold text-[#2A5440]">IQD {{ (row.totalGovSubsidy || 0).toLocaleString() }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="status" :label="$t('reconciliation.settleStatus')" width="130" align="center">
                 <template #default="{ row }">
-                  <span class="text-emerald-700 font-bold flex items-center justify-center gap-1">
+                  <span class="text-[#2F5B44] font-bold flex items-center justify-center gap-1">
                     <span>✓</span> {{ row.status }}
                   </span>
                 </template>
@@ -373,10 +373,10 @@
         <!-- 3.5 进销存 100% 账实平衡审计 -->
         <el-tab-pane :label="$t('reconciliation.tabInventory')" name="inventory">
           <div class="py-3.5 space-y-3 text-xs">
-            <div class="flex items-center justify-between bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+            <div class="flex items-center justify-between bg-[#EFF5F1] p-2.5 rounded-lg border border-[#C7E0CE]">
               <div class="flex items-center gap-2">
-                <span class="text-emerald-700 font-bold">{{ $t('reconciliation.inventoryThreeLevelRule') }}</span>
-                <span class="text-slate-600 font-mono text-[11px]">{{ $t('reconciliation.inventoryFormula') }}</span>
+                <span class="text-[#2F5B44] font-bold">{{ $t('reconciliation.inventoryThreeLevelRule') }}</span>
+                <span class="text-[#58685D] font-mono text-[11px]">{{ $t('reconciliation.inventoryFormula') }}</span>
               </div>
               <el-tag size="small" type="success" effect="dark" class="font-mono">
                 VARIANCE: 0.00%
@@ -386,33 +386,33 @@
             <el-table :data="inventoryAuditData.records || []" v-loading="loading" border stripe size="small" class="text-xs">
               <el-table-column prop="itemName" :label="$t('reconciliation.itemName')" min-width="160">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.itemName }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.itemCode }}</div>
+                  <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.itemCode }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="centralOutbound" :label="$t('reconciliation.centralOutboundCol')" width="130" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-blue-700">{{ (row.centralOutbound || 0).toLocaleString() }} {{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#2A5440]">{{ (row.centralOutbound || 0).toLocaleString() }} {{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="agentInbound" :label="$t('reconciliation.agentInboundCol')" width="130" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono text-slate-800">{{ (row.agentInbound || 0).toLocaleString() }} {{ row.unit }}</span>
+                  <span class="font-mono text-[#1F3326]">{{ (row.agentInbound || 0).toLocaleString() }} {{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="citizenClaimed" :label="$t('reconciliation.citizenClaimedCol')" width="140" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-emerald-700">{{ (row.citizenClaimed || 0).toLocaleString() }} {{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#2F5B44]">{{ (row.citizenClaimed || 0).toLocaleString() }} {{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="agentOnHand" :label="$t('reconciliation.agentOnHandCol')" width="130" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-amber-700">{{ (row.agentOnHand || 0).toLocaleString() }} {{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#7A5F21]">{{ (row.agentOnHand || 0).toLocaleString() }} {{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="varianceQty" :label="$t('reconciliation.varianceQty')" width="100" align="center">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-emerald-600">{{ row.varianceQty }} {{ row.unit }}</span>
+                  <span class="font-mono font-bold text-[#2F7A50]">{{ row.varianceQty }} {{ row.unit }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="auditResult" :label="$t('reconciliation.nationalAuditResult')" width="130" align="center">
@@ -431,53 +431,53 @@
           <div class="py-3.5 space-y-4 text-xs">
             <!-- 顶层风控指标矩阵卡片 -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <div class="flex items-center justify-between text-slate-500 text-[11px]">
+              <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-1">
+                <div class="flex items-center justify-between text-[#58685D] text-[11px]">
                   <span>{{ $t('reconciliation.totalCitizenDemand') }}</span>
-                  <span class="text-blue-600 font-bold">🛒</span>
+                  <span class="text-[#326445] font-bold">🛒</span>
                 </div>
-                <div class="text-base sm:text-lg font-bold font-mono text-slate-900">
+                <div class="text-base sm:text-lg font-bold font-mono text-[#1B3123]">
                   498,000 <span class="text-xs font-normal">KG/L</span>
                 </div>
-                <div class="text-[10px] text-slate-400">{{ $t('reconciliation.penetrateCitizenOrders') }}</div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('reconciliation.penetrateCitizenOrders') }}</div>
               </div>
 
-              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <div class="flex items-center justify-between text-slate-500 text-[11px]">
+              <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-1">
+                <div class="flex items-center justify-between text-[#58685D] text-[11px]">
                   <span>{{ $t('reconciliation.totalAgentProcure') }}</span>
-                  <span class="text-indigo-600 font-bold">🏢</span>
+                  <span class="text-[#326445] font-bold">🏢</span>
                 </div>
-                <div class="text-base sm:text-lg font-bold font-mono text-indigo-700">
+                <div class="text-base sm:text-lg font-bold font-mono text-[#2A5440]">
                   519,200 <span class="text-xs font-normal">KG/L</span>
                 </div>
-                <div class="text-[10px] text-slate-400">{{ $t('reconciliation.penetrateAgentOrders') }}</div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('reconciliation.penetrateAgentOrders') }}</div>
               </div>
 
-              <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-1">
-                <div class="flex items-center justify-between text-emerald-800 text-[11px]">
+              <div class="p-3 bg-[#EFF5F1]/60 rounded-lg border border-[#C7E0CE] space-y-1">
+                <div class="flex items-center justify-between text-[#24483A] text-[11px]">
                   <span>{{ $t('reconciliation.supplyDemandMatchRate') }}</span>
-                  <span class="text-emerald-600 font-bold">⚖️</span>
+                  <span class="text-[#2F7A50] font-bold">⚖️</span>
                 </div>
-                <div class="text-base sm:text-lg font-bold font-mono text-emerald-700">
+                <div class="text-base sm:text-lg font-bold font-mono text-[#2F5B44]">
                   104.2%
                 </div>
-                <div class="text-[10px] text-emerald-600 font-medium">{{ $t('reconciliation.safeBufferZone') }}</div>
+                <div class="text-[10px] text-[#2F7A50] font-medium">{{ $t('reconciliation.safeBufferZone') }}</div>
               </div>
 
-              <div class="p-3 bg-amber-50/70 rounded-xl border border-amber-200 space-y-1">
-                <div class="flex items-center justify-between text-amber-800 text-[11px]">
+              <div class="p-3 bg-[#FDF3E0]/70 rounded-lg border border-[#F2E3C6] space-y-1">
+                <div class="flex items-center justify-between text-[#6B5321] text-[11px]">
                   <span>{{ $t('reconciliation.antiHoardingAlert') }}</span>
-                  <span class="text-amber-600 font-bold">🛡️</span>
+                  <span class="text-[#C9A13B] font-bold">🛡️</span>
                 </div>
-                <div class="text-base sm:text-lg font-bold font-mono text-amber-700">
+                <div class="text-base sm:text-lg font-bold font-mono text-[#7A5F21]">
                   {{ $t('reconciliation.alertLocations', { count: 1 }) }}
                 </div>
-                <div class="text-[10px] text-amber-700 font-medium">{{ $t('reconciliation.diyalaIntercepted') }}</div>
+                <div class="text-[10px] text-[#7A5F21] font-medium">{{ $t('reconciliation.diyalaIntercepted') }}</div>
               </div>
             </div>
 
             <!-- 说明提示条 -->
-            <div class="p-3 bg-indigo-50/80 rounded-xl border border-indigo-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-indigo-900 leading-relaxed">
+            <div class="p-3 bg-[#EFF5F1]/80 rounded-lg border border-[#C7DED0]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[#1F3326] leading-relaxed">
               <div class="flex items-center gap-2">
                 <span class="text-base">🤖</span>
                 <span><strong>{{ isEn ? 'Supply-Demand & Anti-Hoarding Rules: ' : '供需对账与反囤货规则：' }}</strong>{{ $t('reconciliation.supplyDemandRuleDesc') }}</span>
@@ -491,33 +491,33 @@
             <el-table :data="provinceSupplyDemandList" border stripe size="small" class="text-xs">
               <el-table-column prop="province" :label="$t('reconciliation.provProvinceCol')" min-width="160">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                  <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
                     <span>{{ row.province }}</span>
                     <el-tag v-if="row.isArticle140" size="small" type="warning" effect="dark" class="scale-90 origin-left">
                       {{ $t('reconciliation.article140Area') }}
                     </el-tag>
                   </div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.warehouse }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.warehouse }}</div>
                 </template>
               </el-table-column>
 
               <el-table-column :label="$t('reconciliation.citizenDemandCol')" width="170" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-blue-700">{{ row.citizenDemand.toLocaleString() }} KG/L</span>
-                  <div class="text-[10px] text-slate-400">{{ row.orderCount }} {{ $t('reconciliation.unitsOrder') }}</div>
+                  <span class="font-mono font-bold text-[#2A5440]">{{ row.citizenDemand.toLocaleString() }} KG/L</span>
+                  <div class="text-[10px] text-[#8A9A8F]">{{ row.orderCount }} {{ $t('reconciliation.unitsOrder') }}</div>
                 </template>
               </el-table-column>
 
               <el-table-column :label="$t('reconciliation.agentSupplyCol')" width="170" align="right">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-slate-900">{{ row.agentSupply.toLocaleString() }} KG/L</span>
-                  <div class="text-[10px] text-slate-400">{{ row.agentCount }} {{ isEn ? 'agents' : '家代销网点' }}</div>
+                  <span class="font-mono font-bold text-[#1B3123]">{{ row.agentSupply.toLocaleString() }} KG/L</span>
+                  <div class="text-[10px] text-[#8A9A8F]">{{ row.agentCount }} {{ isEn ? 'agents' : '家代销网点' }}</div>
                 </template>
               </el-table-column>
 
               <el-table-column :label="$t('reconciliation.matchRatioCol')" width="110" align="center">
                 <template #default="{ row }">
-                  <span class="font-mono font-bold" :class="row.ratio > 130 ? 'text-rose-600' : (row.ratio < 90 ? 'text-amber-600' : 'text-emerald-700')">
+                  <span class="font-mono font-bold" :class="row.ratio > 130 ? 'text-[#C04442]' : (row.ratio < 90 ? 'text-[#C9A13B]' : 'text-[#2F5B44]')">
                     {{ row.ratio }}%
                   </span>
                 </template>
@@ -543,8 +543,8 @@
 
               <el-table-column :label="$t('reconciliation.nextMonthQuotaAdvice')" min-width="220">
                 <template #default="{ row }">
-                  <div class="text-slate-700 leading-normal">{{ row.recommendation }}</div>
-                  <div class="text-[10px] text-indigo-600 font-mono mt-0.5 font-semibold">{{ $t('reconciliation.quotaCorrection') }}: {{ row.quotaAdjustment }}</div>
+                  <div class="text-[#43554B] leading-normal">{{ row.recommendation }}</div>
+                  <div class="text-[10px] text-[#326445] font-mono mt-0.5 font-semibold">{{ $t('reconciliation.quotaCorrection') }}: {{ row.quotaAdjustment }}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -566,36 +566,36 @@
     >
       <div class="space-y-4 text-xs select-none">
         <!-- 官方凭单纸张效果 -->
-        <div class="p-5 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-300 space-y-3 relative overflow-hidden">
+        <div class="p-5 rounded-lg bg-[#F3F8F4] border-2 border-dashed border-[#C9DBCE] space-y-3 relative overflow-hidden">
           <!-- 官方双重公章印戳 -->
-          <div class="absolute right-4 bottom-4 pointer-events-none opacity-85 border-2 border-emerald-700 rounded-full w-24 h-24 flex flex-col items-center justify-center text-emerald-800 rotate-[-15deg] scale-90">
+          <div class="absolute right-4 bottom-4 pointer-events-none opacity-85 border-2 border-[#2F5B44] rounded-full w-24 h-24 flex flex-col items-center justify-center text-[#24483A] rotate-[-15deg] scale-90">
             <span class="text-[7px] font-bold">REPUBLIC OF IRAQ</span>
             <span class="text-[8px] font-bold">MINISTRY OF TRADE</span>
             <span class="text-[7px] font-mono">100% BALANCED</span>
             <span class="text-[6px] font-mono">FIN-SETTLED</span>
           </div>
 
-          <div class="flex items-center justify-between border-b border-slate-300 pb-2">
+          <div class="flex items-center justify-between border-b border-[#C9DBCE] pb-2">
             <div>
-              <div class="font-bold text-sm text-slate-900">{{ $t('reconciliation.officialVoucherTitle') }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">CENTRAL FISCAL RECONCILIATION VOUCHER</div>
+              <div class="font-bold text-sm text-[#1B3123]">{{ $t('reconciliation.officialVoucherTitle') }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">CENTRAL FISCAL RECONCILIATION VOUCHER</div>
             </div>
             <div class="text-right">
-              <span class="font-mono text-emerald-700 font-bold text-xs">{{ officialVoucher.officialVoucherNo || 'GOV-FIN-VOUCH-882109' }}</span>
-              <div class="text-[10px] text-slate-400 font-mono">{{ new Date().toISOString().slice(0, 10) }}</div>
+              <span class="font-mono text-[#2F5B44] font-bold text-xs">{{ officialVoucher.officialVoucherNo || 'GOV-FIN-VOUCH-882109' }}</span>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</div>
             </div>
           </div>
 
           <!-- 资金核算汇总卡片 -->
-          <div class="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-xl border border-slate-200">
-            <div>{{ $t('reconciliation.g2bTotal') }}: <b class="font-mono text-slate-900">IQD {{ (overviewData.totalG2BAmount || 428500000).toLocaleString() }}</b></div>
-            <div>{{ $t('reconciliation.b2cTotal') }}: <b class="font-mono text-emerald-700">IQD {{ (overviewData.totalB2CAmount || 34200000).toLocaleString() }}</b></div>
-            <div>{{ $t('reconciliation.subsidyTotal') }}: <b class="font-mono text-amber-700">IQD {{ (overviewData.totalSubsidyAmount || 394300000).toLocaleString() }}</b></div>
-            <div>{{ $t('reconciliation.balanceRate') }}: <b class="font-mono text-emerald-600 font-bold">100.00% ({{ isEn ? 'Variance 0' : '差额 0' }})</b></div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-lg border border-[#D9E5DB]">
+            <div>{{ $t('reconciliation.g2bTotal') }}: <b class="font-mono text-[#1B3123]">IQD {{ (overviewData.totalG2BAmount || 428500000).toLocaleString() }}</b></div>
+            <div>{{ $t('reconciliation.b2cTotal') }}: <b class="font-mono text-[#2F5B44]">IQD {{ (overviewData.totalB2CAmount || 34200000).toLocaleString() }}</b></div>
+            <div>{{ $t('reconciliation.subsidyTotal') }}: <b class="font-mono text-[#7A5F21]">IQD {{ (overviewData.totalSubsidyAmount || 394300000).toLocaleString() }}</b></div>
+            <div>{{ $t('reconciliation.balanceRate') }}: <b class="font-mono text-[#2F7A50] font-bold">100.00% ({{ isEn ? 'Variance 0' : '差额 0' }})</b></div>
           </div>
 
           <!-- 审计说明 -->
-          <div class="text-[10px] text-slate-500 leading-relaxed pt-1">
+          <div class="text-[10px] text-[#58685D] leading-relaxed pt-1">
             <strong>{{ isEn ? 'Statutory Audit Endorsement: ' : '法定审计背书：' }}</strong>{{ $t('reconciliation.legalAuditEndorsement') }}
           </div>
         </div>
@@ -625,34 +625,34 @@
     >
       <div class="space-y-4 text-xs select-none max-h-[70vh] overflow-y-auto pr-1">
         <!-- 报告头 -->
-        <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white space-y-1.5 border border-indigo-800">
+        <div class="p-4 rounded-lg bg-gradient-to-r from-[#1F3326] via-[#1B3123] to-[#12241A] text-white space-y-1.5 border border-[#24483A]">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-amber-300">{{ $t('reconciliation.aiReportHeading') }}</span>
+            <span class="text-sm font-bold text-[#E5CEA1]">{{ $t('reconciliation.aiReportHeading') }}</span>
             <el-tag size="small" type="success" effect="dark" class="font-mono font-bold">AI MODEL V5.2 VALIDATED</el-tag>
           </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed">
+          <p class="text-[11px] text-[#C9DBCE] leading-relaxed">
             {{ $t('reconciliation.aiReportSubtitle') }}
           </p>
         </div>
 
         <!-- 研判一：宏观平衡 -->
-        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-          <div class="font-bold text-slate-800 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+        <div class="p-3.5 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-2">
+          <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
             <span>{{ $t('reconciliation.sec1Title') }}</span>
           </div>
-          <p class="text-slate-600 leading-relaxed text-[11px]">
+          <p class="text-[#58685D] leading-relaxed text-[11px]">
             {{ isEn ? 'Total valid citizen demand across 19 provinces is 498,000 KG/L, and agent procurement is 519,200 KG/L (104.2% match rate). Overall safe within 100%~108% buffer, but showing localized imbalances.' : '本月全伊拉克 19 省公民订单真实有效需求总量为 498,000 KG/L，代理商申报采购进货总量为 519,200 KG/L，全网供需匹配率为 104.2%。整体处于 100%~108% 的安全缓冲区间，未出现系统性物资缺口。但区域分布呈现“局部过剩囤积”与“局部供应紧张”的结构性分化。' }}
           </p>
         </div>
 
         <!-- 研判二：反囤货风控 -->
-        <div class="p-3.5 bg-rose-50/70 rounded-xl border border-rose-200 space-y-2">
-          <div class="font-bold text-rose-900 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+        <div class="p-3.5 bg-[#FBEAE9]/70 rounded-lg border border-[#F2D5D4] space-y-2">
+          <div class="font-bold text-[#6E2F2E] flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#C04442]"></span>
             <span>{{ $t('reconciliation.sec2Title') }}</span>
           </div>
-          <div class="text-rose-800 leading-relaxed text-[11px] space-y-1.5">
+          <div class="text-[#6E2F2E] leading-relaxed text-[11px] space-y-1.5">
             <div>
               🚨 <strong>{{ $t('reconciliation.sec2Target1') }}</strong>
               {{ isEn ? '— Agent wholesale order reached 68,000 KG, but citizen orders were only 42,000 KG (161.9% ratio), with turnover stretching to 19.8 days.' : '— 代理商批发进货申请量达 68,000 KG，但当地公民本月实际订单仅为 42,000 KG，供需比率高达 161.9%，库存周转天数异常拉长至 19.8 天。' }}
@@ -665,23 +665,23 @@
         </div>
 
         <!-- 研判三：防浪费防损耗 -->
-        <div class="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 space-y-2">
-          <div class="font-bold text-amber-900 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+        <div class="p-3.5 bg-[#FDF3E0]/70 rounded-lg border border-[#F2E3C6] space-y-2">
+          <div class="font-bold text-[#5A4718] flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#C9A13B]"></span>
             <span>{{ $t('reconciliation.sec3Title') }}</span>
           </div>
-          <p class="text-amber-800 leading-relaxed text-[11px]">
+          <p class="text-[#6B5321] leading-relaxed text-[11px]">
             {{ isEn ? 'Enforce demand-driven replenishment for cooking oil and sugar. Strictly forbid >1.2x turnover inventory; trigger alerts for stock over 12 days to eliminate waste.' : '针对植物油与易受潮白砂糖，严格推行“以单定配、以销定购”的动态拉动式补货，严禁任何代销网点超额堆积 1.2 倍周转库存；对在库超过 12 天的存量物资强制启动临界预警并由区域经理就近调剂给高负荷网点，从源头杜绝财政补贴资金沉淀和粮食霉变损耗。' }}
           </p>
         </div>
 
         <!-- 研判四：下月配给指标排产方案 -->
-        <div class="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-200 space-y-2">
-          <div class="font-bold text-emerald-900 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+        <div class="p-3.5 bg-[#EFF5F1]/70 rounded-lg border border-[#C7E0CE] space-y-2">
+          <div class="font-bold text-[#12241A] flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#2F7A50]"></span>
             <span>{{ $t('reconciliation.sec4Title') }}</span>
           </div>
-          <div class="text-slate-700 leading-relaxed text-[11px] space-y-1">
+          <div class="text-[#43554B] leading-relaxed text-[11px] space-y-1">
             <div>1. <strong>{{ isEn ? 'Baghdad' : '巴格达省' }}</strong>: {{ isEn ? 'Maintain stable baseline, approved 142,000 KG (+5.2%) matching Karkh population inflow;' : '保持稳定基准，核准下月指标 142,000 KG (+5.2%)，匹配卡尔赫区人口流入增量；' }}</div>
             <div>2. <strong>{{ isEn ? 'Nineveh (Mosul Old City)' : '尼尼微省 (摩苏尔老城)' }}</strong>: {{ isEn ? 'Increase to 87,000 KG (+14.5%) to ease returnee supply tightness;' : '上调下月指标至 87,000 KG (+14.5%)，快速平抑因战后回流引起的供应紧俏；' }}</div>
             <div>3. <strong>{{ isEn ? 'Diyala' : '迪亚拉省' }}</strong>: {{ isEn ? 'Reduce to 38,000 KG (-20.0%) to absorb currently hoarded warehouse stock;' : '下调下月申报指标至 38,000 KG (-20.0%)，强制消化当期在库囤积粮；' }}</div>
@@ -692,7 +692,7 @@
 
       <template #footer>
         <div class="flex items-center justify-between">
-          <span class="text-[11px] text-slate-400">{{ $t('reconciliation.hashVerified') }}</span>
+          <span class="text-[11px] text-[#8A9A8F]">{{ $t('reconciliation.hashVerified') }}</span>
           <div class="flex items-center gap-2">
             <el-button @click="aiReportModalVisible = false">{{ $t('common.cancel') }}</el-button>
             <el-button type="success" class="font-bold shadow-xs" @click="handleApplyAiPlanToNextMonth">
@@ -1010,10 +1010,10 @@ onMounted(() => {
 }
 
 :deep(.custom-reconcile-tabs .el-tabs__item.is-active) {
-  color: #4f46e5 !important;
+  color: #B8934A !important;
 }
 
 :deep(.custom-reconcile-tabs .el-tabs__active-bar) {
-  background-color: #4f46e5 !important;
+  background-color: #B8934A !important;
 }
 </style>

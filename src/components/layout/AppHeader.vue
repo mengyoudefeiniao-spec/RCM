@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-[#1E3F35] text-white border-b border-[#295447] shadow-md sticky top-0 z-40 w-full">
+  <header class="bg-white text-[#1F3326] border-b border-[#E5CEA1] shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)] sticky top-0 z-40 w-full">
     <!-- 全宽顶栏：针对 Google Pixel 9 手机优化高度与右侧控件排列 -->
     <div class="w-full px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->
@@ -10,24 +10,27 @@
           :class="isAppMode ? 'cursor-default select-none' : 'cursor-pointer'"
           @click="handleLogoClick"
         >
-          <!-- App 移动端模式：仅显示 Logo 方块图标，去除文字，节省宝贵视口宽度 -->
-          <AppLogo size="sm" class="sm:hidden" />
-          <!-- 桌面端模式：显示中号 Logo 方块图标 -->
-          <AppLogo size="md" class="hidden sm:flex" />
+          <!-- 参考站风格国徽印章容器：浅砂金底 + 砂金描边 + 金棕徽标 -->
+          <div class="grid h-10 w-10 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-[10px] bg-[#FDF3E0] border border-[#E5CEA1] text-[#7A5F21] shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)]">
+            <!-- App 移动端模式：仅显示 Logo 方块图标，去除文字，节省宝贵视口宽度 -->
+            <AppLogo size="sm" theme="light" class="sm:hidden" />
+            <!-- 桌面端模式：显示中号 Logo 方块图标 -->
+            <AppLogo size="md" theme="light" class="hidden sm:flex" />
+          </div>
 
           <!-- 文字排印：在 App 移动端或 APP 仿真模式下隐藏，桌面 Web 端显示 RCM 标识 -->
           <div v-if="!isAppMode" class="shrink-0 hidden sm:block">
-            <div class="text-xs sm:text-sm font-black tracking-wider flex items-center gap-1.5 text-white">
-              <span>RCM</span>
-            </div>
-            <div class="text-[9px] text-[#C59D5F] font-mono tracking-wider font-semibold">
+            <div class="text-[10px] text-[#7A5F21] font-semibold tracking-wide">
               REPUBLIC OF IRAQ · MINISTRY OF TRADE
+            </div>
+            <div class="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5 text-[#1F3326]">
+              <span>RCM</span>
             </div>
           </div>
         </div>
 
         <!-- 分隔浅竖线 -->
-        <div v-if="!isAppMode" class="hidden xl:block h-5 w-px bg-[#2E5E50] shrink-0"></div>
+        <div v-if="!isAppMode" class="hidden xl:block h-5 w-px bg-[#E5CEA1] shrink-0"></div>
 
         <!-- 核心系统快捷导航 (桌面端且非 APP 模式) -->
         <nav v-if="!isAppMode" class="hidden md:flex items-center gap-1 text-xs shrink-0">
@@ -36,7 +39,7 @@
             v-if="canViewDashboard"
             to="/dashboard"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/dashboard' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path === '/dashboard' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><DataAnalysis /></el-icon>
             <span>{{ $t('nav.dashboard') }}</span>
@@ -47,7 +50,7 @@
             v-if="authStore.currentRole === 'citizen'"
             to="/citizen"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/citizen') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path.startsWith('/citizen') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><User /></el-icon>
             <span>{{ $t('nav.citizen') }}</span>
@@ -58,11 +61,11 @@
             v-if="authStore.isAdmin"
             to="/review"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/review' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path === '/review' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Stamp /></el-icon>
             <span>{{ $t('nav.review') }}</span>
-            <span v-if="pendingReviewCount > 0" class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold">
+            <span v-if="pendingReviewCount > 0" class="w-4 h-4 rounded-full bg-[#C04442] text-white text-[10px] flex items-center justify-center font-bold">
               {{ pendingReviewCount }}
             </span>
           </router-link>
@@ -72,7 +75,7 @@
             v-if="authStore.isAdmin"
             to="/complaint"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/complaint') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path.startsWith('/complaint') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Service /></el-icon>
             <span>{{ $t('nav.complaint') }}</span>
@@ -82,7 +85,7 @@
           <router-link
             to="/warehouse"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/warehouse' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path === '/warehouse' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Box /></el-icon>
             <span>{{ $t('nav.rationMgmt') || '配给管理' }}</span>
@@ -93,7 +96,7 @@
             v-if="authStore.isAdmin || authStore.currentRole === 'agent'"
             to="/agent"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path === '/agent' ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path === '/agent' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Shop /></el-icon>
             <span>{{ $t('nav.agent') }}</span>
@@ -104,7 +107,7 @@
             v-if="authStore.isAdmin"
             to="/admin"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
-            :class="$route.path.startsWith('/admin') ? 'bg-[#C59D5F] text-[#1E3F35] font-bold shadow-xs' : 'text-[#DFE8E3] hover:text-white hover:bg-[#285246]'"
+            :class="$route.path.startsWith('/admin') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Setting /></el-icon>
             <span>{{ $t('nav.admin') }}</span>
@@ -123,7 +126,7 @@
           <div class="inline-flex items-center cursor-pointer select-none">
             <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
             <span
-              class="hidden sm:flex items-center gap-1 text-xs text-[#DFE8E3] hover:text-white px-2.5 py-1.5 rounded-lg bg-[#16332B] border border-[#295447]"
+              class="hidden sm:flex items-center gap-1 text-xs text-[#7A5F21] hover:text-[#326445] px-2.5 py-1.5 rounded-lg bg-[#FDF3E0] border border-[#E5CEA1] transition-colors"
             >
               <span class="w-2 h-2 rounded-full shrink-0" :class="roleDotColor"></span>
               <span class="whitespace-nowrap font-medium">{{ roleLabel }}</span>
@@ -133,39 +136,39 @@
             <!-- 移动端非APP小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
             <button
               type="button"
-              class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative"
+              class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-[#FDF3E0] border border-[#E5CEA1] text-[#7A5F21] hover:text-[#326445] active:scale-95 transition-all relative"
               :title="roleLabel"
             >
               <el-icon :size="15"><UserFilled /></el-icon>
               <!-- 角色小圆点徽标 -->
-              <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#16332B]" :class="roleDotColor"></span>
+              <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#FDF3E0]" :class="roleDotColor"></span>
             </button>
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-100">
+              <div class="px-3 py-1.5 text-[11px] font-bold text-[#8A9A8F] border-b border-[#E9F1EB]">
                 {{ $t('roles.adminRoles') }}
               </div>
               <el-dropdown-item command="minister_center">
-                <span class="font-bold text-[#1E3F35]">● {{ $t('roles.ministerCenter') }}</span>
-                <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.ministerDuty') }}</span>
+                <span class="font-bold text-[#326445]">● {{ $t('roles.ministerCenter') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.ministerDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="deputy_minister">
-                <span class="font-bold text-[#D34545]">● {{ $t('roles.deputyMinister') }}</span>
-                <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.deputyDuty') }}</span>
+                <span class="font-bold text-[#C04442]">● {{ $t('roles.deputyMinister') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.deputyDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="director_planning">
-                <span class="font-bold text-[#C59D5F]">● {{ $t('roles.directorPlanning') }}</span>
-                <span class="text-[11px] text-slate-400 block ml-3">{{ $t('roles.directorDuty') }}</span>
+                <span class="font-bold text-[#D3AF62]">● {{ $t('roles.directorPlanning') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.directorDuty') }}</span>
               </el-dropdown-item>
-              <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-t border-b border-slate-100 mt-1">
+              <div class="px-3 py-1.5 text-[11px] font-bold text-[#8A9A8F] border-t border-b border-[#E9F1EB] mt-1">
                 {{ $t('roles.businessRoles') }}
               </div>
               <el-dropdown-item command="citizen">
-                <span class="text-[#2C6E49]">● {{ $t('roles.citizen') }}</span>
+                <span class="text-[#2F7A50]">● {{ $t('roles.citizen') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="agent">
-                <span class="text-[#1E3F35] font-bold">● {{ $t('roles.agent') }}</span>
+                <span class="text-[#326445] font-bold">● {{ $t('roles.agent') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -265,19 +268,19 @@ const roleLabel = computed(() => {
 const roleDotColor = computed(() => {
   switch (authStore.currentRole) {
     case 'minister_center':
-      return 'bg-indigo-400';
+      return 'bg-[#7FA48C]';
     case 'deputy_minister':
-      return 'bg-rose-400';
+      return 'bg-[#D0827F]';
     case 'director_planning':
-      return 'bg-amber-400';
+      return 'bg-[#DFC08B]';
     case 'admin':
-      return 'bg-purple-400';
+      return 'bg-[#DFC08B]';
     case 'citizen':
-      return 'bg-blue-400';
+      return 'bg-[#7FA48C]';
     case 'agent':
-      return 'bg-emerald-400';
+      return 'bg-[#6FBF92]';
     default:
-      return 'bg-slate-400';
+      return 'bg-[#8A9A8F]';
   }
 });
 

@@ -1,12 +1,12 @@
 <template>
-  <div class="dashboard-overview-container font-sans text-slate-800 space-y-6" ref="overviewRootRef">
+  <div class="dashboard-overview-container font-sans text-[#1F3326] space-y-6" ref="overviewRootRef">
     <!-- ======================================================== -->
     <!-- 1. 顶部 Header Banner：典雅阿拉伯拱门建筑遮罩 + 深墨绿大标题 -->
     <!-- ======================================================== -->
     <div
       ref="headerBannerRef"
-      class="header-banner relative overflow-hidden rounded-2xl border border-[#ECE7DE] shadow-xs flex items-center justify-end min-h-[160px] sm:min-h-[190px] md:min-h-[210px]"
-      style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.05);"
+      class="header-banner relative overflow-hidden rounded-lg border border-[#D9E5DB] shadow-xs flex items-center justify-end min-h-[160px] sm:min-h-[190px] md:min-h-[210px]"
+      style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.05);"
     >
       <!-- 背景图图层：使用用户截图无痕去字后的高品质真实建筑全景底图 -->
       <img
@@ -17,30 +17,30 @@
       />
 
       <!-- 柔和微弱渐变保护层：确保在不同屏幕分辨率下文字图层均拥有顶级可读性 -->
-      <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-[#FBF9F5]/20 to-[#FAF8F5]/80 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-[#F3F8F4]/20 to-[#F3F8F4]/80 pointer-events-none"></div>
 
       <!-- 文字内容图层：加在图片图层上方 (relative z-10)，支持独立排版与交互 -->
       <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center items-start md:items-end text-left md:text-right">
         <!-- 顶部金色服务标识 (含 ht.iq 官方矢量 Logo) -->
-        <div class="text-[#B58542] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-2">
-          <div class="w-6 h-6 rounded-lg bg-white/95 p-0.5 border border-[#C3E6D2] shadow-2xs flex items-center justify-center shrink-0">
+        <div class="text-[#B8934A] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-white/95 p-0.5 border border-[#C7E0CE] shadow-2xs flex items-center justify-center shrink-0">
             <img src="/logo.svg" alt="ht.iq Logo" class="w-full h-full object-contain" />
           </div>
           <span>{{ $t('dashboardOverview.serviceTag') }}</span>
         </div>
 
         <!-- 核心大标题 -->
-        <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-black text-[#007A3D] tracking-tight leading-tight">
+        <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-black text-[#326445] tracking-tight leading-tight">
           {{ $t('dashboardOverview.mainTitle') }}
         </h1>
 
         <!-- 战略大盘副标题 -->
-        <div class="text-xs sm:text-sm font-bold text-[#1FA35E] mt-1 font-sans">
+        <div class="text-xs sm:text-sm font-bold text-[#3E8A5E] mt-1 font-sans">
           {{ $t('dashboardOverview.subTitle') }}
         </div>
 
         <!-- 底部说明文案 -->
-        <p class="text-xs text-[#5E7368] mt-2 max-w-md font-medium leading-relaxed">
+        <p class="text-xs text-[#58685D] mt-2 max-w-md font-medium leading-relaxed">
           {{ $t('dashboardOverview.bannerDescription') }}
         </p>
       </div>
@@ -51,15 +51,15 @@
     <!-- ======================================================== -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
       <div>
-        <h2 class="text-lg sm:text-xl font-bold text-[#18231E] flex items-center gap-2">
+        <h2 class="text-lg sm:text-xl font-bold text-[#1F3326] flex items-center gap-2">
           <span>{{ $t('dashboardOverview.operationsOverview') }}</span>
         </h2>
       </div>
 
       <div class="flex items-center gap-2.5 flex-wrap">
         <!-- 伊斯兰与公历日期指示胶囊 -->
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#ECE7DE] text-xs text-[#5E6862] shadow-2xs font-mono">
-          <el-icon class="text-[#C59D5F]"><Calendar /></el-icon>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#D9E5DB] text-xs text-[#58685D] shadow-2xs font-mono">
+          <el-icon class="text-[#D3AF62]"><Calendar /></el-icon>
           <span>{{ $t('dashboardOverview.hijriCalendarDate') }}</span>
         </div>
 
@@ -88,14 +88,14 @@
       <!-- 卡片 1: 申请与审核事项 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
         <!-- 卡片头部：小标题与浅砂金底线性图标 -->
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardOrdersTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -107,43 +107,43 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 申请总量 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalOrders') }}</span>
-            <span class="font-mono font-bold text-base text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.totalOrders') }}</span>
+            <span class="font-mono font-bold text-base text-[#1F3326]">
               {{ countTotalOrders.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 在审待办 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.underReview') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.underReview') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countUnderReview.displayValue }}
             </span>
           </div>
 
           <!-- 行 3: 待补公文 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.waitingDocs') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.waitingDocs') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countWaitingDocs.displayValue }}
             </span>
           </div>
 
           <!-- 行 4: 平均办结用时 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.avgProcessingDays') }}</span>
-            <span class="font-mono font-semibold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.avgProcessingDays') }}</span>
+            <span class="font-mono font-semibold text-sm text-[#1F3326]">
               {{ countAvgProcessingDays.displayValue }}
-              <span class="text-xs font-normal text-[#5E6862] ml-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
+              <span class="text-xs font-normal text-[#58685D] ml-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
             </span>
           </div>
 
           <!-- 行 5: 超时滞后 > 7 天 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.overdueOrders') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.overdueOrders') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] font-mono font-bold text-xs">
               <span>{{ countOverdueOrders.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C04442] animate-pulse"></span>
             </span>
           </div>
         </div>
@@ -153,13 +153,13 @@
       <!-- 卡片 2: 受益公民与家庭 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardCitizensTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -170,32 +170,32 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 在保公民总数 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledCitizens') }}</span>
-            <span class="font-mono font-bold text-base text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.enrolledCitizens') }}</span>
+            <span class="font-mono font-bold text-base text-[#1F3326]">
               {{ countEnrolledCitizens.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 纳保登记家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledFamilies') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.enrolledFamilies') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countEnrolledFamilies.displayValue }}
             </span>
           </div>
 
           <!-- 行 3: 已配给受惠家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.benefitedFamilies') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.benefitedFamilies') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countBenefitedFamilies.displayValue }}
             </span>
           </div>
 
           <!-- 行 4: 当月变动申报 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.monthlyChanges') }}</span>
-            <span class="font-mono font-bold text-sm text-[#2C6E49] bg-[#EDF6F1] px-2 py-0.5 rounded-md">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.monthlyChanges') }}</span>
+            <span class="font-mono font-bold text-sm text-[#2F7A50] bg-[#E1F4E4] px-2 py-0.5 rounded-md">
               +{{ countMonthlyChanges.displayValue }}
             </span>
           </div>
@@ -206,13 +206,13 @@
       <!-- 卡片 3: 身份与生物核验 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardVerificationTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -223,34 +223,34 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 核验总批次 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalVerifications') }}</span>
-            <span class="font-mono font-bold text-base text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.totalVerifications') }}</span>
+            <span class="font-mono font-bold text-base text-[#1F3326]">
               {{ countTotalVerifications.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 活体核验通过率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.successRate') }}</span>
-            <span class="font-mono font-bold text-sm text-[#1E3F35]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.successRate') }}</span>
+            <span class="font-mono font-bold text-sm text-[#326445]">
               {{ countSuccessRate.displayValue }}
             </span>
           </div>
 
           <!-- 行 3: 主要重核原因 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.topFailureReason') }}</span>
-            <span class="text-xs font-semibold text-[#8C958F] bg-[#FAF7F2] px-2 py-0.5 rounded">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.topFailureReason') }}</span>
+            <span class="text-xs font-semibold text-[#8A9A8F] bg-[#FBFDFB] px-2 py-0.5 rounded">
               {{ $t('dashboardOverview.weakLightReason') }}
             </span>
           </div>
 
           <!-- 行 4: 待人工兜底复核 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.manualReview') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.manualReview') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FDF3E0] border border-[#E5CEA1] text-[#7A5F21] font-mono font-bold text-xs">
               <span>{{ countManualReviews.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D3AF62]"></span>
             </span>
           </div>
         </div>
@@ -260,13 +260,13 @@
       <!-- 卡片 4: 战略物资配给履约 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardDistributionTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -277,34 +277,34 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 当期应保家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.eligibleFamilies') }}</span>
-            <span class="font-mono font-bold text-base text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.eligibleFamilies') }}</span>
+            <span class="font-mono font-bold text-base text-[#1F3326]">
               {{ countEligibleFamilies.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 已签收领讫家庭 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.receivedFamilies') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.receivedFamilies') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countReceivedFamilies.displayValue }}
             </span>
           </div>
 
           <!-- 行 3: 物资兑付履约率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.completionRate') }}</span>
-            <span class="font-mono font-bold text-sm text-[#1E3F35]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.completionRate') }}</span>
+            <span class="font-mono font-bold text-sm text-[#326445]">
               {{ countCompletionRate.displayValue }}
             </span>
           </div>
 
           <!-- 行 4: 尚未提货家庭 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingClaims') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.pendingClaims') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FDF3E0] border border-[#E5CEA1] text-[#7A5F21] font-mono font-bold text-xs">
               <span>{{ countPendingClaims.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D3AF62]"></span>
             </span>
           </div>
         </div>
@@ -314,13 +314,13 @@
       <!-- 卡片 5: 签约网点保供运行 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardAgentsTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -331,34 +331,34 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 在任活跃网点 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.activeAgents') }}</span>
-            <span class="font-mono font-bold text-base text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.activeAgents') }}</span>
+            <span class="font-mono font-bold text-base text-[#1F3326]">
               {{ countActiveAgents.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 今日物资发货单 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.todayDispatches') }}</span>
-            <span class="font-mono font-bold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.todayDispatches') }}</span>
+            <span class="font-mono font-bold text-sm text-[#1F3326]">
               {{ countTodayDispatches.displayValue }}
             </span>
           </div>
 
           <!-- 行 3: 行政网格覆盖 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.coverageAreas') }}</span>
-            <span class="font-mono font-semibold text-sm text-[#18231E]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.coverageAreas') }}</span>
+            <span class="font-mono font-semibold text-sm text-[#1F3326]">
               18/18 {{ $t('dashboardOverview.provincesUnit') }}
             </span>
           </div>
 
           <!-- 行 4: 异常履约稽查 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.exceptionCases') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.exceptionCases') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] font-mono font-bold text-xs">
               <span>{{ countExceptionCases.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C04442] animate-pulse"></span>
             </span>
           </div>
         </div>
@@ -368,13 +368,13 @@
       <!-- 卡片 6: 中枢底账联网同步 -->
       <!-- ======================================================== -->
       <div
-        class="rcm-metric-card bg-white p-5 rounded-2xl border border-[#ECE7DE] flex flex-col justify-between"
-        style="box-shadow: 0 4px 20px -2px rgba(60, 48, 25, 0.04);"
+        class="rcm-metric-card bg-white p-5 rounded-lg border border-[#D9E5DB] flex flex-col justify-between"
+        style="box-shadow: 0 4px 20px -2px rgba(47, 68, 52, 0.04);"
         @mouseenter="onCardMouseEnter"
         @mouseleave="onCardMouseLeave"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E9F1EB]">
+          <h3 class="text-sm font-bold text-[#1F3326]">
             {{ $t('dashboardOverview.cardSystemTitle') }}
           </h3>
           <div class="rcm-icon-box">
@@ -385,35 +385,35 @@
         <div class="space-y-3 pt-4 text-xs">
           <!-- 行 1: 接口调用成功率 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.apiSuccessRate') }}</span>
-            <span class="font-mono font-bold text-base text-[#1E3F35]">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.apiSuccessRate') }}</span>
+            <span class="font-mono font-bold text-base text-[#326445]">
               {{ countApiSuccessRate.displayValue }}
             </span>
           </div>
 
           <!-- 行 2: 实时底账同频状态 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.syncStatus') }}</span>
-            <span class="font-semibold text-xs text-[#2C6E49] bg-[#EDF6F1] px-2 py-0.5 rounded">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.syncStatus') }}</span>
+            <span class="font-semibold text-xs text-[#2F7A50] bg-[#E1F4E4] px-2 py-0.5 rounded">
               {{ $t('dashboardOverview.syncStatusValue') }}
             </span>
           </div>
 
           <!-- 行 3: 阻断重试队列 -->
           <div class="flex items-center justify-between">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.failedTasks') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.failedTasks') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] font-mono font-bold text-xs">
               <span>{{ countFailedTasks.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C04442]"></span>
             </span>
           </div>
 
           <!-- 行 4: 待对账差额单据 -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingDiscrepancies') }}</span>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
+            <span class="text-[#58685D]">{{ $t('dashboardOverview.pendingDiscrepancies') }}</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] font-mono font-bold text-xs">
               <span>{{ countPendingDiscrepancies.displayValue }}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#C04442]"></span>
             </span>
           </div>
         </div>
@@ -549,8 +549,8 @@ function onCardMouseEnter(event) {
   const card = event.currentTarget;
   gsap.to(card, {
     y: -3,
-    boxShadow: '0 12px 28px -4px rgba(30, 63, 53, 0.08), 0 4px 10px -2px rgba(30, 63, 53, 0.04)',
-    borderColor: '#D4AA6A',
+    boxShadow: '0 12px 28px -4px rgba(50, 100, 69, 0.08), 0 4px 10px -2px rgba(50, 100, 69, 0.04)',
+    borderColor: '#D3AF62',
     duration: 0.25,
     ease: 'power1.out'
   });
@@ -560,8 +560,8 @@ function onCardMouseLeave(event) {
   const card = event.currentTarget;
   gsap.to(card, {
     y: 0,
-    boxShadow: '0 4px 20px -2px rgba(60, 48, 25, 0.04)',
-    borderColor: '#ECE7DE',
+    boxShadow: '0 4px 20px -2px rgba(47, 68, 52, 0.04)',
+    borderColor: '#D9E5DB',
     duration: 0.25,
     ease: 'power1.out'
   });
@@ -617,7 +617,7 @@ async function handleManualRefresh() {
 <style scoped>
 .dashboard-overview-container {
   /* 确保画布整体温暖大气 */
-  background-color: var(--el-bg-color-page, #F8F7F3);
+  background-color: var(--el-bg-color-page, #F8FBF8);
 }
 
 @keyframes rcmCardEntrance {
@@ -643,21 +643,21 @@ async function handleManualRefresh() {
 }
 
 .rcm-metric-card:hover {
-  border-color: #1fa35e !important;
-  box-shadow: 0 10px 28px -4px rgba(0, 122, 61, 0.08) !important;
+  border-color: #3E8A5E !important;
+  box-shadow: 0 10px 28px -4px rgba(50, 100, 69, 0.08) !important;
   transform: translateY(-2px);
 }
 
 /* 优雅加载遮罩风格微调 */
 :deep(.rcm-government-loading .el-loading-spinner .el-loading-text) {
-  color: #007A3D !important;
+  color: #326445 !important;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.02em;
 }
 
 :deep(.rcm-government-loading .el-loading-spinner .path) {
-  stroke: #1FA35E !important;
+  stroke: #3E8A5E !important;
   stroke-width: 3;
 }
 </style>

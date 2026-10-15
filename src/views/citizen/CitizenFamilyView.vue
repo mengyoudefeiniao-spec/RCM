@@ -7,19 +7,19 @@
       <!-- 1. 典雅电子配给卡 (Digital Ration Card) -->
       <div
         v-if="citizenStore.currentFamily"
-        class="relative overflow-hidden rounded-2xl p-5 text-white bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142C25] shadow-md border border-[#C59D5F]/30 select-none"
+        class="relative overflow-hidden rounded-lg p-5 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
       >
         <!-- 金色装饰弧线纹理 -->
-        <div class="absolute -right-8 -top-8 w-36 h-36 rounded-full border border-[#C59D5F]/20 pointer-events-none"></div>
-        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-[#C59D5F]/15 pointer-events-none"></div>
+        <div class="absolute -right-8 -top-8 w-36 h-36 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
+        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
         <div class="relative z-10">
           <div class="flex items-center justify-between pb-3 border-b border-white/10">
             <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span>
-              <span class="text-xs font-semibold text-[#D4AA6A] tracking-wider uppercase">{{ $t('citizenCard.cardTitle') }}</span>
+              <span class="w-2 h-2 rounded-full bg-[#2F7A50] animate-pulse"></span>
+              <span class="text-xs font-semibold text-[#D3AF62] tracking-wider uppercase">{{ $t('citizenCard.cardTitle') }}</span>
             </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C59D5F]/20 text-[#D4AA6A] border border-[#C59D5F]/40">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
               {{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}
             </span>
           </div>
@@ -27,10 +27,10 @@
           <div class="py-3 flex items-center justify-between">
             <div class="space-y-1">
               <span class="text-[10px] text-white/60 tracking-wider">{{ $t('citizenCard.rationCardNoLabel') }}</span>
-              <div class="text-xl font-extrabold tracking-widest font-mono text-[#FAF7F2]">
+              <div class="text-xl font-extrabold tracking-widest font-mono text-[#FBFDFB]">
                 {{ citizenStore.currentFamily.rationCardNo }}
               </div>
-              <div class="text-[11px] text-[#C59D5F] font-mono">
+              <div class="text-[11px] text-[#D3AF62] font-mono">
                 {{ $t('citizenCard.linkedPaperBook') }}：{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}
               </div>
             </div>
@@ -38,16 +38,16 @@
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
             <button
               type="button"
-              class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 border border-[#C59D5F]/40 shadow-xs cursor-pointer transition-all shrink-0 ml-2 group"
+              class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all shrink-0 ml-2 group"
               @click="openCardQrModal"
               :title="$t('citizenCard.showCardQr') || '出示二维码'"
             >
-              <div class="w-8 h-8 rounded-lg bg-[#C59D5F] text-[#1E3F35] flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-[#D3AF62] text-[#326445] flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
                 <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current" stroke="none">
                   <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9 0h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v2h-2v-2zm3 3h2v2h-2v-2zm-2-2h2v2h-2v-2zm4-3h2v4h-2v-4z"/>
                 </svg>
               </div>
-              <span class="text-[10px] font-bold text-[#E8D9BF] tracking-tight whitespace-nowrap group-hover:text-white">
+              <span class="text-[10px] font-bold text-[#E5CEA1] tracking-tight whitespace-nowrap group-hover:text-white">
                 {{ $t('citizenCard.showCardQr') || '出示二维码' }}
               </span>
             </button>
@@ -60,87 +60,87 @@
             </div>
             <div class="text-right">
               <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.agentStore') }}</span>
-              <span class="text-xs text-[#E8D9BF] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
+              <span class="text-xs text-[#E5CEA1] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 2. 核心政务服务金刚区 (5大高频业务办理直通车) -->
-      <div class="bg-white rounded-2xl p-4 border border-[#ECE7DE] shadow-xs">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-          <span class="text-xs font-bold text-[#1E3F35] flex items-center gap-1.5">
-            <span class="w-1.5 h-3.5 bg-[#C59D5F] rounded-full"></span>
+      <div class="bg-white rounded-lg p-4 border border-[#D9E5DB] shadow-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-[#E9F1EB] mb-3">
+          <span class="text-xs font-bold text-[#326445] flex items-center gap-1.5">
+            <span class="w-1.5 h-3.5 bg-[#D3AF62] rounded-full"></span>
             <span>{{ $t('citizenCard.fastTrackTitle') }}</span>
           </span>
-          <span class="text-[11px] text-[#8C958F]">{{ $t('citizenCard.fastTrackSubtitle') }}</span>
+          <span class="text-[11px] text-[#8A9A8F]">{{ $t('citizenCard.fastTrackSubtitle') }}</span>
         </div>
 
         <div class="grid grid-cols-5 gap-1.5 text-center select-none">
           <!-- 1. 申请代理转移 -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToService('/citizen/transfer-agent')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-lg border border-[#D1E7DA] shadow-xs">
+            <div class="w-11 h-11 rounded-lg bg-[#E1F4E4] text-[#326445] flex items-center justify-center text-lg border border-[#CFE2D5] shadow-xs">
               <el-icon><Switch /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyAgentTransfer') }}</span>
+            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyAgentTransfer') }}</span>
           </div>
 
           <!-- 2. 申请成员转移 -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToService('/citizen/member-transfer')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-lg border border-[#E4D8F7] shadow-xs">
+            <div class="w-11 h-11 rounded-lg bg-[#FDF3E0] text-[#B8934A] flex items-center justify-center text-lg border border-[#EED9AE] shadow-xs">
               <el-icon><User /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyMemberTransfer') }}</span>
+            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyMemberTransfer') }}</span>
           </div>
 
           <!-- 3. 申请分户 -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToService('/citizen/split-household')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#F0F2FA] text-[#4F46E5] flex items-center justify-center text-lg border border-[#D9DCF2] shadow-xs">
+            <div class="w-11 h-11 rounded-lg bg-[#EFF5F1] text-[#B8934A] flex items-center justify-center text-lg border border-[#C9DBCE] shadow-xs">
               <el-icon><Share /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applySplitHousehold') }}</span>
+            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applySplitHousehold') }}</span>
           </div>
 
           <!-- 4. 变更户主 -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToService('/citizen/change-head')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-lg border border-[#F2E3C6] shadow-xs">
+            <div class="w-11 h-11 rounded-lg bg-[#FDF3E0] text-[#D3AF62] flex items-center justify-center text-lg border border-[#EED9AE] shadow-xs">
               <el-icon><UserFilled /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyChangeHead') }}</span>
+            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyChangeHead') }}</span>
           </div>
 
           <!-- 5. 申请解冻 -->
           <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToService('/citizen/unfreeze')"
           >
-            <div class="w-11 h-11 rounded-2xl bg-[#FEECEC] text-[#D34545] flex items-center justify-center text-lg border border-[#FCD5D5] shadow-xs">
+            <div class="w-11 h-11 rounded-lg bg-[#FBEAE9] text-[#C04442] flex items-center justify-center text-lg border border-[#F2D5D4] shadow-xs">
               <el-icon><Unlock /></el-icon>
             </div>
-            <span class="text-[10px] font-medium text-slate-700 leading-tight">{{ $t('citizenCard.applyUnfreeze') }}</span>
+            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyUnfreeze') }}</span>
           </div>
         </div>
       </div>
 
       <!-- 3. 家庭在册成员卡片流 (Mobile Card Flow) -->
-      <div class="bg-white rounded-2xl p-4 border border-[#ECE7DE] shadow-xs space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+      <div class="bg-white rounded-lg p-4 border border-[#D9E5DB] shadow-xs space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
           <div class="flex items-center gap-1.5">
-            <span class="w-1.5 h-3.5 bg-[#1E3F35] rounded-full"></span>
-            <span class="text-xs font-bold text-[#18231E]">{{ $t('citizenCard.registeredMemberList') }}</span>
-            <span class="px-2 py-0.5 rounded-full bg-[#FAF5ED] text-[#C59D5F] font-bold text-[10px]">
+            <span class="w-1.5 h-3.5 bg-[#326445] rounded-full"></span>
+            <span class="text-xs font-bold text-[#1F3326]">{{ $t('citizenCard.registeredMemberList') }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-[#FDF3E0] text-[#D3AF62] font-bold text-[10px]">
               {{ citizenStore.currentFamily?.members?.length || 0 }} {{ $t('citizenCard.unitPerson') }}
             </span>
           </div>
@@ -155,26 +155,26 @@
           <div
             v-for="member in (citizenStore.currentFamily?.members || [])"
             :key="member.id"
-            class="p-3.5 rounded-xl border border-slate-100 bg-[#FBFBFA] flex items-center justify-between hover:border-[#D4AA6A] transition-all"
+            class="p-3.5 rounded-lg border border-[#E9F1EB] bg-[#F3F8F4] flex items-center justify-between hover:border-[#D3AF62] transition-all"
           >
             <div class="flex items-center gap-3">
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
-                :class="isHeadRelation(member.relation) ? 'bg-[#1E3F35] text-[#C59D5F]' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+                :class="isHeadRelation(member.relation) ? 'bg-[#326445] text-[#D3AF62]' : 'bg-[#E2F4E4] text-[#326445]'"
               >
                 {{ member.name?.slice(0, 1) || '·' }}
               </div>
               <div class="space-y-0.5 text-xs">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-slate-900">{{ member.name }}</span>
+                  <span class="font-bold text-[#1B3123]">{{ member.name }}</span>
                   <span
                     class="px-1.5 py-0.2 rounded text-[10px]"
-                    :class="isHeadRelation(member.relation) ? 'bg-[#FAF3E6] text-[#966C2E] font-bold' : 'bg-slate-100 text-slate-600'"
+                    :class="isHeadRelation(member.relation) ? 'bg-[#FDF3E0] text-[#7A5F21] font-bold' : 'bg-[#E9F1EB] text-[#58685D]'"
                   >
                     {{ formatRelation(member.relation) }}
                   </span>
                 </div>
-                <div class="text-[11px] font-mono text-slate-400">
+                <div class="text-[11px] font-mono text-[#8A9A8F]">
                   UID: {{ member.nationalId }} · {{ formatGender(member.gender) }}
                 </div>
               </div>
@@ -183,20 +183,20 @@
             <div class="flex flex-col items-end gap-1 shrink-0">
               <span
                 class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                :class="isMemberActive(member.status) ? 'bg-[#E4F2E9] text-[#275A3E]' : 'bg-[#FEECEC] text-[#D34545]'"
+                :class="isMemberActive(member.status) ? 'bg-[#E1F4E4] text-[#326445]' : 'bg-[#FBEAE9] text-[#C04442]'"
               >
                 {{ formatMemberStatus(member.status) }}
               </span>
               <span
                 v-if="!isMemberActive(member.status) && member.freezeReason"
-                class="text-[9px] text-[#D34545] font-semibold bg-[#FEECEC] px-1.5 py-0.5 rounded border border-[#FCD5D5] max-w-[90px] truncate"
+                class="text-[9px] text-[#C04442] font-semibold bg-[#FBEAE9] px-1.5 py-0.5 rounded border border-[#F2D5D4] max-w-[90px] truncate"
                 :title="formatFreezeReason(member.freezeReason)"
               >
                 {{ formatFreezeReason(member.freezeReason) }}
               </span>
               <button
                 type="button"
-                class="text-[11px] text-[#C59D5F] hover:text-[#1E3F35] underline cursor-pointer"
+                class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer"
                 @click="openEditModal(member)"
               >
                 {{ $t('citizenCard.actionUpdate') }}
@@ -212,27 +212,27 @@
     <!-- ======================================================== -->
     <div v-else class="space-y-6">
       <!-- 顶部配给卡基本信息面板 (强化展示电子配给卡编号与关联纸质卡编号) -->
-      <div v-if="citizenStore.currentFamily" class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div v-if="citizenStore.currentFamily" class="bg-white rounded-lg p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E9F1EB]">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm border border-blue-100">
+            <div class="w-12 h-12 rounded-lg bg-[#EFF5F1] text-[#326445] flex items-center justify-center font-bold text-sm border border-[#E1F4E4]">
               {{ $t('citizen.cardBadge') }}
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-base font-bold text-slate-900">{{ citizenStore.currentFamily.headName }} ({{ $t('citizen.head') }})</span>
+                <span class="text-base font-bold text-[#1B3123]">{{ citizenStore.currentFamily.headName }} ({{ $t('citizen.head') }})</span>
                 <el-tag size="small" type="success" effect="light">{{ citizenStore.currentFamily.status }}</el-tag>
                 <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('citizen.rationCard') }}</el-tag>
               </div>
               <!-- 电子配给卡与关联纸质卡编号 -->
-              <div class="text-xs text-slate-500 font-mono mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+              <div class="text-xs text-[#58685D] font-mono mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
                 <span>
-                  {{ $t('citizen.rationCardNo') }}：<strong class="text-blue-600 font-bold">{{ citizenStore.currentFamily.rationCardNo }}</strong>
+                  {{ $t('citizen.rationCardNo') }}：<strong class="text-[#326445] font-bold">{{ citizenStore.currentFamily.rationCardNo }}</strong>
                 </span>
                 <span>
-                  {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-amber-700 font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}</strong>
+                  {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-[#7A5F21] font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}</strong>
                 </span>
-                <span class="text-slate-400">{{ $t('citizen.familyCode') }}：{{ citizenStore.currentFamily.familyCode }}</span>
+                <span class="text-[#8A9A8F]">{{ $t('citizen.familyCode') }}：{{ citizenStore.currentFamily.familyCode }}</span>
               </div>
             </div>
           </div>
@@ -247,7 +247,7 @@
               <el-icon class="mr-1"><Switch /></el-icon>
               {{ $t('citizen.applyTransferAgent') }}
             </el-button>
-            <el-button color="#6366f1" plain @click="navigateToService('/citizen/member-transfer')">
+            <el-button color="#C9A13B" plain @click="navigateToService('/citizen/member-transfer')">
               <el-icon class="mr-1"><User /></el-icon>
               {{ $t('citizen.applyMemberTransfer') }}
             </el-button>
@@ -269,36 +269,36 @@
         <!-- 属性网格 -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div>
-            <span class="text-slate-400 block text-[11px]">{{ $t('citizen.province') }}：</span>
-            <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.province }}</span>
+            <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.province') }}：</span>
+            <span class="font-medium text-[#1F3326]">{{ citizenStore.currentFamily.province }}</span>
           </div>
           <div>
-            <span class="text-slate-400 block text-[11px]">{{ $t('citizen.district') }}：</span>
-            <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.district }}</span>
+            <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.district') }}：</span>
+            <span class="font-medium text-[#1F3326]">{{ citizenStore.currentFamily.district }}</span>
           </div>
           <div>
-            <span class="text-slate-400 block text-[11px]">{{ $t('citizen.agentName') }}：</span>
-            <span class="font-medium text-slate-800">{{ citizenStore.currentFamily.agentName }}</span>
+            <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.agentName') }}：</span>
+            <span class="font-medium text-[#1F3326]">{{ citizenStore.currentFamily.agentName }}</span>
           </div>
           <div>
-            <span class="text-slate-400 block text-[11px]">{{ $t('citizen.address') }}：</span>
-            <span class="font-medium text-slate-800 truncate block">{{ citizenStore.currentFamily.address }}</span>
+            <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.address') }}：</span>
+            <span class="font-medium text-[#1F3326] truncate block">{{ citizenStore.currentFamily.address }}</span>
           </div>
         </div>
       </div>
 
       <!-- 家庭成员清单表格 -->
-      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+      <div class="bg-white rounded-lg p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4">
         <div class="flex items-center justify-between">
           <ModuleDescTip
             :title="$t('citizen.memberList')"
             :content="`伊拉克内政部统一国民身份认证联网，当前家庭在册共 ${citizenStore.currentFamily?.members?.length || 0} 位直系亲属及受抚养成员。`"
             :badge="`${citizenStore.currentFamily?.members?.length || 0} ${$t('common.person')}`"
             badge-type="primary"
-            title-class="text-sm font-bold text-slate-900"
+            title-class="text-sm font-bold text-[#1B3123]"
           >
             <template #icon>
-              <el-icon class="text-blue-600 text-base"><User /></el-icon>
+              <el-icon class="text-[#326445] text-base"><User /></el-icon>
             </template>
           </ModuleDescTip>
           <!-- 添加新成员 -->
@@ -318,7 +318,7 @@
         >
           <el-table-column prop="name" :label="$t('citizen.headName')" min-width="140" fixed>
             <template #default="{ row }">
-              <span class="font-bold text-slate-800">{{ row.name }}</span>
+              <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
             </template>
           </el-table-column>
 
@@ -326,10 +326,10 @@
             <template #default>
               <div class="space-y-0.5">
                 <div class="flex items-center gap-1 font-mono">
-                  <span class="font-bold text-blue-600">{{ citizenStore.currentFamily?.rationCardNo }}</span>
+                  <span class="font-bold text-[#326445]">{{ citizenStore.currentFamily?.rationCardNo }}</span>
                   <el-tag size="small" effect="plain" type="primary" class="scale-90 origin-left">{{ $t('citizen.rationCard') }}</el-tag>
                 </div>
-                <div class="text-[11px] text-amber-800 font-mono flex items-center gap-1">
+                <div class="text-[11px] text-[#6B5321] font-mono flex items-center gap-1">
                   <span>{{ $t('citizen.oldPaperCardNo') }}:</span>
                   <span class="font-semibold">{{ citizenStore.currentFamily?.oldPaperCardNo || 'IQ-P-1994-082194' }}</span>
                 </div>
@@ -356,7 +356,7 @@
 
           <el-table-column prop="nationalId" :label="$t('citizen.nationalId')" min-width="160">
             <template #default="{ row }">
-              <span class="font-mono text-slate-600">{{ row.nationalId }}</span>
+              <span class="font-mono text-[#58685D]">{{ row.nationalId }}</span>
             </template>
           </el-table-column>
 
@@ -411,9 +411,9 @@
         <!-- 步骤 1: 填写基本身份信息 -->
         <div v-show="addMemberStep === 1" class="space-y-3">
           <!-- 简要指引提示 -->
-          <div class="bg-blue-50/80 border border-blue-200/80 p-2.5 rounded-xl text-blue-900 flex items-center justify-between gap-2">
+          <div class="bg-[#EFF5F1]/80 border border-[#C7DED0]/80 p-2.5 rounded-lg text-[#1F3326] flex items-center justify-between gap-2">
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
-              <el-icon class="text-blue-600 shrink-0"><InfoFilled /></el-icon>
+              <el-icon class="text-[#326445] shrink-0"><InfoFilled /></el-icon>
               <span class="text-[11px] leading-tight">{{ $t('citizen.fillRealIdentityNotice') }}</span>
             </div>
             <!-- 法定户主就绪小标签 -->
@@ -460,13 +460,13 @@
             </el-form-item>
 
             <!-- 户主资质极简展示 -->
-            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-[11px] text-slate-600">
+            <div class="p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg flex items-center justify-between text-[11px] text-[#58685D]">
               <div class="flex items-center gap-1.5">
-                <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
+                <el-icon class="text-[#3E9B68]"><CircleCheckFilled /></el-icon>
                 <span>{{ $t('citizen.headBioEnrolled') }}</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <el-icon class="text-emerald-500"><CircleCheckFilled /></el-icon>
+                <el-icon class="text-[#3E9B68]"><CircleCheckFilled /></el-icon>
                 <span>{{ $t('citizen.qiCardBound') }}</span>
               </div>
             </div>
@@ -475,16 +475,16 @@
 
         <!-- 步骤 2: 三重资格核验 -->
         <div v-show="addMemberStep === 2" class="space-y-3">
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
+          <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] text-xs text-[#58685D]">
             {{ $t('citizen.verifyNotice') }}
           </div>
 
           <div class="space-y-2.5">
             <!-- 条件 1: 系统更新 -->
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-[#D9E5DB] shadow-2xs">
               <div>
-                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item1Title') }}</div>
-                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item1Desc') }}</div>
+                <div class="font-bold text-[#1F3326]">{{ $t('citizen.step2Item1Title') }}</div>
+                <div class="text-[11px] text-[#8A9A8F] mt-0.5">{{ $t('citizen.step2Item1Desc') }}</div>
               </div>
               <el-button
                 size="small"
@@ -497,10 +497,10 @@
             </div>
 
             <!-- 条件 2: 生物识别 -->
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-[#D9E5DB] shadow-2xs">
               <div>
-                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item2Title') }}</div>
-                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item2Desc') }}</div>
+                <div class="font-bold text-[#1F3326]">{{ $t('citizen.step2Item2Title') }}</div>
+                <div class="text-[11px] text-[#8A9A8F] mt-0.5">{{ $t('citizen.step2Item2Desc') }}</div>
               </div>
               <el-button
                 size="small"
@@ -513,10 +513,10 @@
             </div>
 
             <!-- 条件 3: 地理位置 -->
-            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-[#D9E5DB] shadow-2xs">
               <div>
-                <div class="font-bold text-slate-800">{{ $t('citizen.step2Item3Title') }}</div>
-                <div class="text-[11px] text-slate-400 mt-0.5">{{ $t('citizen.step2Item3Desc') }}</div>
+                <div class="font-bold text-[#1F3326]">{{ $t('citizen.step2Item3Title') }}</div>
+                <div class="text-[11px] text-[#8A9A8F] mt-0.5">{{ $t('citizen.step2Item3Desc') }}</div>
               </div>
               <el-button
                 size="small"
@@ -533,22 +533,22 @@
         <!-- 步骤 3: 证明材料与确认纳保 -->
         <div v-show="addMemberStep === 3" class="space-y-3.5">
           <!-- 申报信息摘要 -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
+          <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
             <div>
-              <span class="text-slate-400 block">{{ $t('citizen.headName') }}：</span>
-              <span class="font-bold text-slate-800">{{ newMemberForm.name }}</span>
+              <span class="text-[#8A9A8F] block">{{ $t('citizen.headName') }}：</span>
+              <span class="font-bold text-[#1F3326]">{{ newMemberForm.name }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">{{ $t('citizen.nationalId') }}：</span>
-              <span class="font-mono text-slate-800">{{ newMemberForm.nationalId }}</span>
+              <span class="text-[#8A9A8F] block">{{ $t('citizen.nationalId') }}：</span>
+              <span class="font-mono text-[#1F3326]">{{ newMemberForm.nationalId }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">{{ $t('citizen.relation') }}：</span>
-              <span class="font-bold text-blue-700">{{ newMemberForm.relation }} ({{ newMemberForm.gender }})</span>
+              <span class="text-[#8A9A8F] block">{{ $t('citizen.relation') }}：</span>
+              <span class="font-bold text-[#2A5440]">{{ newMemberForm.relation }} ({{ newMemberForm.gender }})</span>
             </div>
             <div>
-              <span class="text-slate-400 block">{{ $t('citizen.ageJudge') }}：</span>
-              <span class="font-medium" :class="isUnder12 ? 'text-rose-600' : 'text-emerald-600'">
+              <span class="text-[#8A9A8F] block">{{ $t('citizen.ageJudge') }}：</span>
+              <span class="font-medium" :class="isUnder12 ? 'text-[#C04442]' : 'text-[#2F7A50]'">
                 {{ isUnder12 ? $t('citizen.under12Child') : $t('citizen.over12Person') }}
               </span>
             </div>
@@ -557,7 +557,7 @@
           <!-- 儿童证明文件上传 (若未满12岁) -->
           <div v-if="isUnder12" class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-rose-700">{{ $t('citizen.childDocTitle') }}</span>
+              <span class="font-bold text-[#A93B39]">{{ $t('citizen.childDocTitle') }}</span>
               <el-tag type="danger" size="small" effect="plain">{{ $t('citizen.childDocBadge') }}</el-tag>
             </div>
             <DocumentUploader
@@ -570,8 +570,8 @@
               default-file-name="Medical_Birth_Certificate_2020.pdf"
             />
           </div>
-          <div v-else class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex items-center gap-2">
-            <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+          <div v-else class="p-3 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg text-[#24483A] flex items-center gap-2">
+            <el-icon class="text-[#2F7A50]"><CircleCheckFilled /></el-icon>
             <span>{{ $t('citizen.over12ExemptNotice') }}</span>
           </div>
         </div>
@@ -697,39 +697,39 @@
     >
       <div class="space-y-4 p-1">
         <!-- 弹窗顶栏 -->
-        <div class="flex items-center justify-between pb-2 border-b border-[#ECE7DE]">
+        <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]">
           <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center text-xs">
+            <div class="w-7 h-7 rounded-lg bg-[#326445] text-[#D3AF62] flex items-center justify-center text-xs">
               <el-icon><Tickets /></el-icon>
             </div>
             <div>
-              <div class="text-xs font-bold text-[#18231E]">{{ $t('citizenCard.voucherTitle') || '法定电子配给卡档案凭证' }}</div>
-              <div class="text-[10px] text-[#8C958F]">{{ $t('citizenCard.voucherSubtitle') || '供代销网点专员现场终端扫描核验' }}</div>
+              <div class="text-xs font-bold text-[#1F3326]">{{ $t('citizenCard.voucherTitle') || '法定电子配给卡档案凭证' }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('citizenCard.voucherSubtitle') || '供代销网点专员现场终端扫描核验' }}</div>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E1F4E4] text-[#2F7A50] border border-[#C7E0CE] flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#2F7A50] animate-pulse"></span>
             <span>{{ $t('citizenCard.recordActive') || '档案在册' }}</span>
           </span>
         </div>
 
         <!-- 1. 典雅电子配给卡主体 -->
         <div
-          class="relative overflow-hidden rounded-2xl p-4 text-white bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142C25] shadow-md border border-[#C59D5F]/35 select-none"
+          class="relative overflow-hidden rounded-lg p-4 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/35 select-none"
         >
           <!-- 金色装饰弧线纹理 -->
-          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-[#C59D5F]/20 pointer-events-none"></div>
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full border border-[#C59D5F]/15 pointer-events-none"></div>
+          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
           <div class="relative z-10 space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-white/10">
               <div class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#52C41A] animate-pulse"></span>
-                <span class="text-[11px] font-semibold text-[#D4AA6A] tracking-wider uppercase">
+                <span class="w-2 h-2 rounded-full bg-[#2F7A50] animate-pulse"></span>
+                <span class="text-[11px] font-semibold text-[#D3AF62] tracking-wider uppercase">
                   {{ $t('citizenCard.cardTitle') || '伊拉克共和国贸易部 · 电子配给卡' }}
                 </span>
               </div>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C59D5F]/20 text-[#D4AA6A] border border-[#C59D5F]/40">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
                 {{ citizenStore.currentFamily?.status || $t('citizenCard.statusActive') || '正常在册' }}
               </span>
             </div>
@@ -738,10 +738,10 @@
               <span class="text-[9px] text-white/60 tracking-wider uppercase">
                 {{ $t('citizenCard.rationCardNoLabel') || '国家统一电子配给卡编码' }}
               </span>
-              <div class="text-lg font-extrabold tracking-widest font-mono text-[#FAF7F2]">
+              <div class="text-lg font-extrabold tracking-widest font-mono text-[#FBFDFB]">
                 {{ citizenStore.currentFamily?.rationCardNo || 'RC-10029381' }}
               </div>
-              <div class="text-[10px] text-[#C59D5F] font-mono">
+              <div class="text-[10px] text-[#D3AF62] font-mono">
                 {{ $t('citizenCard.linkedPaperBook') || '关联纸质配给卡本号' }}：{{ citizenStore.currentFamily?.oldPaperCardNo || 'IQ-P-1994-082194' }}
               </div>
             </div>
@@ -750,11 +750,11 @@
               <div>
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.legalHeadName') || '法定户主姓名' }}</span>
                 <span class="font-bold text-white text-xs">{{ citizenStore.currentFamily?.headName || '艾哈迈德·哈桑' }}</span>
-                <span class="text-[10px] text-emerald-300 font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: citizenStore.currentFamily?.members?.length || 0 }) || `（全户在册 ${citizenStore.currentFamily?.members?.length || 0} 人）` }}</span>
+                <span class="text-[10px] text-[#A7D9BC] font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: citizenStore.currentFamily?.members?.length || 0 }) || `（全户在册 ${citizenStore.currentFamily?.members?.length || 0} 人）` }}</span>
               </div>
               <div class="text-right">
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
-                <span class="text-[11px] text-[#E8D9BF] font-medium truncate block" :title="citizenStore.currentFamily?.agentName">
+                <span class="text-[11px] text-[#E5CEA1] font-medium truncate block" :title="citizenStore.currentFamily?.agentName">
                   {{ citizenStore.currentFamily?.agentName || '巴格达卡尔赫第一代销站' }}
                 </span>
                 <span class="text-[10px] text-white/50 font-mono">{{ $t('citizenCard.agentCodePrefix') || '代码: ' }}{{ citizenStore.currentFamily?.agentId || 'FA-00128' }}</span>
@@ -764,35 +764,35 @@
         </div>
 
         <!-- 2. 可扫描验证配给卡的防伪动态二维码 -->
-        <div class="bg-[#FAF8F4] p-3 rounded-2xl border border-[#ECE7DE] text-center space-y-2.5">
-          <div class="flex items-center justify-between text-[11px] text-[#5E6862] px-1">
-            <span class="font-bold text-[#1E3F35] flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
+        <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] text-center space-y-2.5">
+          <div class="flex items-center justify-between text-[11px] text-[#58685D] px-1">
+            <span class="font-bold text-[#326445] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D3AF62]"></span>
               <span>{{ $t('citizenCard.qrVerifyTitle') || '现场扫码验证凭证' }}</span>
             </span>
-            <span class="font-mono text-[10px] text-[#C59D5F] bg-[#FAF5ED] px-2 py-0.5 rounded-full border border-[#E8D9BF]">
+            <span class="font-mono text-[10px] text-[#D3AF62] bg-[#FDF3E0] px-2 py-0.5 rounded-full border border-[#E5CEA1]">
               {{ $t('citizenCard.antiCounterfeitActive') || '动态防伪中' }}
             </span>
           </div>
 
           <!-- 高保真防伪二维码容器 -->
-          <div class="relative w-48 h-48 mx-auto p-2.5 rounded-2xl bg-white border-2 border-[#1E3F35] shadow-md flex flex-col items-center justify-center overflow-hidden">
+          <div class="relative w-48 h-48 mx-auto p-2.5 rounded-lg bg-white border-2 border-[#326445] shadow-md flex flex-col items-center justify-center overflow-hidden">
             <!-- 动态扫描光束 -->
-            <div class="absolute inset-x-2 h-0.5 bg-[#C59D5F] shadow-[0_0_12px_#C59D5F] animate-scan-card-qr z-20"></div>
+            <div class="absolute inset-x-2 h-0.5 bg-[#D3AF62] shadow-[0_0_12px_#D3AF62] animate-scan-card-qr z-20"></div>
 
             <!-- SVG 矢量精细二维码 -->
-            <svg viewBox="0 0 200 200" class="w-full h-full text-[#1E3F35]" fill="currentColor">
+            <svg viewBox="0 0 200 200" class="w-full h-full text-[#326445]" fill="currentColor">
               <rect width="200" height="200" fill="#ffffff" />
               <!-- 三个定位角标 -->
-              <rect x="14" y="14" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="14" y="14" width="46" height="46" fill="#326445" rx="6" />
               <rect x="22" y="22" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="28" y="28" width="18" height="18" fill="#1E3F35" rx="2" />
-              <rect x="140" y="14" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="28" y="28" width="18" height="18" fill="#326445" rx="2" />
+              <rect x="140" y="14" width="46" height="46" fill="#326445" rx="6" />
               <rect x="148" y="22" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="154" y="28" width="18" height="18" fill="#1E3F35" rx="2" />
-              <rect x="14" y="140" width="46" height="46" fill="#1E3F35" rx="6" />
+              <rect x="154" y="28" width="18" height="18" fill="#326445" rx="2" />
+              <rect x="14" y="140" width="46" height="46" fill="#326445" rx="6" />
               <rect x="22" y="148" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="28" y="154" width="18" height="18" fill="#1E3F35" rx="2" />
+              <rect x="28" y="154" width="18" height="18" fill="#326445" rx="2" />
               <!-- 数据点阵 -->
               <rect x="74" y="18" width="12" height="12" />
               <rect x="94" y="18" width="12" height="12" />
@@ -827,26 +827,26 @@
               <rect x="124" y="164" width="12" height="12" />
               <rect x="154" y="164" width="12" height="12" />
               <!-- 中心徽章 -->
-              <rect x="80" y="80" width="40" height="40" fill="#1E3F35" rx="8" />
-              <rect x="84" y="84" width="32" height="32" fill="#C59D5F" rx="6" />
-              <text x="100" y="104" font-size="11" font-weight="900" fill="#1E3F35" text-anchor="middle" font-family="monospace">RCM</text>
+              <rect x="80" y="80" width="40" height="40" fill="#326445" rx="8" />
+              <rect x="84" y="84" width="32" height="32" fill="#D3AF62" rx="6" />
+              <text x="100" y="104" font-size="11" font-weight="900" fill="#326445" text-anchor="middle" font-family="monospace">RCM</text>
             </svg>
 
             <!-- 动态时间戳水印 -->
-            <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#5E6862] bg-white/95 py-0.5 rounded border border-[#ECE7DE]">
+            <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#58685D] bg-white/95 py-0.5 rounded border border-[#D9E5DB]">
               {{ liveCardClock }}
             </div>
           </div>
 
           <!-- 动态验证密文与刷新控制 -->
-          <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-xl border border-[#ECE7DE]">
+          <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB]">
             <div class="text-left font-mono">
-              <span class="text-[10px] text-[#8C958F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
-              <span class="font-bold text-[#1E3F35] text-[11px]">{{ dynamicCardCode }}</span>
+              <span class="text-[10px] text-[#8A9A8F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
+              <span class="font-bold text-[#326445] text-[11px]">{{ dynamicCardCode }}</span>
             </div>
             <button
               type="button"
-              class="text-[11px] text-[#C59D5F] hover:text-[#1E3F35] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              class="text-[11px] text-[#D3AF62] hover:text-[#326445] font-bold flex items-center gap-1 cursor-pointer transition-colors"
               @click="refreshDynamicCode"
             >
               <el-icon><Refresh /></el-icon>
@@ -854,7 +854,7 @@
             </button>
           </div>
 
-          <div class="text-[10px] text-[#8C958F] leading-tight">
+          <div class="text-[10px] text-[#8A9A8F] leading-tight">
             {{ $t('citizenCard.qrScanNotice') || '请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放' }}
           </div>
         </div>
@@ -862,8 +862,8 @@
         <!-- 底部完成按钮 -->
         <el-button
           type="primary"
-          class="w-full font-bold shadow-xs !rounded-xl"
-          style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+          class="w-full font-bold shadow-xs !rounded-lg"
+          style="background: #326445; border-color: #326445; color: #FFFFFF;"
           @click="cardModalVisible = false"
         >
           {{ $t('citizenCard.closeVoucher') || '完成出示 / 关闭' }}

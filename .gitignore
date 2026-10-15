@@ -36,3 +36,8 @@ Thumbs.db
 # Reference assets (kept isolated)
 reference/
 
+# Local tooling & verification artifacts
+.playwright-cli/
+/deploy/package/
+/v*.png
+/verify-*.png

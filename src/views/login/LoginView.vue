@@ -1,9 +1,9 @@
 <template>
   <div
-    class="font-sans text-slate-800 transition-all duration-300"
+    class="font-sans text-[#1F3326] transition-all duration-300"
     :class="[
       isAppMode
-        ? 'h-screen max-h-screen overflow-hidden bg-slate-900/10 py-1 sm:py-2.5 justify-center items-center flex flex-col'
+        ? 'h-screen max-h-screen overflow-hidden bg-[#1B3123]/10 py-1 sm:py-2.5 justify-center items-center flex flex-col'
         : 'min-h-screen flex items-center justify-center p-4 relative overflow-hidden'
     ]"
     :style="!isAppMode ? loginBgStyle : {}"
@@ -15,8 +15,8 @@
 
     <!-- 背景暖砂金与翡翠墨绿光影装饰 (Web 桌面端) -->
     <template v-if="!isAppMode">
-      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#C59D5F]/15 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#1E3F35]/40 blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#D3AF62]/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#326445]/40 blur-3xl pointer-events-none"></div>
     </template>
 
     <!-- 登录主视口容器：APP 模式下自适应 Pixel 9 手机视口 (412px 宽，最大 924px 高，内部滚动)；Web 模式下居中居宽 -->
@@ -24,15 +24,15 @@
       class="w-full transition-all duration-300 relative min-h-0 bg-white"
       :class="[
         isAppMode
-          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#ECE7DE] flex flex-col'
-          : 'max-w-md w-full rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#ECE7DE] shadow-2xl'
+          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#D9E5DB] flex flex-col'
+          : 'max-w-md w-full rounded-lg p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#D9E5DB] shadow-2xl'
       ]"
       :style="isAppMode ? { height: 'min(924px, calc(100vh - 20px))', maxHeight: 'calc(100vh - 20px)' } : { boxShadow: '0 20px 50px -10px rgba(15, 35, 29, 0.35)' }"
     >
       <!-- APP 模式手机顶部微型顶栏 (固定在手机内部顶部，含 Logo 与语言选择器) -->
       <div
         v-if="isAppMode"
-        class="w-full px-3 h-12 bg-[#1E3F35] text-white flex items-center justify-between shrink-0 shadow-xs border-b border-[#295447]"
+        class="w-full px-3 h-12 bg-[#326445] text-white flex items-center justify-between shrink-0 shadow-xs border-b border-[#2F5B44]"
       >
         <div class="flex items-center gap-2">
           <AppLogo size="sm" />
@@ -55,18 +55,18 @@
             <AppLogo size="lg" theme="light" />
           </div>
           <div>
-            <div class="text-xs font-bold text-[#C59D5F] font-sans" dir="rtl">البطاقة التموينية</div>
-            <h2 class="text-base sm:text-lg font-bold text-[#18231E] tracking-normal">
+            <div class="text-xs font-bold text-[#D3AF62] font-sans" dir="rtl">البطاقة التموينية</div>
+            <h2 class="text-base sm:text-lg font-bold text-[#1F3326] tracking-normal">
               Ration Card Management
             </h2>
-            <div class="text-[9px] text-[#7A827D] font-mono tracking-wider mt-0.5">
+            <div class="text-[9px] text-[#8A9A8F] font-mono tracking-wider mt-0.5">
               REPUBLIC OF IRAQ · MINISTRY OF TRADE
             </div>
           </div>
         </div>
 
         <!-- 新设备终端安全状态条 -->
-        <div class="p-2.5 rounded-xl border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#EDF6F1] border-[#C8D7D2] text-[#2C6E49]' : 'bg-[#FAF6EE] border-[#E8DCC6] text-[#966C2E]'">
+        <div class="p-2.5 rounded-lg border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#E1F4E4] border-[#C7DED0] text-[#2F7A50]' : 'bg-[#FDF3E0] border-[#E5CEA1] text-[#7A5F21]'">
           <div class="flex items-center gap-1.5">
             <el-icon><Monitor /></el-icon>
             <span>{{ $t('login.deviceStatus') || '终端状态：' }}<strong class="font-mono">{{ isTrustedDevice ? ($t('login.trustedDevice') || '已受信任授信设备') : ($t('login.untrustedDevice') || '未授信新设备终端') }}</strong></span>
@@ -105,9 +105,9 @@
             />
           </el-form-item>
 
-          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+          <div class="flex items-center justify-between text-xs text-[#58685D] mb-2">
             <el-checkbox v-model="rememberMe">{{ $t('login.rememberDevice') || '记住当前设备' }}</el-checkbox>
-            <span class="text-[#C59D5F] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
+            <span class="text-[#D3AF62] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
               {{ $t('login.nfcAuth') || '生物特征 / NFC 免密认证' }}
             </span>
           </div>
@@ -116,7 +116,7 @@
             type="primary"
             size="large"
             class="w-full font-bold shadow-md tracking-wide"
-            style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+            style="background: #326445; border-color: #326445; color: #FFFFFF;"
             :loading="loading"
             @click="handleLogin"
           >
@@ -125,15 +125,15 @@
         </el-form>
 
         <!-- 纸质配给卡数字化注册通道入口 -->
-        <div class="bg-[#FAF6EE] border border-[#E8DCC6] rounded-xl p-2.5 flex items-center justify-between text-xs">
-          <span class="text-[#5E6862] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
+        <div class="bg-[#FDF3E0] border border-[#E5CEA1] rounded-lg p-2.5 flex items-center justify-between text-xs">
+          <span class="text-[#58685D] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
           <el-button
             type="primary"
             plain
             size="small"
             class="font-bold px-4"
             data-demo-target="btn-register"
-            style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
+            style="color: #326445; border-color: #D3AF62; background-color: #FDF3E0;"
             @click="handleStartRegister"
           >
             {{ $t('login.registerBtn') }}
@@ -142,87 +142,87 @@
 
         <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
         <div
-          class="rounded-xl border border-[#D4AA6A]/60 bg-gradient-to-r from-[#FAF6EE] to-[#F5ECE0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D4AA6A] hover:shadow-2xs transition-all select-none"
+          class="rounded-lg border border-[#D3AF62]/60 bg-gradient-to-r from-[#FDF3E0] to-[#FDF3E0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D3AF62] hover:shadow-2xs transition-all select-none"
           @click="$router.push('/portal')"
         >
           <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-[#C59D5F] text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <div class="w-7 h-7 rounded-lg bg-[#D3AF62] text-white flex items-center justify-center shrink-0 shadow-2xs">
               <el-icon :size="16"><Compass /></el-icon>
             </div>
             <div>
-              <div class="font-bold text-[#1E3F35]">{{ $t('login.portalCardTitle') || '国家食品保障总门户 (Portal)' }}</div>
-              <div class="text-[10px] text-[#8C958F]">{{ $t('login.portalCardDesc') || '跨端终端导航：公民APP · 代理APP · 管理Web' }}</div>
+              <div class="font-bold text-[#326445]">{{ $t('login.portalCardTitle') || '国家食品保障总门户 (Portal)' }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('login.portalCardDesc') || '跨端终端导航：公民APP · 代理APP · 管理Web' }}</div>
             </div>
           </div>
-          <div class="flex items-center text-[#966C2E] font-bold text-[11px] gap-0.5">
+          <div class="flex items-center text-[#7A5F21] font-bold text-[11px] gap-0.5">
             <span>{{ $t('login.portalCardEnter') || '进入' }}</span>
             <el-icon><Right /></el-icon>
           </div>
         </div>
 
         <!-- 快速演示预设身份与模式切换 (3个图标对应: 1.公民B2C APP模式; 2.代理C2B APP模式; 3.管理员Web模式) -->
-        <div class="pt-3 border-t border-[#ECE7DE] space-y-2">
-          <div class="text-[11px] text-[#8C958F] font-semibold text-center flex items-center justify-center gap-1">
+        <div class="pt-3 border-t border-[#D9E5DB] space-y-2">
+          <div class="text-[11px] text-[#8A9A8F] font-semibold text-center flex items-center justify-center gap-1">
             <span>{{ $t('login.quickPresetTitle') || '快速演示预设身份切换' }}</span>
-            <span class="text-[10px] text-[#8C958F] font-normal">{{ $t('login.quickPresetHint') || '（点击图标切换模式）' }}</span>
+            <span class="text-[10px] text-[#8A9A8F] font-normal">{{ $t('login.quickPresetHint') || '（点击图标切换模式）' }}</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <!-- 1. 公民角色登录的B2C APP模式 -->
             <div
-              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'citizen_b2c' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
+              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'citizen_b2c' ? 'border-[#326445] bg-[#E2F4E4] shadow-sm ring-1 ring-[#326445]/40' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#326445]/60 hover:bg-[#E2F4E4]/60'"
               @click="handleSelectPreset('citizen_b2c')"
             >
               <div
                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'citizen_b2c' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+                :class="activeMode === 'citizen_b2c' ? 'bg-[#326445] text-white shadow-xs' : 'bg-[#E2F4E4] text-[#326445]'"
               >
                 <el-icon :size="18"><Iphone /></el-icon>
               </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
+              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#326445] transition-colors">
                 {{ $t('login.presetCitizenRole') || '公民角色' }}
               </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E4F2E9] text-[#275A3E]">
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E1F4E4] text-[#326445]">
                 {{ $t('login.presetCitizenMode') || 'B2C APP模式' }}
               </div>
             </div>
 
             <!-- 2. 代理登录的C2B APP模式 -->
             <div
-              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'agent_c2b' ? 'border-[#C59D5F] bg-[#FAF5ED] shadow-sm ring-1 ring-[#C59D5F]/50' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#C59D5F]/60 hover:bg-[#FAF5ED]/50'"
+              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'agent_c2b' ? 'border-[#D3AF62] bg-[#FDF3E0] shadow-sm ring-1 ring-[#D3AF62]/50' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#D3AF62]/60 hover:bg-[#FDF3E0]/50'"
               @click="handleSelectPreset('agent_c2b')"
             >
               <div
                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'agent_c2b' ? 'bg-[#C59D5F] text-white shadow-xs' : 'bg-[#FAF5ED] text-[#966C2E]'"
+                :class="activeMode === 'agent_c2b' ? 'bg-[#D3AF62] text-white shadow-xs' : 'bg-[#FDF3E0] text-[#7A5F21]'"
               >
                 <el-icon :size="18"><Shop /></el-icon>
               </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#C59D5F] transition-colors">
+              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#D3AF62] transition-colors">
                 {{ $t('login.presetAgentRole') || '代理角色' }}
               </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FAF3E6] text-[#966C2E]">
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FDF3E0] text-[#7A5F21]">
                 {{ $t('login.presetAgentMode') || 'C2B APP模式' }}
               </div>
             </div>
 
             <!-- 3. 管理员角色登录的web模式 -->
             <div
-              class="group border rounded-xl p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'admin_web' ? 'border-[#1E3F35] bg-[#EBF3EE] shadow-sm ring-1 ring-[#1E3F35]/40' : 'border-[#ECE7DE] bg-[#FAF8F4] hover:border-[#1E3F35]/60 hover:bg-[#EBF3EE]/60'"
+              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
+              :class="activeMode === 'admin_web' ? 'border-[#326445] bg-[#E2F4E4] shadow-sm ring-1 ring-[#326445]/40' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#326445]/60 hover:bg-[#E2F4E4]/60'"
               @click="handleSelectPreset('admin_web')"
             >
               <div
                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'admin_web' ? 'bg-[#1E3F35] text-white shadow-xs' : 'bg-[#EBF3EE] text-[#1E3F35]'"
+                :class="activeMode === 'admin_web' ? 'bg-[#326445] text-white shadow-xs' : 'bg-[#E2F4E4] text-[#326445]'"
               >
                 <el-icon :size="18"><Monitor /></el-icon>
               </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#18231E] group-hover:text-[#1E3F35] transition-colors">
+              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#326445] transition-colors">
                 {{ $t('login.presetAdminRole') || '管理员' }}
               </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#EBF3EE] text-[#1E3F35]">
+              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E2F4E4] text-[#326445]">
                 {{ $t('login.presetAdminMode') || 'Web模式' }}
               </div>
             </div>
@@ -242,7 +242,7 @@
       align-center
     >
       <div class="space-y-4">
-        <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 space-y-1">
+        <div class="bg-[#FDF3E0] border border-[#F2E3C6] p-3 rounded-lg text-xs text-[#5A4718] space-y-1">
           <div class="font-bold">检测到未授信新设备终端接入</div>
           <p>
             依据《国家配给安全与反冒领条例》，新终端首次登录已注册账户，必须执行二次身份核验以绑定设备硬件指纹。
@@ -250,24 +250,24 @@
         </div>
 
         <div class="space-y-2">
-          <div class="text-xs font-semibold text-slate-700">请选择二次身份核验方式：</div>
+          <div class="text-xs font-semibold text-[#43554B]">请选择二次身份核验方式：</div>
           <div class="grid grid-cols-2 gap-3">
             <div
-              class="border rounded-xl p-3 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all space-y-1"
+              class="border rounded-lg p-3 text-center cursor-pointer hover:border-[#5C8A6B] hover:bg-[#EFF5F1]/50 transition-all space-y-1"
               @click="openBiometricVerify"
             >
-              <el-icon :size="24" class="text-blue-600"><Camera /></el-icon>
-              <div class="text-xs font-bold text-slate-800">人脸与国民卡核验</div>
-              <div class="text-[10px] text-slate-400">现场自拍与芯片对碰</div>
+              <el-icon :size="24" class="text-[#326445]"><Camera /></el-icon>
+              <div class="text-xs font-bold text-[#1F3326]">人脸与国民卡核验</div>
+              <div class="text-[10px] text-[#8A9A8F]">现场自拍与芯片对碰</div>
             </div>
 
             <div
-              class="border rounded-xl p-3 text-center cursor-pointer hover:border-amber-500 hover:bg-amber-50/50 transition-all space-y-1"
+              class="border rounded-lg p-3 text-center cursor-pointer hover:border-[#D3AF62] hover:bg-[#FDF3E0]/50 transition-all space-y-1"
               @click="openRemoteVerify"
             >
-              <el-icon :size="24" class="text-amber-600"><Location /></el-icon>
-              <div class="text-xs font-bold text-slate-800">异地成员远程核验</div>
-              <div class="text-[10px] text-slate-400">异地手机 GPS 核查</div>
+              <el-icon :size="24" class="text-[#C9A13B]"><Location /></el-icon>
+              <div class="text-xs font-bold text-[#1F3326]">异地成员远程核验</div>
+              <div class="text-[10px] text-[#8A9A8F]">异地手机 GPS 核查</div>
             </div>
           </div>
         </div>
@@ -300,12 +300,12 @@
       align-center
     >
       <div class="text-center py-6 space-y-4">
-        <div class="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto border-4 border-blue-100 animate-pulse">
+        <div class="w-20 h-20 rounded-full bg-[#EFF5F1] text-[#326445] flex items-center justify-center mx-auto border-4 border-[#E1F4E4] animate-pulse">
           <el-icon :size="36"><Iphone /></el-icon>
         </div>
         <div>
-          <div class="text-sm font-bold text-slate-800">请将统一国民卡贴近设备 NFC 区域</div>
-          <div class="text-xs text-slate-400 mt-1">系统将自动校验生物活体特征与内政部身份芯片存根</div>
+          <div class="text-sm font-bold text-[#1F3326]">请将统一国民卡贴近设备 NFC 区域</div>
+          <div class="text-xs text-[#8A9A8F] mt-1">系统将自动校验生物活体特征与内政部身份芯片存根</div>
         </div>
       </div>
       <template #footer>
@@ -354,7 +354,7 @@ const isAppMode = computed(() => {
   return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
 });
 
-const loginBgStyle = "background: radial-gradient(circle at 15% 20%, rgba(197, 157, 95, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(197, 157, 95, 0.12) 0%, transparent 45%), linear-gradient(135deg, #0D201A 0%, #1E3F35 50%, #122821 100%);";
+const loginBgStyle = "background: radial-gradient(circle at 15% 20%, rgba(211, 175, 98, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(211, 175, 98, 0.12) 0%, transparent 45%), linear-gradient(135deg, #12241A 0%, #326445 50%, #12241A 100%);";
 
 const formRef = ref(null);
 const loading = ref(false);
@@ -586,7 +586,7 @@ async function simulateQuickNfcPass() {
   width: 4px;
 }
 .custom-pixel-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(30, 63, 53, 0.2);
+  background-color: rgba(50, 100, 69, 0.2);
   border-radius: 4px;
 }
 .custom-pixel-scrollbar::-webkit-scrollbar-track {

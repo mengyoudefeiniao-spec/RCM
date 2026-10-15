@@ -4,31 +4,31 @@
     <!-- 1. 顶部国家战略保供大盘 Hero Banner (深绿砂金伊拉克国家风格) -->
     <!-- ======================================================== -->
     <div
-      class="bg-gradient-to-r from-[#17332B] via-[#1E3F35] to-[#2B564A] text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-[#C59D5F]/35 relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+      class="bg-gradient-to-r from-[#1F3326] via-[#326445] to-[#2F5B44] text-white p-4 sm:p-5 rounded-lg shadow-lg border border-[#D3AF62]/35 relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4"
     >
       <!-- 背景保供暗纹光晕与雷达质感 -->
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#C59D5F]/10 blur-3xl pointer-events-none"></div>
-      <div class="absolute left-1/3 -top-12 w-48 h-48 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none"></div>
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#D3AF62]/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute left-1/3 -top-12 w-48 h-48 rounded-full bg-[#6FBF92]/10 blur-2xl pointer-events-none"></div>
 
       <div class="space-y-1.5 relative z-10">
         <div class="flex items-center gap-2.5 flex-wrap">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#C59D5F] animate-pulse shadow-[0_0_8px_#C59D5F]"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#D3AF62] animate-pulse shadow-[0_0_8px_#D3AF62]"></span>
           <h2 class="text-base sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 font-serif">
             <span>{{ $t('orderStats.pageTitle') }}</span>
           </h2>
           <span
-            class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#C59D5F]/20 text-[#E5C388] border border-[#C59D5F]/40 shadow-xs"
+            class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#D3AF62]/20 text-[#E5CEA1] border border-[#D3AF62]/40 shadow-xs"
           >
             MOT SCM BIG DATA
           </span>
           <span
             v-if="todayNewCount > 0"
-            class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/50 animate-bounce"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3E9B68]/30 text-[#A7D9BC] border border-[#6FBF92]/50 animate-bounce"
           >
             +{{ todayNewCount }} {{ isEn ? 'New Orders Today' : '今日新生成订单' }}
           </span>
         </div>
-        <p class="text-xs text-emerald-100/80 leading-relaxed max-w-3xl">
+        <p class="text-xs text-[#E1F4E4]/80 leading-relaxed max-w-3xl">
           {{ $t('orderStats.pageSubtitle') }}
         </p>
       </div>
@@ -37,7 +37,7 @@
       <div class="flex flex-wrap items-center gap-2.5 shrink-0 relative z-10">
         <el-button
           type="primary"
-          class="font-bold border-none shadow-md bg-[#C59D5F] hover:bg-[#b08b50] text-[#17332B] px-4 py-2 rounded-xl transition-all"
+          class="font-bold border-none shadow-md bg-[#D3AF62] hover:bg-[#B8934A] text-[#1F3326] px-4 py-2 rounded-lg transition-all"
           :loading="aiAnalyzing"
           @click="generateAiForecast"
         >
@@ -59,17 +59,17 @@
     <!-- ======================================================== -->
     <!-- 2. 省市 / 区域 / 街道 三级多维联动筛选工具栏 -->
     <!-- ======================================================== -->
-    <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 text-xs">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-        <span class="font-bold text-slate-800 flex items-center gap-1.5">
-          <el-icon class="text-[#1E3F35]"><Location /></el-icon>
+    <div class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3 text-xs">
+      <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
+        <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><Location /></el-icon>
           <span>{{ $t('orderStats.filterCardTitle') }}</span>
         </span>
         <div class="flex items-center gap-2">
-          <span class="text-slate-400 font-mono text-[11px]">
+          <span class="text-[#8A9A8F] font-mono text-[11px]">
             {{ $t('orderStats.matchedOrdersCount', { count: filteredOrders.length }) }}
           </span>
-          <span class="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold border border-emerald-200/60">
+          <span class="text-[11px] text-[#2F5B44] bg-[#EFF5F1] px-2 py-0.5 rounded font-mono font-bold border border-[#C7E0CE]/60">
             {{ isEn ? 'Active Real-time' : '实盘动态' }}
           </span>
         </div>
@@ -78,7 +78,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         <!-- 1. 省市选择 -->
         <div>
-          <label class="block text-slate-500 mb-1 font-medium">{{ $t('orderStats.provinceLabel') }}</label>
+          <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.provinceLabel') }}</label>
           <el-select v-model="selectedProvince" class="w-full" size="small" @change="handleProvinceChange">
             <el-option :label="$t('orderStats.allProvinces')" value="全部" />
             <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
@@ -87,7 +87,7 @@
 
         <!-- 2. 区域/中心选择 -->
         <div>
-          <label class="block text-slate-500 mb-1 font-medium">{{ $t('orderStats.districtLabel') }}</label>
+          <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.districtLabel') }}</label>
           <el-select v-model="selectedDistrict" class="w-full" size="small" @change="handleDistrictChange">
             <el-option :label="$t('orderStats.allDistricts')" value="全部" />
             <el-option v-for="d in districtOptions" :key="d" :label="d" :value="d" />
@@ -96,7 +96,7 @@
 
         <!-- 3. 街道网格选择 -->
         <div>
-          <label class="block text-slate-500 mb-1 font-medium">{{ $t('orderStats.streetLabel') }}</label>
+          <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.streetLabel') }}</label>
           <el-select v-model="selectedStreet" class="w-full" size="small">
             <el-option :label="$t('orderStats.allStreets')" value="全部" />
             <el-option v-for="s in streetOptions" :key="s" :label="s" :value="s" />
@@ -105,7 +105,7 @@
 
         <!-- 4. 履约方式选择 -->
         <div>
-          <label class="block text-slate-500 mb-1 font-medium">{{ $t('orderStats.deliveryTypeLabel') }}</label>
+          <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.deliveryTypeLabel') }}</label>
           <el-select v-model="selectedDeliveryType" class="w-full" size="small">
             <el-option :label="$t('orderStats.allDeliveryTypes')" value="全部" />
             <el-option :label="$t('reconciliation.homeDelivery')" value="HOME_DELIVERY" />
@@ -121,72 +121,72 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
       <!-- 3.1 订单总量卡片 -->
       <div
-        class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-[#1E3F35]/40 transition-all space-y-1.5 relative overflow-hidden"
+        class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm hover:border-[#326445]/40 transition-all space-y-1.5 relative overflow-hidden"
       >
-        <div class="flex items-center justify-between text-xs text-slate-500">
+        <div class="flex items-center justify-between text-xs text-[#58685D]">
           <span class="font-medium">{{ $t('orderStats.totalOrdersCard') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-[#1E3F35]/10 text-[#1E3F35] flex items-center justify-center font-bold">🛒</span>
+          <span class="w-6 h-6 rounded-lg bg-[#326445]/10 text-[#326445] flex items-center justify-center font-bold">🛒</span>
         </div>
-        <div class="text-xl sm:text-2xl font-bold font-mono text-[#1E3F35]">
+        <div class="text-xl sm:text-2xl font-bold font-mono text-[#326445]">
           {{ totalOrdersCount.toLocaleString() }}
-          <span class="text-xs font-normal text-slate-500">{{ isEn ? 'orders' : '笔' }}</span>
+          <span class="text-xs font-normal text-[#58685D]">{{ isEn ? 'orders' : '笔' }}</span>
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
           <span>{{ $t('orderStats.coveredPopulation', { count: (totalOrdersCount * 5).toLocaleString() }) }}</span>
-          <span class="text-emerald-700 font-bold font-mono">{{ $t('orderStats.registered100') }}</span>
+          <span class="text-[#2F5B44] font-bold font-mono">{{ $t('orderStats.registered100') }}</span>
         </div>
       </div>
 
       <!-- 3.2 面粉总需求配给量卡片 -->
       <div
-        class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-[#C59D5F]/50 transition-all space-y-1.5 relative overflow-hidden"
+        class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm hover:border-[#D3AF62]/50 transition-all space-y-1.5 relative overflow-hidden"
       >
-        <div class="flex items-center justify-between text-xs text-slate-500">
+        <div class="flex items-center justify-between text-xs text-[#58685D]">
           <span class="font-medium">{{ $t('orderStats.flourDemandCard') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold">🌾</span>
+          <span class="w-6 h-6 rounded-lg bg-[#FDF3E0] text-[#7A5F21] flex items-center justify-center font-bold">🌾</span>
         </div>
-        <div class="text-xl sm:text-2xl font-bold font-mono text-amber-800">
+        <div class="text-xl sm:text-2xl font-bold font-mono text-[#6B5321]">
           {{ calculateItemTotal('面粉').toLocaleString() }}
-          <span class="text-xs font-normal text-slate-500">KG</span>
+          <span class="text-xs font-normal text-[#58685D]">KG</span>
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
           <span>{{ isEn ? 'Equivalent Tons:' : '折合战略储备:' }}</span>
-          <span class="text-amber-700 font-bold font-mono">{{ (calculateItemTotal('面粉') / 1000).toFixed(1) }} 吨</span>
+          <span class="text-[#7A5F21] font-bold font-mono">{{ (calculateItemTotal('面粉') / 1000).toFixed(1) }} 吨</span>
         </div>
       </div>
 
       <!-- 3.3 大米与食用油综合需求卡片 -->
       <div
-        class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-teal-500/40 transition-all space-y-1.5 relative overflow-hidden"
+        class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm hover:border-[#3E9B68]/40 transition-all space-y-1.5 relative overflow-hidden"
       >
-        <div class="flex items-center justify-between text-xs text-slate-500">
+        <div class="flex items-center justify-between text-xs text-[#58685D]">
           <span class="font-medium">{{ $t('orderStats.riceDemandCard') }}</span>
-          <span class="w-6 h-6 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center font-bold">🍚</span>
+          <span class="w-6 h-6 rounded-lg bg-[#EFF5F1] text-[#2F5B44] flex items-center justify-center font-bold">🍚</span>
         </div>
-        <div class="text-xl sm:text-2xl font-bold font-mono text-teal-800">
+        <div class="text-xl sm:text-2xl font-bold font-mono text-[#24483A]">
           {{ calculateItemTotal('大米').toLocaleString() }}
-          <span class="text-xs font-normal text-slate-500">KG</span>
+          <span class="text-xs font-normal text-[#58685D]">KG</span>
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
           <span>{{ isEn ? 'Fulfillment:' : '核验交付率:' }}</span>
-          <span class="text-emerald-700 font-bold font-mono">98.4%</span>
+          <span class="text-[#2F5B44] font-bold font-mono">98.4%</span>
         </div>
       </div>
 
       <!-- 3.4 公民规费实收与国家保供兜底直补总额 -->
       <div
-        class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-[#C59D5F]/60 transition-all space-y-1.5 relative overflow-hidden"
+        class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm hover:border-[#D3AF62]/60 transition-all space-y-1.5 relative overflow-hidden"
       >
-        <div class="flex items-center justify-between text-xs text-slate-500">
+        <div class="flex items-center justify-between text-xs text-[#58685D]">
           <span class="font-medium">{{ isEn ? 'Fee & State Subsidy' : '规费实收与国家直补' }}</span>
-          <span class="w-6 h-6 rounded-lg bg-[#C59D5F]/15 text-[#916F34] flex items-center justify-center font-bold">🏛️</span>
+          <span class="w-6 h-6 rounded-lg bg-[#D3AF62]/15 text-[#7A5F21] flex items-center justify-center font-bold">🏛️</span>
         </div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-[#1E3F35] truncate">
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#326445] truncate">
           IQD {{ (totalSelfPayAmount / 1000000).toFixed(2) }}M
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+        <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
           <span>{{ isEn ? 'State Subsidy:' : '国家财政贴息:' }}</span>
-          <span class="text-[#916F34] font-bold font-mono">IQD {{ (totalSubsidyAmount / 1000000).toFixed(2) }}M</span>
+          <span class="text-[#7A5F21] font-bold font-mono">IQD {{ (totalSubsidyAmount / 1000000).toFixed(2) }}M</span>
         </div>
       </div>
     </div>
@@ -196,32 +196,32 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- 4.1 各街道/区域公民配给需求分布柱状图 -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="bg-white p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#1E3F35]"></span>
-            <h3 class="text-xs sm:text-sm font-bold text-slate-800">{{ $t('orderStats.streetChartTitle') }}</h3>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#326445]"></span>
+            <h3 class="text-xs sm:text-sm font-bold text-[#1F3326]">{{ $t('orderStats.streetChartTitle') }}</h3>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">{{ $t('orderStats.byOrderCount') }}</span>
+          <span class="text-[10px] text-[#8A9A8F] font-mono">{{ $t('orderStats.byOrderCount') }}</span>
         </div>
 
         <div class="space-y-3 pt-1">
           <div v-for="item in dynamicStreetData" :key="item.street" class="space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-700">
+            <div class="flex justify-between items-center text-[#43554B]">
               <span class="font-medium truncate max-w-[220px]">{{ item.street }}</span>
               <div class="font-mono flex items-center gap-2">
-                <span class="font-bold text-slate-900">{{ item.orders }} {{ $t('reconciliation.unitsOrder') }}</span>
-                <span class="text-[10px] text-slate-400">({{ item.ratio }}%)</span>
+                <span class="font-bold text-[#1B3123]">{{ item.orders }} {{ $t('reconciliation.unitsOrder') }}</span>
+                <span class="text-[10px] text-[#8A9A8F]">({{ item.ratio }}%)</span>
               </div>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div class="w-full bg-[#E9F1EB] rounded-full h-2.5 overflow-hidden">
               <div
                 class="h-2.5 rounded-full transition-all duration-700"
-                :class="item.isOverload ? 'bg-gradient-to-r from-amber-500 to-rose-600' : 'bg-gradient-to-r from-[#1E3F35] to-[#C59D5F]'"
+                :class="item.isOverload ? 'bg-gradient-to-r from-[#D3AF62] to-[#C04442]' : 'bg-gradient-to-r from-[#326445] to-[#D3AF62]'"
                 :style="{ width: `${item.barWidth}%` }"
               ></div>
             </div>
-            <div v-if="item.isOverload" class="text-[10px] text-rose-600 flex items-center gap-1 font-medium">
+            <div v-if="item.isOverload" class="text-[10px] text-[#C04442] flex items-center gap-1 font-medium">
               <span>{{ isEn ? '⚠️ Demand surge >25%, agent station near 1,500 limit, expansion advised' : '⚠️ 需求增速超 25%，代销网点逼近 1,500 户红线，建议增设分站' }}</span>
             </div>
           </div>
@@ -229,69 +229,69 @@
       </div>
 
       <!-- 4.2 四大保供物资需求结构与环比增长 -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="bg-white p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#C59D5F]"></span>
-            <h3 class="text-xs sm:text-sm font-bold text-slate-800">{{ $t('orderStats.itemsChartTitle') }}</h3>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#D3AF62]"></span>
+            <h3 class="text-xs sm:text-sm font-bold text-[#1F3326]">{{ $t('orderStats.itemsChartTitle') }}</h3>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">{{ $t('agentOrderAnalytics.structureChartSub') }}</span>
+          <span class="text-[10px] text-[#8A9A8F] font-mono">{{ $t('agentOrderAnalytics.structureChartSub') }}</span>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5 pt-1">
           <!-- 面粉 -->
-          <div class="p-3 rounded-xl bg-amber-50/40 border border-amber-200/60 space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-600 text-[11px]">
+          <div class="p-3 rounded-lg bg-[#FDF3E0]/40 border border-[#F2E3C6]/60 space-y-1 text-xs">
+            <div class="flex justify-between items-center text-[#58685D] text-[11px]">
               <span class="font-medium">{{ $t('dashboard.flourDemand') }}</span>
-              <span class="text-rose-600 font-bold font-mono">+12.4% ↑</span>
+              <span class="text-[#C04442] font-bold font-mono">+12.4% ↑</span>
             </div>
-            <div class="text-base font-bold font-mono text-amber-900">
-              {{ calculateItemTotal('面粉').toLocaleString() }} <span class="text-[11px] font-normal text-slate-500">KG</span>
+            <div class="text-base font-bold font-mono text-[#5A4718]">
+              {{ calculateItemTotal('面粉').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-slate-500">{{ isEn ? '54.2% of staple demand' : '占主粮比重 54.2%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ isEn ? '54.2% of staple demand' : '占主粮比重 54.2%' }}</div>
           </div>
 
           <!-- 大米 -->
-          <div class="p-3 rounded-xl bg-emerald-50/40 border border-emerald-200/60 space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-600 text-[11px]">
+          <div class="p-3 rounded-lg bg-[#EFF5F1]/40 border border-[#C7E0CE]/60 space-y-1 text-xs">
+            <div class="flex justify-between items-center text-[#58685D] text-[11px]">
               <span class="font-medium">{{ $t('dashboard.riceDemand') }}</span>
-              <span class="text-emerald-700 font-bold font-mono">+8.1% ↑</span>
+              <span class="text-[#2F5B44] font-bold font-mono">+8.1% ↑</span>
             </div>
-            <div class="text-base font-bold font-mono text-emerald-900">
-              {{ calculateItemTotal('大米').toLocaleString() }} <span class="text-[11px] font-normal text-slate-500">KG</span>
+            <div class="text-base font-bold font-mono text-[#12241A]">
+              {{ calculateItemTotal('大米').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-slate-500">{{ isEn ? '45.8% of staple demand' : '占主粮比重 45.8%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ isEn ? '45.8% of staple demand' : '占主粮比重 45.8%' }}</div>
           </div>
 
           <!-- 食用油 -->
-          <div class="p-3 rounded-xl bg-orange-50/40 border border-orange-200/60 space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-600 text-[11px]">
+          <div class="p-3 rounded-lg bg-[#FDF3E0]/40 border border-[#F2E3C6]/60 space-y-1 text-xs">
+            <div class="flex justify-between items-center text-[#58685D] text-[11px]">
               <span class="font-medium">{{ $t('dashboard.oilDemand') }}</span>
-              <span class="text-rose-600 font-bold font-mono">+15.6% ↑</span>
+              <span class="text-[#C04442] font-bold font-mono">+15.6% ↑</span>
             </div>
-            <div class="text-base font-bold font-mono text-orange-900">
-              {{ calculateItemTotal('油').toLocaleString() }} <span class="text-[11px] font-normal text-slate-500">L</span>
+            <div class="text-base font-bold font-mono text-[#5A4718]">
+              {{ calculateItemTotal('油').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">L</span>
             </div>
-            <div class="text-[10px] text-slate-500">{{ isEn ? 'Household uptake 92.5%' : '户均选购率 92.5%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ isEn ? 'Household uptake 92.5%' : '户均选购率 92.5%' }}</div>
           </div>
 
           <!-- 白糖 -->
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1 text-xs">
-            <div class="flex justify-between items-center text-slate-600 text-[11px]">
+          <div class="p-3 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/70 space-y-1 text-xs">
+            <div class="flex justify-between items-center text-[#58685D] text-[11px]">
               <span class="font-medium">{{ $t('dashboard.sugarDemand') }}</span>
-              <span class="text-slate-600 font-bold font-mono">+3.2% ↑</span>
+              <span class="text-[#58685D] font-bold font-mono">+3.2% ↑</span>
             </div>
-            <div class="text-base font-bold font-mono text-slate-900">
-              {{ calculateItemTotal('糖').toLocaleString() }} <span class="text-[11px] font-normal text-slate-500">KG</span>
+            <div class="text-base font-bold font-mono text-[#1B3123]">
+              {{ calculateItemTotal('糖').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-slate-500">{{ isEn ? 'Supply stable and ample' : '储备充沛供应稳定' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ isEn ? 'Supply stable and ample' : '储备充沛供应稳定' }}</div>
           </div>
         </div>
 
         <!-- 履约渠道洞察微条 -->
-        <div class="p-2.5 rounded-xl bg-[#1E3F35]/5 border border-[#1E3F35]/15 flex items-center justify-between text-xs text-[#1E3F35]">
+        <div class="p-2.5 rounded-lg bg-[#326445]/5 border border-[#326445]/15 flex items-center justify-between text-xs text-[#326445]">
           <span>🛵 <strong>{{ isEn ? 'Fulfillment Trend: ' : '履约偏好趋势：' }}</strong>{{ isEn ? 'Home delivery share reaches ' + deliveryHomeRatio + '%, supported by door-to-door welfare services.' : '送货上门选购占比达 ' + deliveryHomeRatio + '%，契合便民保供导向。' }}</span>
-          <span class="text-[#C59D5F] font-mono font-bold shrink-0 ml-2">{{ isEn ? 'Fulfillment 99.1%' : '时效履约 99.1%' }}</span>
+          <span class="text-[#D3AF62] font-mono font-bold shrink-0 ml-2">{{ isEn ? 'Fulfillment 99.1%' : '时效履约 99.1%' }}</span>
         </div>
       </div>
     </div>
@@ -300,25 +300,25 @@
     <!-- 5. 核心：AI 智能助手 - 下月配给扩容需求预测与备货建议面板 -->
     <!-- ======================================================== -->
     <div
-      class="bg-gradient-to-r from-[#142B23] via-[#1E3F35] to-[#17332B] text-white rounded-2xl p-4 sm:p-5 border border-[#C59D5F]/40 shadow-md space-y-3.5 relative overflow-hidden"
+      class="bg-gradient-to-r from-[#1F3326] via-[#326445] to-[#1F3326] text-white rounded-lg p-4 sm:p-5 border border-[#D3AF62]/40 shadow-md space-y-3.5 relative overflow-hidden"
     >
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#C59D5F]/30 pb-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D3AF62]/30 pb-3">
         <div class="flex items-center gap-2.5">
-          <span class="w-8 h-8 rounded-xl bg-[#C59D5F]/20 border border-[#C59D5F]/40 flex items-center justify-center text-base">🤖</span>
+          <span class="w-8 h-8 rounded-lg bg-[#D3AF62]/20 border border-[#D3AF62]/40 flex items-center justify-center text-base">🤖</span>
           <div>
             <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2 font-serif">
               <span>{{ $t('orderStats.aiForecastPanelTitle') }}</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#C59D5F]/25 text-[#E5C388] border border-[#C59D5F]/40">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#D3AF62]/25 text-[#E5CEA1] border border-[#D3AF62]/40">
                 AI ENGINE V4.2
               </span>
             </h3>
-            <span class="text-[10px] text-emerald-200/80">{{ $t('orderStats.aiForecastPanelSub') }}</span>
+            <span class="text-[10px] text-[#C7E0CE]/80">{{ $t('orderStats.aiForecastPanelSub') }}</span>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <el-button
             size="small"
-            class="font-bold border-none bg-[#C59D5F] hover:bg-[#b08b50] text-[#17332B] rounded-xl px-3"
+            class="font-bold border-none bg-[#D3AF62] hover:bg-[#B8934A] text-[#1F3326] rounded-lg px-3"
             @click="applyAiAdviceToPlan"
           >
             <span>{{ $t('orderStats.applyAdviceBtn') }}</span>
@@ -328,11 +328,11 @@
 
       <!-- AI 分析要点卡片 -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-        <div class="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
-          <div class="font-bold text-[#E5C388] flex items-center gap-1.5">
+        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
+          <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
             <span>🎯 {{ isEn ? 'Key Expansion Area Recommendation' : '重点扩容区域建议' }}</span>
           </div>
-          <p class="text-emerald-100/90 text-[11px] leading-relaxed">
+          <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
             {{ isEn
               ? '[Baghdad Karkh Yarmouk St 3] Order growth highest (+28.4%), nearing 1,500 household limit. Recommended to increase next month flour allocation by 35 tons (+15%) and deploy 1 pickup sub-station.'
               : '【巴格达省卡尔赫区亚尔穆克第3街】订单增速最高 (+28.4%)，网点签约户逼近 1,500 户红线。建议下月面粉调拨额度调增 35 吨 (+15%)，并前置增设 1 处便民提货点。'
@@ -340,11 +340,11 @@
           </p>
         </div>
 
-        <div class="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
-          <div class="font-bold text-[#E5C388] flex items-center gap-1.5">
+        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
+          <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
             <span>⚖️ {{ isEn ? 'Supply-Demand Balance & Waste Prevention' : '供需平衡与防积压' }}</span>
           </div>
-          <p class="text-emerald-100/90 text-[11px] leading-relaxed">
+          <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
             {{ isEn
               ? '[Nineveh Mosul Old City] Sugar and flour turnover days longer than usual (28-day surplus). Recommended to maintain normal quota without additions, prioritizing stock clearance.'
               : '【尼尼微省摩苏尔老城区】白糖与面粉周转天数长于常态 (余量达 28 天)，建议下月保持常态配给不增发，以消化现货库存为主，规避仓储损耗与资金占用。'
@@ -352,11 +352,11 @@
           </p>
         </div>
 
-        <div class="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
-          <div class="font-bold text-[#E5C388] flex items-center gap-1.5">
+        <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
+          <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
             <span>🚚 {{ isEn ? 'Fleet Logistics Capacity Advice' : '车队运力扩充建议' }}</span>
           </div>
-          <p class="text-emerald-100/90 text-[11px] leading-relaxed">
+          <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
             {{ isEn
               ? 'Home delivery adoption reaches ' + deliveryHomeRatio + '%; peak hours (9:00-11:00 AM) face slight backlog. Recommended to deploy 4 additional rapid delivery trucks to ensure 1-hour fulfillment.'
               : '居民“送货上门”选购率达 ' + deliveryHomeRatio + '%，高峰期（上午 9:00-11:00）订单积压率上升。建议联合区域代销商扩充 4 台急送保供货车，保障 1 小时内履约达标率。'
@@ -369,15 +369,15 @@
     <!-- ======================================================== -->
     <!-- 6. 订单明细穿透展示表格 (全域穿透真实订单与高亮新订单) -->
     <!-- ======================================================== -->
-    <div data-demo-target="citizen-orders-table" class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden text-xs">
-      <div class="p-3.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
-        <div class="font-bold text-slate-800 flex items-center gap-2">
-          <span class="w-2 h-4 bg-[#1E3F35] rounded-xs"></span>
+    <div data-demo-target="citizen-orders-table" class="bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs overflow-hidden text-xs">
+      <div class="p-3.5 bg-[#F3F8F4]/90 border-b border-[#D9E5DB] flex flex-wrap items-center justify-between gap-2.5">
+        <div class="font-bold text-[#1F3326] flex items-center gap-2">
+          <span class="w-2 h-4 bg-[#326445] rounded-xs"></span>
           <span>{{ $t('orderStats.orderListTitle') }}</span>
-          <span class="text-slate-400 font-mono text-[11px]">({{ paginatedOrders.length }} / {{ filteredOrders.length }})</span>
+          <span class="text-[#8A9A8F] font-mono text-[11px]">({{ paginatedOrders.length }} / {{ filteredOrders.length }})</span>
           <span
             v-if="todayNewCount > 0"
-            class="text-[11px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-300 flex items-center gap-1"
+            class="text-[11px] bg-[#FDF3E0] text-[#6B5321] px-2 py-0.5 rounded-full font-bold border border-[#E5CEA1] flex items-center gap-1"
           >
             <span>✨</span>
             <span>{{ isEn ? 'New Citizen Order Received' : '新生成的公民订单已置顶展示' }}</span>
@@ -409,15 +409,15 @@
         <el-table-column prop="orderId" :label="$t('orderStats.orderColId')" min-width="170">
           <template #default="{ row }">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-mono font-bold text-slate-900">{{ row.orderId }}</span>
+              <span class="font-mono font-bold text-[#1B3123]">{{ row.orderId }}</span>
               <span
                 v-if="isRecentOrder(row)"
-                class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-500 text-white animate-pulse"
+                class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#D3AF62] text-white animate-pulse"
               >
                 NEW
               </span>
             </div>
-            <div class="text-[10px] text-emerald-700 font-mono flex items-center gap-1">
+            <div class="text-[10px] text-[#2F5B44] font-mono flex items-center gap-1">
               <span>{{ $t('reconciliation.pickupCodePrefix') }}:</span>
               <b>{{ row.pickupCode }}</b>
             </div>
@@ -426,16 +426,16 @@
 
         <el-table-column prop="headName" :label="$t('orderStats.orderColHead')" min-width="160">
           <template #default="{ row }">
-            <div class="font-bold text-slate-900">{{ row.headName }}</div>
-            <div class="text-[10px] text-slate-400 font-mono">{{ row.cardNo }}</div>
-            <div class="text-[10px] text-slate-500 font-mono">{{ row.phone }}</div>
+            <div class="font-bold text-[#1B3123]">{{ row.headName }}</div>
+            <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.cardNo }}</div>
+            <div class="text-[10px] text-[#58685D] font-mono">{{ row.phone }}</div>
           </template>
         </el-table-column>
 
         <el-table-column :label="$t('orderStats.orderColRegion')" min-width="180">
           <template #default="{ row }">
-            <div class="text-slate-800 font-medium">{{ row.province || '巴格达省' }} · {{ row.district || '卡尔赫区' }}</div>
-            <div class="text-[10px] text-slate-400 truncate">{{ row.street || row.deliveryAddress || '亚尔穆克第3街道' }}</div>
+            <div class="text-[#1F3326] font-medium">{{ row.province || '巴格达省' }} · {{ row.district || '卡尔赫区' }}</div>
+            <div class="text-[10px] text-[#8A9A8F] truncate">{{ row.street || row.deliveryAddress || '亚尔穆克第3街道' }}</div>
           </template>
         </el-table-column>
 
@@ -445,7 +445,7 @@
               <span
                 v-for="(it, idx) in row.items"
                 :key="idx"
-                class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200"
+                class="px-1.5 py-0.5 rounded bg-[#E9F1EB] text-[#43554B] text-[10px] font-medium border border-[#D9E5DB]"
               >
                 {{ formatItemShortName(it.itemName) }} <b class="font-mono font-bold">×{{ it.qty }}{{ it.unit }}</b>
               </span>
@@ -455,7 +455,7 @@
 
         <el-table-column :label="isEn ? 'Amount' : '实付金额'" width="120" align="right">
           <template #default="{ row }">
-            <span class="font-mono font-bold text-amber-700">IQD {{ (row.selfPayAmount || row.amount || 0).toLocaleString() }}</span>
+            <span class="font-mono font-bold text-[#7A5F21]">IQD {{ (row.selfPayAmount || row.amount || 0).toLocaleString() }}</span>
           </template>
         </el-table-column>
 
@@ -463,13 +463,13 @@
           <template #default="{ row }">
             <span
               v-if="row.deliveryType === 'HOME_DELIVERY'"
-              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200"
+              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF5F1] text-[#2A5440] border border-[#C7DED0]"
             >
               🚚 {{ $t('reconciliation.homeDelivery') }}
             </span>
             <span
               v-else
-              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
+              class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#EFF5F1] text-[#2F5B44] border border-[#C7E0CE]"
             >
               🏬 {{ $t('reconciliation.storePickup') }}
             </span>
@@ -489,13 +489,13 @@
 
         <el-table-column prop="createdAt" :label="$t('orderStats.orderColTime')" min-width="140">
           <template #default="{ row }">
-            <span class="font-mono text-slate-500 text-[11px]">{{ (row.createdAt || row.paidAt || '').replace('T', ' ').slice(0, 19) }}</span>
+            <span class="font-mono text-[#58685D] text-[11px]">{{ (row.createdAt || row.paidAt || '').replace('T', ' ').slice(0, 19) }}</span>
           </template>
         </el-table-column>
       </el-table>
 
       <!-- 分页器 -->
-      <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <div class="p-3 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
         <span>{{ $t('orderStats.totalRecords', { count: filteredOrders.length }) }}</span>
         <el-pagination
           v-model:current-page="currentPage"
@@ -654,7 +654,7 @@ function isRecentOrder(row) {
 
 function tableRowClassName({ row }) {
   if (isRecentOrder(row)) {
-    return 'bg-amber-50/40 font-medium';
+    return 'bg-[#FDF3E0]/40 font-medium';
   }
   return '';
 }

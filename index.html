@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#1E3F35" />
+    <meta name="theme-color" content="#326445" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -23,8 +23,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        background-color: #1E3F35;
-        background: radial-gradient(circle at 50% 40%, #285447 0%, #1E3F35 60%, #142B24 100%);
+        background-color: #326445;
+        background: radial-gradient(circle at 50% 40%, #2F5B44 0%, #326445 60%, #2A5440 100%);
         color: #ffffff;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         user-select: none;
@@ -50,7 +50,7 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 16px;
-        filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(31, 163, 94, 0.4));
+        filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(62, 138, 94, 0.4));
         animation: skeletonPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       .skeleton-logo-img {
@@ -61,7 +61,7 @@
       .skeleton-title-ar {
         font-size: 24px;
         font-weight: 900;
-        color: #F4E8D1;
+        color: #FDF3E0;
         letter-spacing: 0.5px;
         margin: 0 0 4px 0;
         direction: rtl;
@@ -76,13 +76,13 @@
       }
       .skeleton-org-ar {
         font-size: 11px;
-        color: #C59D5F;
+        color: #D3AF62;
         font-weight: 500;
         margin: 0;
       }
       .skeleton-org-en {
         font-size: 9px;
-        color: #A6C4BA;
+        color: #AECBB8;
         letter-spacing: 2px;
         text-transform: uppercase;
         margin-top: 3px;
@@ -99,19 +99,19 @@
         height: 4px;
         border-radius: 9999px;
         background-color: #17332A;
-        border: 1px solid rgba(197, 157, 95, 0.25);
+        border: 1px solid rgba(211, 175, 98, 0.25);
         overflow: hidden;
         margin-bottom: 12px;
       }
       .skeleton-progress-bar {
         height: 100%;
         border-radius: 9999px;
-        background: linear-gradient(90deg, #8E703E, #E2C38E, #C59D5F);
+        background: linear-gradient(90deg, #A98A45, #E5CEA1, #D3AF62);
         animation: skeletonProgress 1s ease-in-out infinite alternate;
       }
       .skeleton-status-text {
         font-size: 11px;
-        color: #9EB5AC;
+        color: #AECBB8;
         font-family: monospace;
         letter-spacing: 1px;
       }
@@ -125,7 +125,7 @@
       }
     </style>
   </head>
-  <body class="bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
+  <body class="bg-[#F3F8F4] text-[#1B3123] font-sans antialiased overflow-x-hidden selection:bg-[#326445] selection:text-white">
     <div id="app">
       <!-- 纯原生首屏冷启动骨架启动页 (秒开过渡，Vue mount 后即被完全接管) -->
       <div id="app-skeleton-splash">

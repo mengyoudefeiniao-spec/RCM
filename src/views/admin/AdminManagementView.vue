@@ -1,22 +1,22 @@
 <template>
   <div class="admin-management-view space-y-4">
     <!-- 顶部后台管理综合调度栏 (采用 ht.iq 官方绿色系与矢量 Logo) -->
-    <div class="bg-[#FDFCF9] px-4 py-3 rounded-2xl border border-[#C3E6D2] shadow-2xs flex items-center justify-between">
+    <div class="bg-[#FBFDFB] px-4 py-3 rounded-lg border border-[#C7E0CE] shadow-2xs flex items-center justify-between">
       <ModuleDescTip
         :title="$t('admin.pageTitle') || '全国配给系统后台综合治理与调度中心'"
         :content="$t('admin.pageSubtitle') || '负责全国电子配给卡发卡监管、家庭关系档案治理、网格代销网点全生命周期准入与战略仓储调度。'"
         :badge="$t('admin.centralSupervision') || '中央监管'"
         badge-type="success"
-        title-class="text-sm font-bold text-[#007A3D]"
+        title-class="text-sm font-bold text-[#326445]"
       >
         <template #icon>
-          <div class="w-8 h-8 rounded-xl bg-white border border-[#C3E6D2] p-1 flex items-center justify-center shrink-0 shadow-2xs">
+          <div class="w-8 h-8 rounded-lg bg-white border border-[#C7E0CE] p-1 flex items-center justify-center shrink-0 shadow-2xs">
             <img src="/logo.svg" alt="ht.iq Logo" class="w-full h-full object-contain" />
           </div>
         </template>
         <template #extra>
           <div class="flex items-center gap-2">
-            <el-tag size="small" type="success" effect="dark" class="font-bold !bg-[#007A3D] !border-[#007A3D]">
+            <el-tag size="small" type="success" effect="dark" class="font-bold !bg-[#326445] !border-[#326445]">
               {{ currentRoleTitle }}
             </el-tag>
             <el-button
@@ -40,7 +40,7 @@
 
     <!-- 下方管理模块选项卡 (公民卡、家庭、代理网点、仓储管理) -->
     <!-- 专属职权已直接融入各模块操作栏中；全部列表均含省市/中心筛选与分页 -->
-    <div class="bg-white rounded-xl shadow-2xs border border-slate-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-2xs border border-[#D9E5DB] overflow-hidden">
       <el-tabs v-model="activeTab" class="custom-admin-tabs px-2.5 sm:px-5 pt-2 sm:pt-3" @tab-change="handleTabChange">
         
         <!-- ========================================== -->
@@ -55,21 +55,21 @@
           </template>
           <div class="py-3.5 space-y-3.5">
             <!-- 视图模式切换与状态栏 -->
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-lg border border-[#D9E5DB] shadow-2xs">
               <div class="flex items-center gap-2">
                 <el-radio-group v-model="cardViewMode" size="small">
                   <el-radio-button value="cards">
                     <span class="flex items-center gap-1.5 font-medium">
                       <el-icon><CreditCard /></el-icon>
                       <span>{{ $t('admin.viewModeCards') || '配给卡总账' }}</span>
-                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 text-[11px] font-mono">{{ filteredCards.length }}</span>
+                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-[#E9F1EB] text-[#58685D] text-[11px] font-mono">{{ filteredCards.length }}</span>
                     </span>
                   </el-radio-button>
                   <el-radio-button value="members">
                     <span class="flex items-center gap-1.5 font-medium">
                       <el-icon><User /></el-icon>
                       <span>{{ $t('admin.viewModeMembers') || '在册家庭成员清单' }}</span>
-                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono">{{ currentFamilyMembers.length }}</span>
+                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-[#E1F4E4] text-[#24483A] text-[11px] font-mono">{{ currentFamilyMembers.length }}</span>
                     </span>
                   </el-radio-button>
                 </el-radio-group>
@@ -77,18 +77,18 @@
 
               <!-- 实时联通徽章 -->
               <div class="flex items-center gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF5F1] text-[#2F5B44] border border-[#C7E0CE] font-medium">
+                  <span class="w-2 h-2 rounded-full bg-[#3E9B68] animate-pulse"></span>
                   {{ $t('admin.syncedWithCitizenApp') || '与公民APP家庭成员实时联通' }}
                 </span>
-                <span class="text-slate-400 font-mono text-[11px]">RC-10029381</span>
+                <span class="text-[#8A9A8F] font-mono text-[11px]">RC-10029381</span>
               </div>
             </div>
 
             <!-- 模式 1: 配给卡总账 (Cards) -->
             <div v-show="cardViewMode === 'cards'" class="space-y-3.5">
               <!-- 检索筛选栏 -->
-              <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+              <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex flex-wrap items-center justify-between gap-2.5 text-xs">
                 <div class="flex flex-wrap items-center gap-2.5">
                   <el-input
                     v-model="cardQuery.cardNo"
@@ -128,7 +128,7 @@
                   <el-button size="small" :icon="Refresh" @click="resetCardQuery">{{ $t('admin.resetQuery') || '重置' }}</el-button>
                 </div>
 
-                <div class="text-xs text-slate-500 font-mono">
+                <div class="text-xs text-[#58685D] font-mono">
                   {{ $t('admin.matchCards', { count: filteredCards.length }) }}
                 </div>
               </div>
@@ -137,32 +137,32 @@
               <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs">
                 <el-table-column prop="cardNo" :label="$t('admin.cardNo') || '配给卡号'" width="160" fixed>
                   <template #default="{ row }">
-                    <span class="font-mono font-bold text-blue-600">{{ row.cardNo }}</span>
+                    <span class="font-mono font-bold text-[#326445]">{{ row.cardNo }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="$t('admin.headInfo') || '户主信息'" min-width="190">
                   <template #default="{ row }">
-                    <div class="font-medium text-slate-800">{{ formatHeadName(row.headName) }}</div>
-                    <div class="text-[11px] text-slate-400 font-mono">{{ row.nationalId }}</div>
+                    <div class="font-medium text-[#1F3326]">{{ formatHeadName(row.headName) }}</div>
+                    <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.nationalId }}</div>
                   </template>
                 </el-table-column>
                 <el-table-column :label="$t('admin.regionInfo') || '所属行政省市/基层区'" min-width="220">
                   <template #default="{ row }">
-                    <div class="text-xs text-slate-700 font-medium">{{ formatProvince(row.province) }}</div>
-                    <div class="text-[11px] text-slate-400">{{ formatDistrict(row.district) }}</div>
+                    <div class="text-xs text-[#43554B] font-medium">{{ formatProvince(row.province) }}</div>
+                    <div class="text-[11px] text-[#8A9A8F]">{{ formatDistrict(row.district) }}</div>
                   </template>
                 </el-table-column>
                 <el-table-column prop="memberCount" :label="$t('admin.population') || '人口'" width="90" align="center">
                   <template #default="{ row }">
-                    <span class="font-bold font-mono text-emerald-700">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
+                    <span class="font-bold font-mono text-[#2F5B44]">{{ row.memberCount }}</span> {{ $t('admin.personUnit') || '人' }}
                   </template>
                 </el-table-column>
                 <el-table-column :label="$t('admin.monthlyQuotaAudit') || '本月配额外核'" min-width="260">
                   <template #default="{ row }">
                     <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
-                      <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: {{ row.quotas?.flour ?? 0 }}kg</span>
-                      <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: {{ row.quotas?.rice ?? 0 }}kg</span>
-                      <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: {{ row.quotas?.oil ?? 0 }}L</span>
+                      <span class="bg-[#EFF5F1] text-[#2A5440] px-1.5 py-0.5 rounded border border-[#C7DED0]">{{ $t('admin.flour') || '面粉' }}: {{ row.quotas?.flour ?? 0 }}kg</span>
+                      <span class="bg-[#FDF3E0] text-[#7A5F21] px-1.5 py-0.5 rounded border border-[#F2E3C6]">{{ $t('admin.rice') || '大米' }}: {{ row.quotas?.rice ?? 0 }}kg</span>
+                      <span class="bg-[#EFF5F1] text-[#2F5B44] px-1.5 py-0.5 rounded border border-[#C7E0CE]">{{ $t('admin.oil') || '油' }}: {{ row.quotas?.oil ?? 0 }}L</span>
                     </div>
                   </template>
                 </el-table-column>
@@ -228,7 +228,7 @@
               </el-table>
 
               <!-- 分页 -->
-              <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+              <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
                 <span>{{ $t('admin.totalRecords', { count: filteredCards.length }) }}</span>
                 <el-pagination
                   v-model:current-page="cardPage"
@@ -244,34 +244,34 @@
             <!-- 模式 2: 在册家庭成员名册 (Members) (与公民 APP 移动视口 Family Members 1:1 镜像) -->
             <div v-show="cardViewMode === 'members'" class="space-y-3.5">
               <!-- 顶部当前家庭信息摘要横幅 -->
-              <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-slate-50 p-3.5 rounded-xl border border-emerald-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="bg-gradient-to-r from-[#EFF5F1] via-[#EFF5F1] to-[#F3F8F4] p-3.5 rounded-lg border border-[#E1F4E4] flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                  <div class="w-10 h-10 rounded-lg bg-[#2F5B44] text-white flex items-center justify-center font-bold text-base shadow-sm">
                     <el-icon><UserFilled /></el-icon>
                   </div>
                   <div>
-                    <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <div class="font-bold text-[#1F3326] text-sm flex items-center gap-2">
                       <span>{{ formatHeadName(currentCardFamily?.headName || '艾哈迈德·哈桑·萨利赫') }}</span>
                       <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                         {{ currentCardFamily?.rationCardNo || currentCardFamily?.cardNo || 'RC-10029381' }}
                       </el-tag>
-                      <span class="text-xs font-normal text-slate-500 font-mono">({{ currentCardFamily?.familyCode || 'FAM-BAG-08832' }})</span>
+                      <span class="text-xs font-normal text-[#58685D] font-mono">({{ currentCardFamily?.familyCode || 'FAM-BAG-08832' }})</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">
+                    <div class="text-[11px] text-[#58685D] mt-0.5">
                       {{ $t('admin.linkedAgentBranch') || '所属定点分部' }}: {{ formatDistrict(currentCardFamily?.district) }} · {{ formatProvince(currentCardFamily?.province) }}
                     </div>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-center shadow-2xs">
-                    <span class="text-[10px] text-slate-400 block">{{ $t('admin.currentMembersCount') || '在册保障人口' }}</span>
-                    <span class="font-bold font-mono text-emerald-700 text-sm">{{ currentFamilyMembers.length }} {{ $t('admin.personUnit') || '人' }}</span>
+                  <div class="bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB] text-center shadow-2xs">
+                    <span class="text-[10px] text-[#8A9A8F] block">{{ $t('admin.currentMembersCount') || '在册保障人口' }}</span>
+                    <span class="font-bold font-mono text-[#2F5B44] text-sm">{{ currentFamilyMembers.length }} {{ $t('admin.personUnit') || '人' }}</span>
                   </div>
-                  <div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 text-center shadow-2xs">
-                    <span class="text-[10px] text-slate-400 block">{{ $t('admin.syncStatus') || '与公民APP同步' }}</span>
-                    <span class="font-bold text-emerald-600 text-xs flex items-center justify-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <div class="bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB] text-center shadow-2xs">
+                    <span class="text-[10px] text-[#8A9A8F] block">{{ $t('admin.syncStatus') || '与公民APP同步' }}</span>
+                    <span class="font-bold text-[#2F7A50] text-xs flex items-center justify-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#3E9B68] animate-pulse"></span>
                       {{ $t('admin.liveSynced') || '实时同步中' }}
                     </span>
                   </div>
@@ -282,13 +282,13 @@
               <el-table :data="paginatedMembers" border stripe style="width: 100%" size="small" class="text-xs">
                 <el-table-column prop="nationalId" :label="$t('admin.nationalId') || '国民身份证号'" width="160" fixed>
                   <template #default="{ row }">
-                    <span class="font-mono font-bold text-slate-700">{{ row.nationalId }}</span>
+                    <span class="font-mono font-bold text-[#43554B]">{{ row.nationalId }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="160">
                   <template #default="{ row }">
                     <div class="flex items-center gap-1.5">
-                      <span class="font-bold text-slate-800">{{ formatMemberName(row.name) }}</span>
+                      <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
                       <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left">
                         {{ $t('citizenCard.headTag') || '户主' }}
                       </el-tag>
@@ -307,15 +307,15 @@
                 </el-table-column>
                 <el-table-column prop="birthDate" :label="$t('admin.birthDate') || '出生日期'" width="110" align="center">
                   <template #default="{ row }">
-                    <span class="font-mono text-slate-600">{{ row.birthDate }}</span>
+                    <span class="font-mono text-[#58685D]">{{ row.birthDate }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column :label="$t('admin.quotaShare') || '人均口粮保障定额'" min-width="230">
                   <template #default>
                     <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
-                      <span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">{{ $t('admin.flour') || '面粉' }}: 9kg</span>
-                      <span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">{{ $t('admin.rice') || '大米' }}: 3kg</span>
-                      <span class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200">{{ $t('admin.oil') || '油' }}: 1L</span>
+                      <span class="bg-[#EFF5F1] text-[#2A5440] px-1.5 py-0.5 rounded border border-[#C7DED0]">{{ $t('admin.flour') || '面粉' }}: 9kg</span>
+                      <span class="bg-[#FDF3E0] text-[#7A5F21] px-1.5 py-0.5 rounded border border-[#F2E3C6]">{{ $t('admin.rice') || '大米' }}: 3kg</span>
+                      <span class="bg-[#EFF5F1] text-[#2F5B44] px-1.5 py-0.5 rounded border border-[#C7E0CE]">{{ $t('admin.oil') || '油' }}: 1L</span>
                     </div>
                   </template>
                 </el-table-column>
@@ -324,7 +324,7 @@
                     <div class="flex flex-col items-center gap-0.5">
                       <el-tag v-if="row.status === '正常' || row.status === 'Active'" type="success" size="small">{{ formatCardStatus('正常') }}</el-tag>
                       <el-tag v-else type="danger" size="small">{{ formatCardStatus('已冻结') }}</el-tag>
-                      <span v-if="(row.status === '已冻结' || row.status === 'Frozen') && row.freezeReason" class="text-[10px] text-rose-600 font-semibold bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                      <span v-if="(row.status === '已冻结' || row.status === 'Frozen') && row.freezeReason" class="text-[10px] text-[#C04442] font-semibold bg-[#FBEAE9] px-1.5 py-0.2 rounded border border-[#F2D5D4]">
                         {{ formatFreezeReason(row.freezeReason) }}
                       </span>
                     </div>
@@ -346,7 +346,7 @@
               </el-table>
 
               <!-- 分页 (与公民端成员总数完全一致) -->
-              <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+              <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
                 <span>{{ $t('admin.totalRecords', { count: currentFamilyMembers.length }) }}</span>
                 <el-pagination
                   v-model:current-page="memberPage"
@@ -366,7 +366,7 @@
         <!-- ========================================== -->
         <el-tab-pane :label="$t('admin.tabFamilies') || '家庭户籍档案管理'" name="families">
           <div class="py-3.5 space-y-3.5">
-            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex flex-wrap items-center justify-between gap-2.5 text-xs">
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="familyQuery.familyCode"
@@ -410,7 +410,7 @@
             <el-table :data="paginatedFamilies" v-loading="familiesLoading" border stripe style="width: 100%" size="small" class="text-xs">
               <el-table-column prop="familyCode" :label="$t('admin.familyCode') || '户籍档案编号'" width="160" fixed>
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-slate-800">{{ row.familyCode }}</span>
+                  <span class="font-mono font-bold text-[#1F3326]">{{ row.familyCode }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="headName" :label="$t('admin.headInfo') || '法定户主'" min-width="160" />
@@ -426,8 +426,8 @@
               </el-table-column>
               <el-table-column :label="$t('admin.regionInfo') || '所属省市与分部'" min-width="320">
                 <template #default="{ row }">
-                  <div class="text-slate-800 font-medium">{{ row.adminBranch || '供应分部' }}</div>
-                  <div class="text-[11px] text-slate-400">{{ row.address }}</div>
+                  <div class="text-[#1F3326] font-medium">{{ row.adminBranch || '供应分部' }}</div>
+                  <div class="text-[11px] text-[#8A9A8F]">{{ row.address }}</div>
                 </template>
               </el-table-column>
               <el-table-column :label="$t('admin.actions') || '操作'" width="220" fixed="right" align="center">
@@ -442,7 +442,7 @@
             </el-table>
 
             <!-- 分页 -->
-            <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
               <span>{{ $t('admin.totalRecords', { count: filteredFamilies.length }) }}</span>
               <el-pagination
                 v-model:current-page="familyPage"
@@ -462,7 +462,7 @@
         <el-tab-pane :label="$t('admin.tabAgents') || '代理网点治理管理'" name="agents">
           <div class="py-3.5 space-y-3.5">
             <!-- 检索筛选栏 -->
-            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex flex-wrap items-center justify-between gap-2.5 text-xs">
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="agentQuery.code"
@@ -533,22 +533,22 @@
             <el-table :data="paginatedAgents" v-loading="agentsLoading" border stripe style="width: 100%" size="small" class="text-xs">
               <el-table-column prop="code" :label="$t('admin.agentCode') || '网点代号'" width="120" fixed>
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-amber-700">{{ row.code }}</span>
+                  <span class="font-mono font-bold text-[#7A5F21]">{{ row.code }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="name" :label="$t('admin.agentNameArea') || '网点名称与片区'" min-width="260">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.name }}</div>
-                  <div class="text-[11px] text-slate-400">{{ row.province }} · {{ row.district || row.address }}</div>
-                  <div v-if="row.planningConfirmed" class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-0.5">
+                  <div class="font-bold text-[#1F3326]">{{ row.name }}</div>
+                  <div class="text-[11px] text-[#8A9A8F]">{{ row.province }} · {{ row.district || row.address }}</div>
+                  <div v-if="row.planningConfirmed" class="text-[10px] text-[#2F7A50] font-bold flex items-center gap-0.5 mt-0.5">
                     <el-icon><Check /></el-icon> 规划跟进司已完成联合调查确认
                   </div>
                 </template>
               </el-table-column>
               <el-table-column :label="$t('admin.manager') || '负责人'" min-width="160">
                 <template #default="{ row }">
-                  <div class="font-medium text-slate-700">{{ row.manager }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.phone }}</div>
+                  <div class="font-medium text-[#43554B]">{{ row.manager }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.phone }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="status" :label="$t('admin.opStatus') || '运营状态'" width="110" align="center">
@@ -562,13 +562,13 @@
               <el-table-column :label="$t('admin.servedHouseholdsCap') || '服务户数 / 法定承载'" min-width="180" align="center">
                 <template #default="{ row }">
                   <div class="space-y-0.5">
-                    <span class="font-mono font-bold" :class="row.servedHouseholds > 1500 ? 'text-rose-600' : 'text-slate-700'">
+                    <span class="font-mono font-bold" :class="row.servedHouseholds > 1500 ? 'text-[#C04442]' : 'text-[#43554B]'">
                       {{ row.servedHouseholds }} 户
                     </span>
-                    <div v-if="row.servedHouseholds > 1500" class="text-[10px] text-rose-600 font-bold">
+                    <div v-if="row.servedHouseholds > 1500" class="text-[10px] text-[#C04442] font-bold">
                       ⚠ 超1500户红线 (部长待拆分)
                     </div>
-                    <div v-else-if="row.servedHouseholds <= 750" class="text-[10px] text-amber-600 font-medium">
+                    <div v-else-if="row.servedHouseholds <= 750" class="text-[10px] text-[#C9A13B] font-medium">
                       ● ≤750户小型 (允许合并)
                     </div>
                   </div>
@@ -667,7 +667,7 @@
             </el-table>
 
             <!-- 分页 -->
-            <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
               <span>{{ $t('admin.totalRecords', { count: filteredAgents.length }) }}</span>
               <el-pagination
                 v-model:current-page="agentPage"
@@ -687,7 +687,7 @@
         <el-tab-pane :label="$t('admin.tabWarehouse') || '仓储中心管理'" name="warehouses">
           <div class="py-3.5 space-y-3.5">
             <!-- 检索筛选栏 -->
-            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex flex-wrap items-center justify-between gap-2.5 text-xs">
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="warehouseQuery.keyword"
@@ -731,13 +731,13 @@
             <el-table :data="paginatedWarehouses" v-loading="warehousesLoading" border stripe style="width: 100%" size="small" class="text-xs">
               <el-table-column prop="code" :label="$t('admin.warehouseCode') || '仓库编号'" width="130" fixed>
                 <template #default="{ row }">
-                  <span class="font-mono font-bold text-teal-700">{{ row.code }}</span>
+                  <span class="font-mono font-bold text-[#2F5B44]">{{ row.code }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="name" :label="$t('admin.warehouseName') || '储备仓库名称'" min-width="260">
                 <template #default="{ row }">
-                  <div class="font-bold text-slate-800">{{ row.name }}</div>
-                  <div class="text-[11px] text-slate-400">{{ row.province }} · {{ row.center }}</div>
+                  <div class="font-bold text-[#1F3326]">{{ row.name }}</div>
+                  <div class="text-[11px] text-[#8A9A8F]">{{ row.province }} · {{ row.center }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="type" :label="$t('admin.warehouseType') || '仓库功能类型'" width="130" align="center">
@@ -751,13 +751,13 @@
                 <template #default="{ row }">
                   <div class="space-y-0.5 text-xs">
                     <div class="flex justify-between font-mono">
-                      <span class="text-slate-400">核定: {{ (row.capacity || 0).toLocaleString() }} 吨</span>
-                      <span class="font-bold text-slate-800">在库: {{ (row.currentStock || 0).toLocaleString() }} 吨</span>
+                      <span class="text-[#8A9A8F]">核定: {{ (row.capacity || 0).toLocaleString() }} 吨</span>
+                      <span class="font-bold text-[#1F3326]">在库: {{ (row.currentStock || 0).toLocaleString() }} 吨</span>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div class="w-full bg-[#E9F1EB] rounded-full h-1.5 overflow-hidden">
                       <div
                         class="h-1.5 rounded-full"
-                        :class="Math.round((row.currentStock / (row.capacity || 1)) * 100) > 90 ? 'bg-amber-500' : 'bg-emerald-500'"
+                        :class="Math.round((row.currentStock / (row.capacity || 1)) * 100) > 90 ? 'bg-[#D3AF62]' : 'bg-[#3E9B68]'"
                         :style="{ width: `${Math.min(100, Math.round((row.currentStock / (row.capacity || 1)) * 100))}%` }"
                       ></div>
                     </div>
@@ -766,8 +766,8 @@
               </el-table-column>
               <el-table-column :label="$t('admin.manager') || '负责人'" min-width="160">
                 <template #default="{ row }">
-                  <div class="font-medium text-slate-700">{{ row.manager }}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">{{ row.phone }}</div>
+                  <div class="font-medium text-[#43554B]">{{ row.manager }}</div>
+                  <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.phone }}</div>
                 </template>
               </el-table-column>
               <el-table-column prop="status" :label="$t('admin.opStatus') || '运营状态'" width="110" align="center">
@@ -788,7 +788,7 @@
             </el-table>
 
             <!-- 分页 -->
-            <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
               <span>共 {{ filteredWarehouses.length }} 处储备仓库</span>
               <el-pagination
                 v-model:current-page="warehousePage"
@@ -841,17 +841,17 @@
     <!-- 3.1 拆分大型代理权对话框 (配给中心部长) -->
     <el-dialog v-model="splitDialogVisible" title="【配给中心部长】拆分大型代理权执行令" width="540px" align-center destroy-on-close>
       <div class="space-y-3 text-xs">
-        <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 leading-relaxed">
+        <div class="p-3 bg-[#FBEAE9] border border-[#F2D5D4] rounded-lg text-[#6E2F2E] leading-relaxed">
           <strong>法定红线依据</strong>：依据单店 1,500 户容量红线，网点<strong>【{{ activeSplitAgent?.name }}】</strong>当前签约户数已达 <strong>{{ activeSplitAgent?.servedHouseholds }} 户</strong>，超出法定承载力。
         </div>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+        <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] space-y-1.5">
           <div class="flex justify-between">
-            <span class="text-slate-500">拆分方案：</span>
-            <span class="font-bold text-slate-800">一分为二 (拆分设立第一网点 / 第二网点)</span>
+            <span class="text-[#58685D]">拆分方案：</span>
+            <span class="font-bold text-[#1F3326]">一分为二 (拆分设立第一网点 / 第二网点)</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">拆分后各网点户数：</span>
-            <span class="font-mono font-bold text-emerald-600">约 {{ Math.floor((activeSplitAgent?.servedHouseholds || 1800) / 2) }} 户 / 店</span>
+            <span class="text-[#58685D]">拆分后各网点户数：</span>
+            <span class="font-mono font-bold text-[#2F7A50]">约 {{ Math.floor((activeSplitAgent?.servedHouseholds || 1800) / 2) }} 户 / 店</span>
           </div>
         </div>
       </div>
@@ -918,32 +918,32 @@
     >
       <div v-if="selectedCardForFreeze" class="space-y-3.5 text-xs">
         <!-- 顶部家庭基础卡片信息提示 -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] flex flex-wrap items-center justify-between gap-2.5">
           <div>
-            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <div class="font-bold text-[#1F3326] text-sm flex items-center gap-2">
               <span>{{ formatHeadName(selectedCardForFreeze.headName) }}</span>
-              <span class="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-bold">{{ selectedCardForFreeze.cardNo }}</span>
+              <span class="text-xs font-mono text-[#326445] bg-[#EFF5F1] px-2 py-0.5 rounded border border-[#C7DED0] font-bold">{{ selectedCardForFreeze.cardNo }}</span>
             </div>
-            <div class="text-[11px] text-slate-500 mt-1">
+            <div class="text-[11px] text-[#58685D] mt-1">
               {{ $t('admin.regionInfo') || '辖区分部' }}: {{ formatDistrict(selectedCardForFreeze.district) }} · {{ formatProvince(selectedCardForFreeze.province) }}
             </div>
           </div>
           <div class="text-right">
-            <span class="text-[10px] text-slate-400 block">{{ $t('admin.currentMembersCount') || '在册成员总数' }}</span>
-            <span class="font-bold font-mono text-emerald-700 text-sm">{{ getFreezeTargetMembers().length }} {{ $t('admin.personUnit') || '人' }}</span>
+            <span class="text-[10px] text-[#8A9A8F] block">{{ $t('admin.currentMembersCount') || '在册成员总数' }}</span>
+            <span class="font-bold font-mono text-[#2F5B44] text-sm">{{ getFreezeTargetMembers().length }} {{ $t('admin.personUnit') || '人' }}</span>
           </div>
         </div>
 
-        <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
-          <el-icon class="text-amber-600 text-sm shrink-0"><InfoFilled /></el-icon>
+        <div class="p-2.5 bg-[#FDF3E0] rounded-lg border border-[#F2E3C6] text-[#6B5321] text-[11px] flex items-center gap-2">
+          <el-icon class="text-[#C9A13B] text-sm shrink-0"><InfoFilled /></el-icon>
           <span>{{ $t('admin.freezeDialogTip') || '依据第140号行政法令与保供合规规程，您可以选择特定家庭成员冻结其配给资格或解除冻结。冻结后，公民移动端视口将实时同步呈现。' }}</span>
         </div>
 
         <!-- 家庭成员明细列表 -->
         <div>
-          <div class="font-bold text-slate-800 mb-2 flex items-center justify-between">
+          <div class="font-bold text-[#1F3326] mb-2 flex items-center justify-between">
             <span>{{ $t('admin.familyMembersList') || '家庭成员清单及状态' }}</span>
-            <span class="text-[11px] font-normal text-slate-500">{{ $t('admin.selectMemberHint') || '请点击对应成员进行状态管控' }}</span>
+            <span class="text-[11px] font-normal text-[#58685D]">{{ $t('admin.selectMemberHint') || '请点击对应成员进行状态管控' }}</span>
           </div>
 
           <el-table
@@ -967,7 +967,7 @@
             </el-table-column>
             <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="130">
               <template #default="{ row }">
-                <span class="font-bold text-slate-800">{{ formatMemberName(row.name) }}</span>
+                <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
                 <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left ml-1">
                   {{ $t('citizenCard.headTag') || '户主' }}
                 </el-tag>
@@ -987,10 +987,10 @@
             </el-table-column>
             <el-table-column :label="$t('admin.freezeReasonCol') || '冻结原因 / 经办说明'" min-width="140">
               <template #default="{ row }">
-                <span v-if="row.status === '已冻结' || row.status === 'Frozen'" class="text-rose-600 font-medium bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                <span v-if="row.status === '已冻结' || row.status === 'Frozen'" class="text-[#C04442] font-medium bg-[#FBEAE9] px-1.5 py-0.5 rounded border border-[#F2D5D4]">
                   {{ formatFreezeReason(row.freezeReason) }}
                 </span>
-                <span v-else class="text-slate-400">—</span>
+                <span v-else class="text-[#8A9A8F]">—</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('admin.actions') || '操作'" width="90" align="center" fixed="right">
@@ -1020,19 +1020,19 @@
         </div>
 
         <!-- 冻结原因选择配置区 (当选中的成员处于正常状态时展开) -->
-        <div v-if="selectedMemberToFreeze && (selectedMemberToFreeze.status === '正常' || selectedMemberToFreeze.status === 'Active')" class="p-3.5 bg-rose-50/50 rounded-xl border border-rose-200 space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-rose-100">
-            <span class="font-bold text-rose-900 text-xs flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+        <div v-if="selectedMemberToFreeze && (selectedMemberToFreeze.status === '正常' || selectedMemberToFreeze.status === 'Active')" class="p-3.5 bg-[#FBEAE9]/50 rounded-lg border border-[#F2D5D4] space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[#F7E3E2]">
+            <span class="font-bold text-[#6E2F2E] text-xs flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#C04442]"></span>
               {{ $t('admin.freezeConfigTitle') || '冻结原因配置' }}: {{ formatMemberName(selectedMemberToFreeze.name) }} ({{ formatMemberRelation(selectedMemberToFreeze.relation) }})
             </span>
-            <span class="text-[11px] text-slate-500 font-mono">{{ selectedMemberToFreeze.nationalId }}</span>
+            <span class="text-[11px] text-[#58685D] font-mono">{{ selectedMemberToFreeze.nationalId }}</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-semibold text-slate-700 mb-1">
-                {{ $t('admin.selectFreezeReason') || '官方冻结原因 (参考解冻法定分类)' }} <span class="text-rose-500">*</span>
+              <label class="block text-[11px] font-semibold text-[#43554B] mb-1">
+                {{ $t('admin.selectFreezeReason') || '官方冻结原因 (参考解冻法定分类)' }} <span class="text-[#C04442]">*</span>
               </label>
               <el-select v-model="freezeForm.reasonType" class="w-full" size="small">
                 <el-option :label="$t('unfreeze.caseCommercial') || '商业 (拥有商业注册/执照)'" value="commercial" />
@@ -1047,7 +1047,7 @@
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label class="block text-[11px] font-semibold text-[#43554B] mb-1">
                 {{ $t('admin.freezeNotes') || '经办行政公文备注 (可选)' }}
               </label>
               <el-input
@@ -1059,9 +1059,9 @@
           </div>
         </div>
 
-        <div v-else-if="selectedMemberToFreeze" class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
+        <div v-else-if="selectedMemberToFreeze" class="p-3 bg-[#EFF5F1] rounded-lg border border-[#C7E0CE] text-xs text-[#24483A] flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <el-icon class="text-emerald-600"><CircleCheckFilled /></el-icon>
+            <el-icon class="text-[#2F7A50]"><CircleCheckFilled /></el-icon>
             <span>{{ $t('admin.memberCurrentlyFrozen', { name: formatMemberName(selectedMemberToFreeze.name), reason: formatFreezeReason(selectedMemberToFreeze.freezeReason) }) }}</span>
           </div>
           <el-button type="success" size="small" :loading="freezeLoading" @click="handleDirectUnfreeze(selectedMemberToFreeze)">
@@ -1072,7 +1072,7 @@
 
       <template #footer>
         <div class="flex items-center justify-between">
-          <div class="text-[11px] text-slate-400">
+          <div class="text-[11px] text-[#8A9A8F]">
             {{ $t('admin.freezeAuditNotice') || '操作将记录于贸易部审计日志并实时推送至公民移动端' }}
           </div>
           <div class="flex items-center gap-2">
@@ -1094,9 +1094,9 @@
     <!-- 3.5 家庭成员明细抽屉 (与公民端 Family Members 保持一致) -->
     <el-dialog v-model="membersDialogVisible" :title="$t('admin.familyMembersDetail') || '家庭在册成员存根档案'" width="650px" align-center destroy-on-close>
       <div v-if="selectedFamilyForMembers" class="space-y-3 text-xs">
-        <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-          <div>{{ $t('admin.familyCode') || '户籍编号' }}：<span class="font-mono font-bold text-slate-800">{{ selectedFamilyForMembers.familyCode }}</span></div>
-          <div>{{ $t('admin.headInfo') || '法定户主' }}：<span class="font-bold text-blue-600">{{ formatHeadName(selectedFamilyForMembers.headName) }}</span></div>
+        <div class="flex items-center justify-between bg-[#F3F8F4] p-2.5 rounded-lg border border-[#E9F1EB]">
+          <div>{{ $t('admin.familyCode') || '户籍编号' }}：<span class="font-mono font-bold text-[#1F3326]">{{ selectedFamilyForMembers.familyCode }}</span></div>
+          <div>{{ $t('admin.headInfo') || '法定户主' }}：<span class="font-bold text-[#326445]">{{ formatHeadName(selectedFamilyForMembers.headName) }}</span></div>
         </div>
         <el-table :data="selectedFamilyForMembers.members || []" border stripe size="small">
           <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="140" />
@@ -1901,10 +1901,10 @@ async function loadWarehouses() {
 // 头部角色动态标识计算属性
 // ----------------------------------------------------
 const roleBadgeClasses = computed(() => {
-  if (authStore.isMinisterCenter) return 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30';
-  if (authStore.isDeputyMinister) return 'bg-rose-500/20 text-rose-300 border-rose-400/30';
-  if (authStore.isDirectorPlanning) return 'bg-amber-500/20 text-amber-300 border-amber-400/30';
-  return 'bg-purple-500/20 text-purple-300 border-purple-400/30';
+  if (authStore.isMinisterCenter) return 'bg-[#5C8A6B]/20 text-[#AECBB8] border-[#7FA48C]/30';
+  if (authStore.isDeputyMinister) return 'bg-[#C04442]/20 text-[#E8B7B5] border-[#D0827F]/30';
+  if (authStore.isDirectorPlanning) return 'bg-[#D3AF62]/20 text-[#E5CEA1] border-[#DFC08B]/30';
+  return 'bg-[#D3AF62]/20 text-[#E5CEA1] border-[#DFC08B]/30';
 });
 
 const currentRoleBadgeText = computed(() => {
@@ -2491,58 +2491,58 @@ onUnmounted(() => {
  * ======================================================== */
 :deep(.custom-admin-tabs .el-tabs__item) {
   font-weight: 600;
-  color: #4a5c53;
+  color: #58685D;
   transition: all 0.2s ease;
 }
 
 :deep(.custom-admin-tabs .el-tabs__item:hover) {
-  color: #1fa35e;
+  color: #3E8A5E;
 }
 
 :deep(.custom-admin-tabs .el-tabs__item.is-active) {
-  color: #007a3d !important;
+  color: #326445 !important;
   font-weight: 800;
 }
 
 :deep(.custom-admin-tabs .el-tabs__active-bar) {
-  background-color: #007a3d !important;
+  background-color: #326445 !important;
   height: 3px;
   border-radius: 9999px;
 }
 
 :deep(.custom-admin-tabs .el-tabs__nav-wrap::after) {
-  background-color: #e2ede6;
+  background-color: #E9F1EB;
   height: 1px;
 }
 
 /* 单选切换胶囊 (Radio Group) */
 :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background-color: #007a3d !important;
-  border-color: #007a3d !important;
-  box-shadow: -1px 0 0 0 #007a3d !important;
+  background-color: #326445 !important;
+  border-color: #326445 !important;
+  box-shadow: -1px 0 0 0 #326445 !important;
   color: #ffffff !important;
   font-weight: 700;
 }
 
 :deep(.el-radio-button__inner:hover) {
-  color: #007a3d;
+  color: #326445;
 }
 
 /* 表格头部与边框 */
 :deep(.el-table th.el-table__cell) {
-  background-color: #f7faf8 !important;
-  color: #1a2e26 !important;
+  background-color: #F3F9F5 !important;
+  color: #1F3326 !important;
   font-weight: 700;
-  border-bottom: 1px solid #dce8e1 !important;
+  border-bottom: 1px solid #D9E5DB !important;
 }
 
 /* 分页激活态 */
 :deep(.el-pagination.is-background .el-pager li.is-active) {
-  background-color: #007a3d !important;
+  background-color: #326445 !important;
   color: #ffffff !important;
 }
 
 :deep(.el-pagination.is-background .el-pager li:hover) {
-  color: #007a3d;
+  color: #326445;
 }
 </style>

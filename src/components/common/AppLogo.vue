@@ -7,8 +7,8 @@
     >
       <!-- 高清徽标图片容器，自适应大小并带有精致光影 -->
       <div
-        class="w-full h-full rounded-full flex items-center justify-center overflow-hidden bg-white/95 shadow-xs border border-[#C59D5F]/30"
-        :class="isDark ? 'ring-1 ring-[#C59D5F]/40' : 'ring-1 ring-slate-200/80'"
+        class="w-full h-full rounded-full flex items-center justify-center overflow-hidden bg-white/95 shadow-xs border border-[#D3AF62]/30"
+        :class="isDark ? 'ring-1 ring-[#D3AF62]/40' : 'ring-1 ring-[#D9E5DB]/80'"
       >
         <img
           src="/logo.png"
@@ -24,7 +24,7 @@
       <div class="flex items-center gap-1.5 leading-none">
         <span
           class="font-black tracking-tight"
-          :class="[titleClass, isDark ? 'text-white' : 'text-[#1E3F35]']"
+          :class="[titleClass, isDark ? 'text-white' : 'text-[#326445]']"
         >
           {{ brandTitle || 'RCM' }}
         </span>
@@ -32,7 +32,7 @@
       <div
         v-if="showSubtitle"
         class="text-[9px] font-mono tracking-widest mt-1 opacity-85"
-        :class="isDark ? 'text-[#C59D5F]' : 'text-[#8C958F]'"
+        :class="isDark ? 'text-[#D3AF62]' : 'text-[#8A9A8F]'"
       >
         {{ subtitleText || 'REPUBLIC OF IRAQ · MINISTRY OF TRADE' }}
       </div>

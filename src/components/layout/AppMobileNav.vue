@@ -2,7 +2,7 @@
   <!-- 移动端底部原生级操作模块导航栏 (永远稳固在 APP 视口的最下方) -->
   <nav
     v-if="!authStore.isMobileVerificationActive"
-    class="w-full z-50 bg-[#1E3F35]/95 backdrop-blur-md border-t border-[#295447] px-2 py-1.5 flex items-center justify-around safe-area-bottom shadow-2xl transition-all duration-300 shrink-0"
+    class="w-full z-50 bg-white border-t border-[#E5CEA1] px-2 py-1.5 flex items-center justify-around safe-area-bottom shadow-[0_-4px_20px_-2px_rgba(58,77,62,0.08)] transition-all duration-300 shrink-0"
     :class="[
       isAppMode
         ? 'rounded-b-[24px]'
@@ -16,21 +16,31 @@
       <!-- 1. 公民服务 (家庭配给卡与在册成员) -->
       <router-link
         :to="getNavTarget('/citizen')"
-        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] min-w-[70px] transition-all"
-        :class="$route.path.startsWith('/citizen') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
+        :class="$route.path.startsWith('/citizen') ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><User /></el-icon>
         <span>{{ $t('nav.citizen') || '公民服务' }}</span>
       </router-link>
 
-      <!-- 2. 配给选购 (配给购买与提货兑付) -->
+      <!-- 2. 配给购买 (配给购买与提货兑付) -->
       <router-link
         :to="getNavTarget('/warehouse')"
-        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] min-w-[70px] transition-all"
-        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><ShoppingCart /></el-icon>
-        <span>{{ $t('citizenPurchase.moduleTitle') || '配给选购' }}</span>
+        <span>{{ $t('citizenPurchase.moduleTitle') || '配给购买' }}</span>
+      </router-link>
+
+      <!-- 3. 家庭代理 (本人家庭签约代理与月度物资配送额度) -->
+      <router-link
+        :to="getNavTarget('/family-agent')"
+        class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
+        :class="$route.path === '/family-agent' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+      >
+        <el-icon :size="20"><House /></el-icon>
+        <span>{{ $t('warehouse.familyAgent') || '家庭代理' }}</span>
       </router-link>
     </template>
 
@@ -41,8 +51,8 @@
       <!-- 1. 现场核销 (扫码核销作业看板) -->
       <router-link
         :to="getNavTarget('/dashboard')"
-        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
-        :class="$route.path === '/dashboard' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/dashboard' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><FullScreen /></el-icon>
         <span>{{ $t('nav.agentScanVerify') || '现场核销' }}</span>
@@ -51,21 +61,31 @@
       <!-- 2. 配给配送 (物资排程与计划) -->
       <router-link
         :to="getNavTarget('/warehouse')"
-        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
-        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><Van /></el-icon>
         <span>{{ $t('nav.agentDistribution') || '配给配送' }}</span>
       </router-link>
 
-      <!-- 3. 网点档案 (签约家庭与资质档案) -->
+      <!-- 3. 代理订单记录 (拆分后的代理端独立大模块：集中采购订货流水) -->
       <router-link
-        :to="getNavTarget('/agent')"
-        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[10px] min-w-[64px] transition-all"
-        :class="$route.path === '/agent' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        :to="getNavTarget('/agent-orders')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/agent-orders' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
-        <el-icon :size="20"><Shop /></el-icon>
-        <span>{{ $t('nav.agentProfile') || '网点档案' }}</span>
+        <el-icon :size="20"><Tickets /></el-icon>
+        <span>{{ $t('agent.tabAgentOrders') || '代理订单' }}</span>
+      </router-link>
+
+      <!-- 4. 代理订单统计分析 (拆分后的代理端独立大模块：订单分析图表) -->
+      <router-link
+        :to="getNavTarget('/agent-analytics')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/agent-analytics' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+      >
+        <el-icon :size="20"><DataAnalysis /></el-icon>
+        <span>{{ $t('agent.tabOrderAnalytics') || '库存台账' }}</span>
       </router-link>
     </template>
 
@@ -76,8 +96,8 @@
       <!-- 1. 看板 -->
       <router-link
         :to="getNavTarget('/dashboard')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/dashboard' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/dashboard' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><DataAnalysis /></el-icon>
         <span>{{ $t('nav.dashboard') }}</span>
@@ -86,19 +106,19 @@
       <!-- 2. 审核 -->
       <router-link
         :to="getNavTarget('/review')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] relative transition-all"
-        :class="$route.path === '/review' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] relative transition-all"
+        :class="$route.path === '/review' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><Stamp /></el-icon>
         <span>{{ $t('nav.review') }}</span>
-        <span v-if="pendingReviewCount > 0" class="absolute top-0.5 right-1.5 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
+        <span v-if="pendingReviewCount > 0" class="absolute top-0.5 right-1.5 w-3.5 h-3.5 rounded-full bg-[#C04442] text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
       </router-link>
 
       <!-- 3. 配给管理 -->
       <router-link
         :to="getNavTarget('/warehouse')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/warehouse' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><Box /></el-icon>
         <span>{{ $t('nav.rationShort') || '配给' }}</span>
@@ -107,8 +127,8 @@
       <!-- 4. 代理视察 -->
       <router-link
         :to="getNavTarget('/agent')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path === '/agent' ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] transition-all"
+        :class="$route.path === '/agent' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><Shop /></el-icon>
         <span>{{ $t('nav.agent') }}</span>
@@ -117,8 +137,8 @@
       <!-- 5. 投诉管理 -->
       <router-link
         :to="getNavTarget('/complaint')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path.startsWith('/complaint') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] transition-all"
+        :class="$route.path.startsWith('/complaint') ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><Service /></el-icon>
         <span>{{ $t('nav.complaint') }}</span>
@@ -127,8 +147,8 @@
       <!-- 6. 后台管理 -->
       <router-link
         :to="getNavTarget('/admin')"
-        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl text-[10px] min-w-[46px] transition-all"
-        :class="$route.path.startsWith('/admin') ? 'text-[#C59D5F] font-bold bg-[#142B24]' : 'text-[#DFE8E3] active:scale-95'"
+        class="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg text-[10px] min-w-[46px] transition-all"
+        :class="$route.path.startsWith('/admin') ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="19"><Setting /></el-icon>
         <span>{{ $t('nav.admin') }}</span>
@@ -152,7 +172,9 @@ import {
   Service,
   ShoppingCart,
   Van,
-  FullScreen
+  FullScreen,
+  House,
+  Tickets
 } from '@element-plus/icons-vue';
 
 const route = useRoute();

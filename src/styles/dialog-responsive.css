@@ -48,22 +48,22 @@
 .demo-target-highlight {
   position: relative !important;
   z-index: 30 !important;
-  border-color: #C59D5F !important;
-  box-shadow: 0 0 0 3px rgba(197, 157, 95, 0.4), 0 0 15px rgba(197, 157, 95, 0.6) !important;
+  border-color: #D3AF62 !important;
+  box-shadow: 0 0 0 3px rgba(211, 175, 98, 0.4), 0 0 15px rgba(211, 175, 98, 0.6) !important;
   animation: demoPulseRing 1.6s infinite ease-in-out !important;
 }
 
 @keyframes demoPulseRing {
   0% {
-    box-shadow: 0 0 0 2px rgba(197, 157, 95, 0.4), 0 0 8px rgba(197, 157, 95, 0.3);
+    box-shadow: 0 0 0 2px rgba(211, 175, 98, 0.4), 0 0 8px rgba(211, 175, 98, 0.3);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(197, 157, 95, 0.7), 0 0 20px rgba(197, 157, 95, 0.8);
+    box-shadow: 0 0 0 5px rgba(211, 175, 98, 0.7), 0 0 20px rgba(211, 175, 98, 0.8);
     transform: scale(1.02);
   }
   100% {
-    box-shadow: 0 0 0 2px rgba(197, 157, 95, 0.4), 0 0 8px rgba(197, 157, 95, 0.3);
+    box-shadow: 0 0 0 2px rgba(211, 175, 98, 0.4), 0 0 8px rgba(211, 175, 98, 0.3);
     transform: scale(1);
   }
 }

@@ -13,7 +13,7 @@
       <template v-if="!currentStepConfig.isDone && targetRect">
         <!-- 1. 不可操作阻挡层：上遮罩 -->
         <div
-          class="demo-block-mask absolute bg-slate-900/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
+          class="demo-block-mask absolute bg-[#1B3123]/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
           :style="{
             top: '0px',
             left: '0px',
@@ -25,7 +25,7 @@
 
         <!-- 2. 不可操作阻挡层：下遮罩 -->
         <div
-          class="demo-block-mask absolute bg-slate-900/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
+          class="demo-block-mask absolute bg-[#1B3123]/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
           :style="{
             top: Math.min(windowHeight, targetRect.bottom) + 'px',
             left: '0px',
@@ -37,7 +37,7 @@
 
         <!-- 3. 不可操作阻挡层：左遮罩 -->
         <div
-          class="demo-block-mask absolute bg-slate-900/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
+          class="demo-block-mask absolute bg-[#1B3123]/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
           :style="{
             top: targetRect.top + 'px',
             left: '0px',
@@ -49,7 +49,7 @@
 
         <!-- 4. 不可操作阻挡层：右遮罩 -->
         <div
-          class="demo-block-mask absolute bg-slate-900/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
+          class="demo-block-mask absolute bg-[#1B3123]/35 transition-all duration-200 cursor-not-allowed pointer-events-auto"
           :style="{
             top: targetRect.top + 'px',
             left: targetRect.right + 'px',
@@ -61,10 +61,10 @@
 
         <!-- 5. 可操作镂空区域高亮线框（无拦截，pointer-events: none，鼠标可直达下层真实目标按钮） -->
         <div
-          class="absolute rounded-xl pointer-events-none transition-all duration-200"
+          class="absolute rounded-lg pointer-events-none transition-all duration-200"
           :class="[
             shakeActive ? 'animate-shake' : '',
-            'border-2 border-[#C59D5F] shadow-[0_0_0_1px_rgba(255,255,255,0.7),0_0_16px_rgba(197,157,95,0.55)] bg-[#C59D5F]/5'
+            'border-2 border-[#D3AF62] shadow-[0_0_0_1px_rgba(255,255,255,0.7),0_0_16px_rgba(211, 175, 98,0.55)] bg-[#D3AF62]/5'
           ]"
           :style="{
             top: targetRect.top + 'px',
@@ -74,20 +74,20 @@
           }"
         >
           <!-- 四角金色雷达准星装饰 -->
-          <span class="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#C59D5F]" />
-          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#C59D5F]" />
-          <span class="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#C59D5F]" />
-          <span class="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#C59D5F]" />
+          <span class="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#D3AF62]" />
+          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#D3AF62]" />
+          <span class="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#D3AF62]" />
+          <span class="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#D3AF62]" />
 
           <!-- 动态呼吸光圈 -->
-          <div class="absolute inset-0 rounded-xl animate-ping opacity-20 border-2 border-[#C59D5F]" />
+          <div class="absolute inset-0 rounded-lg animate-ping opacity-20 border-2 border-[#D3AF62]" />
         </div>
 
         <!-- 5.5 镂空区点击推进捕获层（advanceTo 配置时启用）：点击镂空区直接推进步骤，
              不依赖下层元素自身的事件绑定（如 el-table 行点击） -->
         <div
           v-if="currentStepConfig.advanceTo"
-          class="absolute rounded-xl pointer-events-auto cursor-pointer"
+          class="absolute rounded-lg pointer-events-auto cursor-pointer"
           :style="{
             top: targetRect.top + 'px',
             left: targetRect.left + 'px',
@@ -103,22 +103,22 @@
           :style="tooltipStyle"
         >
           <div
-            class="relative rounded-2xl bg-white/95 backdrop-blur-sm text-[#1E3F35] p-4 border border-[#ECE7DE] max-w-[360px] min-w-[280px]"
-            style="box-shadow: 0 12px 32px -10px rgba(30, 63, 53, 0.18), 0 0 0 1px rgba(232, 217, 191, 0.5);"
+            class="relative rounded-lg bg-white/95 backdrop-blur-sm text-[#326445] p-4 border border-[#D9E5DB] max-w-[360px] min-w-[280px]"
+            style="box-shadow: 0 12px 32px -10px rgba(50, 100, 69, 0.18), 0 0 0 1px rgba(232, 217, 191, 0.5);"
           >
             <!-- 顶部状态栏：步骤标号 + 退出按钮 -->
-            <div class="flex items-center justify-between pb-2.5 border-b border-[#F4EFE6] gap-2">
+            <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB] gap-2">
               <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FAF5ED] text-[#B88B4A] border border-[#E8D9BF] tracking-wide">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FDF3E0] text-[#B8934A] border border-[#E5CEA1] tracking-wide">
                   {{ currentStepConfig.badge }}
                 </span>
-                <span class="text-xs font-bold text-[#1E3F35] tracking-tight">
+                <span class="text-xs font-bold text-[#326445] tracking-tight">
                   {{ currentStepConfig.title }}
                 </span>
               </div>
               <button
                 type="button"
-                class="text-[11px] text-[#8C958F] hover:text-[#1E3F35] px-2 py-0.5 rounded-lg border border-[#ECE7DE] hover:bg-[#F8F7F3] cursor-pointer transition-colors shrink-0"
+                class="text-[11px] text-[#8A9A8F] hover:text-[#326445] px-2 py-0.5 rounded-lg border border-[#D9E5DB] hover:bg-[#F8FBF8] cursor-pointer transition-colors shrink-0"
                 :title="t('demo.exitTitle')"
                 @click="handleExitDemo"
               >
@@ -128,10 +128,10 @@
 
             <!-- 说明主体内容 -->
             <div class="py-2.5 flex items-start gap-2.5">
-              <div class="w-7 h-7 rounded-lg bg-[#FAF5ED] border border-[#E8D9BF] text-[#B88B4A] flex items-center justify-center shrink-0 text-sm animate-bounce">
+              <div class="w-7 h-7 rounded-lg bg-[#FDF3E0] border border-[#E5CEA1] text-[#B8934A] flex items-center justify-center shrink-0 text-sm animate-bounce">
                 👉
               </div>
-              <div class="text-xs sm:text-[13px] text-[#3E4B45] font-medium leading-relaxed">
+              <div class="text-xs sm:text-[13px] text-[#43554B] font-medium leading-relaxed">
                 {{ currentStepConfig.desc }}
               </div>
             </div>
@@ -139,16 +139,16 @@
             <!-- 点击非高亮区域的拦截警告信息 -->
             <div
               v-if="showBlockTip"
-              class="mt-1 p-2 rounded-lg bg-[#FAF5ED] border border-[#E8D9BF] text-[11px] text-[#966C2E] flex items-center gap-1.5"
+              class="mt-1 p-2 rounded-lg bg-[#FDF3E0] border border-[#E5CEA1] text-[11px] text-[#7A5F21] flex items-center gap-1.5"
             >
               <span>⚠️</span>
               <span>{{ t('demo.blockTip') }}</span>
             </div>
 
             <!-- 底部指引角标 -->
-            <div class="pt-2 border-t border-[#F4EFE6] flex items-center justify-between text-[10px] text-[#8C958F]">
+            <div class="pt-2 border-t border-[#E9F1EB] flex items-center justify-between text-[10px] text-[#8A9A8F]">
               <span class="flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span class="w-1.5 h-1.5 rounded-full bg-[#3E9B68] animate-ping" />
                 <span>{{ t('demo.footerActive') }}</span>
               </span>
               <span>{{ t('demo.footerHint') }}</span>
@@ -162,11 +162,11 @@
       <!-- ======================================================== -->
       <template v-else-if="!currentStepConfig.isDone && !targetRect">
         <div
-          class="absolute inset-0 bg-slate-900/30 flex items-center justify-center pointer-events-auto cursor-wait"
+          class="absolute inset-0 bg-[#1B3123]/30 flex items-center justify-center pointer-events-auto cursor-wait"
         >
-          <div class="p-4 rounded-2xl bg-white/95 text-[#1E3F35] border border-[#E8D9BF] shadow-lg flex items-center gap-3">
-            <div class="w-5 h-5 border-2 border-[#C59D5F] border-t-transparent rounded-full animate-spin" />
-            <span class="text-xs font-medium text-[#3E4B45]">{{ t('demo.locating') }}</span>
+          <div class="p-4 rounded-lg bg-white/95 text-[#326445] border border-[#E5CEA1] shadow-lg flex items-center gap-3">
+            <div class="w-5 h-5 border-2 border-[#D3AF62] border-t-transparent rounded-full animate-spin" />
+            <span class="text-xs font-medium text-[#43554B]">{{ t('demo.locating') }}</span>
           </div>
         </div>
       </template>
@@ -175,47 +175,47 @@
       <!-- 场景 C：阶段完成（居中展示成就卡片，引导演示用户） -->
       <!-- ======================================================== -->
       <template v-else-if="currentStepConfig.isDone">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center p-4 pointer-events-auto">
+        <div class="absolute inset-0 bg-[#1B3123]/40 backdrop-blur-[1px] flex items-center justify-center p-4 pointer-events-auto">
           <div
-            class="w-full max-w-lg rounded-3xl bg-[#FCFBF9] text-[#1E3F35] p-6 sm:p-8 border-2 border-[#E8D9BF] space-y-5 animate-scaleUp"
-            style="box-shadow: 0 25px 60px -12px rgba(30, 63, 53, 0.25), 0 0 0 1px rgba(232, 217, 191, 0.6);"
+            class="w-full max-w-lg rounded-3xl bg-[#F3F9F5] text-[#326445] p-6 sm:p-8 border-2 border-[#E5CEA1] space-y-5 animate-scaleUp"
+            style="box-shadow: 0 25px 60px -12px rgba(50, 100, 69, 0.25), 0 0 0 1px rgba(232, 217, 191, 0.6);"
           >
             <!-- 头部成就徽章 -->
-            <div class="flex items-center gap-3 pb-4 border-b border-[#F4EFE6]">
-              <div class="w-12 h-12 rounded-2xl bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center font-black text-2xl shadow-md shrink-0">
+            <div class="flex items-center gap-3 pb-4 border-b border-[#E9F1EB]">
+              <div class="w-12 h-12 rounded-lg bg-[#326445] text-[#D3AF62] flex items-center justify-center font-black text-2xl shadow-md shrink-0">
                 ✓
               </div>
               <div>
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#FAF5ED] text-[#B88B4A] border border-[#E8D9BF]">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-[#FDF3E0] text-[#B8934A] border border-[#E5CEA1]">
                   {{ doneTexts.badge }}
                 </span>
-                <h3 class="text-base sm:text-lg font-bold text-[#1E3F35] mt-1">
+                <h3 class="text-base sm:text-lg font-bold text-[#326445] mt-1">
                   🎉 {{ doneTexts.title }}
                 </h3>
               </div>
             </div>
 
             <!-- 详细正文介绍 -->
-            <div class="space-y-3 text-xs sm:text-sm text-[#3E4B45] leading-relaxed">
+            <div class="space-y-3 text-xs sm:text-sm text-[#43554B] leading-relaxed">
               <p>{{ doneTexts.body }}</p>
-              <div class="p-3 rounded-xl bg-[#F8F7F3] border border-[#ECE7DE] flex items-center gap-2.5 text-xs text-[#5E6862]">
+              <div class="p-3 rounded-lg bg-[#F8FBF8] border border-[#D9E5DB] flex items-center gap-2.5 text-xs text-[#58685D]">
                 <span class="text-lg">📱</span>
                 <span>{{ doneTexts.note }}</span>
               </div>
             </div>
 
             <!-- 操作选项按钮组 -->
-            <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 border-t border-[#F4EFE6]">
+            <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 border-t border-[#E9F1EB]">
               <button
                 type="button"
-                class="px-4 py-2.5 rounded-xl border border-[#ECE7DE] hover:bg-[#F8F7F3] text-[#1E3F35] text-xs font-semibold cursor-pointer transition-colors"
+                class="px-4 py-2.5 rounded-lg border border-[#D9E5DB] hover:bg-[#F8FBF8] text-[#326445] text-xs font-semibold cursor-pointer transition-colors"
                 @click="handleStayAndExplore"
               >
                 {{ doneTexts.btnExplore }}
               </button>
               <button
                 type="button"
-                class="px-5 py-2.5 rounded-xl bg-[#1E3F35] hover:bg-[#2A5347] text-white text-xs font-bold shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                class="px-5 py-2.5 rounded-lg bg-[#326445] hover:bg-[#2F5B44] text-white text-xs font-bold shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                 @click="handleEnterNextStage()"
               >
                 <span>{{ doneTexts.btnNext }}</span>

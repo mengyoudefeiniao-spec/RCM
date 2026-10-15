@@ -18,101 +18,101 @@
         class="lg:col-span-5 space-y-3.5"
         :class="{ 'hidden lg:block': mobileViewMode !== 'HIERARCHY' && isMobile }"
       >
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
+        <div class="bg-white rounded-lg p-4 border border-[#D9E5DB]/90 shadow-2xs space-y-3">
           <!-- 联动列表标题与快速重置 -->
-          <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 text-xs">
-            <div class="flex items-center gap-2 font-bold text-slate-800">
-              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB] text-xs">
+            <div class="flex items-center gap-2 font-bold text-[#1F3326]">
+              <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
               <span>{{ isEn ? 'Three-Level Agent Architecture Linkage List' : '三级代理架构联动列表' }}</span>
             </div>
-            <span class="text-[11px] text-slate-400 font-mono">{{ isEn ? 'Province → District → Street Penetration' : '省 → 区 → 街 逐级穿透' }}</span>
+            <span class="text-[11px] text-[#8A9A8F] font-mono">{{ isEn ? 'Province → District → Street Penetration' : '省 → 区 → 街 逐级穿透' }}</span>
           </div>
 
           <!-- 3级联动选择面板 -->
           <div v-loading="loadingHierarchy" class="space-y-3 text-xs">
             <!-- 1. 第一级：省级代理列表 -->
             <div class="space-y-1.5">
-              <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
+              <div class="text-[11px] font-bold text-[#58685D] flex items-center justify-between">
                 <span>{{ isEn ? '① Provincial Agent (Macro Monitoring & Approval)' : '① 省级代理 (宏观监控审批)' }}</span>
-                <span class="font-mono text-indigo-600 text-[10px]">{{ isEn ? '1 Provincial Governor' : '1 个省管总督' }}</span>
+                <span class="font-mono text-[#326445] text-[10px]">{{ isEn ? '1 Provincial Governor' : '1 个省管总督' }}</span>
               </div>
               <div
                 v-for="prov in hierarchyTree"
                 :key="prov.id"
-                class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between"
+                class="p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between"
                 :class="selectedLevel === 'PROVINCE' && selectedProvId === prov.id
-                  ? 'bg-indigo-50 border-indigo-500 shadow-2xs ring-1 ring-indigo-400'
-                  : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100/70'"
+                  ? 'bg-[#EFF5F1] border-[#5C8A6B] shadow-2xs ring-1 ring-[#7FA48C]'
+                  : 'bg-[#F3F8F4]/80 border-[#D9E5DB] hover:bg-[#E9F1EB]/70'"
                 @click="onSelectProvince(prov)"
               >
                 <div class="flex items-center gap-2">
                   <el-tag size="small" type="primary" effect="dark" class="font-bold scale-90">{{ isEn ? 'Prov.' : '省级' }}</el-tag>
                   <div>
-                    <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                    <div class="font-bold text-[#1B3123] flex items-center gap-1.5">
                       <span>{{ prov.name }}</span>
                       <el-tag v-if="prov.isSelf" size="small" type="warning" effect="plain" class="scale-75 font-bold">{{ isEn ? 'Me' : '我' }}</el-tag>
                     </div>
-                    <div class="text-[10px] text-slate-400">{{ prov.province }} · {{ isEn ? `${prov.totalDistricts} districts` : `辖区 ${prov.totalDistricts} 区` }}</div>
+                    <div class="text-[10px] text-[#8A9A8F]">{{ prov.province }} · {{ isEn ? `${prov.totalDistricts} districts` : `辖区 ${prov.totalDistricts} 区` }}</div>
                   </div>
                 </div>
                 <div class="text-right font-mono">
-                  <div class="font-bold text-indigo-700">{{ isEn ? `${prov.totalHouseholdsServed} HH` : `${prov.totalHouseholdsServed} 户` }}</div>
-                  <div class="text-[10px] text-slate-400">{{ isEn ? `Load ${prov.overallSaturationRate}%` : `负荷率 ${prov.overallSaturationRate}%` }}</div>
+                  <div class="font-bold text-[#2A5440]">{{ isEn ? `${prov.totalHouseholdsServed} HH` : `${prov.totalHouseholdsServed} 户` }}</div>
+                  <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `Load ${prov.overallSaturationRate}%` : `负荷率 ${prov.overallSaturationRate}%` }}</div>
                 </div>
               </div>
             </div>
 
             <!-- 2. 第二级：区域代理列表 (根据选中的省联动) -->
-            <div class="space-y-1.5 pt-1 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
+            <div class="space-y-1.5 pt-1 border-t border-[#E9F1EB]">
+              <div class="text-[11px] font-bold text-[#58685D] flex items-center justify-between">
                 <span>{{ isEn ? '② Regional Agent (Multi-Center Coordination)' : '② 区域代理 (多中心协调调度)' }}</span>
-                <span class="font-mono text-blue-600 text-[10px]">{{ isEn ? `${currentDistrictsList.length} regions` : `下辖 ${currentDistrictsList.length} 个区域` }}</span>
+                <span class="font-mono text-[#326445] text-[10px]">{{ isEn ? `${currentDistrictsList.length} regions` : `下辖 ${currentDistrictsList.length} 个区域` }}</span>
               </div>
               <div class="space-y-1.5">
                 <div
                   v-for="dist in currentDistrictsList"
                   :key="dist.id"
-                  class="p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-between"
+                  class="p-2 rounded-lg border transition-all cursor-pointer flex items-center justify-between"
                   :class="selectedLevel === 'DISTRICT' && selectedDistrictId === dist.id
-                    ? 'bg-blue-50 border-blue-500 shadow-2xs ring-1 ring-blue-400'
-                    : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100/70'"
+                    ? 'bg-[#EFF5F1] border-[#5C8A6B] shadow-2xs ring-1 ring-[#7FA48C]'
+                    : 'bg-[#F3F8F4]/70 border-[#D9E5DB] hover:bg-[#E9F1EB]/70'"
                   @click="onSelectDistrict(dist)"
                 >
                   <div class="flex items-center gap-2">
                     <el-tag size="small" type="info" effect="plain" class="scale-90 font-bold">{{ isEn ? 'Reg.' : '区级' }}</el-tag>
                     <div>
-                      <div class="font-bold text-slate-900">{{ dist.district }}</div>
-                      <div class="text-[10px] text-slate-400">{{ isEn ? `Manager: ${dist.name} | ${dist.children?.length} stations` : `经理: ${dist.name} | ${dist.children?.length} 个终端站` }}</div>
+                      <div class="font-bold text-[#1B3123]">{{ dist.district }}</div>
+                      <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `Manager: ${dist.name} | ${dist.children?.length} stations` : `经理: ${dist.name} | ${dist.children?.length} 个终端站` }}</div>
                     </div>
                   </div>
                   <div class="text-right font-mono">
-                    <div class="font-bold text-blue-700">{{ isEn ? `${dist.totalHouseholdsServed} HH` : `${dist.totalHouseholdsServed} 户` }}</div>
-                    <div class="text-[10px] text-slate-400">{{ isEn ? `${dist.overallSaturationRate}% Load` : `${dist.overallSaturationRate}% 负荷` }}</div>
+                    <div class="font-bold text-[#2A5440]">{{ isEn ? `${dist.totalHouseholdsServed} HH` : `${dist.totalHouseholdsServed} 户` }}</div>
+                    <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `${dist.overallSaturationRate}% Load` : `${dist.overallSaturationRate}% 负荷` }}</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- 3. 第三级：街道代理列表 (根据选中的区域联动，1500户硬上限强约束) -->
-            <div class="space-y-1.5 pt-1 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
+            <div class="space-y-1.5 pt-1 border-t border-[#E9F1EB]">
+              <div class="text-[11px] font-bold text-[#58685D] flex items-center justify-between">
                 <span>{{ isEn ? '③ Street Agents (Terminal Stores · 1,500-Household Ceiling)' : '③ 街道代理 (终端服务门店 · 上限1,500户)' }}</span>
-                <span class="font-mono text-emerald-600 text-[10px]">{{ isEn ? `${currentStreetStationsList.length} stations in district` : `当前区 ${currentStreetStationsList.length} 个网点` }}</span>
+                <span class="font-mono text-[#2F7A50] text-[10px]">{{ isEn ? `${currentStreetStationsList.length} stations in district` : `当前区 ${currentStreetStationsList.length} 个网点` }}</span>
               </div>
               <div class="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
                 <div
                   v-for="st in currentStreetStationsList"
                   :key="st.id"
-                  class="p-2 rounded-xl border transition-all cursor-pointer space-y-1"
+                  class="p-2 rounded-lg border transition-all cursor-pointer space-y-1"
                   :class="selectedLevel === 'STREET' && selectedStationId === st.id
-                    ? 'bg-emerald-50 border-emerald-500 shadow-2xs ring-1 ring-emerald-400'
-                    : 'bg-slate-50/70 border-slate-200 hover:bg-slate-100/70'"
+                    ? 'bg-[#EFF5F1] border-[#3E9B68] shadow-2xs ring-1 ring-[#6FBF92]'
+                    : 'bg-[#F3F8F4]/70 border-[#D9E5DB] hover:bg-[#E9F1EB]/70'"
                   @click="onSelectStreetStation(st)"
                 >
                   <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-1.5 font-bold truncate">
                       <el-tag size="small" type="success" effect="plain" class="scale-85">{{ isEn ? 'Street' : '街道' }}</el-tag>
-                      <span class="truncate text-slate-900">{{ st.storeName }}</span>
+                      <span class="truncate text-[#1B3123]">{{ st.storeName }}</span>
                       <el-tag v-if="st.isSelf" size="small" type="warning" effect="dark" class="scale-75 origin-left">{{ isEn ? 'Mine' : '我经营' }}</el-tag>
                     </div>
 
@@ -127,8 +127,8 @@
                   </div>
 
                   <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-slate-500 truncate">{{ st.streetName }} ({{ st.name }})</span>
-                    <span class="font-mono font-bold" :class="st.lockStatus === 'SATURATED_LOCKED' ? 'text-rose-600' : 'text-slate-700'">
+                    <span class="text-[#58685D] truncate">{{ st.streetName }} ({{ st.name }})</span>
+                    <span class="font-mono font-bold" :class="st.lockStatus === 'SATURATED_LOCKED' ? 'text-[#C04442]' : 'text-[#43554B]'">
                       {{ isEn ? `${st.householdsCount} / 1,500 HH` : `${st.householdsCount} / 1,500 户` }} ({{ st.saturationRate }}%)
                     </span>
                   </div>
@@ -146,10 +146,10 @@
         </div>
 
         <!-- 当前选中代理的【法定管辖范围与业务档案卡】 (需求 2) -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2 text-xs">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-            <span class="font-bold text-slate-800 flex items-center gap-1.5">
-              <el-icon class="text-blue-600"><OfficeBuilding /></el-icon>
+        <div class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-2 text-xs">
+          <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]">
+            <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+              <el-icon class="text-[#326445]"><OfficeBuilding /></el-icon>
               <span>{{ isEn ? 'Legal Jurisdiction of Selected Agent' : '当前选中代理的法定管辖范围' }}</span>
             </span>
             <el-tag size="small" :type="currentScopeLevelTagType" effect="dark" class="font-bold">
@@ -157,27 +157,27 @@
             </el-tag>
           </div>
 
-          <div class="space-y-1.5 text-slate-600 leading-relaxed text-[11px]">
+          <div class="space-y-1.5 text-[#58685D] leading-relaxed text-[11px]">
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">{{ isEn ? 'Agent Responsible:' : '代理责任人：' }}</span>
-              <span class="font-bold text-slate-800 text-right">{{ currentScopeAgentName }} ({{ currentScopeAgentPhone }})</span>
+              <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Agent Responsible:' : '代理责任人：' }}</span>
+              <span class="font-bold text-[#1F3326] text-right">{{ currentScopeAgentName }} ({{ currentScopeAgentPhone }})</span>
             </div>
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">{{ isEn ? 'Administrative Scope:' : '管辖行政范围：' }}</span>
-              <span class="font-semibold text-blue-700 text-right">{{ currentScopeJurisdiction }}</span>
+              <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Administrative Scope:' : '管辖行政范围：' }}</span>
+              <span class="font-semibold text-[#2A5440] text-right">{{ currentScopeJurisdiction }}</span>
             </div>
             <div class="flex justify-between items-start">
-              <span class="text-slate-400 shrink-0">{{ isEn ? 'Bound Ration Center:' : '物理绑定配给中心：' }}</span>
-              <span class="text-slate-800 text-right">{{ currentScopeCenterName }}</span>
+              <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Bound Ration Center:' : '物理绑定配给中心：' }}</span>
+              <span class="text-[#1F3326] text-right">{{ currentScopeCenterName }}</span>
             </div>
-            <div class="flex justify-between items-center pt-1 border-t border-slate-200/60 font-mono">
-              <span class="text-slate-400">{{ isEn ? 'Served Households:' : '管辖服务户数：' }}</span>
-              <span class="font-bold text-base text-slate-900">
+            <div class="flex justify-between items-center pt-1 border-t border-[#D9E5DB]/60 font-mono">
+              <span class="text-[#8A9A8F]">{{ isEn ? 'Served Households:' : '管辖服务户数：' }}</span>
+              <span class="font-bold text-base text-[#1B3123]">
                 {{ currentScopeHouseholdsCount.toLocaleString() }}
-                <span class="text-[10px] text-slate-500 font-normal">/ {{ currentScopeCapacityLimit.toLocaleString() }} {{ isEn ? 'HH ceiling' : '户上限' }}</span>
+                <span class="text-[10px] text-[#58685D] font-normal">/ {{ currentScopeCapacityLimit.toLocaleString() }} {{ isEn ? 'HH ceiling' : '户上限' }}</span>
               </span>
             </div>
-            <div v-if="currentScopeIsLocked" class="p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-[10px] leading-normal font-medium">
+            <div v-if="currentScopeIsLocked" class="p-2 bg-[#FBEAE9] border border-[#F2D5D4] rounded-lg text-[#A93B39] text-[10px] leading-normal font-medium">
               ⚠️ {{ isEn ? '[V1 Grid Saturation Interception]: The 1,500-household hard ceiling has been reached and saturation-locked; new household immigration is prohibited — a regional manager must split off and establish a new agent station!' : '【V1 网格饱和拦截】：已达 1,500 户硬上限饱和锁定，禁止新户迁入，必须由区域经理分流设立新代理点！' }}
             </div>
           </div>
@@ -190,21 +190,21 @@
       <div class="lg:col-span-7 space-y-4">
         <!-- 2.1 右侧上方：当前代理管辖范围内的公民列表 (需求 2 & 3 位置互换) -->
         <div
-          class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-2xs space-y-3"
+          class="bg-white rounded-lg p-4 sm:p-5 border border-[#D9E5DB]/90 shadow-2xs space-y-3"
           :class="{ 'hidden lg:block': mobileViewMode !== 'FAMILIES' && isMobile }"
         >
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-slate-100">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-[#E9F1EB]">
             <div>
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <h4 class="font-bold text-slate-800 text-xs sm:text-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#3E9B68]"></span>
+                <h4 class="font-bold text-[#1F3326] text-xs sm:text-sm">
                   {{ isEn ? `Registered Citizens under [${currentScopeAgentName}]` : `【${currentScopeAgentName}】管辖范围内的在册公民列表` }}
                 </h4>
                 <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
                   {{ isEn ? `${filteredFamilies.length} HH` : `共 ${filteredFamilies.length} 户` }}
                 </el-tag>
               </div>
-              <p class="text-[11px] text-slate-400 mt-0.5">
+              <p class="text-[11px] text-[#8A9A8F] mt-0.5">
                 {{ isEn ? `Jurisdiction: ${currentScopeJurisdiction} | Includes all verified ration families and registered citizens` : `管辖区域：${currentScopeJurisdiction} | 包含全部已核验配给家庭与在册公民` }}
               </p>
             </div>
@@ -232,15 +232,15 @@
           >
             <el-table-column prop="familyCode" :label="isEn ? 'Family / Ration Card No.' : '家庭编号 / 配给卡号'" width="165">
               <template #default="{ row }">
-                <div class="font-mono font-bold text-blue-700">{{ row.familyCode }}</div>
-                <div class="text-[10px] text-slate-400 font-mono">{{ row.rationCardNo }}</div>
+                <div class="font-mono font-bold text-[#2A5440]">{{ row.familyCode }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.rationCardNo }}</div>
               </template>
             </el-table-column>
 
             <el-table-column :label="isEn ? 'Head Name & Identity' : '户主姓名与公民身份'" min-width="155">
               <template #default="{ row }">
-                <div class="font-bold text-slate-900">{{ row.headName }}</div>
-                <div class="text-[10px] text-slate-400 font-mono">{{ isEn ? 'National Card:' : '国民卡:' }} {{ row.nationalId }}</div>
+                <div class="font-bold text-[#1B3123]">{{ row.headName }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-mono">{{ isEn ? 'National Card:' : '国民卡:' }} {{ row.nationalId }}</div>
               </template>
             </el-table-column>
 
@@ -254,16 +254,16 @@
 
             <el-table-column :label="isEn ? 'Monthly Quota (Flour/Rice/Oil)' : '核定月配额 (面粉/米/油)'" min-width="180">
               <template #default="{ row }">
-                <div class="text-[11px] text-slate-600 font-mono">
+                <div class="text-[11px] text-[#58685D] font-mono">
                   {{ isEn ? 'Flour:' : '面粉:' }} <strong>{{ row.quotaFlourKg }}</strong> KG | {{ isEn ? 'Rice:' : '大米:' }} <strong>{{ row.quotaRiceKg }}</strong> KG
-                  <div class="text-slate-400 text-[10px]">{{ isEn ? 'Oil:' : '食用油:' }} <strong>{{ row.quotaOilL }}</strong> L</div>
+                  <div class="text-[#8A9A8F] text-[10px]">{{ isEn ? 'Oil:' : '食用油:' }} <strong>{{ row.quotaOilL }}</strong> L</div>
                 </div>
               </template>
             </el-table-column>
 
             <el-table-column prop="assignedDate" :label="isEn ? 'Contract Date' : '签约日期'" width="105" align="center">
               <template #default="{ row }">
-                <span class="font-mono text-slate-600 text-[11px]">{{ row.assignedDate }}</span>
+                <span class="font-mono text-[#58685D] text-[11px]">{{ row.assignedDate }}</span>
               </template>
             </el-table-column>
 
@@ -283,8 +283,8 @@
           </el-table>
 
           <!-- 分页器 -->
-          <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-            <span class="text-slate-400 text-[11px]">
+          <div class="flex items-center justify-between text-xs pt-2 border-t border-[#E9F1EB]">
+            <span class="text-[#8A9A8F] text-[11px]">
               {{ isEn ? `Page ${familyCurrentPage} of ${Math.ceil(filteredFamilies.length / familyPageSize) || 1}` : `当前显示第 ${familyCurrentPage} 页 / 共 ${Math.ceil(filteredFamilies.length / familyPageSize) || 1} 页` }}
             </span>
             <el-pagination
@@ -320,49 +320,49 @@
       destroy-on-close
     >
       <div v-if="activeFamilyRow" class="space-y-4 text-xs">
-        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
-          <div class="font-bold text-blue-900 flex items-center justify-between">
+        <div class="p-3 bg-[#EFF5F1] border border-[#C7DED0] rounded-lg space-y-1">
+          <div class="font-bold text-[#1F3326] flex items-center justify-between">
             <span>{{ activeFamilyRow.headName }} {{ isEn ? '(Head)' : '(户主)' }}</span>
             <el-tag size="small" type="success" effect="dark">{{ activeFamilyRow.complianceStatus }}</el-tag>
           </div>
-          <div class="text-[11px] text-blue-700 font-mono">
+          <div class="text-[11px] text-[#2A5440] font-mono">
             {{ isEn ? 'Family Code:' : '家庭编号:' }} {{ activeFamilyRow.familyCode }} | {{ isEn ? 'Ration Card:' : '配给卡:' }} {{ activeFamilyRow.rationCardNo }}
           </div>
         </div>
 
-        <div class="space-y-2 text-slate-600">
-          <div class="flex justify-between py-1 border-b border-slate-100">
+        <div class="space-y-2 text-[#58685D]">
+          <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'National ID Number:' : '国民身份识别号：' }}</span>
-            <span class="font-mono text-slate-800">{{ activeFamilyRow.nationalId }}</span>
+            <span class="font-mono text-[#1F3326]">{{ activeFamilyRow.nationalId }}</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'Contact Phone:' : '联系电话：' }}</span>
-            <span class="font-mono text-slate-800">{{ activeFamilyRow.phone }}</span>
+            <span class="font-mono text-[#1F3326]">{{ activeFamilyRow.phone }}</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'Residential Address:' : '常住居所地址：' }}</span>
-            <span class="text-slate-800 text-right">{{ activeFamilyRow.address }}</span>
+            <span class="text-[#1F3326] text-right">{{ activeFamilyRow.address }}</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'Affiliated Street Station:' : '归属街道代销站：' }}</span>
-            <span class="font-bold text-blue-700">{{ currentSelectedStreetStation?.storeName || (isEn ? 'Mansour Comprehensive Distribution Station' : '曼苏尔综合代销站') }}</span>
+            <span class="font-bold text-[#2A5440]">{{ currentSelectedStreetStation?.storeName || (isEn ? 'Mansour Comprehensive Distribution Station' : '曼苏尔综合代销站') }}</span>
           </div>
         </div>
 
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-          <div class="font-bold text-slate-800">{{ isEn ? 'Statutory Monthly Supply Standards:' : '法定月度补给额定标准：' }}</div>
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-1.5">
+          <div class="font-bold text-[#1F3326]">{{ isEn ? 'Statutory Monthly Supply Standards:' : '法定月度补给额定标准：' }}</div>
           <div class="grid grid-cols-3 gap-2 text-center pt-1 font-mono">
-            <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">{{ isEn ? 'Premium Flour' : '特级面粉' }}</div>
-              <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaFlourKg }} KG</div>
+            <div class="p-1.5 bg-white rounded border border-[#D9E5DB]">
+              <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? 'Premium Flour' : '特级面粉' }}</div>
+              <div class="font-bold text-[#1F3326] text-sm">{{ activeFamilyRow.quotaFlourKg }} KG</div>
             </div>
-            <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">{{ isEn ? 'Premium Rice' : '精制大米' }}</div>
-              <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaRiceKg }} KG</div>
+            <div class="p-1.5 bg-white rounded border border-[#D9E5DB]">
+              <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? 'Premium Rice' : '精制大米' }}</div>
+              <div class="font-bold text-[#1F3326] text-sm">{{ activeFamilyRow.quotaRiceKg }} KG</div>
             </div>
-            <div class="p-1.5 bg-white rounded border border-slate-200">
-              <div class="text-[10px] text-slate-400">{{ isEn ? 'Vegetable Oil' : '植物油' }}</div>
-              <div class="font-bold text-slate-800 text-sm">{{ activeFamilyRow.quotaOilL }} L</div>
+            <div class="p-1.5 bg-white rounded border border-[#D9E5DB]">
+              <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? 'Vegetable Oil' : '植物油' }}</div>
+              <div class="font-bold text-[#1F3326] text-sm">{{ activeFamilyRow.quotaOilL }} L</div>
             </div>
           </div>
         </div>

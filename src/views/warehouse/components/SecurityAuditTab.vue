@@ -1,9 +1,9 @@
 <template>
   <div class="security-audit-tab space-y-4">
     <!-- 标头 (极简，去掉了冗长介绍和微服务标签) -->
-    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
-      <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-        <el-icon class="text-slate-600"><Document /></el-icon>
+    <div class="flex items-center justify-between bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB]">
+      <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+        <el-icon class="text-[#58685D]"><Document /></el-icon>
         <span>{{ $t('warehouse.securityAuditTitle') || '安全审计与操作留痕' }}</span>
       </h3>
 
@@ -16,7 +16,7 @@
     </div>
 
     <!-- 查询过滤栏 -->
-    <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
+    <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
       <el-input
         v-model="searchQuery"
         :placeholder="isEn ? 'Search Operator / IP / Action' : '搜索操作人 / 终端 IP / 业务动作'"
@@ -26,7 +26,7 @@
         @input="page = 1"
       >
         <template #prefix>
-          <el-icon class="text-slate-400"><Search /></el-icon>
+          <el-icon class="text-[#8A9A8F]"><Search /></el-icon>
         </template>
       </el-input>
 
@@ -57,22 +57,22 @@
       />
 
       <el-button size="small" link type="primary" @click="resetFilters">{{ $t('common.reset') || '重置' }}</el-button>
-      <span class="text-[11px] text-slate-400 ml-auto">{{ isEn ? `Total ${filteredAuditLogs.length} records` : `共 ${filteredAuditLogs.length} 条记录` }}</span>
+      <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredAuditLogs.length} records` : `共 ${filteredAuditLogs.length} 条记录` }}</span>
     </div>
 
     <!-- 不可篡改操作审计日志表格 -->
-    <div class="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+    <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
       <el-table :data="paginatedAuditLogs" v-loading="loading" border style="width: 100%" class="text-xs">
         <el-table-column prop="timestamp" label="操作时间 / 终端 IP" min-width="170">
           <template #default="{ row }">
-            <div class="font-mono font-bold text-slate-800">{{ row.timestamp }}</div>
-            <div class="font-mono text-slate-400 text-[10px] mt-0.5">IP: {{ row.terminalIp }}</div>
+            <div class="font-mono font-bold text-[#1F3326]">{{ row.timestamp }}</div>
+            <div class="font-mono text-[#8A9A8F] text-[10px] mt-0.5">IP: {{ row.terminalIp }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="operatorName" label="操作人 / 角色" width="160">
           <template #default="{ row }">
-            <div class="font-bold text-slate-800">{{ row.operatorName }}</div>
-            <div class="text-[11px] text-slate-400">{{ row.role }}</div>
+            <div class="font-bold text-[#1F3326]">{{ row.operatorName }}</div>
+            <div class="text-[11px] text-[#8A9A8F]">{{ row.role }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="microservice" label="所属微服务" width="130">
@@ -84,8 +84,8 @@
         </el-table-column>
         <el-table-column prop="actionDesc" label="操作业务动作与留痕详情" min-width="260">
           <template #default="{ row }">
-            <div class="font-medium text-slate-800">{{ row.actionDesc }}</div>
-            <div class="text-[10px] text-slate-400 font-mono mt-0.5">模块: {{ row.module }} · 动作: {{ row.action }}</div>
+            <div class="font-medium text-[#1F3326]">{{ row.actionDesc }}</div>
+            <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">模块: {{ row.module }} · 动作: {{ row.action }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="riskLevel" label="安全风险等级" width="120" align="center">
@@ -120,8 +120,8 @@
       </el-table>
 
       <!-- 审计日志分页 -->
-      <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-        <span class="text-slate-400 text-[11px]">共 {{ filteredAuditLogs.length }} 笔日志记录</span>
+      <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
+        <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredAuditLogs.length }} 笔日志记录</span>
         <el-pagination
           v-model:current-page="page"
           v-model:page-size="pageSize"
@@ -135,7 +135,7 @@
 
     <!-- 强制签批要求 窗口 (P5 规则) -->
     <el-dialog v-model="doubleSignDialogVisible" title="强制签批要求 (P5 标准)" width="580px" destroy-on-close>
-      <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs mb-3 space-y-1">
+      <div class="p-3 bg-[#FDF3E0] rounded-lg border border-[#F2E3C6] text-[#5A4718] text-xs mb-3 space-y-1">
         <div class="font-bold">【强制签批要求】</div>
         <div>对入库批次强制修改、库存盘点差异入账、大额报损等操作，必须强制录入主操作人与复核主管双人工号和密码验证，严禁单人直接入账！</div>
       </div>
@@ -166,12 +166,12 @@
     <el-dialog v-model="snapshotDiffVisible" title="操作审计原始数据与变更后快照详情" width="600px" destroy-on-close>
       <div v-if="activeLog" class="space-y-3 text-xs">
         <div>
-          <span class="font-bold text-slate-700 block mb-1">变更前原始快照 (Before Snapshot)：</span>
-          <pre class="bg-slate-900 text-slate-100 p-3 rounded-lg font-mono text-[11px] overflow-x-auto">{{ activeLog.beforeSnapshot }}</pre>
+          <span class="font-bold text-[#43554B] block mb-1">变更前原始快照 (Before Snapshot)：</span>
+          <pre class="bg-[#1B3123] text-[#E9F1EB] p-3 rounded-lg font-mono text-[11px] overflow-x-auto">{{ activeLog.beforeSnapshot }}</pre>
         </div>
         <div>
-          <span class="font-bold text-slate-700 block mb-1">变更后当前快照 (After Snapshot)：</span>
-          <pre class="bg-slate-900 text-emerald-400 p-3 rounded-lg font-mono text-[11px] overflow-x-auto">{{ activeLog.afterSnapshot }}</pre>
+          <span class="font-bold text-[#43554B] block mb-1">变更后当前快照 (After Snapshot)：</span>
+          <pre class="bg-[#1B3123] text-[#6FBF92] p-3 rounded-lg font-mono text-[11px] overflow-x-auto">{{ activeLog.afterSnapshot }}</pre>
         </div>
       </div>
     </el-dialog>

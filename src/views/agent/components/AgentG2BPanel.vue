@@ -2,7 +2,7 @@
   <div class="agent-g2b-panel" :class="isAppMode ? 'space-y-3' : 'space-y-4'">
     <!-- 筛选工具栏与新建采购按钮 -->
     <div
-      class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 gap-2.5 text-xs"
+      class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 gap-2.5 text-xs"
       :class="isAppMode ? 'flex flex-col space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between'"
     >
       <div class="flex flex-wrap items-center gap-2.5 flex-1" :class="isAppMode ? 'w-full flex-col items-stretch' : ''">
@@ -59,12 +59,12 @@
       <div
         v-for="row in pagedOrders"
         :key="row.orderNo"
-        class="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2.5"
+        class="p-3.5 bg-white rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-2.5"
       >
         <!-- 头部：订单编号与履约模式 -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
-            <span class="font-mono font-bold text-blue-700 text-xs">{{ row.orderNo }}</span>
+            <span class="font-mono font-bold text-[#2A5440] text-xs">{{ row.orderNo }}</span>
           </div>
           <el-tag
             size="small"
@@ -77,7 +77,7 @@
 
         <!-- 履约时间与出库状态 -->
         <div class="flex items-center justify-between text-[11px]">
-          <span class="text-slate-400 font-mono">{{ row.createdAt }}</span>
+          <span class="text-[#8A9A8F] font-mono">{{ row.createdAt }}</span>
           <div>
             <el-tag v-if="row.status === 'PENDING_PAYMENT'" size="small" type="danger" effect="light">
               {{ $t('agentG2B.statusPendingPaymentTag') }}
@@ -95,14 +95,14 @@
         </div>
 
         <!-- 中心仓与车辆 (国际化绑定) -->
-        <div class="p-2 bg-slate-50 rounded-lg text-[11px] space-y-1 border border-slate-100">
+        <div class="p-2 bg-[#F3F8F4] rounded-lg text-[11px] space-y-1 border border-[#E9F1EB]">
           <div class="flex items-center justify-between">
-            <span class="text-slate-500 font-medium truncate">{{ formatG2BCenterName(row.centerName) }}</span>
-            <span class="text-slate-400 font-mono">{{ row.deliveryVehicleNo }}</span>
+            <span class="text-[#58685D] font-medium truncate">{{ formatG2BCenterName(row.centerName) }}</span>
+            <span class="text-[#8A9A8F] font-mono">{{ row.deliveryVehicleNo }}</span>
           </div>
-          <div class="text-[10px] text-slate-400 flex items-center justify-between">
+          <div class="text-[10px] text-[#8A9A8F] flex items-center justify-between">
             <span>{{ $t('agentG2B.timeSlotLabel') }}{{ formatG2BTimeSlot(row.timeSlot) }}</span>
-            <span v-if="row.pickupVoucherCode" class="text-emerald-600 font-mono font-bold">
+            <span v-if="row.pickupVoucherCode" class="text-[#2F7A50] font-mono font-bold">
               {{ row.pickupVoucherCode }}
             </span>
           </div>
@@ -113,19 +113,19 @@
           <div
             v-for="(item, idx) in row.items"
             :key="idx"
-            class="flex items-center justify-between text-[11px] text-slate-700 bg-slate-50/70 px-2.5 py-1 rounded border border-slate-100"
+            class="flex items-center justify-between text-[11px] text-[#43554B] bg-[#F3F8F4]/70 px-2.5 py-1 rounded border border-[#E9F1EB]"
           >
             <span class="font-medium truncate max-w-[200px]">{{ formatG2BItemName(item.itemName) }}</span>
-            <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
+            <span class="font-mono font-bold text-[#1B3123]">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
           </div>
         </div>
 
         <!-- 金额与支付状态 -->
-        <div class="pt-1 border-t border-slate-100 flex items-center justify-between">
+        <div class="pt-1 border-t border-[#E9F1EB] flex items-center justify-between">
           <div class="flex items-center gap-1.5">
-            <span class="text-xs text-slate-500">{{ $t('agentG2B.colTotalAmount') }}:</span>
-            <span class="font-mono font-bold text-sm text-slate-900">
-              {{ row.totalAmount.toLocaleString() }} <span class="text-[10px] text-slate-400">IQD</span>
+            <span class="text-xs text-[#58685D]">{{ $t('agentG2B.colTotalAmount') }}:</span>
+            <span class="font-mono font-bold text-sm text-[#1B3123]">
+              {{ row.totalAmount.toLocaleString() }} <span class="text-[10px] text-[#8A9A8F]">IQD</span>
             </span>
           </div>
           <el-tag size="small" :type="row.payStatus === 'PAID' ? 'success' : 'danger'" effect="plain">
@@ -134,7 +134,7 @@
         </div>
 
         <!-- 操作栏 -->
-        <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+        <div class="pt-2 border-t border-[#E9F1EB] flex items-center justify-end gap-2">
           <el-button
             v-if="row.status === 'PENDING_PAYMENT'"
             type="primary"
@@ -167,7 +167,7 @@
         </div>
       </div>
 
-      <div v-if="filteredOrders.length === 0" class="text-center py-8 text-slate-400 text-xs">
+      <div v-if="filteredOrders.length === 0" class="text-center py-8 text-[#8A9A8F] text-xs">
         {{ $t('agentG2B.noOrders') || '暂无符合条件的采购记录' }}
       </div>
     </div>
@@ -185,21 +185,21 @@
     >
       <el-table-column prop="orderNo" :label="$t('agentG2B.colOrderNo')" width="180">
         <template #default="{ row }">
-          <div class="font-mono font-bold text-blue-700">{{ row.orderNo }}</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">{{ row.createdAt }}</div>
+          <div class="font-mono font-bold text-[#2A5440]">{{ row.orderNo }}</div>
+          <div class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.createdAt }}</div>
         </template>
       </el-table-column>
 
       <el-table-column :label="$t('agentG2B.colCenterAndMode')" min-width="210">
         <template #default="{ row }">
-          <div class="font-bold text-slate-900 flex items-center gap-1.5">
+          <div class="font-bold text-[#1B3123] flex items-center gap-1.5">
             <span>{{ formatG2BCenterName(row.centerName) }}</span>
             <el-tag size="small" :type="row.logisticsMode === 'DISPATCH' ? 'success' : 'warning'" effect="light">
               {{ row.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }}
             </el-tag>
           </div>
-          <div class="text-[11px] text-slate-500 mt-0.5">{{ $t('agentG2B.timeSlotLabel') }}{{ formatG2BTimeSlot(row.timeSlot) }}</div>
-          <div class="text-[10px] text-slate-400 font-mono">{{ $t('agentG2B.vehicleNoLabel') }}{{ row.deliveryVehicleNo }}</div>
+          <div class="text-[11px] text-[#58685D] mt-0.5">{{ $t('agentG2B.timeSlotLabel') }}{{ formatG2BTimeSlot(row.timeSlot) }}</div>
+          <div class="text-[10px] text-[#8A9A8F] font-mono">{{ $t('agentG2B.vehicleNoLabel') }}{{ row.deliveryVehicleNo }}</div>
         </template>
       </el-table-column>
 
@@ -209,10 +209,10 @@
             <div
               v-for="(item, idx) in row.items"
               :key="idx"
-              class="flex items-center justify-between text-[11px] text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-100"
+              class="flex items-center justify-between text-[11px] text-[#43554B] bg-[#F3F8F4] px-2 py-0.5 rounded border border-[#E9F1EB]"
             >
               <span>{{ formatG2BItemName(item.itemName) }}</span>
-              <span class="font-mono font-bold text-slate-900">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
+              <span class="font-mono font-bold text-[#1B3123]">{{ item.qty.toLocaleString() }} {{ formatG2BUnit(item.unit) }}</span>
             </div>
           </div>
         </template>
@@ -220,15 +220,15 @@
 
       <el-table-column :label="$t('agentG2B.colTotalAmount')" width="160" align="right">
         <template #default="{ row }">
-          <div class="font-mono font-bold text-slate-900 text-sm">
-            {{ row.totalAmount.toLocaleString() }} <span class="text-[10px] font-normal text-slate-500">IQD</span>
+          <div class="font-mono font-bold text-[#1B3123] text-sm">
+            {{ row.totalAmount.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">IQD</span>
           </div>
           <div class="mt-1">
             <el-tag size="small" :type="row.payStatus === 'PAID' ? 'success' : 'danger'" effect="plain">
               {{ row.payStatus === 'PAID' ? $t('agentG2B.payStatusPaid') : $t('agentG2B.payStatusPending') }}
             </el-tag>
           </div>
-          <div v-if="row.payTime" class="text-[10px] text-slate-400 mt-0.5">{{ row.payTime.slice(5) }}</div>
+          <div v-if="row.payTime" class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.payTime.slice(5) }}</div>
         </template>
       </el-table-column>
 
@@ -236,19 +236,19 @@
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING_PAYMENT'">
             <el-tag size="small" type="danger" effect="light">{{ $t('agentG2B.statusPendingPaymentTag') }}</el-tag>
-            <div class="text-[10px] text-rose-500 mt-0.5">{{ $t('agentG2B.statusPendingPaymentDesc') }}</div>
+            <div class="text-[10px] text-[#C04442] mt-0.5">{{ $t('agentG2B.statusPendingPaymentDesc') }}</div>
           </div>
           <div v-else-if="row.status === 'PAID_WMS_PICKING'">
             <el-tag size="small" type="primary" effect="dark">{{ $t('agentG2B.statusPaidPickingTag') }}</el-tag>
-            <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ row.wmsTaskId }}</div>
+            <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">{{ row.wmsTaskId }}</div>
           </div>
           <div v-else-if="row.status === 'IN_TRANSIT'">
             <el-tag size="small" type="warning" effect="dark">{{ $t('agentG2B.statusInTransitTag') }}</el-tag>
-            <div class="text-[10px] text-emerald-600 font-mono mt-0.5">{{ $t('agentG2B.statusPickupCode', { code: row.pickupVoucherCode }) }}</div>
+            <div class="text-[10px] text-[#2F7A50] font-mono mt-0.5">{{ $t('agentG2B.statusPickupCode', { code: row.pickupVoucherCode }) }}</div>
           </div>
           <div v-else>
             <el-tag size="small" type="success" effect="dark">{{ $t('agentG2B.statusCompletedTag') }}</el-tag>
-            <div class="text-[10px] text-slate-400 mt-0.5">{{ row.completedAt?.slice(5) }}</div>
+            <div class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.completedAt?.slice(5) }}</div>
           </div>
         </template>
       </el-table-column>
@@ -257,14 +257,14 @@
         <template #default="{ row }">
           <div v-if="row.smsNotified" class="space-y-0.5">
             <el-tooltip :content="row.smsContent" placement="top" :width="280">
-              <span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 cursor-pointer font-semibold">
+              <span class="inline-flex items-center gap-1 text-[11px] text-[#2F5B44] cursor-pointer font-semibold">
                 <el-icon><ChatLineSquare /></el-icon>
                 <span>{{ $t('agentG2B.smsSent') }}</span>
               </span>
             </el-tooltip>
-            <div class="font-mono text-[10px] text-slate-500">{{ row.pickupVoucherCode }}</div>
+            <div class="font-mono text-[10px] text-[#58685D]">{{ row.pickupVoucherCode }}</div>
           </div>
-          <div v-else class="text-[11px] text-slate-400">{{ $t('agentG2B.smsWaitPayment') }}</div>
+          <div v-else class="text-[11px] text-[#8A9A8F]">{{ $t('agentG2B.smsWaitPayment') }}</div>
         </template>
       </el-table-column>
 
@@ -310,7 +310,7 @@
       class="flex items-center justify-between text-xs pt-2"
       :class="isAppMode ? 'flex-col gap-2 items-center' : ''"
     >
-      <span class="text-slate-500 text-[11px]">
+      <span class="text-[#58685D] text-[11px]">
         {{ $t('agentG2B.totalRecords', { count: filteredOrders.length }) }}
       </span>
       <el-pagination
@@ -334,7 +334,7 @@
     >
       <div class="space-y-3 sm:space-y-4 text-xs">
         <!-- 顶部提示：单中心物理归属与安全库存约束 -->
-        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 space-y-1">
+        <div class="p-3 bg-[#EFF5F1] border border-[#C7DED0] rounded-lg text-[#1F3326] space-y-1">
           <div class="font-bold flex items-center justify-between">
             <span class="flex items-center gap-1.5">
               <el-icon><InfoFilled /></el-icon>
@@ -350,38 +350,38 @@
         </div>
 
         <!-- 配给中心实时库存看板 -->
-        <div class="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
+        <div class="p-3 bg-[#F3F8F4]/80 border border-[#D9E5DB] rounded-lg space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 flex items-center gap-1.5">
-              <el-icon class="text-blue-600"><OfficeBuilding /></el-icon>
+            <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+              <el-icon class="text-[#326445]"><OfficeBuilding /></el-icon>
               <span>{{ $t('agentG2B.centerStockTitle', { center: currentCenterName }) }}</span>
             </span>
-            <span class="text-[11px] text-slate-400">{{ $t('agentG2B.strategicReserveSub') }}</span>
+            <span class="text-[11px] text-[#8A9A8F]">{{ $t('agentG2B.strategicReserveSub') }}</span>
           </div>
 
           <div class="grid grid-cols-3 gap-2 sm:gap-2.5 text-center">
-            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
-              <div class="text-[10px] text-slate-500">{{ $t('agentG2B.itemFlourTitle') }}</div>
-              <div class="font-mono font-bold text-slate-900 text-xs sm:text-base mt-0.5 text-blue-700">
-                {{ centerStock.flour.toLocaleString() }} <span class="text-[10px] font-normal text-slate-500">KG</span>
+            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
+              <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemFlourTitle') }}</div>
+              <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
+                {{ centerStock.flour.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">KG</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-emerald-600 mt-0.5 truncate">{{ $t('agentG2B.itemFlourLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemFlourLoc') }}</div>
             </div>
 
-            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
-              <div class="text-[10px] text-slate-500">{{ $t('agentG2B.itemRiceTitle') }}</div>
-              <div class="font-mono font-bold text-slate-900 text-xs sm:text-base mt-0.5 text-blue-700">
-                {{ centerStock.rice.toLocaleString() }} <span class="text-[10px] font-normal text-slate-500">KG</span>
+            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
+              <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemRiceTitle') }}</div>
+              <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
+                {{ centerStock.rice.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">KG</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-emerald-600 mt-0.5 truncate">{{ $t('agentG2B.itemRiceLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemRiceLoc') }}</div>
             </div>
 
-            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
-              <div class="text-[10px] text-slate-500">{{ $t('agentG2B.itemOilTitle') }}</div>
-              <div class="font-mono font-bold text-slate-900 text-xs sm:text-base mt-0.5 text-blue-700">
-                {{ centerStock.oil.toLocaleString() }} <span class="text-[10px] font-normal text-slate-500">L</span>
+            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
+              <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemOilTitle') }}</div>
+              <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
+                {{ centerStock.oil.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">L</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-emerald-600 mt-0.5 truncate">{{ $t('agentG2B.itemOilLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemOilLoc') }}</div>
             </div>
           </div>
         </div>
@@ -389,11 +389,11 @@
         <!-- 基础配置：物理中心与履约模式 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div>
-            <span class="block text-slate-600 mb-1 font-semibold">{{ $t('agentG2B.labelPhysicalCenter') }}</span>
-            <el-input :value="currentCenterName" readonly class="bg-slate-100 font-bold" />
+            <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agentG2B.labelPhysicalCenter') }}</span>
+            <el-input :value="currentCenterName" readonly class="bg-[#E9F1EB] font-bold" />
           </div>
           <div>
-            <span class="block text-slate-600 mb-1 font-semibold">{{ $t('agentG2B.labelLogisticsMode') }} <span class="text-rose-500">*</span></span>
+            <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agentG2B.labelLogisticsMode') }} <span class="text-[#C04442]">*</span></span>
             <el-select v-model="form.logisticsMode" class="w-full">
               <el-option :label="$t('agentG2B.modeDispatchOption')" value="DISPATCH" />
               <el-option :label="$t('agentG2B.modePickupOption')" value="PICKUP" />
@@ -402,20 +402,20 @@
         </div>
 
         <!-- 预约履约/到货时间窗口：日期控件 + 时段控件 复合展示 -->
-        <div class="p-3 bg-slate-50/70 border border-slate-200/90 rounded-xl space-y-2">
-          <div class="font-semibold text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+        <div class="p-3 bg-[#F3F8F4]/70 border border-[#D9E5DB]/90 rounded-lg space-y-2">
+          <div class="font-semibold text-[#43554B] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <span class="flex items-center gap-1">
-              <el-icon class="text-indigo-600"><Calendar /></el-icon>
-              <span>{{ $t('agentG2B.deliveryWindowLabel') }} <span class="text-rose-500">*</span></span>
+              <el-icon class="text-[#326445]"><Calendar /></el-icon>
+              <span>{{ $t('agentG2B.deliveryWindowLabel') }} <span class="text-[#C04442]">*</span></span>
             </span>
-            <span class="text-[11px] text-indigo-700 font-mono">
+            <span class="text-[11px] text-[#2A5440] font-mono">
               {{ $t('agentG2B.selectedTimeLabel', { date: form.deliveryDate || $t('agentG2B.notSelectedDate'), slot: form.deliverySlot || $t('agentG2B.notSelectedSlot') }) }}
             </span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <span class="block text-slate-500 mb-1">{{ $t('agentG2B.deliveryDateLabel') }}</span>
+              <span class="block text-[#58685D] mb-1">{{ $t('agentG2B.deliveryDateLabel') }}</span>
               <el-date-picker
                 v-model="form.deliveryDate"
                 type="date"
@@ -427,7 +427,7 @@
               />
             </div>
             <div>
-              <span class="block text-slate-500 mb-1">{{ $t('agentG2B.deliverySlotLabel') }}</span>
+              <span class="block text-[#58685D] mb-1">{{ $t('agentG2B.deliverySlotLabel') }}</span>
               <el-select v-model="form.deliverySlot" :placeholder="$t('agentG2B.deliverySlotPlaceholder')" class="w-full">
                 <el-option :label="$t('agentG2B.slot1')" value="08:00-10:00" />
                 <el-option :label="$t('agentG2B.slot2')" value="10:00-12:00" />
@@ -438,26 +438,26 @@
           </div>
 
           <div>
-            <span class="block text-slate-500 mb-1">{{ $t('agentG2B.vehicleNoInputLabel') }}</span>
+            <span class="block text-[#58685D] mb-1">{{ $t('agentG2B.vehicleNoInputLabel') }}</span>
             <el-input v-model="form.deliveryVehicleNo" :placeholder="$t('agentG2B.vehicleNoPlaceholder')" />
           </div>
         </div>
 
         <!-- 订购物资申报区：中心库存与辖区配额双重硬约束 -->
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-          <div class="flex items-center justify-between font-bold text-slate-800">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-2.5">
+          <div class="flex items-center justify-between font-bold text-[#1F3326]">
             <span>{{ $t('agentG2B.orderItemsTitle') }}</span>
-            <span class="text-[11px] text-blue-600 font-mono">
+            <span class="text-[11px] text-[#326445] font-mono">
               {{ $t('agentG2B.agentSignedHouseholds') }}
             </span>
           </div>
 
           <div class="space-y-2.5">
             <!-- 1. 特级面粉 -->
-            <div class="p-2.5 bg-white rounded-lg border border-slate-200 space-y-1.5">
+            <div class="p-2.5 bg-white rounded-lg border border-[#D9E5DB] space-y-1.5">
               <div class="flex items-center justify-between text-[11px]">
-                <span class="font-bold text-slate-800">{{ $t('agentG2B.flourItemSpec') }}</span>
-                <span class="font-mono text-blue-700 font-bold">{{ (form.flourQty * 350).toLocaleString() }} IQD</span>
+                <span class="font-bold text-[#1F3326]">{{ $t('agentG2B.flourItemSpec') }}</span>
+                <span class="font-mono text-[#2A5440] font-bold">{{ (form.flourQty * 350).toLocaleString() }} IQD</span>
               </div>
               <div class="grid grid-cols-12 gap-2 items-center">
                 <div class="col-span-12 sm:col-span-5">
@@ -470,9 +470,9 @@
                     class="w-full"
                   />
                 </div>
-                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span class="text-slate-400">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.flour.toLocaleString(), unit: 'KG' }) }}</span>
-                  <span class="text-slate-400">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.flour.toLocaleString(), unit: 'KG' }) }}</span>
+                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.flour.toLocaleString(), unit: 'KG' }) }}</span>
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.flour.toLocaleString(), unit: 'KG' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.flour.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
@@ -481,10 +481,10 @@
             </div>
 
             <!-- 2. 精制大米 -->
-            <div class="p-2.5 bg-white rounded-lg border border-slate-200 space-y-1.5">
+            <div class="p-2.5 bg-white rounded-lg border border-[#D9E5DB] space-y-1.5">
               <div class="flex items-center justify-between text-[11px]">
-                <span class="font-bold text-slate-800">{{ $t('agentG2B.riceItemSpec') }}</span>
-                <span class="font-mono text-blue-700 font-bold">{{ (form.riceQty * 500).toLocaleString() }} IQD</span>
+                <span class="font-bold text-[#1F3326]">{{ $t('agentG2B.riceItemSpec') }}</span>
+                <span class="font-mono text-[#2A5440] font-bold">{{ (form.riceQty * 500).toLocaleString() }} IQD</span>
               </div>
               <div class="grid grid-cols-12 gap-2 items-center">
                 <div class="col-span-12 sm:col-span-5">
@@ -497,9 +497,9 @@
                     class="w-full"
                   />
                 </div>
-                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span class="text-slate-400">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.rice.toLocaleString(), unit: 'KG' }) }}</span>
-                  <span class="text-slate-400">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.rice.toLocaleString(), unit: 'KG' }) }}</span>
+                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.rice.toLocaleString(), unit: 'KG' }) }}</span>
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.rice.toLocaleString(), unit: 'KG' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.rice.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
@@ -508,10 +508,10 @@
             </div>
 
             <!-- 3. 食用植物油 -->
-            <div class="p-2.5 bg-white rounded-lg border border-slate-200 space-y-1.5">
+            <div class="p-2.5 bg-white rounded-lg border border-[#D9E5DB] space-y-1.5">
               <div class="flex items-center justify-between text-[11px]">
-                <span class="font-bold text-slate-800">{{ $t('agentG2B.oilItemSpec') }}</span>
-                <span class="font-mono text-blue-700 font-bold">{{ (form.oilQty * 1200).toLocaleString() }} IQD</span>
+                <span class="font-bold text-[#1F3326]">{{ $t('agentG2B.oilItemSpec') }}</span>
+                <span class="font-mono text-[#2A5440] font-bold">{{ (form.oilQty * 1200).toLocaleString() }} IQD</span>
               </div>
               <div class="grid grid-cols-12 gap-2 items-center">
                 <div class="col-span-12 sm:col-span-5">
@@ -524,9 +524,9 @@
                     class="w-full"
                   />
                 </div>
-                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span class="text-slate-400">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.oil.toLocaleString(), unit: 'L' }) }}</span>
-                  <span class="text-slate-400">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.oil.toLocaleString(), unit: 'L' }) }}</span>
+                <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.oil.toLocaleString(), unit: 'L' }) }}</span>
+                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.oil.toLocaleString(), unit: 'L' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.oil.toLocaleString(), unit: 'L' }) }}
                   </el-tag>
@@ -535,9 +535,9 @@
             </div>
           </div>
 
-          <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
-            <span class="font-bold text-slate-800">{{ $t('agentG2B.totalPaymentPayable') }}</span>
-            <span class="font-mono text-base font-bold text-blue-700">
+          <div class="pt-2 border-t border-[#D9E5DB] flex items-center justify-between text-xs">
+            <span class="font-bold text-[#1F3326]">{{ $t('agentG2B.totalPaymentPayable') }}</span>
+            <span class="font-mono text-base font-bold text-[#2A5440]">
               {{ calculatedTotalAmount.toLocaleString() }} IQD
             </span>
           </div>
@@ -582,41 +582,41 @@
     >
       <div v-if="activeQRRow" class="space-y-3 sm:space-y-4 text-xs text-center">
         <!-- 顶部中心仓与凭证说明 -->
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-left space-y-1">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 text-left space-y-1">
           <div class="flex justify-between items-center">
-            <span class="text-slate-500 text-[11px]">{{ $t('agentG2B.qrCenterLabel') }}</span>
-            <span class="font-bold text-slate-800">{{ activeQRRow.centerName }}</span>
+            <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrCenterLabel') }}</span>
+            <span class="font-bold text-[#1F3326]">{{ activeQRRow.centerName }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-slate-500 text-[11px]">{{ $t('agentG2B.qrTimeSlotLabel') }}</span>
-            <span class="font-semibold text-blue-700">{{ activeQRRow.timeSlot }}</span>
+            <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrTimeSlotLabel') }}</span>
+            <span class="font-semibold text-[#2A5440]">{{ activeQRRow.timeSlot }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-slate-500 text-[11px]">{{ $t('agentG2B.qrVehicleLabel') }}</span>
-            <span class="font-mono text-slate-700">{{ activeQRRow.deliveryVehicleNo }} ({{ activeQRRow.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }})</span>
+            <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrVehicleLabel') }}</span>
+            <span class="font-mono text-[#43554B]">{{ activeQRRow.deliveryVehicleNo }} ({{ activeQRRow.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }})</span>
           </div>
         </div>
 
         <!-- 高清晰度矢量 SVG 二维码展示区 -->
-        <div class="p-4 sm:p-5 bg-white border-2 border-dashed border-indigo-200 rounded-2xl flex flex-col items-center justify-center space-y-2.5 sm:space-y-3 shadow-inner">
-          <div class="relative p-2.5 sm:p-3 bg-white rounded-xl shadow-xs border border-slate-200">
+        <div class="p-4 sm:p-5 bg-white border-2 border-dashed border-[#C7DED0] rounded-lg flex flex-col items-center justify-center space-y-2.5 sm:space-y-3 shadow-inner">
+          <div class="relative p-2.5 sm:p-3 bg-white rounded-lg shadow-xs border border-[#D9E5DB]">
             <!-- 矢量 SVG 二维码图形 -->
             <svg class="w-40 h-40 sm:w-48 sm:h-48" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="160" height="160" fill="#FFFFFF" />
 
-              <rect x="10" y="10" width="36" height="36" rx="4" fill="#0F172A" />
+              <rect x="10" y="10" width="36" height="36" rx="4" fill="#1F3326" />
               <rect x="16" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="22" y="22" width="12" height="12" rx="2" fill="#2563EB" />
+              <rect x="22" y="22" width="12" height="12" rx="2" fill="#326445" />
 
-              <rect x="114" y="10" width="36" height="36" rx="4" fill="#0F172A" />
+              <rect x="114" y="10" width="36" height="36" rx="4" fill="#1F3326" />
               <rect x="120" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="126" y="22" width="12" height="12" rx="2" fill="#2563EB" />
+              <rect x="126" y="22" width="12" height="12" rx="2" fill="#326445" />
 
-              <rect x="10" y="114" width="36" height="36" rx="4" fill="#0F172A" />
+              <rect x="10" y="114" width="36" height="36" rx="4" fill="#1F3326" />
               <rect x="16" y="120" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="22" y="126" width="12" height="12" rx="2" fill="#2563EB" />
+              <rect x="22" y="126" width="12" height="12" rx="2" fill="#326445" />
 
-              <g fill="#1E293B">
+              <g fill="#2A3A30">
                 <rect x="52" y="12" width="6" height="6" rx="1" />
                 <rect x="64" y="12" width="6" height="6" rx="1" />
                 <rect x="76" y="12" width="6" height="6" rx="1" />
@@ -692,31 +692,31 @@
                 <rect x="142" y="138" width="6" height="6" rx="1" />
               </g>
 
-              <rect x="65" y="65" width="30" height="30" rx="6" fill="#1E3A8A" stroke="#FFFFFF" stroke-width="2" />
+              <rect x="65" y="65" width="30" height="30" rx="6" fill="#24483A" stroke="#FFFFFF" stroke-width="2" />
               <text x="80" y="83" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle" font-family="sans-serif">RCM</text>
             </svg>
           </div>
 
           <div class="space-y-1">
-            <span class="text-[11px] text-slate-500 block">{{ $t('agentG2B.qrCodeNoLabel') }}</span>
-            <div class="font-mono text-base font-extrabold text-blue-700 tracking-wider bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+            <span class="text-[11px] text-[#58685D] block">{{ $t('agentG2B.qrCodeNoLabel') }}</span>
+            <div class="font-mono text-base font-extrabold text-[#2A5440] tracking-wider bg-[#EFF5F1] px-3 py-1 rounded-lg border border-[#C7DED0]">
               {{ activeQRRow.pickupVoucherCode }}
             </div>
           </div>
-          <span class="text-[10px] text-slate-400">{{ $t('agentG2B.qrScanHint') }}</span>
+          <span class="text-[10px] text-[#8A9A8F]">{{ $t('agentG2B.qrScanHint') }}</span>
         </div>
 
         <!-- 采购明细与金额汇总 -->
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1.5 text-left">
-          <div class="flex justify-between items-center font-semibold text-slate-700">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-1.5 text-left">
+          <div class="flex justify-between items-center font-semibold text-[#43554B]">
             <span>{{ $t('agentG2B.qrOrderNoLabel') }}</span>
-            <span class="font-mono text-slate-900">{{ activeQRRow.orderNo }}</span>
+            <span class="font-mono text-[#1B3123]">{{ activeQRRow.orderNo }}</span>
           </div>
-          <div class="flex justify-between items-center font-semibold text-slate-700">
+          <div class="flex justify-between items-center font-semibold text-[#43554B]">
             <span>{{ $t('agentG2B.qrPaidAmountLabel') }}</span>
-            <span class="font-mono text-emerald-700 font-bold">{{ $t('agentG2B.qrPaidAmountVal', { amount: activeQRRow.totalAmount.toLocaleString() }) }}</span>
+            <span class="font-mono text-[#2F5B44] font-bold">{{ $t('agentG2B.qrPaidAmountVal', { amount: activeQRRow.totalAmount.toLocaleString() }) }}</span>
           </div>
-          <div class="pt-1 border-t border-slate-200/60 text-[11px] text-slate-500">
+          <div class="pt-1 border-t border-[#D9E5DB]/60 text-[11px] text-[#58685D]">
             {{ $t('agentG2B.qrIncludeItems') }}
             <span v-for="(it, i) in activeQRRow.items" :key="i" class="mr-2">
               {{ formatG2BItemName(it.itemName) }}: <strong>{{ it.qty }}{{ formatG2BUnit(it.unit) }}</strong>

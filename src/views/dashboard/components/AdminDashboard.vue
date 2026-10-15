@@ -5,107 +5,107 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3 text-xs">
       <!-- 维度 1: 公民 -->
-      <div class="p-3 sm:p-3.5 bg-white rounded-xl border border-blue-100 shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
-        <div class="flex items-center justify-between text-blue-900 text-xs">
-          <span class="font-medium text-slate-700 text-[11px] sm:text-xs">{{ $t('dashboard.enrolledCitizens') || '在册持卡公民' }}</span>
-          <el-icon class="text-blue-600 text-sm sm:text-base"><User /></el-icon>
+      <div class="p-3 sm:p-3.5 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
+        <div class="flex items-center justify-between text-[#1F3326] text-xs">
+          <span class="font-medium text-[#43554B] text-[11px] sm:text-xs">{{ $t('dashboard.enrolledCitizens') || '在册持卡公民' }}</span>
+          <el-icon class="text-[#326445] text-sm sm:text-base"><User /></el-icon>
         </div>
         <div class="flex items-baseline gap-1">
-          <span class="text-lg sm:text-xl font-bold font-mono text-slate-900">
+          <span class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">
             {{ formatWan(dashboardData.citizens?.totalCitizens) }}
           </span>
-          <span class="text-[10px] sm:text-[11px] text-slate-400">{{ isEn ? 'persons' : '人' }}</span>
+          <span class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ isEn ? 'persons' : '人' }}</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-          <div class="bg-blue-600 h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.citizens?.biometricVerifiedRate || 95}%` }"></div>
+        <div class="w-full bg-[#E9F1EB] rounded-full h-1 overflow-hidden">
+          <div class="bg-[#326445] h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.citizens?.biometricVerifiedRate || 95}%` }"></div>
         </div>
-        <div class="text-[10px] sm:text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
-          <span>{{ isEn ? 'Verified:' : '核验:' }} <strong class="text-blue-700 font-mono">{{ dashboardData.citizens?.biometricVerifiedRate }}%</strong></span>
-          <span class="text-emerald-600 font-medium">+{{ formatNumber(dashboardData.citizens?.newRegistered) }}</span>
+        <div class="text-[10px] sm:text-[11px] text-[#58685D] flex items-center justify-between pt-0.5">
+          <span>{{ isEn ? 'Verified:' : '核验:' }} <strong class="text-[#2A5440] font-mono">{{ dashboardData.citizens?.biometricVerifiedRate }}%</strong></span>
+          <span class="text-[#2F7A50] font-medium">+{{ formatNumber(dashboardData.citizens?.newRegistered) }}</span>
         </div>
       </div>
 
       <!-- 维度 2: 家庭 -->
-      <div class="p-3 sm:p-3.5 bg-white rounded-xl border border-indigo-100 shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
-        <div class="flex items-center justify-between text-indigo-900 text-xs">
-          <span class="font-medium text-slate-700 text-[11px] sm:text-xs">{{ $t('dashboard.enrolledFamilies') || '建档保障家庭' }}</span>
-          <el-icon class="text-indigo-600 text-sm sm:text-base"><House /></el-icon>
+      <div class="p-3 sm:p-3.5 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
+        <div class="flex items-center justify-between text-[#1F3326] text-xs">
+          <span class="font-medium text-[#43554B] text-[11px] sm:text-xs">{{ $t('dashboard.enrolledFamilies') || '建档保障家庭' }}</span>
+          <el-icon class="text-[#326445] text-sm sm:text-base"><House /></el-icon>
         </div>
         <div class="flex items-baseline gap-1">
-          <span class="text-lg sm:text-xl font-bold font-mono text-slate-900">
+          <span class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">
             {{ formatWan(dashboardData.families?.totalFamilies) }}
           </span>
-          <span class="text-[10px] sm:text-[11px] text-slate-400">{{ isEn ? 'families' : '户' }}</span>
+          <span class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ isEn ? 'families' : '户' }}</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-          <div class="bg-indigo-600 h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.families?.activeRate || 96}%` }"></div>
+        <div class="w-full bg-[#E9F1EB] rounded-full h-1 overflow-hidden">
+          <div class="bg-[#326445] h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.families?.activeRate || 96}%` }"></div>
         </div>
-        <div class="text-[10px] sm:text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
-          <span>{{ isEn ? 'Avg:' : '户均:' }} <strong class="text-indigo-700 font-mono">{{ dashboardData.families?.avgFamilySize }}{{ isEn ? 'p' : '人' }}</strong></span>
-          <span class="text-slate-600">{{ isEn ? 'Active ' : '正常' }}{{ dashboardData.families?.activeRate }}%</span>
+        <div class="text-[10px] sm:text-[11px] text-[#58685D] flex items-center justify-between pt-0.5">
+          <span>{{ isEn ? 'Avg:' : '户均:' }} <strong class="text-[#2A5440] font-mono">{{ dashboardData.families?.avgFamilySize }}{{ isEn ? 'p' : '人' }}</strong></span>
+          <span class="text-[#58685D]">{{ isEn ? 'Active ' : '正常' }}{{ dashboardData.families?.activeRate }}%</span>
         </div>
       </div>
 
       <!-- 维度 3: 地区代理商 -->
-      <div class="p-3 sm:p-3.5 bg-white rounded-xl border border-teal-100 shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
-        <div class="flex items-center justify-between text-teal-900 text-xs">
-          <span class="font-medium text-slate-700 text-[11px] sm:text-xs">{{ $t('dashboard.contractedAgents') || '全国签约代理商' }}</span>
-          <el-icon class="text-teal-600 text-sm sm:text-base"><Shop /></el-icon>
+      <div class="p-3 sm:p-3.5 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
+        <div class="flex items-center justify-between text-[#12241A] text-xs">
+          <span class="font-medium text-[#43554B] text-[11px] sm:text-xs">{{ $t('dashboard.contractedAgents') || '全国签约代理商' }}</span>
+          <el-icon class="text-[#2F7A50] text-sm sm:text-base"><Shop /></el-icon>
         </div>
         <div class="flex items-baseline gap-1">
-          <span class="text-lg sm:text-xl font-bold font-mono text-slate-900">
+          <span class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">
             {{ formatNumber(dashboardData.agents?.totalAgents) }}
           </span>
-          <span class="text-[10px] sm:text-[11px] text-slate-400">{{ isEn ? 'agents' : '家' }}</span>
+          <span class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ isEn ? 'agents' : '家' }}</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-          <div class="bg-teal-600 h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.agents?.complianceRate || 90}%` }"></div>
+        <div class="w-full bg-[#E9F1EB] rounded-full h-1 overflow-hidden">
+          <div class="bg-[#2F7A50] h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.agents?.complianceRate || 90}%` }"></div>
         </div>
-        <div class="text-[10px] sm:text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
-          <span>{{ isEn ? 'Compliance:' : '考核:' }} <strong class="text-teal-700 font-mono">{{ dashboardData.agents?.complianceRate }}%</strong></span>
-          <span class="text-amber-600 font-medium">{{ dashboardData.agents?.overloadedAgents }} {{ isEn ? 'Alerts' : '预警' }}</span>
+        <div class="text-[10px] sm:text-[11px] text-[#58685D] flex items-center justify-between pt-0.5">
+          <span>{{ isEn ? 'Compliance:' : '考核:' }} <strong class="text-[#2F5B44] font-mono">{{ dashboardData.agents?.complianceRate }}%</strong></span>
+          <span class="text-[#C9A13B] font-medium">{{ dashboardData.agents?.overloadedAgents }} {{ isEn ? 'Alerts' : '预警' }}</span>
         </div>
       </div>
 
       <!-- 维度 4: 实际配给情况 -->
-      <div class="p-3 sm:p-3.5 bg-white rounded-xl border border-emerald-100 shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
-        <div class="flex items-center justify-between text-emerald-900 text-xs">
-          <span class="font-medium text-slate-700 text-[11px] sm:text-xs">{{ $t('dashboard.actualDistribution') || '实际配发总量' }}</span>
-          <el-icon class="text-emerald-600 text-sm sm:text-base"><Box /></el-icon>
+      <div class="p-3 sm:p-3.5 bg-white rounded-lg border border-[#E1F4E4] shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
+        <div class="flex items-center justify-between text-[#12241A] text-xs">
+          <span class="font-medium text-[#43554B] text-[11px] sm:text-xs">{{ $t('dashboard.actualDistribution') || '实际配发总量' }}</span>
+          <el-icon class="text-[#2F7A50] text-sm sm:text-base"><Box /></el-icon>
         </div>
         <div class="flex items-baseline gap-1">
-          <span class="text-lg sm:text-xl font-bold font-mono text-emerald-700">
+          <span class="text-lg sm:text-xl font-bold font-mono text-[#2F5B44]">
             {{ formatWan(dashboardData.distribution?.totalDistributedTons) }}
           </span>
-          <span class="text-[10px] sm:text-[11px] text-slate-400">{{ isEn ? 'Tons' : '吨' }}</span>
+          <span class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ isEn ? 'Tons' : '吨' }}</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-          <div class="bg-emerald-600 h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.distribution?.targetFulfillmentRate || 98}%` }"></div>
+        <div class="w-full bg-[#E9F1EB] rounded-full h-1 overflow-hidden">
+          <div class="bg-[#2F7A50] h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.distribution?.targetFulfillmentRate || 98}%` }"></div>
         </div>
-        <div class="text-[10px] sm:text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
-          <span>{{ isEn ? 'Fulfillment:' : '履约:' }} <strong class="text-emerald-700 font-mono">{{ dashboardData.distribution?.targetFulfillmentRate }}%</strong></span>
-          <span class="text-slate-600">{{ isEn ? 'On-time ' : '准时' }}{{ dashboardData.distribution?.onTimeDeliveryRate }}%</span>
+        <div class="text-[10px] sm:text-[11px] text-[#58685D] flex items-center justify-between pt-0.5">
+          <span>{{ isEn ? 'Fulfillment:' : '履约:' }} <strong class="text-[#2F5B44] font-mono">{{ dashboardData.distribution?.targetFulfillmentRate }}%</strong></span>
+          <span class="text-[#58685D]">{{ isEn ? 'On-time ' : '准时' }}{{ dashboardData.distribution?.onTimeDeliveryRate }}%</span>
         </div>
       </div>
 
       <!-- 维度 5: 投诉和处理 (在 412px 屏幕下独占一行通栏展示，对称饱满) -->
-      <div class="col-span-2 sm:col-span-1 p-3 sm:p-3.5 bg-white rounded-xl border border-rose-100 shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
-        <div class="flex items-center justify-between text-rose-900 text-xs">
-          <span class="font-medium text-slate-700 text-[11px] sm:text-xs">{{ $t('dashboard.complaintEfficiency') || '群众投诉与办结' }}</span>
-          <el-icon class="text-rose-600 text-sm sm:text-base"><Service /></el-icon>
+      <div class="col-span-2 sm:col-span-1 p-3 sm:p-3.5 bg-white rounded-lg border border-[#F7E3E2] shadow-2xs hover:shadow-sm transition-shadow space-y-1 sm:space-y-1.5">
+        <div class="flex items-center justify-between text-[#6E2F2E] text-xs">
+          <span class="font-medium text-[#43554B] text-[11px] sm:text-xs">{{ $t('dashboard.complaintEfficiency') || '群众投诉与办结' }}</span>
+          <el-icon class="text-[#C04442] text-sm sm:text-base"><Service /></el-icon>
         </div>
         <div class="flex items-baseline gap-1">
-          <span class="text-lg sm:text-xl font-bold font-mono text-slate-900">
+          <span class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">
             {{ formatNumber(dashboardData.complaints?.totalComplaints) }}
           </span>
-          <span class="text-[10px] sm:text-[11px] text-slate-400">{{ isEn ? 'cases' : '件' }}</span>
+          <span class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ isEn ? 'cases' : '件' }}</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-          <div class="bg-rose-500 h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.complaints?.resolvedRate || 95}%` }"></div>
+        <div class="w-full bg-[#E9F1EB] rounded-full h-1 overflow-hidden">
+          <div class="bg-[#C04442] h-1 rounded-full transition-all duration-500" :style="{ width: `${dashboardData.complaints?.resolvedRate || 95}%` }"></div>
         </div>
-        <div class="text-[10px] sm:text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
-          <span>{{ isEn ? 'Resolved:' : '办结:' }} <strong class="text-rose-600 font-mono">{{ dashboardData.complaints?.resolvedRate }}%</strong></span>
-          <span class="text-slate-600">{{ isEn ? 'Avg ' : '均时 ' }}{{ dashboardData.complaints?.avgResolutionHours }}h</span>
+        <div class="text-[10px] sm:text-[11px] text-[#58685D] flex items-center justify-between pt-0.5">
+          <span>{{ isEn ? 'Resolved:' : '办结:' }} <strong class="text-[#C04442] font-mono">{{ dashboardData.complaints?.resolvedRate }}%</strong></span>
+          <span class="text-[#58685D]">{{ isEn ? 'Avg ' : '均时 ' }}{{ dashboardData.complaints?.avgResolutionHours }}h</span>
         </div>
       </div>
     </div>
@@ -115,14 +115,14 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       <!-- 图表 1: 公民年龄构成与新增核验走势 -->
-      <div class="lg:col-span-6 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-6 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
               <span>公民人口结构与登记走势</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               各年龄段受助比例及本期新增登记动态
             </p>
           </div>
@@ -132,14 +132,14 @@
       </div>
 
       <!-- 图表 2: 家庭规模分布与民生业务办理统计 -->
-      <div class="lg:col-span-6 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-6 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
               <span>家庭规模与民生业务办结</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               家庭户型构成及分户/解冻/变更等业务受理量
             </p>
           </div>
@@ -154,14 +154,14 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       <!-- 图表 3: 各省区代理商网点分布与负荷度比对 -->
-      <div class="lg:col-span-6 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-6 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#2F7A50]"></span>
               <span>各地区代理商分布与服务负荷</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               各省网点数量与网点平均服务家庭规模比对
             </p>
           </div>
@@ -171,14 +171,14 @@
       </div>
 
       <!-- 图表 4: 实际配给情况与战略物资达成进度 -->
-      <div class="lg:col-span-6 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-6 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#2F7A50]"></span>
               <span>核心战略物资实际配给完成进度</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               计划指标下发与实际终端核销发放量比对
             </p>
           </div>
@@ -193,14 +193,14 @@
     <!-- ======================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       <!-- 图表 5: 投诉诉求类型分布 (南丁格尔玫瑰图) -->
-      <div class="lg:col-span-4 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-4 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#C04442]"></span>
               <span>投诉诉求成因分类</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               代销短缺、服务态度、收费违规等投诉构成
             </p>
           </div>
@@ -210,14 +210,14 @@
       </div>
 
       <!-- 图表 6: 投诉受理与办结趋势 (折线走势图) -->
-      <div class="lg:col-span-8 bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <div class="lg:col-span-8 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <div>
-            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+            <h3 class="text-xs font-bold text-[#1F3326] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#C9A13B]"></span>
               <span>投诉受理量与办结销单走势</span>
             </h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               各阶段投诉接报量、处置办结量及平均解决时效
             </p>
           </div>
@@ -228,20 +228,20 @@
     </div>
 
     <!-- 模块 4: 重点督办投诉案件简明清单 -->
-    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+    <div class="bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
         <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-slate-700"></span>
-          <h3 class="text-xs font-bold text-slate-800">近期群众维权与诉求处置案件速览</h3>
+          <span class="w-2 h-2 rounded-full bg-[#43554B]"></span>
+          <h3 class="text-xs font-bold text-[#1F3326]">近期群众维权与诉求处置案件速览</h3>
           <el-tag size="small" type="info" class="font-mono">共 {{ (dashboardData.complaints?.recentComplaints || []).length }} 笔重点督办</el-tag>
         </div>
-        <span class="text-[11px] text-slate-400">已全面落实行政裁决与即时整改</span>
+        <span class="text-[11px] text-[#8A9A8F]">已全面落实行政裁决与即时整改</span>
       </div>
 
       <el-table :data="dashboardData.complaints?.recentComplaints || []" size="small" stripe border class="text-xs">
         <el-table-column prop="id" label="工单编号" width="130">
           <template #default="{ row }">
-            <span class="font-mono font-bold text-blue-600">{{ row.id }}</span>
+            <span class="font-mono font-bold text-[#326445]">{{ row.id }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="type" label="诉求类型" width="110">
@@ -254,7 +254,7 @@
         <el-table-column prop="applicant" label="投诉群众" width="120" />
         <el-table-column prop="result" label="核处结果与整改措施" min-width="220">
           <template #default="{ row }">
-            <span class="text-slate-700">{{ row.result }}</span>
+            <span class="text-[#43554B]">{{ row.result }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="办理状态" width="90" align="center">
@@ -264,22 +264,22 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="time" label="登记日期" width="100" align="center" class-name="font-mono text-slate-400" />
+        <el-table-column prop="time" label="登记日期" width="100" align="center" class-name="font-mono text-[#8A9A8F]" />
       </el-table>
     </div>
 
     <!-- ======================================================== -->
     <!-- 模块 5: 公民配给订单需求统计与 AI 扩容预测看板 (需求 1 联动数据看板) -->
     <!-- ======================================================== -->
-    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+    <div class="bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E9F1EB] pb-3">
         <div>
-          <h3 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          <h3 class="text-xs sm:text-sm font-bold text-[#1F3326] flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#326445]"></span>
             <span>{{ $t('dashboard.orderDemandInsightTitle') }}</span>
             <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('dashboard.demandPenetrationTag') }}</el-tag>
           </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">
+          <p class="text-[11px] text-[#8A9A8F] mt-0.5">
             {{ $t('dashboard.orderDemandInsightSub') }}
           </p>
         </div>
@@ -295,47 +295,47 @@
 
       <!-- 四大核心口粮汇总卡片 -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
-        <div class="p-3 bg-blue-50/60 rounded-xl border border-blue-100 space-y-1">
-          <div class="flex justify-between text-blue-900 text-[11px]">
+        <div class="p-3 bg-[#EFF5F1]/60 rounded-lg border border-[#E1F4E4] space-y-1">
+          <div class="flex justify-between text-[#1F3326] text-[11px]">
             <span>{{ $t('dashboard.flourDemand') }}</span>
             <span class="font-bold">🌾</span>
           </div>
-          <div class="text-base sm:text-lg font-bold font-mono text-blue-700">286,500 KG</div>
-          <div class="text-[10px] text-slate-400">{{ $t('dashboard.flourDemandMoM') }}</div>
+          <div class="text-base sm:text-lg font-bold font-mono text-[#2A5440]">286,500 KG</div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('dashboard.flourDemandMoM') }}</div>
         </div>
-        <div class="p-3 bg-teal-50/60 rounded-xl border border-teal-100 space-y-1">
-          <div class="flex justify-between text-teal-900 text-[11px]">
+        <div class="p-3 bg-[#EFF5F1]/60 rounded-lg border border-[#E1F4E4] space-y-1">
+          <div class="flex justify-between text-[#12241A] text-[11px]">
             <span>{{ $t('dashboard.riceDemand') }}</span>
             <span class="font-bold">🍚</span>
           </div>
-          <div class="text-base sm:text-lg font-bold font-mono text-teal-700">118,200 KG</div>
-          <div class="text-[10px] text-slate-400">{{ $t('dashboard.riceDemandMoM') }}</div>
+          <div class="text-base sm:text-lg font-bold font-mono text-[#2F5B44]">118,200 KG</div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('dashboard.riceDemandMoM') }}</div>
         </div>
-        <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-100 space-y-1">
-          <div class="flex justify-between text-amber-900 text-[11px]">
+        <div class="p-3 bg-[#FDF3E0]/60 rounded-lg border border-[#FDF3E0] space-y-1">
+          <div class="flex justify-between text-[#5A4718] text-[11px]">
             <span>{{ $t('dashboard.oilDemand') }}</span>
             <span class="font-bold">🌻</span>
           </div>
-          <div class="text-base sm:text-lg font-bold font-mono text-amber-700">42,300 L</div>
-          <div class="text-[10px] text-slate-400">{{ $t('dashboard.oilDemandMoM') }}</div>
+          <div class="text-base sm:text-lg font-bold font-mono text-[#7A5F21]">42,300 L</div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('dashboard.oilDemandMoM') }}</div>
         </div>
-        <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-1">
-          <div class="flex justify-between text-indigo-900 text-[11px]">
+        <div class="p-3 bg-[#EFF5F1]/60 rounded-lg border border-[#E1F4E4] space-y-1">
+          <div class="flex justify-between text-[#1F3326] text-[11px]">
             <span>{{ $t('dashboard.sugarDemand') }}</span>
             <span class="font-bold">🍬</span>
           </div>
-          <div class="text-base sm:text-lg font-bold font-mono text-indigo-700">49,800 KG</div>
-          <div class="text-[10px] text-slate-400">{{ $t('dashboard.sugarDemandMoM') }}</div>
+          <div class="text-base sm:text-lg font-bold font-mono text-[#2A5440]">49,800 KG</div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('dashboard.sugarDemandMoM') }}</div>
         </div>
       </div>
 
       <!-- AI 扩容需求决策建议 -->
-      <div class="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 via-blue-50/60 to-slate-50 border border-indigo-100 text-xs space-y-2">
-        <div class="flex items-center gap-2 font-bold text-indigo-950">
+      <div class="p-3.5 rounded-lg bg-gradient-to-r from-[#EFF5F1]/80 via-[#EFF5F1]/60 to-[#F3F8F4] border border-[#E1F4E4] text-xs space-y-2">
+        <div class="flex items-center gap-2 font-bold text-[#12241A]">
           <span class="text-base">🤖</span>
           <span>{{ $t('dashboard.aiExpansionConclusionTitle') }}</span>
         </div>
-        <p class="text-slate-600 leading-relaxed text-[11px]">
+        <p class="text-[#58685D] leading-relaxed text-[11px]">
           {{ $t('dashboard.aiExpansionConclusionText') }}
         </p>
       </div>
@@ -344,15 +344,15 @@
     <!-- ======================================================== -->
     <!-- 模块 6: 代理商订单统计分析全景看板 (需求 5 联动数据看板) -->
     <!-- ======================================================== -->
-    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+    <div class="bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E9F1EB] pb-3">
         <div>
-          <h3 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+          <h3 class="text-xs sm:text-sm font-bold text-[#1F3326] flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#2F7A50]"></span>
             <span>{{ $t('dashboard.agentOrdersOverviewTitle') }}</span>
             <el-tag size="small" type="success" effect="plain" class="font-mono">{{ $t('dashboard.wholesaleAnalyticsTag') }}</el-tag>
           </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">
+          <p class="text-[11px] text-[#8A9A8F] mt-0.5">
             {{ $t('dashboard.agentOrdersOverviewSub') }}
           </p>
         </div>
@@ -361,7 +361,7 @@
         </el-button>
       </div>
 
-      <AgentOrderStatsChart />
+      <AgentInventoryLedger />
     </div>
   </div>
 </template>
@@ -369,7 +369,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AgentOrderStatsChart from '../../agent/components/AgentOrderStatsChart.vue';
+import AgentInventoryLedger from '../../agent/components/AgentInventoryLedger.vue';
 import * as echarts from 'echarts';
 import { User, House, Shop, Box, Service } from '@element-plus/icons-vue';
 import { getAdminDashboardStats } from '../../../api/dashboard.js';
@@ -457,7 +457,7 @@ function renderCitizenTrendChart(citizens = {}) {
       {
         type: 'value',
         name: '新增登记 (人)',
-        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        splitLine: { lineStyle: { type: 'dashed', color: '#EFF5F1' } }
       },
       {
         type: 'value',
@@ -470,7 +470,7 @@ function renderCitizenTrendChart(citizens = {}) {
         name: '新增登记公民',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#3b82f6', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#5C8A6B', borderRadius: [3, 3, 0, 0] },
         data: trend.newRegistered
       },
       {
@@ -480,8 +480,8 @@ function renderCitizenTrendChart(citizens = {}) {
         smooth: true,
         symbol: 'circle',
         symbolSize: 6,
-        lineStyle: { width: 2.5, color: '#10b981' },
-        itemStyle: { color: '#10b981' },
+        lineStyle: { width: 2.5, color: '#3E9B68' },
+        itemStyle: { color: '#3E9B68' },
         data: trend.biometricVerified
       }
     ]
@@ -527,21 +527,21 @@ function renderFamilyBusinessChart(families = {}) {
     yAxis: {
       type: 'value',
       name: '工单件数',
-      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+      splitLine: { lineStyle: { type: 'dashed', color: '#EFF5F1' } }
     },
     series: [
       {
         name: '业务申请受理量',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#818cf8', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#DFC08B', borderRadius: [3, 3, 0, 0] },
         data: applies
       },
       {
         name: '办结通过量',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#4f46e5', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#B8934A', borderRadius: [3, 3, 0, 0] },
         data: approved
       }
     ]
@@ -588,7 +588,7 @@ function renderAgentRegionChart(agents = {}) {
       {
         type: 'value',
         name: '网点数 (家)',
-        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        splitLine: { lineStyle: { type: 'dashed', color: '#EFF5F1' } }
       },
       {
         type: 'value',
@@ -601,7 +601,7 @@ function renderAgentRegionChart(agents = {}) {
         name: '网点总数 (家)',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#0d9488', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#34856B', borderRadius: [3, 3, 0, 0] },
         data: agentCounts
       },
       {
@@ -611,8 +611,8 @@ function renderAgentRegionChart(agents = {}) {
         smooth: true,
         symbol: 'circle',
         symbolSize: 6,
-        lineStyle: { width: 2.5, color: '#f59e0b' },
-        itemStyle: { color: '#f59e0b' },
+        lineStyle: { width: 2.5, color: '#D9B567' },
+        itemStyle: { color: '#D9B567' },
         data: avgHouseholds
       }
     ]
@@ -658,21 +658,21 @@ function renderRationDistributionChart(distribution = {}) {
     yAxis: {
       type: 'value',
       name: '吨 (Tons)',
-      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+      splitLine: { lineStyle: { type: 'dashed', color: '#EFF5F1' } }
     },
     series: [
       {
         name: '计划配给指标 (吨)',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#94a3b8', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#8A9A8F', borderRadius: [3, 3, 0, 0] },
         data: planned
       },
       {
         name: '实际终端核发 (吨)',
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { color: '#10b981', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#3E9B68', borderRadius: [3, 3, 0, 0] },
         data: actual
       }
     ]
@@ -698,6 +698,8 @@ function renderComplaintPieChart(complaints = {}) {
   }));
 
   const option = {
+    // 参考站图表色板：鼠尾草绿 / 麦芽金 / 薄荷绿 / 砖红 / 灰绿
+    color: ['#326445', '#DABD81', '#4A9266', '#C04442', '#58685D'],
     tooltip: {
       trigger: 'item',
       formatter: '{b}: <strong>{c} 件</strong> ({d}%)'
@@ -764,7 +766,7 @@ function renderComplaintTrendChart(complaints = {}) {
       {
         type: 'value',
         name: '工单件数',
-        splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } }
+        splitLine: { lineStyle: { type: 'dashed', color: '#EFF5F1' } }
       },
       {
         type: 'value',
@@ -779,8 +781,8 @@ function renderComplaintTrendChart(complaints = {}) {
         smooth: true,
         symbol: 'circle',
         symbolSize: 6,
-        lineStyle: { width: 2.5, color: '#f43f5e' },
-        itemStyle: { color: '#f43f5e' },
+        lineStyle: { width: 2.5, color: '#C04442' },
+        itemStyle: { color: '#C04442' },
         data: trend.received
       },
       {
@@ -789,8 +791,8 @@ function renderComplaintTrendChart(complaints = {}) {
         smooth: true,
         symbol: 'circle',
         symbolSize: 6,
-        lineStyle: { width: 2.5, color: '#10b981' },
-        itemStyle: { color: '#10b981' },
+        lineStyle: { width: 2.5, color: '#3E9B68' },
+        itemStyle: { color: '#3E9B68' },
         data: trend.resolved
       },
       {
@@ -798,8 +800,8 @@ function renderComplaintTrendChart(complaints = {}) {
         type: 'line',
         yAxisIndex: 1,
         smooth: true,
-        lineStyle: { width: 2, color: '#f59e0b', type: 'dashed' },
-        itemStyle: { color: '#f59e0b' },
+        lineStyle: { width: 2, color: '#D9B567', type: 'dashed' },
+        itemStyle: { color: '#D9B567' },
         data: trend.avgHours
       }
     ]

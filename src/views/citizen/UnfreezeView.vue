@@ -1,17 +1,17 @@
 <template>
   <div class="unfreeze-view space-y-4 sm:space-y-6">
-    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 sm:space-y-6">
+    <div class="bg-white rounded-lg p-4 sm:p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4 sm:space-y-6">
       <!-- 顶部标题与返回导航 -->
-      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-[#E9F1EB] pb-4">
         <ModuleDescTip
           :title="$t('unfreeze.title')"
           :content="$t('unfreeze.subtitle')"
           badge="第140号决议申诉"
           badge-type="warning"
-          title-class="text-base font-bold text-slate-900"
+          title-class="text-base font-bold text-[#1B3123]"
         >
           <template #icon>
-            <el-icon class="text-amber-500 text-lg"><Unlock /></el-icon>
+            <el-icon class="text-[#D3AF62] text-lg"><Unlock /></el-icon>
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
@@ -24,7 +24,7 @@
         <!-- 第一部分：情形选择与申诉陈述 -->
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-[#43554B] mb-1">
               {{ $t('unfreeze.type') }}
             </label>
             <el-select v-model="unfreezeType" class="w-full" size="large" @change="handleTypeChange">
@@ -40,7 +40,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-[#43554B] mb-1">
               {{ $t('unfreeze.statement') }}
             </label>
             <el-input
@@ -69,12 +69,12 @@
 
         <!-- 第二部分：审核须知与提交支付按钮 -->
         <div class="space-y-4 flex flex-col justify-between">
-          <div class="p-4 bg-blue-50/60 rounded-xl border border-blue-200/80 text-xs text-blue-900 space-y-1.5">
+          <div class="p-4 bg-[#EFF5F1]/60 rounded-lg border border-[#C7DED0]/80 text-xs text-[#1F3326] space-y-1.5">
             <div class="font-bold flex items-center gap-1.5">
               <span>📋</span>
               <span>{{ $t('unfreeze.reviewNoticeTitle') }}</span>
             </div>
-            <p class="text-blue-800/90 text-[11px] leading-relaxed">
+            <p class="text-[#24483A]/90 text-[11px] leading-relaxed">
               {{ $t('unfreeze.reviewNoticeText') }}
             </p>
           </div>
@@ -83,7 +83,7 @@
             <el-button
               type="warning"
               size="large"
-              class="w-full font-bold shadow-md rounded-xl text-sm py-3"
+              class="w-full font-bold shadow-md rounded-lg text-sm py-3"
               :loading="submitting"
               @click="handleStartUnfreeze"
             >

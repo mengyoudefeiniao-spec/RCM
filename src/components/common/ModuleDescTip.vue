@@ -5,7 +5,7 @@
 
     <!-- 主标题：优先使用 default 插槽，未提供时使用解析后的 parsedTitle -->
     <slot>
-      <span class="font-bold text-slate-900" :class="titleClass">
+      <span class="font-bold text-[#1B3123]" :class="titleClass">
         {{ parsedTitle }}
       </span>
     </slot>
@@ -28,8 +28,8 @@
       <template #reference>
         <button
           type="button"
-          class="desc-tip-btn inline-flex items-center justify-center w-6 h-6 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer select-none shrink-0"
-          :class="{ 'text-blue-600 bg-blue-100/70 ring-2 ring-blue-300/40': popoverVisible }"
+          class="desc-tip-btn inline-flex items-center justify-center w-6 h-6 rounded-full text-[#8A9A8F] hover:text-[#326445] hover:bg-[#EFF5F1] active:scale-95 transition-all cursor-pointer select-none shrink-0"
+          :class="{ 'text-[#326445] bg-[#E1F4E4]/70 ring-2 ring-[#AECBB8]/40': popoverVisible }"
           :title="popoverVisible ? '关闭说明提示' : '点击查看功能说明与规则'"
           :aria-expanded="popoverVisible"
         >
@@ -40,7 +40,7 @@
       <!-- 新图层内容：以标签形式展示 (括号特征标签 + 详细规则说明标签) -->
       <div class="desc-layer-content space-y-2.5 p-1 text-xs">
         <!-- 标签头部行 -->
-        <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
+        <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-[#E9F1EB]">
           <div class="flex items-center gap-1.5 flex-wrap">
             <!-- 原括号内的短特征/分类标签 -->
             <el-tag
@@ -55,8 +55,8 @@
                 {{ parsedBadge }}
               </span>
             </el-tag>
-            <span v-else class="font-bold text-slate-800 flex items-center gap-1 text-[11px]">
-              <el-icon class="text-blue-500" :size="13"><InfoFilled /></el-icon>
+            <span v-else class="font-bold text-[#1F3326] flex items-center gap-1 text-[11px]">
+              <el-icon class="text-[#5C8A6B]" :size="13"><InfoFilled /></el-icon>
               <span>功能模块规则说明</span>
             </span>
           </div>
@@ -64,7 +64,7 @@
           <!-- 右上角关闭按钮 -->
           <button
             type="button"
-            class="text-slate-400 hover:text-slate-600 p-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+            class="text-[#8A9A8F] hover:text-[#58685D] p-0.5 rounded hover:bg-[#E9F1EB] transition-colors cursor-pointer shrink-0"
             title="关闭提示"
             @click="popoverVisible = false"
           >
@@ -75,10 +75,10 @@
         <!-- 详细说明文本：以优雅的标签卡片形式呈现 -->
         <div
           v-if="content"
-          class="desc-text-tag bg-slate-50 border border-slate-200/90 text-slate-600 rounded-lg p-2.5 text-xs leading-relaxed break-words font-normal shadow-2xs"
+          class="desc-text-tag bg-[#F3F8F4] border border-[#D9E5DB]/90 text-[#58685D] rounded-lg p-2.5 text-xs leading-relaxed break-words font-normal shadow-2xs"
         >
           <div class="flex items-start gap-1.5">
-            <el-icon class="text-blue-500 mt-0.5 shrink-0" :size="12"><InfoFilled /></el-icon>
+            <el-icon class="text-[#5C8A6B] mt-0.5 shrink-0" :size="12"><InfoFilled /></el-icon>
             <span class="flex-1 break-words">{{ content }}</span>
           </div>
         </div>
@@ -181,7 +181,7 @@ const hasDescContent = computed(() => {
 .module-desc-layer-popover.el-popover.el-popper {
   padding: 8px 10px !important;
   border-radius: 14px !important;
-  border: 1px solid rgba(226, 232, 240, 0.95) !important;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid rgba(217, 229, 219, 0.95) !important;
+  box-shadow: 0 10px 25px -5px rgba(31, 51, 38, 0.12), 0 8px 10px -6px rgba(31, 51, 38, 0.08) !important;
 }
 </style>

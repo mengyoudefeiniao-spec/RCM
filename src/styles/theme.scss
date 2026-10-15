@@ -1,67 +1,115 @@
 /**
  * ====================================================================
  * RCM 企业级政务系统 - 现代中东高端政务主题视觉规范 (SCSS)
- * 风格基调：沉稳深墨绿 (Deep Forest Green) + 暖砂金 (Sand Gold) + 温润暖米白
+ * 风格基调：鼠尾草政务绿 (Sage Green) + 亮砂金 (Bright Gold) + 薄荷浅绿 + 温润米白
+ * 对标参考站 (myaid.yonsyntech.app)：语义令牌 background / foreground / card /
+ * primary / secondary / muted / accent / gold-* / destructive 与 8px 圆角体系
  * ====================================================================
  */
 
 // 1. 核心调色板 SCSS 变量
-$rcm-primary: #1E3F35;          // 主品牌色：深墨绿
-$rcm-primary-dark: #152E27;     // 深墨绿深色态 (Hover/Active)
-$rcm-primary-light-3: #4A6E64;  // 浅墨绿
-$rcm-primary-light-7: #9EB6AE;
-$rcm-primary-light-9: #EAF1EE;  // 极浅墨绿背景
+$rcm-primary: #326445;          // 主品牌色：深墨绿
+$rcm-primary-dark: #2A5440;     // 深墨绿深色态 (Hover/Active)
+$rcm-primary-light-3: #5C8A6B;  // 浅墨绿
+$rcm-primary-light-7: #AECBB8;
+$rcm-primary-light-9: #E1F4E4;  // 极浅墨绿背景
 
-$rcm-gold: #C59D5F;             // 辅助强调色：暖砂金/麦芽金
-$rcm-gold-dark: #AA8246;        // 深砂金
-$rcm-gold-light: #FAF5ED;       // 极浅砂金底色
-$rcm-gold-border: #E8D9BF;      // 砂金微边框
+$rcm-gold: #D3AF62;             // 辅助强调色：暖砂金/麦芽金
+$rcm-gold-dark: #B8934A;        // 深砂金
+$rcm-gold-light: #FDF3E0;       // 极浅砂金底色
+$rcm-gold-border: #E5CEA1;      // 砂金微边框
 
-$rcm-canvas: #F8F7F3;           // 画布底色：温润暖米白 (拒绝刺眼冷白)
+$rcm-canvas: #F8FBF8;           // 画布底色：温润暖米白 (拒绝刺眼冷白)
 $rcm-surface: #FFFFFF;          // 容器底色：纯白
-$rcm-border: #ECE7DE;           // 极细微暖边框
-$rcm-border-light: #F4F1EA;
+$rcm-border: #D9E5DB;           // 极细微暖边框
+$rcm-border-light: #E9F1EB;
 
-$rcm-text-title: #18231E;       // 标题与核心高频数字
-$rcm-text-regular: #5E6862;     // 正文标签
-$rcm-text-secondary: #8C958F;   // 辅助次级字
-$rcm-text-muted: #B4BCB7;
+$rcm-text-title: #1F3326;       // 标题与核心高频数字
+$rcm-text-regular: #58685D;     // 正文标签
+$rcm-text-secondary: #8A9A8F;   // 辅助次级字
+$rcm-text-muted: #B3C1B7;
 
-$rcm-badge-pink-bg: #FEECEC;    // 滞后告警胶囊：柔和淡粉底
-$rcm-badge-pink-text: #D34545;  // 砖红文字
-$rcm-badge-gold-bg: #FAF3E6;    // 待办/待收胶囊：浅砂金底
-$rcm-badge-gold-text: #966C2E;
+$rcm-badge-pink-bg: #FBEAE9;    // 滞后告警胶囊：柔和淡粉底
+$rcm-badge-pink-text: #C04442;  // 砖红文字
+$rcm-badge-gold-bg: #FDF3E0;    // 待办/待收胶囊：浅砂金底
+$rcm-badge-gold-text: #7A5F21;
 
-$rcm-radius-card: 16px;         // 卡片大圆角
+$rcm-radius-card: 8px;          // 卡片统一圆角 (对标参考站 8px)
 $rcm-radius-btn: 8px;           // 按钮微圆角
 $rcm-radius-pill: 9999px;       // 胶囊全圆角
 
-// 2. Element Plus CSS 变量全景覆盖注入
+// 2. 参考站语义令牌注入 (与 /agent、/admin 视觉语言严格一致)
 :root {
+  --background: #{$rcm-canvas};            // 页面画布：温润米白
+  --foreground: #1B3123;                   // 主文字：深墨绿黑
+  --card: #{$rcm-surface};                 // 卡片纯白
+  --card-foreground: #{$rcm-text-title};
+  --popover: #{$rcm-surface};
+  --popover-foreground: #{$rcm-text-title};
+  --primary: #{$rcm-primary};              // 鼠尾草政务绿
+  --primary-foreground: #FAFDFB;
+  --secondary: #E2F4E4;                    // 薄荷浅绿衬底
+  --secondary-foreground: #234630;
+  --muted: #EDF6F0;
+  --muted-foreground: #{$rcm-text-regular};
+  --accent: #{$rcm-gold};                  // 亮砂金 CTA
+  --accent-foreground: #3F3017;
+  --gold-ink: #{$rcm-badge-gold-text};     // 金棕文字
+  --gold-soft: #{$rcm-gold-light};         // 浅砂金底
+  --gold-border: #{$rcm-gold-border};      // 砂金描边
+  --destructive: #{$rcm-badge-pink-text};
+  --destructive-foreground: #FFFFFF;
+  --success: #266741;
+  --border: #{$rcm-border};
+  --input: #{$rcm-border};
+  --ring: #578F6B;
+  --radius: #{$rcm-radius-card};
+
+  // 参考站阴影体系
+  --shadow-surface: 0 3px 18px -6px rgba(58, 77, 62, 0.12);
+  --shadow-gold: 0 4px 12px -4px rgba(144, 115, 51, 0.3);
+  --shadow-float: 0 24px 70px -22px rgba(38, 56, 41, 0.2);
+
+  // Element Plus CSS 变量全景覆盖注入
   // 主色 (Primary) -> 沉稳深墨绿
   --el-color-primary: #{$rcm-primary};
   --el-color-primary-light-3: #{$rcm-primary-light-3};
-  --el-color-primary-light-5: #6F8E84;
+  --el-color-primary-light-5: #7FA48C;
   --el-color-primary-light-7: #{$rcm-primary-light-7};
-  --el-color-primary-light-8: #C8D7D2;
+  --el-color-primary-light-8: #C7DED0;
   --el-color-primary-light-9: #{$rcm-primary-light-9};
   --el-color-primary-dark-2: #{$rcm-primary-dark};
 
   // 告警/警告色 (Warning) -> 暖砂金
   --el-color-warning: #{$rcm-gold};
-  --el-color-warning-light-3: #D4B27E;
-  --el-color-warning-light-5: #E2C79F;
-  --el-color-warning-light-7: #EFE0C7;
+  --el-color-warning-light-3: #DFC08B;
+  --el-color-warning-light-5: #{$rcm-gold-border};
+  --el-color-warning-light-7: #EED9AE;
   --el-color-warning-light-9: #{$rcm-gold-light};
   --el-color-warning-dark-2: #{$rcm-gold-dark};
 
   // 危险/驳回/严重色 (Danger) -> 砖红与粉红
-  --el-color-danger: #D34545;
+  --el-color-danger: #C04442;
+  --el-color-danger-light-3: #D0827F;
+  --el-color-danger-light-5: #E8B7B5;
+  --el-color-danger-light-7: #F2D5D4;
+  --el-color-danger-light-8: #F7E3E2;
   --el-color-danger-light-9: #{$rcm-badge-pink-bg};
+  --el-color-danger-dark-2: #A93B39;
 
   // 成功色 (Success) -> 柔和橄榄绿
-  --el-color-success: #2C6E49;
-  --el-color-success-light-9: #EDF6F1;
+  --el-color-success: #2F7A50;
+  --el-color-success-light-3: #6FBF92;
+  --el-color-success-light-5: #A7D9BC;
+  --el-color-success-light-7: #C7E9D5;
+  --el-color-success-light-8: #D9F0E2;
+  --el-color-success-light-9: #{$rcm-primary-light-9};
+  --el-color-success-dark-2: #24483A;
+
+  // 信息色 (Info) -> 灰绿中性
+  --el-color-info: #{$rcm-text-regular};
+  --el-color-info-light-9: #EFF5F1;
+  --el-color-info-dark-2: #43554B;
 
   // 画布与卡片背景
   --el-bg-color-page: #{$rcm-canvas};
@@ -71,14 +119,17 @@ $rcm-radius-pill: 9999px;       // 胶囊全圆角
   // 边框体系
   --el-border-color: #{$rcm-border};
   --el-border-color-light: #{$rcm-border-light};
-  --el-border-color-lighter: #F8F6F1;
-  --el-border-color-extra-light: #FCFBF8;
+  --el-border-color-lighter: #F3F8F4;
+  --el-border-color-extra-light: #F3F9F5;
+  --el-border-color-darker: #C9DBCE;
+  --el-border-color-dark: #AECBB8;
 
   // 文本色彩阶梯
   --el-text-color-primary: #{$rcm-text-title};
   --el-text-color-regular: #{$rcm-text-regular};
   --el-text-color-secondary: #{$rcm-text-secondary};
   --el-text-color-placeholder: #{$rcm-text-muted};
+  --el-text-color-disabled: #C9DBCE;
 
   // 圆角体系
   --el-border-radius-base: #{$rcm-radius-btn};
@@ -87,9 +138,9 @@ $rcm-radius-pill: 9999px;       // 胶囊全圆角
   --el-card-border-radius: #{$rcm-radius-card};
 
   // 自定义高端阴影体系 (大扩散柔和微暖阴影)
-  --rcm-shadow-card: 0 4px 20px -2px rgba(60, 48, 25, 0.04), 0 2px 6px -1px rgba(60, 48, 25, 0.02);
-  --rcm-shadow-card-hover: 0 12px 28px -4px rgba(30, 63, 53, 0.08), 0 4px 10px -2px rgba(30, 63, 53, 0.04);
-  --rcm-shadow-dropdown: 0 10px 30px -4px rgba(30, 40, 35, 0.10);
+  --rcm-shadow-card: 0 3px 18px -6px rgba(58, 77, 62, 0.12);
+  --rcm-shadow-card-hover: 0 12px 28px -4px rgba(50, 100, 69, 0.08), 0 4px 10px -2px rgba(50, 100, 69, 0.04);
+  --rcm-shadow-dropdown: 0 24px 70px -22px rgba(38, 56, 41, 0.2);
 }
 
 // 3. 全局组件细粒度质感升级
@@ -99,6 +150,20 @@ body {
   letter-spacing: -0.01em;
 }
 
+// 参考站通用卡片容器 (白底 + 极细暖边框 + 柔和表面阴影 + 8px 圆角)
+.rcm-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: $rcm-radius-card;
+  box-shadow: var(--shadow-surface);
+}
+
+// 参考站金色描边强调卡片 (用于顶部汇总/关键指标卡)
+.rcm-card--accent {
+  border-color: var(--gold-border);
+  background-color: var(--secondary);
+}
+
 // Element Plus Card 容器增强
 .el-card {
   border: 1px solid var(--el-border-color) !important;
@@ -106,6 +171,13 @@ body {
   background-color: var(--el-bg-color) !important;
   box-shadow: var(--rcm-shadow-card) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &__header {
+    border-bottom: 1px solid var(--el-border-color-light) !important;
+    padding: 14px 18px !important;
+    font-weight: 600;
+    color: $rcm-text-title;
+  }
 }
 
 // Element Plus Button 交互质感
@@ -123,11 +195,24 @@ body {
       background-color: var(--el-color-primary-light-3) !important;
       border-color: var(--el-color-primary-light-3) !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(30, 63, 53, 0.2);
+      box-shadow: 0 4px 12px rgba(50, 100, 69, 0.2);
     }
 
     &:active {
       transform: translateY(0);
+    }
+  }
+
+  // 默认次级按钮：白底细边框，悬浮切换为参考站砂金态
+  &--default {
+    background-color: #FFFFFF !important;
+    border-color: var(--el-border-color) !important;
+    color: $rcm-text-title !important;
+
+    &:hover, &:focus {
+      background-color: $rcm-gold-light !important;
+      border-color: $rcm-gold-border !important;
+      color: $rcm-badge-gold-text !important;
     }
   }
 }
@@ -139,7 +224,7 @@ body {
 
   &--danger.el-tag--light {
     background-color: $rcm-badge-pink-bg !important;
-    border-color: #FBD7D7 !important;
+    border-color: #F2D5D4 !important;
     color: $rcm-badge-pink-text !important;
   }
 
@@ -151,8 +236,20 @@ body {
 
   &--primary.el-tag--light {
     background-color: $rcm-primary-light-9 !important;
-    border-color: #C8D7D2 !important;
+    border-color: #C7DED0 !important;
     color: $rcm-primary !important;
+  }
+
+  &--success.el-tag--light {
+    background-color: $rcm-primary-light-9 !important;
+    border-color: #C7DED0 !important;
+    color: #2F7A50 !important;
+  }
+
+  &--info.el-tag--light {
+    background-color: #EFF5F1 !important;
+    border-color: $rcm-border-light !important;
+    color: $rcm-text-regular !important;
   }
 }
 
@@ -162,7 +259,7 @@ body {
   height: 32px;
   border-radius: 8px;
   background-color: $rcm-gold-light;
-  border: 1px solid rgba(197, 157, 95, 0.25);
+  border: 1px solid rgba(211, 175, 98, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -171,9 +268,205 @@ body {
 
   &--primary {
     background-color: $rcm-primary-light-9;
-    border-color: rgba(30, 63, 53, 0.2);
+    border-color: rgba(50, 100, 69, 0.2);
     color: $rcm-primary;
   }
 }
 
+/* ====================================================================
+ * 4. Element Plus 全量组件外观对齐参考站 (浅底 + 暖边框 + 8px 圆角)
+ * ==================================================================== */
 
+// 表格：表头薄荷浅绿，行悬浮温润
+.el-table {
+  --el-table-border-color: #{$rcm-border-light};
+  --el-table-header-bg-color: #F3F8F4;
+  --el-table-header-text-color: #{$rcm-text-regular};
+  --el-table-row-hover-bg-color: #F3F8F4;
+  --el-table-text-color: #{$rcm-text-title};
+  border-radius: $rcm-radius-card;
+  overflow: hidden;
+
+  th.el-table__cell {
+    font-weight: 600 !important;
+    background-color: #F3F8F4 !important;
+  }
+
+  td.el-table__cell {
+    border-color: $rcm-border-light !important;
+  }
+}
+
+// 选项卡：激活态深墨绿文字 + 砂金指示条
+.el-tabs__item {
+  color: $rcm-text-regular !important;
+  font-weight: 500;
+
+  &.is-active {
+    color: $rcm-primary !important;
+    font-weight: 600;
+  }
+
+  &:hover {
+    color: $rcm-primary !important;
+  }
+}
+
+.el-tabs__active-bar {
+  background-color: $rcm-gold !important;
+}
+
+.el-tabs__nav-wrap::after {
+  background-color: $rcm-border-light !important;
+  height: 1px !important;
+}
+
+// 输入框 / 文本域 / 选择器
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: $rcm-radius-btn !important;
+  box-shadow: 0 0 0 1px $rcm-border inset !important;
+  background-color: #FFFFFF !important;
+
+  &.is-focus,
+  &:hover {
+    box-shadow: 0 0 0 1px $rcm-primary inset !important;
+  }
+}
+
+.el-input__inner,
+.el-textarea__inner {
+  color: $rcm-text-title;
+}
+
+// 下拉 / 弹出层：大扩散柔和阴影 + 8px 圆角
+.el-popper,
+.el-dropdown-menu,
+.el-select-dropdown {
+  border-radius: $rcm-radius-card !important;
+  box-shadow: var(--rcm-shadow-dropdown) !important;
+  border: 1px solid $rcm-border-light !important;
+  overflow: hidden;
+}
+
+.el-dropdown-menu__item {
+  color: $rcm-text-regular !important;
+  border-radius: 6px;
+
+  &:not(.is-disabled):hover {
+    background-color: $rcm-primary-light-9 !important;
+    color: $rcm-primary !important;
+  }
+}
+
+// 对话框 / 抽屉
+.el-dialog {
+  border-radius: $rcm-radius-card !important;
+  overflow: hidden;
+
+  &__header {
+    border-bottom: 1px solid $rcm-border-light !important;
+    margin-right: 0 !important;
+    padding: 16px 20px !important;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: $rcm-text-title;
+  }
+
+  &__footer {
+    border-top: 1px solid $rcm-border-light !important;
+    padding: 12px 20px !important;
+  }
+}
+
+.el-drawer {
+  &__header {
+    border-bottom: 1px solid $rcm-border-light !important;
+    margin-bottom: 0 !important;
+    padding: 16px 20px !important;
+    color: $rcm-text-title;
+    font-weight: 600;
+  }
+
+  &__body {
+    background-color: $rcm-canvas;
+  }
+}
+
+// 描述列表
+.el-descriptions__label {
+  color: $rcm-text-regular !important;
+  background-color: #F3F8F4 !important;
+}
+
+.el-descriptions__content {
+  color: $rcm-text-title !important;
+}
+
+// 分页
+.el-pager li.is-active {
+  background-color: $rcm-primary !important;
+  color: #FFFFFF !important;
+  border-radius: 6px;
+}
+
+// 提示气泡：深墨绿底更契合政务质感
+.el-popper.is-dark {
+  background-color: $rcm-text-title !important;
+  border-radius: 6px !important;
+}
+
+// 消息与通知
+.el-message {
+  border-radius: $rcm-radius-card !important;
+  border: 1px solid $rcm-border-light !important;
+  box-shadow: var(--rcm-shadow-dropdown) !important;
+}
+
+.el-message-box {
+  border-radius: $rcm-radius-card !important;
+  border: 1px solid $rcm-border-light !important;
+}
+
+.el-notification {
+  border-radius: $rcm-radius-card !important;
+  border: 1px solid $rcm-border-light !important;
+  box-shadow: var(--rcm-shadow-dropdown) !important;
+}
+
+// 警告条
+.el-alert {
+  border-radius: $rcm-radius-card !important;
+  border-width: 1px !important;
+}
+
+// 分割线与空状态
+.el-divider {
+  border-color: $rcm-border-light !important;
+}
+
+.el-empty__description p {
+  color: $rcm-text-secondary !important;
+}
+
+// 表单标签
+.el-form-item__label {
+  color: $rcm-text-regular !important;
+  font-weight: 500;
+}
+
+// 单选组：选中态墨绿 + 浅绿底
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background-color: $rcm-primary !important;
+  border-color: $rcm-primary !important;
+  color: #FFFFFF !important;
+  box-shadow: -1px 0 0 0 $rcm-primary !important;
+}
+
+// 进度条
+.el-progress-bar__inner {
+  background-color: $rcm-primary !important;
+}

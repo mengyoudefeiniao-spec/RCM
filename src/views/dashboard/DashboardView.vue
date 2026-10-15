@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard-view space-y-3 sm:space-y-6">
-    <!-- 模式 1: 现代中东高端政务质感看板 (参考图风格 100% 还原) -->
+    <!-- 模式 1: 下滑式配给数据主页 (参考 Iraq Census GeoPortal 交互式下滑布局) -->
     <div v-if="dashboardMode === 'overview'" class="animate-fadeIn">
-      <DashboardOverview />
+      <ScrollHome @switch-mode="dashboardMode = $event" />
     </div>
 
     <!-- 模式 2: 现场核销作业 APP (基于 Google Pixel 9 深度适配) -->
@@ -13,21 +13,21 @@
     <!-- 模式 3: 原角色专属细化业务大盘 (保供/管理) -->
     <div v-else-if="dashboardMode === 'operational'" class="space-y-4 animate-fadeIn">
       <!-- 原顶部控制栏 -->
-      <div class="bg-white px-4 py-3 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="bg-white px-4 py-3 rounded-lg border border-[#D9E5DB]/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" :class="isAgentRole ? 'bg-teal-600' : 'bg-blue-600'">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" :class="isAgentRole ? 'bg-[#2F7A50]' : 'bg-[#326445]'">
             <el-icon class="text-base"><DataAnalysis /></el-icon>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-sm font-bold text-slate-900">
+              <h2 class="text-sm font-bold text-[#1B3123]">
                 {{ isAgentRole ? ($t('dashboard.agentTitle') || '配给代理保供大盘') : ($t('dashboard.adminTitle') || '全国配给综合数据看板') }}
               </h2>
               <el-tag size="small" :type="isAgentRole ? 'success' : 'primary'" effect="plain" class="font-medium text-[11px]">
                 {{ roleTitle }}
               </el-tag>
             </div>
-            <span class="text-[11px] text-slate-400">
+            <span class="text-[11px] text-[#8A9A8F]">
               {{ isAgentRole ? ($t('dashboard.agentSubtitle') || '战略物资在库余量与供应链全链路履约监控') : ($t('dashboard.adminSubtitle') || '涵盖公民、家庭、各地区代理商、实际配给及投诉处置') }}
             </span>
           </div>
@@ -57,12 +57,12 @@
       <div v-else-if="isAdminRole">
         <AdminDashboard ref="adminDashboardRef" :timeRange="selectedTimeRange" />
       </div>
-      <div v-else class="bg-white rounded-xl border border-slate-200 p-8 text-center space-y-3">
-        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 text-xl">
+      <div v-else class="bg-white rounded-lg border border-[#D9E5DB] p-8 text-center space-y-3">
+        <div class="w-12 h-12 rounded-full bg-[#E9F1EB] flex items-center justify-center mx-auto text-[#8A9A8F] text-xl">
           <el-icon><Lock /></el-icon>
         </div>
-        <h3 class="text-sm font-bold text-slate-800">{{ $t('dashboard.accessRestricted') || '数据看板访问受限' }}</h3>
-        <p class="text-xs text-slate-500 max-w-md mx-auto">
+        <h3 class="text-sm font-bold text-[#1F3326]">{{ $t('dashboard.accessRestricted') || '数据看板访问受限' }}</h3>
+        <p class="text-xs text-[#58685D] max-w-md mx-auto">
           {{ $t('dashboard.restrictedTip', { role: authStore.userProfile?.title || '普通公民' }) || `当前为【${authStore.userProfile?.title || '普通公民'}】角色。数据看板仅对配给代理网点或管理监督官开放查看。` }}
         </p>
         <div class="pt-2 flex justify-center gap-2">
@@ -88,8 +88,8 @@ import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { DataAnalysis, Checked, Refresh, Lock, Operation, Cellphone } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
-import DashboardOverview from './components/DashboardOverview.vue';
 import MobileAgentDashboard from './components/MobileAgentDashboard.vue';
+import ScrollHome from './components/ScrollHome.vue';
 import AgentDashboard from './components/AgentDashboard.vue';
 import AdminDashboard from './components/AdminDashboard.vue';
 import P1P5VerificationDrawer from '../warehouse/components/P1P5VerificationDrawer.vue';

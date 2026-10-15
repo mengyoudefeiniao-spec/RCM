@@ -1,9 +1,9 @@
 <template>
   <div class="complaint-mgmt-view space-y-4">
     <!-- 头部简要概览 -->
-    <div class="bg-white px-5 py-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="bg-white px-5 py-4 rounded-lg border border-[#D9E5DB] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div class="flex items-start sm:items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center font-bold shrink-0 mt-0.5 sm:mt-0">
+        <div class="w-8 h-8 rounded-lg bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] flex items-center justify-center font-bold shrink-0 mt-0.5 sm:mt-0">
           <el-icon class="text-base"><Service /></el-icon>
         </div>
         <ModuleDescTip
@@ -11,7 +11,7 @@
           :content="$t('complaint.subtitle')"
           :badge="$t('complaint.badgeDualTrack')"
           badge-type="danger"
-          title-class="text-sm font-bold text-slate-900"
+          title-class="text-sm font-bold text-[#1B3123]"
         >
           <template #extra>
             <el-tag size="small" type="danger" effect="plain" class="font-bold ml-1">
@@ -35,40 +35,40 @@
 
     <!-- 顶部 KPI 卡片 (针对 Google Pixel 9 412px 视口优化: 前4项2列对称排列，第5项通栏展示) -->
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3 text-xs">
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-slate-400">{{ $t('complaint.totalComplaints') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-slate-900">{{ complaintsList.length }}</div>
-        <div class="text-[10px] text-slate-500">{{ $t('complaint.channelDual') }}</div>
+      <div class="bg-white p-3 rounded-lg border border-[#D9E5DB] shadow-2xs space-y-1">
+        <div class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ $t('complaint.totalComplaints') }}</div>
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">{{ complaintsList.length }}</div>
+        <div class="text-[10px] text-[#58685D]">{{ $t('complaint.channelDual') }}</div>
       </div>
-      <div class="bg-white p-3 rounded-xl border border-sky-100 shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-sky-600">{{ $t('complaint.aiOnline') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-sky-700">{{ aiChannelCount }}</div>
-        <div class="text-[10px] text-slate-400">{{ $t('complaint.channelAiDesc') }}</div>
+      <div class="bg-white p-3 rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1">
+        <div class="text-[10px] sm:text-[11px] text-[#2F7A50]">{{ $t('complaint.aiOnline') }}</div>
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#2F5B44]">{{ aiChannelCount }}</div>
+        <div class="text-[10px] text-[#8A9A8F]">{{ $t('complaint.channelAiDesc') }}</div>
       </div>
-      <div class="bg-white p-3 rounded-xl border border-amber-100 shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-amber-600">{{ $t('complaint.phoneHotline') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-amber-700">{{ phoneChannelCount }}</div>
-        <div class="text-[10px] text-slate-400">{{ $t('complaint.channelPhoneDesc') }}</div>
+      <div class="bg-white p-3 rounded-lg border border-[#FDF3E0] shadow-2xs space-y-1">
+        <div class="text-[10px] sm:text-[11px] text-[#C9A13B]">{{ $t('complaint.phoneHotline') }}</div>
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#7A5F21]">{{ phoneChannelCount }}</div>
+        <div class="text-[10px] text-[#8A9A8F]">{{ $t('complaint.channelPhoneDesc') }}</div>
       </div>
-      <div class="bg-white p-3 rounded-xl border border-rose-100 shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-rose-600">{{ $t('complaint.pendingHandling') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-rose-700">{{ pendingCount }}</div>
-        <div class="text-[10px] text-rose-500 font-medium">{{ $t('complaint.pendingFollowup') }}</div>
+      <div class="bg-white p-3 rounded-lg border border-[#F7E3E2] shadow-2xs space-y-1">
+        <div class="text-[10px] sm:text-[11px] text-[#C04442]">{{ $t('complaint.pendingHandling') }}</div>
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#A93B39]">{{ pendingCount }}</div>
+        <div class="text-[10px] text-[#C04442] font-medium">{{ $t('complaint.pendingFollowup') }}</div>
       </div>
-      <div class="col-span-2 sm:col-span-1 bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-emerald-600">{{ $t('complaint.resolvedRate') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-emerald-700">{{ resolvedRate }}%</div>
-        <div class="text-[10px] text-emerald-600">{{ $t('complaint.resolvedRateDesc') }}</div>
+      <div class="col-span-2 sm:col-span-1 bg-white p-3 rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1">
+        <div class="text-[10px] sm:text-[11px] text-[#2F7A50]">{{ $t('complaint.resolvedRate') }}</div>
+        <div class="text-lg sm:text-xl font-bold font-mono text-[#2F5B44]">{{ resolvedRate }}%</div>
+        <div class="text-[10px] text-[#2F7A50]">{{ $t('complaint.resolvedRateDesc') }}</div>
       </div>
     </div>
 
     <!-- 检索筛选区 (移动端支持折叠，保持首屏整洁) -->
-    <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3 text-xs">
+    <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB] shadow-2xs space-y-3 text-xs">
       <div class="flex items-center justify-between">
-        <span class="font-bold text-slate-700 text-xs">{{ $t('complaint.filterSearch') }}</span>
+        <span class="font-bold text-[#43554B] text-xs">{{ $t('complaint.filterSearch') }}</span>
         <button
           type="button"
-          class="sm:hidden text-blue-600 text-[11px] underline"
+          class="sm:hidden text-[#326445] text-[11px] underline"
           @click="showMobileFilter = !showMobileFilter"
         >
           {{ showMobileFilter ? $t('complaint.collapseFilters') : $t('complaint.expandFilters') }}
@@ -127,14 +127,14 @@
     </div>
 
     <!-- 列表数据区 (移动端提供卡片流与传统表格双视图) -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden p-3 sm:p-0">
-      <div class="sm:hidden flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
-        <span class="text-xs font-bold text-slate-800">{{ $t('complaint.ticketList') }} ({{ filteredList.length }})</span>
-        <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-[10px]">
+    <div class="bg-white rounded-lg border border-[#D9E5DB] shadow-2xs overflow-hidden p-3 sm:p-0">
+      <div class="sm:hidden flex items-center justify-between pb-2.5 mb-2 border-b border-[#E9F1EB]">
+        <span class="text-xs font-bold text-[#1F3326]">{{ $t('complaint.ticketList') }} ({{ filteredList.length }})</span>
+        <div class="flex items-center bg-[#E9F1EB] p-0.5 rounded-lg text-[10px]">
           <button
             type="button"
             class="px-2 py-0.5 rounded-md font-medium transition-all"
-            :class="viewMode === 'card' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500'"
+            :class="viewMode === 'card' ? 'bg-white text-[#C04442] shadow-2xs font-bold' : 'text-[#58685D]'"
             @click="viewMode = 'card'"
           >
             {{ $t('complaint.cardView') }}
@@ -142,7 +142,7 @@
           <button
             type="button"
             class="px-2 py-0.5 rounded-md font-medium transition-all"
-            :class="viewMode === 'table' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500'"
+            :class="viewMode === 'table' ? 'bg-white text-[#C04442] shadow-2xs font-bold' : 'text-[#58685D]'"
             @click="viewMode = 'table'"
           >
             {{ $t('complaint.tableView') }}
@@ -155,12 +155,12 @@
         <div
           v-for="item in paginatedList"
           :key="item.id"
-          class="p-3 rounded-xl border border-slate-200/90 bg-white shadow-2xs space-y-2 active:scale-[0.99] transition-transform"
+          class="p-3 rounded-lg border border-[#D9E5DB]/90 bg-white shadow-2xs space-y-2 active:scale-[0.99] transition-transform"
         >
           <!-- 头部: 编号、渠道、状态 -->
-          <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+          <div class="flex items-center justify-between pb-1.5 border-b border-[#E9F1EB]">
             <div class="flex items-center gap-1.5">
-              <span class="font-mono font-bold text-blue-600 text-xs">{{ item.id }}</span>
+              <span class="font-mono font-bold text-[#326445] text-xs">{{ item.id }}</span>
               <el-tag size="small" :type="item.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="scale-90 origin-left">
                 {{ item.channel.includes('AI') ? $t('complaint.channelAiTag') : $t('complaint.channelPhoneTag') }}
               </el-tag>
@@ -172,27 +172,27 @@
 
           <!-- 主体诉求与类型 -->
           <div>
-            <div class="font-bold text-slate-800 text-xs leading-snug">{{ item.title }}</div>
+            <div class="font-bold text-[#1F3326] text-xs leading-snug">{{ item.title }}</div>
             <div class="mt-1 flex items-center gap-1.5">
               <el-tag size="small" :type="getTypeTag(item.type)" class="scale-90 origin-left">{{ item.type }}</el-tag>
-              <span class="text-[10px] text-slate-400 font-mono">{{ item.createdAt?.slice(0, 16) }}</span>
+              <span class="text-[10px] text-[#8A9A8F] font-mono">{{ item.createdAt?.slice(0, 16) }}</span>
             </div>
           </div>
 
           <!-- 市民信息与归属网点 -->
-          <div class="p-2 rounded-lg bg-slate-50 text-[11px] grid grid-cols-2 gap-1.5">
+          <div class="p-2 rounded-lg bg-[#F3F8F4] text-[11px] grid grid-cols-2 gap-1.5">
             <div>
-              <span class="text-slate-400 block text-[10px]">{{ $t('complaint.cardCitizen') }}</span>
-              <span class="font-medium text-slate-700">{{ item.applicantName }} ({{ item.callPhone || '—' }})</span>
+              <span class="text-[#8A9A8F] block text-[10px]">{{ $t('complaint.cardCitizen') }}</span>
+              <span class="font-medium text-[#43554B]">{{ item.applicantName }} ({{ item.callPhone || '—' }})</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[10px]">{{ $t('complaint.cardArea') }}</span>
-              <span class="text-slate-700 truncate block">{{ item.province }} · {{ item.agentName }}</span>
+              <span class="text-[#8A9A8F] block text-[10px]">{{ $t('complaint.cardArea') }}</span>
+              <span class="text-[#43554B] truncate block">{{ item.province }} · {{ item.agentName }}</span>
             </div>
           </div>
 
           <!-- 操作按钮行 -->
-          <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+          <div class="flex items-center justify-end gap-2 pt-1 border-t border-[#E9F1EB]">
             <el-button size="small" plain @click="openDetail(item)">{{ $t('complaint.viewDetail') }}</el-button>
             <el-button
               size="small"
@@ -211,7 +211,7 @@
         <el-table :data="paginatedList" v-loading="loading" size="small" stripe border class="text-xs">
           <el-table-column prop="id" :label="$t('review.ticketId')" width="130" fixed>
             <template #default="{ row }">
-              <span class="font-mono font-bold text-blue-600">{{ row.id }}</span>
+              <span class="font-mono font-bold text-[#326445]">{{ row.id }}</span>
             </template>
           </el-table-column>
 
@@ -232,21 +232,21 @@
 
         <el-table-column prop="title" :label="$t('complaint.mainContent')" min-width="220" show-overflow-tooltip>
           <template #default="{ row }">
-            <span class="font-medium text-slate-800">{{ row.title }}</span>
+            <span class="font-medium text-[#1F3326]">{{ row.title }}</span>
           </template>
         </el-table-column>
 
         <el-table-column :label="$t('complaint.citizenName')" width="160">
           <template #default="{ row }">
-            <div class="text-slate-800 font-medium">{{ row.applicantName }}</div>
-            <div class="text-[10px] text-slate-400 font-mono">{{ row.callPhone }}</div>
+            <div class="text-[#1F3326] font-medium">{{ row.applicantName }}</div>
+            <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.callPhone }}</div>
           </template>
         </el-table-column>
 
         <el-table-column :label="$t('complaint.targetArea')" min-width="200">
           <template #default="{ row }">
-            <div class="text-slate-700 font-medium">{{ row.province }} · {{ row.center }}</div>
-            <div class="text-[11px] text-slate-500">{{ row.agentName }}</div>
+            <div class="text-[#43554B] font-medium">{{ row.province }} · {{ row.center }}</div>
+            <div class="text-[11px] text-[#58685D]">{{ row.agentName }}</div>
           </template>
         </el-table-column>
 
@@ -262,7 +262,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="submittedAt" :label="$t('complaint.registerTime')" width="130" align="center" class-name="font-mono text-slate-400" />
+        <el-table-column prop="submittedAt" :label="$t('complaint.registerTime')" width="130" align="center" class-name="font-mono text-[#8A9A8F]" />
 
         <el-table-column :label="$t('common.action')" width="160" fixed="right" align="center">
           <template #default="{ row }">
@@ -283,7 +283,7 @@
       </div>
 
       <!-- 分页栏 -->
-      <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <div class="p-3 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
         <div>
           {{ $t('complaint.filterCount', { count: filteredList.length }) }}
         </div>
@@ -301,55 +301,55 @@
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailVisible" :title="$t('complaint.detailModalTitle')" width="620px" destroy-on-close>
       <div v-if="currentDetail" class="space-y-4 text-xs">
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex items-center justify-between">
+        <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-slate-400">{{ $t('complaint.ticketIdLabel') }}</div>
-            <div class="text-sm font-mono font-bold text-blue-600">{{ currentDetail.id }}</div>
+            <div class="text-[11px] text-[#8A9A8F]">{{ $t('complaint.ticketIdLabel') }}</div>
+            <div class="text-sm font-mono font-bold text-[#326445]">{{ currentDetail.id }}</div>
           </div>
           <el-tag :type="currentDetail.status === '已办结' || currentDetail.status === 'Resolved' ? 'success' : 'warning'">{{ currentDetail.status }}</el-tag>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <span class="text-slate-400">{{ $t('complaint.channelSource') }}:</span>
-            <span class="ml-2 font-medium text-slate-800">{{ currentDetail.channel }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('complaint.channelSource') }}:</span>
+            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.channel }}</span>
           </div>
           <div>
-            <span class="text-slate-400">{{ $t('complaint.appealType') }}:</span>
-            <span class="ml-2 font-medium text-slate-800">{{ currentDetail.type }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('complaint.appealType') }}:</span>
+            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.type }}</span>
           </div>
           <div>
-            <span class="text-slate-400">{{ $t('complaint.citizenName') }}:</span>
-            <span class="ml-2 font-medium text-slate-800">{{ currentDetail.applicantName }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('complaint.citizenName') }}:</span>
+            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.applicantName }}</span>
           </div>
           <div>
-            <span class="text-slate-400">{{ $t('common.phone') }}:</span>
-            <span class="ml-2 font-mono text-slate-800">{{ currentDetail.callPhone }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('common.phone') }}:</span>
+            <span class="ml-2 font-mono text-[#1F3326]">{{ currentDetail.callPhone }}</span>
           </div>
           <div>
-            <span class="text-slate-400">{{ $t('common.province') }}:</span>
-            <span class="ml-2 text-slate-800">{{ currentDetail.province }} · {{ currentDetail.center }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('common.province') }}:</span>
+            <span class="ml-2 text-[#1F3326]">{{ currentDetail.province }} · {{ currentDetail.center }}</span>
           </div>
           <div>
-            <span class="text-slate-400">{{ $t('nav.agent') }}:</span>
-            <span class="ml-2 text-slate-800">{{ currentDetail.agentName }}</span>
+            <span class="text-[#8A9A8F]">{{ $t('nav.agent') }}:</span>
+            <span class="ml-2 text-[#1F3326]">{{ currentDetail.agentName }}</span>
           </div>
         </div>
 
         <div>
-          <div class="text-slate-400 mb-1">{{ $t('complaint.mainContent') }}:</div>
-          <div class="p-3 bg-slate-50 rounded-lg text-slate-700 leading-relaxed border border-slate-100">
+          <div class="text-[#8A9A8F] mb-1">{{ $t('complaint.mainContent') }}:</div>
+          <div class="p-3 bg-[#F3F8F4] rounded-lg text-[#43554B] leading-relaxed border border-[#E9F1EB]">
             {{ currentDetail.content }}
           </div>
         </div>
 
-        <div v-if="currentDetail.result" class="p-3 bg-emerald-50 rounded-lg border border-emerald-100 text-emerald-800 space-y-1">
+        <div v-if="currentDetail.result" class="p-3 bg-[#EFF5F1] rounded-lg border border-[#E1F4E4] text-[#24483A] space-y-1">
           <div class="font-bold flex items-center justify-between">
             <span>{{ $t('complaint.handlingResult') }}</span>
-            <span class="text-[11px] font-normal text-emerald-600">{{ currentDetail.handledAt }}</span>
+            <span class="text-[11px] font-normal text-[#2F7A50]">{{ currentDetail.handledAt }}</span>
           </div>
           <p class="leading-relaxed">{{ currentDetail.result }}</p>
-          <div class="text-[11px] text-emerald-700 pt-1">
+          <div class="text-[11px] text-[#2F5B44] pt-1">
             <span>{{ $t('complaint.handler') }}: {{ currentDetail.handlerName }}</span>
             <span class="ml-3">{{ $t('complaint.satisfaction') }}: {{ currentDetail.satisfaction }}</span>
           </div>
@@ -360,13 +360,13 @@
     <!-- 督办处理弹窗 -->
     <el-dialog v-model="handleVisible" :title="$t('complaint.handleModalTitle')" width="580px" destroy-on-close>
       <div v-if="currentHandling" class="space-y-4 text-xs">
-        <div class="bg-rose-50/50 p-3 rounded-lg border border-rose-100 space-y-1">
-          <div class="font-bold text-rose-800">{{ currentHandling.title }}</div>
-          <p class="text-slate-600 leading-relaxed">{{ currentHandling.content }}</p>
+        <div class="bg-[#FBEAE9]/50 p-3 rounded-lg border border-[#F7E3E2] space-y-1">
+          <div class="font-bold text-[#6E2F2E]">{{ currentHandling.title }}</div>
+          <p class="text-[#58685D] leading-relaxed">{{ currentHandling.content }}</p>
         </div>
 
         <div class="space-y-2">
-          <label class="block font-medium text-slate-700">{{ $t('complaint.handlingResult') }}：</label>
+          <label class="block font-medium text-[#43554B]">{{ $t('complaint.handlingResult') }}：</label>
           <el-input
             v-model="handleForm.result"
             type="textarea"
@@ -377,13 +377,13 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.handleStatus') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.handleStatus') }}：</label>
             <el-select v-model="handleForm.status" class="w-full" size="small">
               <el-option v-for="opt in statusHandleOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.satisfaction') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.satisfaction') }}：</label>
             <el-select v-model="handleForm.satisfaction" class="w-full" size="small">
               <el-option v-for="opt in satisfactionOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
@@ -404,24 +404,24 @@
       <div class="space-y-3 text-xs">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.citizenName') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.citizenName') }}：</label>
             <el-input v-model="createForm.applicantName" :placeholder="$t('complaint.citizenNamePlaceholder')" size="small" />
           </div>
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('common.phone') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('common.phone') }}：</label>
             <el-input v-model="createForm.callPhone" placeholder="+964 7XX XXX XXXX" size="small" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('common.province') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('common.province') }}：</label>
             <el-select v-model="createForm.province" class="w-full" size="small">
               <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
             </el-select>
           </div>
           <div>
-            <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.appealType') }}：</label>
+            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.appealType') }}：</label>
             <el-select v-model="createForm.type" class="w-full" size="small">
               <el-option v-for="opt in typeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
@@ -429,12 +429,12 @@
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.targetArea') }}：</label>
+          <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.targetArea') }}：</label>
           <el-input v-model="createForm.agentName" :placeholder="$t('complaint.outletNamePlaceholder')" size="small" />
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">{{ $t('complaint.mainContent') }}：</label>
+          <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.mainContent') }}：</label>
           <el-input
             v-model="createForm.content"
             type="textarea"

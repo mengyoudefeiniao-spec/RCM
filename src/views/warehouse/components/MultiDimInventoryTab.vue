@@ -1,14 +1,14 @@
 <template>
   <div class="multidim-inventory-tab space-y-6">
     <!-- 标头与子分类切换 -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB]">
       <div>
         <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-slate-900">{{ $t('warehouse.multidimTitle') || '多维库存与流水台账操作区 (SCM)' }}</span>
+          <span class="text-sm font-bold text-[#1B3123]">{{ $t('warehouse.multidimTitle') || '多维库存与流水台账操作区 (SCM)' }}</span>
           <el-tag size="small" type="primary" effect="plain">{{ isEn ? '6D Unified Accounting Model' : '六维联合核算模型' }}</el-tag>
           <el-tag size="small" type="success" effect="plain">{{ isEn ? '3-Tier Reconciliation' : '单据-流水-余额三级钩稽' }}</el-tag>
         </div>
-        <p class="text-xs text-slate-500 mt-1">
+        <p class="text-xs text-[#58685D] mt-1">
           {{ isEn ? 'Multi-dimensional lookup across physical warehouses, bins, commodities, batches, expiry and statuses.' : '支持按物理仓库、货架货位、物资品类、生产批次、效期状态、业务状态六维联合检索；支持任意历史时间点快照回溯。' }}
         </p>
       </div>
@@ -28,25 +28,25 @@
 
     <!-- 可选指标卡片 (仅当 showStatsCards 为 true 时展示，默认操作区与统计区严格分离) -->
     <div v-if="showStatsCards" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-      <div class="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-xs space-y-1">
-        <span class="text-[11px] text-slate-500 block">当前可用在库库存</span>
-        <span class="font-mono font-bold text-blue-600 text-lg sm:text-xl">{{ totalAvailableQty.toLocaleString() }}</span>
-        <span class="text-slate-400 text-[10px] block">随时可指派波次发运</span>
+      <div class="p-3.5 bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs space-y-1">
+        <span class="text-[11px] text-[#58685D] block">当前可用在库库存</span>
+        <span class="font-mono font-bold text-[#326445] text-lg sm:text-xl">{{ totalAvailableQty.toLocaleString() }}</span>
+        <span class="text-[#8A9A8F] text-[10px] block">随时可指派波次发运</span>
       </div>
-      <div class="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70 shadow-xs space-y-1">
-        <span class="text-[11px] text-amber-800 block">在途锁定库存 (P2锁定)</span>
-        <span class="font-mono font-bold text-amber-700 text-lg sm:text-xl">{{ totalLockedQty.toLocaleString() }}</span>
-        <span class="text-amber-800/80 text-[10px] block">已开具配送交付流水</span>
+      <div class="p-3.5 bg-[#FDF3E0]/60 rounded-lg border border-[#F2E3C6]/70 shadow-xs space-y-1">
+        <span class="text-[11px] text-[#6B5321] block">在途锁定库存 (P2锁定)</span>
+        <span class="font-mono font-bold text-[#7A5F21] text-lg sm:text-xl">{{ totalLockedQty.toLocaleString() }}</span>
+        <span class="text-[#6B5321]/80 text-[10px] block">已开具配送交付流水</span>
       </div>
-      <div class="p-3.5 bg-rose-50/60 rounded-xl border border-rose-200/70 shadow-xs space-y-1">
-        <span class="text-[11px] text-rose-800 block">异常阻断与冻结库存 (P3阻断)</span>
-        <span class="font-mono font-bold text-rose-700 text-lg sm:text-xl">{{ totalFrozenQty.toLocaleString() }}</span>
-        <span class="text-rose-800/80 text-[10px] block">差异工单核查中禁止流转</span>
+      <div class="p-3.5 bg-[#FBEAE9]/60 rounded-lg border border-[#F2D5D4]/70 shadow-xs space-y-1">
+        <span class="text-[11px] text-[#6E2F2E] block">异常阻断与冻结库存 (P3阻断)</span>
+        <span class="font-mono font-bold text-[#A93B39] text-lg sm:text-xl">{{ totalFrozenQty.toLocaleString() }}</span>
+        <span class="text-[#6E2F2E]/80 text-[10px] block">差异工单核查中禁止流转</span>
       </div>
-      <div class="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/70 shadow-xs space-y-1">
-        <span class="text-[11px] text-emerald-800 block">库位余额钩稽一致率</span>
-        <span class="font-mono font-bold text-emerald-700 text-lg sm:text-xl">100.0%</span>
-        <span class="text-emerald-800/80 text-[10px] block">单据-流水-余量完美匹配</span>
+      <div class="p-3.5 bg-[#EFF5F1]/60 rounded-lg border border-[#C7E0CE]/70 shadow-xs space-y-1">
+        <span class="text-[11px] text-[#24483A] block">库位余额钩稽一致率</span>
+        <span class="font-mono font-bold text-[#2F5B44] text-lg sm:text-xl">100.0%</span>
+        <span class="text-[#24483A]/80 text-[10px] block">单据-流水-余量完美匹配</span>
       </div>
     </div>
 
@@ -55,10 +55,10 @@
     <!-- ======================================================== -->
     <div v-if="viewMode === 'realtime'" class="space-y-4">
       <!-- 六维联合检索过滤器 -->
-      <div class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-3 text-xs">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-          <span class="font-bold text-slate-800 flex items-center gap-1.5">
-            <el-icon class="text-blue-600"><Filter /></el-icon>
+      <div class="bg-white p-4 rounded-lg border border-[#D9E5DB]/80 space-y-3 text-xs">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2">
+          <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><Filter /></el-icon>
             <span>六维核算多维联合检索过滤器</span>
           </span>
           <el-button link type="primary" size="small" @click="resetFilters">重置全部维度</el-button>
@@ -66,7 +66,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">1. 物理仓库维度</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">1. 物理仓库维度</span>
             <el-select v-model="filters.warehouseName" placeholder="全部物理仓库" clearable class="w-full">
               <el-option label="巴格达第一国家储备粮库" value="巴格达第一国家储备粮库" />
               <el-option label="卡尔赫面粉战略储备仓" value="卡尔赫面粉战略储备仓" />
@@ -76,7 +76,7 @@
           </div>
 
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">2. 物资分类维度</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">2. 物资分类维度</span>
             <el-select v-model="filters.category" placeholder="全部物资分类" clearable class="w-full">
               <el-option label="谷物粮食" value="谷物粮食" />
               <el-option label="副食品油脂" value="副食品油脂" />
@@ -85,7 +85,7 @@
           </div>
 
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">3. 业务状态维度 (Available/Locked/Frozen)</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">3. 业务状态维度 (Available/Locked/Frozen)</span>
             <el-select v-model="filters.bizStatus" placeholder="全部业务状态" clearable class="w-full">
               <el-option label="可用 (Available)" value="可用" />
               <el-option label="锁定 (Locked)" value="锁定" />
@@ -95,17 +95,17 @@
           </div>
 
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">4. 生产批次搜索</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">4. 生产批次搜索</span>
             <el-input v-model="filters.batchNo" placeholder="输入批次号模糊搜索" clearable />
           </div>
 
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">5. 货架货位精准定位</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">5. 货架货位精准定位</span>
             <el-input v-model="filters.locationCode" placeholder="如 A01-03-02" clearable />
           </div>
 
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">6. 效期健康状态</span>
+            <span class="text-[11px] text-[#58685D] block mb-1">6. 效期健康状态</span>
             <el-select v-model="filters.expiryStatus" placeholder="全部效期状态" clearable class="w-full">
               <el-option label="正常 (Normal)" value="正常" />
               <el-option label="临界警戒 (Expiring Soon)" value="临界警戒" />
@@ -119,31 +119,31 @@
       <el-table :data="paginatedFilteredStocks" v-loading="loading" border style="width: 100%" class="text-xs">
         <el-table-column prop="itemName" label="物资品名 / 分类" min-width="160">
           <template #default="{ row }">
-            <div class="font-bold text-slate-900">{{ row.itemName }}</div>
-            <div class="text-[11px] text-slate-400 font-mono">{{ row.itemCode }} · {{ row.category }}</div>
+            <div class="font-bold text-[#1B3123]">{{ row.itemName }}</div>
+            <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.itemCode }} · {{ row.category }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="warehouseName" label="物理仓库与货架货位" min-width="190">
           <template #default="{ row }">
-            <div class="text-slate-800 font-medium">{{ row.warehouseName }}</div>
-            <div class="font-mono text-blue-600 font-bold text-[11px] mt-0.5">
+            <div class="text-[#1F3326] font-medium">{{ row.warehouseName }}</div>
+            <div class="font-mono text-[#326445] font-bold text-[11px] mt-0.5">
               货位: {{ row.locationCode }} ({{ row.locationName }})
             </div>
           </template>
         </el-table-column>
         <el-table-column prop="batchNo" label="生产批次与箱码标签" min-width="190">
           <template #default="{ row }">
-            <div class="font-mono font-bold text-slate-700 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+            <div class="font-mono font-bold text-[#43554B] bg-[#F3F8F4] px-1.5 py-0.5 rounded border border-[#D9E5DB]">
               {{ row.batchNo }}
             </div>
-            <div class="text-[10px] text-indigo-600 font-mono mt-0.5 truncate" :title="row.uniqueTraceCode">
+            <div class="text-[10px] text-[#326445] font-mono mt-0.5 truncate" :title="row.uniqueTraceCode">
               一物一码: {{ row.uniqueTraceCode }}
             </div>
           </template>
         </el-table-column>
         <el-table-column label="效期与状态" width="140">
           <template #default="{ row }">
-            <div class="font-mono text-[11px] text-slate-600">{{ row.expiryDate }} 到期</div>
+            <div class="font-mono text-[11px] text-[#58685D]">{{ row.expiryDate }} 到期</div>
             <el-tag size="small" :type="row.expiryStatus === '正常' ? 'success' : 'danger'" effect="light" class="mt-0.5">
               {{ row.expiryStatus }}
             </el-tag>
@@ -151,12 +151,12 @@
         </el-table-column>
         <el-table-column label="多维余量核算 (可用 / 锁定 / 冻结)" width="180" align="right">
           <template #default="{ row }">
-            <div class="font-mono font-bold text-blue-600 text-sm">
+            <div class="font-mono font-bold text-[#326445] text-sm">
               可用: {{ (row.availableQty || 0).toLocaleString() }} {{ row.unit }}
             </div>
-            <div class="text-[10px] text-slate-500 font-mono mt-0.5">
-              <span v-if="row.lockedQty > 0" class="text-amber-600 font-bold mr-1">锁定: {{ row.lockedQty }}</span>
-              <span v-if="row.frozenQty > 0" class="text-rose-600 font-bold">冻结: {{ row.frozenQty }}</span>
+            <div class="text-[10px] text-[#58685D] font-mono mt-0.5">
+              <span v-if="row.lockedQty > 0" class="text-[#C9A13B] font-bold mr-1">锁定: {{ row.lockedQty }}</span>
+              <span v-if="row.frozenQty > 0" class="text-[#C04442] font-bold">冻结: {{ row.frozenQty }}</span>
             </div>
           </template>
         </el-table-column>
@@ -193,49 +193,49 @@
     <div v-if="viewMode === 'ledger'" class="space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <el-icon class="text-emerald-600"><Document /></el-icon>
+          <h3 class="text-xs font-bold text-[#43554B] uppercase tracking-wider flex items-center gap-1.5">
+            <el-icon class="text-[#2F7A50]"><Document /></el-icon>
             <span>流水台账中心 (确立“单据 - 流水 - 库位余额”三级钩稽关系)</span>
           </h3>
-          <span class="text-[11px] text-slate-400">记录入库、出库、调拨、盘点、损耗每笔变动的完整流水记录与期初期末变动</span>
+          <span class="text-[11px] text-[#8A9A8F]">记录入库、出库、调拨、盘点、损耗每笔变动的完整流水记录与期初期末变动</span>
         </div>
       </div>
 
       <el-table :data="paginatedLedgers" v-loading="loading" border style="width: 100%" class="text-xs">
         <el-table-column prop="ledgerNo" label="流水编号 / 发生时间" min-width="170">
           <template #default="{ row }">
-            <span class="font-mono font-bold text-slate-800">{{ row.ledgerNo }}</span>
-            <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ row.timestamp }}</div>
+            <span class="font-mono font-bold text-[#1F3326]">{{ row.ledgerNo }}</span>
+            <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">{{ row.timestamp }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="docType" label="关联原始业务单据 (第一级)" min-width="180">
           <template #default="{ row }">
-            <div class="font-bold text-slate-800">{{ row.docType }}</div>
-            <div class="font-mono text-blue-600 text-[11px] mt-0.5">{{ row.docNo }}</div>
+            <div class="font-bold text-[#1F3326]">{{ row.docType }}</div>
+            <div class="font-mono text-[#326445] text-[11px] mt-0.5">{{ row.docNo }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="warehouseName" label="仓库与库位" min-width="160">
           <template #default="{ row }">
-            <div class="text-slate-800">{{ row.warehouseName }}</div>
-            <div class="font-mono text-slate-500 text-[11px]">{{ row.locationCode }}</div>
+            <div class="text-[#1F3326]">{{ row.warehouseName }}</div>
+            <div class="font-mono text-[#58685D] text-[11px]">{{ row.locationCode }}</div>
           </template>
         </el-table-column>
         <el-table-column label="变动量与方向 (第二级流水)" width="150" align="right">
           <template #default="{ row }">
             <span
               class="font-mono font-bold text-sm"
-              :class="row.changeQty > 0 ? 'text-emerald-600' : 'text-rose-600'"
+              :class="row.changeQty > 0 ? 'text-[#2F7A50]' : 'text-[#C04442]'"
             >
               {{ row.changeQty > 0 ? '+' : '' }}{{ row.changeQty.toLocaleString() }}
             </span>
-            <span class="text-slate-400 ml-1 text-[11px]">{{ row.unit }}</span>
-            <div class="text-[10px] text-slate-400 mt-0.5">{{ row.changeType }}</div>
+            <span class="text-[#8A9A8F] ml-1 text-[11px]">{{ row.unit }}</span>
+            <div class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.changeType }}</div>
           </template>
         </el-table-column>
         <el-table-column label="库位余额钩稽变动 (第三级余额)" width="180" align="right">
           <template #default="{ row }">
-            <div class="font-mono text-[11px] text-slate-400">变动前: {{ (row.beforeBalanceQty || 0).toLocaleString() }}</div>
-            <div class="font-mono font-bold text-blue-600 text-sm">
+            <div class="font-mono text-[11px] text-[#8A9A8F]">变动前: {{ (row.beforeBalanceQty || 0).toLocaleString() }}</div>
+            <div class="font-mono font-bold text-[#326445] text-sm">
               结存: {{ (row.afterBalanceQty || 0).toLocaleString() }} {{ row.unit }}
             </div>
           </template>
@@ -265,14 +265,14 @@
     <!-- 视图 3: 历史库存快照时光机回溯 -->
     <!-- ======================================================== -->
     <div v-if="viewMode === 'snapshot'" class="space-y-4">
-      <div class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 space-y-3 text-xs">
+      <div class="bg-[#EFF5F1]/70 p-4 rounded-lg border border-[#C7DED0]/80 space-y-3 text-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-1.5">
-              <el-icon class="text-indigo-600"><Timer /></el-icon>
+            <h3 class="font-bold text-[#1F3326] text-sm flex items-center gap-1.5">
+              <el-icon class="text-[#326445]"><Timer /></el-icon>
               <span>任意历史时间点库存快照回溯引擎 (Snapshot Time-Travel)</span>
             </h3>
-            <p class="text-indigo-700/80 text-[11px] mt-0.5">
+            <p class="text-[#2A5440]/80 text-[11px] mt-0.5">
               依据“单据-流水-余额”不可篡改链条，输入任意历史时间，系统动态重构当时全国各库位在册状态。
             </p>
           </div>
@@ -293,9 +293,9 @@
 
       <!-- 回溯结果表格 -->
       <div v-if="snapshotList.length > 0" class="space-y-2">
-        <div class="text-[11px] text-slate-500 font-mono flex items-center gap-2">
+        <div class="text-[11px] text-[#58685D] font-mono flex items-center gap-2">
           <span>● 当前快照定位时间点：</span>
-          <strong class="text-indigo-700">{{ snapshotTargetTime }}</strong>
+          <strong class="text-[#2A5440]">{{ snapshotTargetTime }}</strong>
         </div>
 
         <el-table :data="paginatedSnapshots" border style="width: 100%" class="text-xs">
@@ -303,20 +303,20 @@
           <el-table-column prop="warehouseName" label="所在仓库与货位" min-width="180">
             <template #default="{ row }">
               <div>{{ row.warehouseName }}</div>
-              <div class="font-mono text-slate-500 text-[11px]">{{ row.locationCode }}</div>
+              <div class="font-mono text-[#58685D] text-[11px]">{{ row.locationCode }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="batchNo" label="批次号" min-width="180">
             <template #default="{ row }">
-              <span class="font-mono text-slate-600">{{ row.batchNo }}</span>
+              <span class="font-mono text-[#58685D]">{{ row.batchNo }}</span>
             </template>
           </el-table-column>
           <el-table-column label="该历史时刻在库余量" width="160" align="right">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-indigo-600 text-sm">
+              <span class="font-mono font-bold text-[#326445] text-sm">
                 {{ (row.availableQty || 0).toLocaleString() }}
               </span>
-              <span class="text-slate-400 ml-1">{{ row.unit }}</span>
+              <span class="text-[#8A9A8F] ml-1">{{ row.unit }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="snapshotNotice" label="三级钩稽核验说明" min-width="220" />

@@ -14,15 +14,15 @@
 
 /* 2. 主题全局 CSS 变量 */
 :root {
-  --ht-primary: #007a3d;         /* ht.iq 官方主色 (深翠政务绿) */
-  --ht-primary-dark: #005a2d;    /* 深色悬浮态 */
-  --ht-accent: #1fa35e;          /* 官方亮绿提亮色 */
-  --ht-accent-light: #eaf6ef;    /* 极浅绿背景衬底 */
-  --ht-accent-border: #c3e6d2;   /* 浅绿边框 */
-  --ht-warm-bg: #fdfcf9;         /* 暖调米白背景底色 */
-  --ht-gold: #c59d5f;            /* 麦穗微金装饰色 */
-  --ht-text-main: #1a2e26;       /* 正文墨色 */
-  --ht-text-muted: #5e7368;      /* 辅助次级说明文字 */
+  --ht-primary: #326445;         /* ht.iq 官方主色 (深翠政务绿) */
+  --ht-primary-dark: #2A5440;    /* 深色悬浮态 */
+  --ht-accent: #3E8A5E;          /* 官方亮绿提亮色 */
+  --ht-accent-light: #E1F4E4;    /* 极浅绿背景衬底 */
+  --ht-accent-border: #C7E0CE;   /* 浅绿边框 */
+  --ht-warm-bg: #FBFDFB;         /* 暖调米白背景底色 */
+  --ht-gold: #D3AF62;            /* 麦穗微金装饰色 */
+  --ht-text-main: #1F3326;       /* 正文墨色 */
+  --ht-text-muted: #58685D;      /* 辅助次级说明文字 */
   --ht-radius-lg: 18px;          /* 官方大圆角 */
   --ht-radius-md: 12px;          /* 官方标准圆角 */
 }
@@ -42,14 +42,14 @@ html[lang="ku"],
   border-radius: 9999px !important;
   font-weight: 700 !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: 0 4px 14px -2px rgba(31, 163, 94, 0.35) !important;
+  box-shadow: 0 4px 14px -2px rgba(62, 138, 94, 0.35) !important;
 }
 
 .ht-btn-primary:hover {
   background-color: var(--ht-primary) !important;
   border-color: var(--ht-primary) !important;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -2px rgba(0, 122, 61, 0.45) !important;
+  box-shadow: 0 6px 20px -2px rgba(50, 100, 69, 0.45) !important;
 }
 
 .ht-btn-secondary {
@@ -62,7 +62,7 @@ html[lang="ku"],
 }
 
 .ht-btn-secondary:hover {
-  background-color: #d8f0e2 !important;
+  background-color: #CFE2D5 !important;
   color: var(--ht-primary-dark) !important;
 }
 
@@ -71,19 +71,19 @@ html[lang="ku"],
   background-color: #ffffff;
   border: 1px solid var(--ht-accent-border);
   border-radius: var(--ht-radius-lg);
-  box-shadow: 0 4px 20px -2px rgba(0, 122, 61, 0.05);
+  box-shadow: 0 4px 20px -2px rgba(50, 100, 69, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ht-card:hover {
   border-color: var(--ht-accent);
-  box-shadow: 0 10px 28px -4px rgba(0, 122, 61, 0.1);
+  box-shadow: 0 10px 28px -4px rgba(50, 100, 69, 0.1);
 }
 
 /* 5. 官方 FAQ 手风琴展开项风格 (100% 还原 04-faq.png / 05-faq-expanded.png) */
 .ht-faq-item {
   background-color: #ffffff;
-  border: 1.5px solid #d5e5dc;
+  border: 1.5px solid #CFE2D5;
   border-radius: 14px;
   overflow: hidden;
   transition: all 0.2s ease;
@@ -91,12 +91,12 @@ html[lang="ku"],
 
 .ht-faq-item:hover {
   border-color: var(--ht-accent);
-  background-color: #fcfdfd;
+  background-color: #FBFDFB;
 }
 
 .ht-faq-item.is-expanded {
   border-color: var(--ht-accent);
-  box-shadow: 0 4px 16px -2px rgba(31, 163, 94, 0.12);
+  box-shadow: 0 4px 16px -2px rgba(62, 138, 94, 0.12);
 }
 
 .ht-faq-header {
@@ -110,7 +110,7 @@ html[lang="ku"],
 
 .ht-faq-question {
   font-weight: 700;
-  color: #1a2e26;
+  color: #1F3326;
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -128,9 +128,9 @@ html[lang="ku"],
 .ht-faq-content {
   padding: 0 18px 16px 18px;
   font-size: 13px;
-  color: #4a5c53;
+  color: #58685D;
   line-height: 1.7;
-  border-top: 1px dashed #e2ede6;
+  border-top: 1px dashed #E9F1EB;
   margin-top: 2px;
   padding-top: 12px;
 }

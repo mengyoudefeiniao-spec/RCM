@@ -1,12 +1,12 @@
 <template>
   <div class="agent-trace-panel space-y-4">
     <!-- 顶部功能简介与搜索框 -->
-    <div class="p-5 bg-gradient-to-r from-slate-900 to-indigo-900 text-white rounded-2xl space-y-3 shadow-xs">
+    <div class="p-5 bg-gradient-to-r from-[#1B3123] to-[#1F3326] text-white rounded-lg space-y-3 shadow-xs">
       <div class="flex items-center gap-2">
-        <el-icon class="text-xl text-blue-400"><Compass /></el-icon>
+        <el-icon class="text-xl text-[#7FA48C]"><Compass /></el-icon>
         <h3 class="font-bold text-sm tracking-wide">{{ isEn ? 'Multi-Dimensional Flow & Audit Traceability Engine (Full-Lifecycle Penetration Lookup)' : '多维流转与审计追溯引擎 (全生命周期穿透倒查)' }}</h3>
       </div>
-      <p class="text-[12px] text-slate-300 leading-relaxed max-w-3xl">
+      <p class="text-[12px] text-[#C9DBCE] leading-relaxed max-w-3xl">
         <template v-if="isEn">
           Covers the end-to-end full chain of "Government National Central Warehouse → Street Agent Station → Resident Households". Supports bidirectional penetration lookup by <strong>material batch number</strong>, <strong>G2B/B2C order number</strong> or <strong>citizen national ID</strong>.
         </template>
@@ -24,7 +24,7 @@
           class="flex-1"
           @keyup.enter="handleSearch"
         >
-          <template #prefix><el-icon class="text-slate-400"><Search /></el-icon></template>
+          <template #prefix><el-icon class="text-[#8A9A8F]"><Search /></el-icon></template>
         </el-input>
         <el-button type="primary" size="large" class="font-bold shrink-0" :loading="loading" @click="handleSearch">
           <el-icon class="mr-1"><Search /></el-icon>
@@ -33,7 +33,7 @@
       </div>
 
       <!-- 快捷示范查询标签 -->
-      <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-400">
+      <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-[#8A9A8F]">
         <span>{{ isEn ? 'Quick Test Chains:' : '快捷测试链条：' }}</span>
         <el-tag size="small" type="info" effect="plain" class="cursor-pointer hover:text-white" @click="fillQuickSearch('BATCH-20261012-EXP202710-RC01')">
           {{ isEn ? 'By Batch: BATCH-20261012-RC01 (Rice)' : '按批次: BATCH-20261012-RC01 (大米)' }}
@@ -52,32 +52,32 @@
       <div
         v-for="chain in traceList"
         :key="chain.traceId"
-        class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 text-xs"
+        class="bg-white rounded-lg border border-[#D9E5DB] p-5 shadow-xs space-y-4 text-xs"
       >
         <!-- 链条卡片头部 -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#E9F1EB] pb-4">
           <div class="space-y-1">
             <div class="flex items-center gap-2">
               <el-tag type="primary" effect="dark" size="small" class="font-mono">{{ chain.traceId }}</el-tag>
-              <span class="font-bold text-slate-900 text-sm">{{ chain.itemName }}</span>
-              <span class="text-slate-400 font-mono text-[11px]">({{ chain.itemCode }})</span>
+              <span class="font-bold text-[#1B3123] text-sm">{{ chain.itemName }}</span>
+              <span class="text-[#8A9A8F] font-mono text-[11px]">({{ chain.itemCode }})</span>
             </div>
-            <div class="text-slate-500 text-[11px] font-mono">
-              {{ isEn ? 'National Strategic Reserve Batch:' : '国家战略储备批次：' }}<strong class="text-slate-800">{{ chain.batchNo }}</strong>
+            <div class="text-[#58685D] text-[11px] font-mono">
+              {{ isEn ? 'National Strategic Reserve Batch:' : '国家战略储备批次：' }}<strong class="text-[#1F3326]">{{ chain.batchNo }}</strong>
             </div>
           </div>
 
           <!-- 三大节点实体徽章 -->
           <div class="flex flex-wrap items-center gap-2">
-            <div class="px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold text-[11px]">
+            <div class="px-2.5 py-1 bg-[#EFF5F1] border border-[#C7DED0] rounded-lg text-[#24483A] font-semibold text-[11px]">
               {{ isEn ? 'WH:' : '仓：' }}{{ chain.centerWarehouse }}
             </div>
-            <el-icon class="text-slate-400"><Right /></el-icon>
-            <div class="px-2.5 py-1 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 font-semibold text-[11px]">
+            <el-icon class="text-[#8A9A8F]"><Right /></el-icon>
+            <div class="px-2.5 py-1 bg-[#FDF3E0] border border-[#F2E3C6] rounded-lg text-[#6B5321] font-semibold text-[11px]">
               {{ isEn ? 'Shop:' : '店：' }}{{ chain.agentShop }}
             </div>
-            <el-icon class="text-slate-400"><Right /></el-icon>
-            <div class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 font-semibold text-[11px]">
+            <el-icon class="text-[#8A9A8F]"><Right /></el-icon>
+            <div class="px-2.5 py-1 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg text-[#24483A] font-semibold text-[11px]">
               {{ isEn ? 'Family:' : '户：' }}{{ chain.citizenName }} ({{ chain.cardNo }})
             </div>
           </div>
@@ -94,12 +94,12 @@
               :type="idx === chain.timeline.length - 1 ? 'success' : 'primary'"
               :hollow="idx < chain.timeline.length - 1"
             >
-              <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
-                <div class="font-bold text-slate-800 text-[12px] flex items-center justify-between">
+              <div class="p-3 bg-[#F3F8F4] border border-[#D9E5DB]/70 rounded-lg space-y-1">
+                <div class="font-bold text-[#1F3326] text-[12px] flex items-center justify-between">
                   <span>{{ t.title }}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ isEn ? `Node #${idx + 1}` : `节点 #${idx + 1}` }}</span>
+                  <span class="text-[10px] text-[#8A9A8F] font-mono">{{ isEn ? `Node #${idx + 1}` : `节点 #${idx + 1}` }}</span>
                 </div>
-                <div class="text-[11px] text-slate-600 leading-relaxed">{{ t.detail }}</div>
+                <div class="text-[11px] text-[#58685D] leading-relaxed">{{ t.detail }}</div>
               </div>
             </el-timeline-item>
           </el-timeline>
@@ -108,7 +108,7 @@
     </div>
 
     <!-- 无结果空态 -->
-    <div v-else-if="!loading" class="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs">
+    <div v-else-if="!loading" class="bg-white rounded-lg border border-[#D9E5DB] p-12 text-center text-[#8A9A8F] text-xs">
       <el-empty :description="isEn ? 'No traceability records found; please retry with a different batch number, order number or national ID' : '未检索到流转追溯记录，请更换批次号、订单号或身份证号重试'" />
     </div>
   </div>

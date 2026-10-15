@@ -1,20 +1,20 @@
 <template>
-  <div class="agent-real-gis-map relative bg-slate-900 rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+  <div class="agent-real-gis-map relative bg-[#1B3123] rounded-lg border border-[#D9E5DB]/90 shadow-sm overflow-hidden">
     <!-- 地图顶端控制与状态信息栏 -->
     <div class="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-      <div class="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-md text-xs">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-        <span class="font-bold text-slate-800">伊拉克真实在线地理信息系统 (GIS)</span>
+      <div class="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#D9E5DB] shadow-md text-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#3E9B68] animate-ping"></span>
+        <span class="font-bold text-[#1F3326]">伊拉克真实在线地理信息系统 (GIS)</span>
         <el-tag size="small" type="primary" effect="dark" class="scale-90 font-mono">
           {{ targetLocationTitle || '巴格达中心区' }}
         </el-tag>
       </div>
 
       <!-- 热力图与图层工具栏 -->
-      <div class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-md text-xs">
+      <div class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1 rounded-lg border border-[#D9E5DB] shadow-md text-xs">
         <button
           class="px-2.5 py-1 rounded-lg font-semibold transition-all flex items-center gap-1"
-          :class="showHeatmap ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
+          :class="showHeatmap ? 'bg-[#C04442] text-white shadow-xs' : 'text-[#58685D] hover:bg-[#E9F1EB]'"
           @click="toggleHeatmap"
         >
           <span>🔥 公民分布热力图</span>
@@ -22,14 +22,14 @@
 
         <button
           class="px-2 py-1 rounded-lg font-semibold transition-all flex items-center gap-1"
-          :class="showRadiusCircle ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
+          :class="showRadiusCircle ? 'bg-[#326445] text-white' : 'text-[#58685D] hover:bg-[#E9F1EB]'"
           @click="toggleRadius"
         >
           <span>网格辐射圈</span>
         </button>
 
         <button
-          class="px-2 py-1 rounded-lg text-slate-700 hover:bg-slate-100 font-bold"
+          class="px-2 py-1 rounded-lg text-[#43554B] hover:bg-[#E9F1EB] font-bold"
           title="复位至巴格达中心"
           @click="resetToBaghdad"
         >
@@ -40,15 +40,15 @@
 
     <!-- 地图右下角热力密度图例 -->
     <div class="absolute bottom-3 right-3 z-[1000] pointer-events-none">
-      <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-200 text-[11px] shadow-md space-y-1">
-        <div class="font-bold text-slate-800 flex items-center justify-between gap-3">
+      <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-3 py-2 rounded-lg border border-[#D9E5DB] text-[11px] shadow-md space-y-1">
+        <div class="font-bold text-[#1F3326] flex items-center justify-between gap-3">
           <span>管辖公民数量热力密度</span>
-          <span class="font-mono text-slate-400 text-[10px]">人/网格</span>
+          <span class="font-mono text-[#8A9A8F] text-[10px]">人/网格</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="text-[10px] text-slate-400">低密</span>
-          <div class="w-24 h-2.5 rounded-full bg-gradient-to-r from-blue-500 via-emerald-400 via-amber-400 to-rose-600"></div>
-          <span class="text-[10px] text-rose-600 font-bold">高密</span>
+          <span class="text-[10px] text-[#8A9A8F]">低密</span>
+          <div class="w-24 h-2.5 rounded-full bg-gradient-to-r from-[#5C8A6B] via-[#6FBF92] via-[#DFC08B] to-[#C04442]"></div>
+          <span class="text-[10px] text-[#C04442] font-bold">高密</span>
         </div>
       </div>
     </div>
@@ -164,11 +164,11 @@ const updateHeatmapLayer = () => {
       maxZoom: 17,
       max: 1.0,
       gradient: {
-        0.2: '#3b82f6',
-        0.4: '#10b981',
-        0.6: '#eab308',
-        0.8: '#f97316',
-        1.0: '#ef4444'
+        0.2: '#5C8A6B',
+        0.4: '#3E9B68',
+        0.6: '#C9A13B',
+        0.8: '#C08348',
+        1.0: '#C04442'
       }
     }).addTo(mapInstance);
   } else {
@@ -182,7 +182,7 @@ const renderCanvasHeatCircles = (points) => {
   if (!mapInstance) return;
   const group = L.layerGroup();
   points.forEach(([lat, lng, val]) => {
-    const color = val > 0.8 ? '#ef4444' : (val > 0.5 ? '#f59e0b' : '#10b981');
+    const color = val > 0.8 ? '#C04442' : (val > 0.5 ? '#D9B567' : '#3E9B68');
     const circle = L.circleMarker([lat, lng], {
       radius: 12 + val * 10,
       fillColor: color,
@@ -212,8 +212,8 @@ const updateMarkers = () => {
     if (showRadiusCircle.value) {
       const radiusCircle = L.circle([lat, lng], {
         radius: station.gisCoords.radiusMeters || 800,
-        color: station.lockStatus === 'SATURATED_LOCKED' ? '#ef4444' : (isSelected ? '#2563eb' : '#10b981'),
-        fillColor: station.lockStatus === 'SATURATED_LOCKED' ? '#f87171' : (isSelected ? '#3b82f6' : '#34d399'),
+        color: station.lockStatus === 'SATURATED_LOCKED' ? '#C04442' : (isSelected ? '#326445' : '#3E9B68'),
+        fillColor: station.lockStatus === 'SATURATED_LOCKED' ? '#D0827F' : (isSelected ? '#5C8A6B' : '#6FBF92'),
         fillOpacity: isSelected ? 0.25 : 0.12,
         weight: isSelected ? 2.5 : 1.2,
         dashArray: '4,4'
@@ -223,13 +223,13 @@ const updateMarkers = () => {
 
     // 2. 自定义站点 HTML Marker 图标
     const isLocked = station.lockStatus === 'SATURATED_LOCKED';
-    const markerColor = isLocked ? '#ef4444' : (isSelected ? '#2563eb' : '#059669');
+    const markerColor = isLocked ? '#C04442' : (isSelected ? '#326445' : '#2F7A50');
 
     const customIcon = L.divIcon({
       className: 'agent-custom-pin',
       html: `
         <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-          ${isLocked ? '<div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: rgba(239, 68, 68, 0.4); animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>' : ''}
+          ${isLocked ? '<div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: rgba(192, 68, 66, 0.4); animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>' : ''}
           <div style="width: ${isSelected ? '24px' : '18px'}; height: ${isSelected ? '24px' : '18px'}; border-radius: 50%; background: ${markerColor}; border: 2.5px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: bold;">
             ${isSelected ? '★' : ''}
           </div>
@@ -244,11 +244,11 @@ const updateMarkers = () => {
     // 弹出信息气泡
     marker.bindPopup(`
       <div style="font-size: 12px; font-family: sans-serif; line-height: 1.4; padding: 2px;">
-        <strong style="color: #0f172a; font-size: 13px;">${station.storeName || station.name}</strong>
-        <div style="color: #64748b; font-size: 11px; margin-top: 2px;">${station.district} · ${station.streetName}</div>
+        <strong style="color: #1F3326; font-size: 13px;">${station.storeName || station.name}</strong>
+        <div style="color: #58685D; font-size: 11px; margin-top: 2px;">${station.district} · ${station.streetName}</div>
         <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: bold; color: ${isLocked ? '#dc2626' : '#2563eb'};">${station.householdsCount || 0} / 1,500 户</span>
-          <span style="font-size: 11px; background: #f1f5f9; padding: 1px 6px; border-radius: 4px;">${station.status || '正常'}</span>
+          <span style="font-weight: bold; color: ${isLocked ? '#A93B39' : '#326445'};">${station.householdsCount || 0} / 1,500 户</span>
+          <span style="font-size: 11px; background: #EFF5F1; padding: 1px 6px; border-radius: 4px;">${station.status || '正常'}</span>
         </div>
       </div>
     `);

@@ -12,26 +12,26 @@
   >
     <div :class="['space-y-2.5', isAppMode ? 'p-0.5' : 'p-2 sm:p-4 space-y-4']">
       <!-- 顶部：国家财政与中央银行安全网关标识 (APP 模式紧凑化) -->
-      <div class="flex items-center justify-between border-b border-[#ECE7DE]" :class="isAppMode ? 'pb-1.5' : 'pb-3'">
+      <div class="flex items-center justify-between border-b border-[#D9E5DB]" :class="isAppMode ? 'pb-1.5' : 'pb-3'">
         <div class="flex items-center gap-2">
-          <div :class="isAppMode ? 'w-6 h-6 rounded-md text-xs' : 'w-9 h-9 rounded-xl'" class="bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/40 flex items-center justify-center font-bold shadow-xs shrink-0">
+          <div :class="isAppMode ? 'w-6 h-6 rounded-md text-xs' : 'w-9 h-9 rounded-lg'" class="bg-[#326445] text-[#D3AF62] border border-[#D3AF62]/40 flex items-center justify-center font-bold shadow-xs shrink-0">
             <el-icon :size="isAppMode ? 13 : 18"><CreditCard /></el-icon>
           </div>
           <div>
-            <div class="font-bold text-[#18231E] flex items-center gap-1.5" :class="isAppMode ? 'text-xs' : 'text-sm'">
+            <div class="font-bold text-[#1F3326] flex items-center gap-1.5" :class="isAppMode ? 'text-xs' : 'text-sm'">
               <span>{{ $t('payment.title') || '统一在线安全支付网关' }}</span>
               <el-tag size="small" type="success" effect="plain" class="scale-75 origin-left font-mono">
                 CBI-PAY
               </el-tag>
             </div>
-            <div v-if="!isAppMode" class="text-[11px] text-[#8C958F]">
+            <div v-if="!isAppMode" class="text-[11px] text-[#8A9A8F]">
               {{ $t('payment.cbiClearanceSub') }}
             </div>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[9px] text-[#8C958F] block">{{ $t('payment.expiresIn') || '倒计时' }}</span>
-          <span class="font-mono text-xs font-bold text-[#C59D5F]">{{ countdownFormatted }}</span>
+          <span class="text-[9px] text-[#8A9A8F] block">{{ $t('payment.expiresIn') || '倒计时' }}</span>
+          <span class="font-mono text-xs font-bold text-[#D3AF62]">{{ countdownFormatted }}</span>
         </div>
       </div>
 
@@ -39,19 +39,19 @@
       <div v-if="paymentStatus === 'pending'" :class="isAppMode ? 'space-y-2' : 'space-y-4'">
         <!-- 账单金额卡片 (APP 模式横向极致扁平化，高度仅约 46px) -->
         <div
-          class="bg-gradient-to-br from-[#1E3F35] via-[#244C40] to-[#142B24] border border-[#C59D5F]/35 text-white rounded-xl shadow-xs"
-          :class="isAppMode ? 'p-2.5' : 'p-4 rounded-2xl space-y-3'"
+          class="bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#2A5440] border border-[#D3AF62]/35 text-white rounded-lg shadow-xs"
+          :class="isAppMode ? 'p-2.5' : 'p-4 rounded-lg space-y-3'"
         >
           <div class="flex items-center justify-between gap-2">
             <div class="space-y-0.5 truncate">
-              <div class="text-xs font-bold text-[#E3D9C8] truncate">{{ title || '法定业务公文规费' }}</div>
+              <div class="text-xs font-bold text-[#D3E2D6] truncate">{{ title || '法定业务公文规费' }}</div>
               <div class="text-[10px] text-white/60 font-mono">{{ $t('payment.orderNo') || '单号' }}: {{ orderId }}</div>
             </div>
             <div class="text-right shrink-0">
-              <div class="text-lg font-black font-mono text-[#E4BA76] tracking-tight leading-none">
+              <div class="text-lg font-black font-mono text-[#D9B567] tracking-tight leading-none">
                 {{ amount.toLocaleString() }} <span class="text-[10px] text-white/80 font-normal">{{ currency }}</span>
               </div>
-              <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-[#D3AF62]/20 text-[#E5CEA1] font-bold border border-[#D3AF62]/30">
                 {{ $t('payment.statusPending') || '待支付' }}
               </span>
             </div>
@@ -60,7 +60,7 @@
 
         <!-- 扣款渠道账户选择 (APP 模式紧凑单行) -->
         <div :class="isAppMode ? 'space-y-0.5' : 'space-y-1.5'">
-          <div class="text-[10px] font-medium text-[#5E6862]">{{ $t('payment.account') || '资金账户：' }}</div>
+          <div class="text-[10px] font-medium text-[#58685D]">{{ $t('payment.account') || '资金账户：' }}</div>
           <div class="grid grid-cols-3 gap-1.5">
             <button
               v-for="ch in channels"
@@ -70,8 +70,8 @@
               :class="[
                 isAppMode ? 'py-1 px-1 text-[10px]' : 'p-2 text-xs flex-col',
                 selectedChannel === ch.id
-                  ? 'border-[#C59D5F] bg-[#FAF5ED] text-[#1E3F35] font-bold shadow-2xs ring-1 ring-[#C59D5F]/40'
-                  : 'border-[#ECE7DE] hover:border-[#C59D5F]/50 bg-white text-[#5E6862]'
+                  ? 'border-[#D3AF62] bg-[#FDF3E0] text-[#326445] font-bold shadow-2xs ring-1 ring-[#D3AF62]/40'
+                  : 'border-[#D9E5DB] hover:border-[#D3AF62]/50 bg-white text-[#58685D]'
               ]"
               @click="selectedChannel = ch.id"
             >
@@ -82,17 +82,17 @@
         </div>
 
         <!-- 真实在线支付核身验证方式 Tab 切换 (密码 / 指纹 / 刷脸) -->
-        <div class="border border-[#ECE7DE] rounded-xl bg-[#FAF8F4]" :class="isAppMode ? 'p-2 space-y-2' : 'p-4 rounded-2xl space-y-4'">
-          <div class="flex items-center justify-between pb-1 border-b border-[#ECE7DE]">
-            <span class="text-[10px] font-bold text-[#18231E] flex items-center gap-1">
-              <el-icon class="text-[#1E3F35]"><Lock /></el-icon>
+        <div class="border border-[#D9E5DB] rounded-lg bg-[#F3F8F4]" :class="isAppMode ? 'p-2 space-y-2' : 'p-4 rounded-lg space-y-4'">
+          <div class="flex items-center justify-between pb-1 border-b border-[#D9E5DB]">
+            <span class="text-[10px] font-bold text-[#1F3326] flex items-center gap-1">
+              <el-icon class="text-[#326445]"><Lock /></el-icon>
               <span>{{ $t('payment.verifyMode') || '核身验密方式' }}</span>
             </span>
-            <div class="flex bg-[#EAE5DA] p-0.5 rounded-lg text-[10px]">
+            <div class="flex bg-[#D9E5DB] p-0.5 rounded-lg text-[10px]">
               <button
                 type="button"
                 class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
-                :class="verifyMode === 'pin' ? 'bg-white text-[#1E3F35] font-bold shadow-2xs' : 'text-[#5E6862] hover:text-[#18231E]'"
+                :class="verifyMode === 'pin' ? 'bg-white text-[#326445] font-bold shadow-2xs' : 'text-[#58685D] hover:text-[#1F3326]'"
                 @click="switchVerifyMode('pin')"
               >
                 {{ $t('payment.modePin') || '密码' }}
@@ -100,7 +100,7 @@
               <button
                 type="button"
                 class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
-                :class="verifyMode === 'fingerprint' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                :class="verifyMode === 'fingerprint' ? 'bg-white text-[#2F5B44] font-bold shadow-2xs' : 'text-[#58685D] hover:text-[#1B3123]'"
                 @click="switchVerifyMode('fingerprint')"
               >
                 {{ $t('payment.modeFingerprint') || '指纹' }}
@@ -108,7 +108,7 @@
               <button
                 type="button"
                 class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
-                :class="verifyMode === 'face' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                :class="verifyMode === 'face' ? 'bg-white text-[#2F5B44] font-bold shadow-2xs' : 'text-[#58685D] hover:text-[#1B3123]'"
                 @click="switchVerifyMode('face')"
               >
                 {{ $t('payment.modeFace') || '刷脸' }}
@@ -129,14 +129,14 @@
                 :class="[
                   isAppMode ? 'w-8 h-9 text-base' : 'w-10 h-12 sm:w-11 sm:h-13 text-xl',
                   pinCode.length >= idx
-                    ? 'border-emerald-500 bg-emerald-50/40 text-emerald-700'
+                    ? 'border-[#3E9B68] bg-[#EFF5F1]/40 text-[#2F5B44]'
                     : pinCode.length === idx - 1
-                    ? 'border-indigo-500 bg-white ring-2 ring-indigo-200'
-                    : 'border-slate-200 bg-white'
+                    ? 'border-[#5C8A6B] bg-white ring-2 ring-[#C7DED0]'
+                    : 'border-[#D9E5DB] bg-white'
                 ]"
               >
-                <span v-if="pinCode.length >= idx" class="w-2.5 h-2.5 rounded-full bg-slate-800"></span>
-                <span v-else-if="pinCode.length === idx - 1" class="w-0.5 h-4 bg-indigo-500 animate-pulse"></span>
+                <span v-if="pinCode.length >= idx" class="w-2.5 h-2.5 rounded-full bg-[#1F3326]"></span>
+                <span v-else-if="pinCode.length === idx - 1" class="w-0.5 h-4 bg-[#5C8A6B] animate-pulse"></span>
               </div>
             </div>
 
@@ -146,7 +146,7 @@
                 v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
                 :key="num"
                 type="button"
-                class="rounded-lg bg-white border border-slate-200 font-bold font-mono text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                class="rounded-lg bg-white border border-[#D9E5DB] font-bold font-mono text-[#43554B] shadow-2xs hover:bg-[#F3F8F4] active:bg-[#E9F1EB] transition-colors cursor-pointer"
                 :class="isAppMode ? 'h-7.5 text-sm' : 'h-10 text-base'"
                 @click="handleInputPin(num)"
               >
@@ -154,7 +154,7 @@
               </button>
               <button
                 type="button"
-                class="rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer font-medium"
+                class="rounded-lg bg-[#E9F1EB] border border-[#D9E5DB] text-[#58685D] hover:bg-[#D9E5DB] transition-colors cursor-pointer font-medium"
                 :class="isAppMode ? 'h-7.5 text-[10px]' : 'h-10 text-xs'"
                 @click="pinCode = ''"
               >
@@ -162,7 +162,7 @@
               </button>
               <button
                 type="button"
-                class="rounded-lg bg-white border border-slate-200 font-bold font-mono text-slate-700 shadow-2xs hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                class="rounded-lg bg-white border border-[#D9E5DB] font-bold font-mono text-[#43554B] shadow-2xs hover:bg-[#F3F8F4] active:bg-[#E9F1EB] transition-colors cursor-pointer"
                 :class="isAppMode ? 'h-7.5 text-sm' : 'h-10 text-base'"
                 @click="handleInputPin(0)"
               >
@@ -170,7 +170,7 @@
               </button>
               <button
                 type="button"
-                class="rounded-lg bg-slate-100 border border-slate-200 font-semibold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center"
+                class="rounded-lg bg-[#E9F1EB] border border-[#D9E5DB] font-semibold text-[#58685D] hover:bg-[#D9E5DB] transition-colors cursor-pointer flex items-center justify-center"
                 :class="isAppMode ? 'h-7.5 text-xs' : 'h-10 text-xs'"
                 @click="handleDeletePin"
               >
@@ -179,17 +179,17 @@
             </div>
 
             <div class="flex items-center justify-between text-[10px] pt-0.5">
-              <span class="text-slate-400">{{ $t('payment.keyboardHint') || '支持键盘输入' }}</span>
-              <button type="button" class="text-emerald-700 font-bold hover:underline cursor-pointer" @click="handleFastFillPin">
+              <span class="text-[#8A9A8F]">{{ $t('payment.keyboardHint') || '支持键盘输入' }}</span>
+              <button type="button" class="text-[#2F5B44] font-bold hover:underline cursor-pointer" @click="handleFastFillPin">
                 {{ $t('payment.fastFill') || '一键填入 (666888)' }}
               </button>
             </div>
 
             <el-button
               type="primary"
-              class="w-full font-bold shadow-sm !rounded-xl"
+              class="w-full font-bold shadow-sm !rounded-lg"
               :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
-              style="background: #1E3F35; border-color: #1E3F35; color: #FFFFFF;"
+              style="background: #326445; border-color: #326445; color: #FFFFFF;"
               :disabled="pinCode.length < 6"
               @click="handleSubmitPinPay"
             >
@@ -203,8 +203,8 @@
           <!-- ======================================================== -->
           <div v-else-if="verifyMode === 'fingerprint'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-3'" class="text-center">
             <div class="space-y-0.5">
-              <div class="text-xs font-semibold text-slate-800">{{ $t('payment.touchIdTitle') || '轻触指纹传感器' }}</div>
-              <div class="text-[10px] text-slate-400">{{ $t('payment.touchIdSub') || '安全芯片生物认证 · 免密极速扣款' }}</div>
+              <div class="text-xs font-semibold text-[#1F3326]">{{ $t('payment.touchIdTitle') || '轻触指纹传感器' }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('payment.touchIdSub') || '安全芯片生物认证 · 免密极速扣款' }}</div>
             </div>
 
             <!-- 指纹感应传感器按钮 -->
@@ -212,26 +212,26 @@
               <!-- 外圈呼吸光环 -->
               <div
                 class="absolute inset-0 rounded-full border-2 transition-all duration-700"
-                :class="fingerScanning ? 'border-emerald-400 shadow-[0_0_20px_#10b981] animate-ping' : 'border-emerald-200'"
+                :class="fingerScanning ? 'border-[#6FBF92] shadow-[0_0_20px_#3E9B68] animate-ping' : 'border-[#C7E0CE]'"
               ></div>
 
               <!-- 指纹按钮核心 -->
               <button
                 type="button"
-                class="relative rounded-full bg-gradient-to-b from-slate-900 to-slate-950 text-emerald-400 flex flex-col items-center justify-center shadow-lg border border-slate-700 cursor-pointer hover:border-emerald-400 transition-all active:scale-95 group overflow-hidden"
+                class="relative rounded-full bg-gradient-to-b from-[#1B3123] to-[#12241A] text-[#6FBF92] flex flex-col items-center justify-center shadow-lg border border-[#43554B] cursor-pointer hover:border-[#6FBF92] transition-all active:scale-95 group overflow-hidden"
                 :class="isAppMode ? 'w-18 h-18' : 'w-24 h-24'"
                 @click="triggerFingerprintScan"
               >
                 <!-- 动态激光波纹 (扫描时) -->
                 <div
                   v-if="fingerScanning"
-                  class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_10px_#34d399] animate-scan-finger top-0"
+                  class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#6FBF92] to-transparent shadow-[0_0_10px_#6FBF92] animate-scan-finger top-0"
                 ></div>
 
                 <!-- 指纹 SVG 图案 -->
                 <svg
                   class="transition-transform duration-300"
-                  :class="[isAppMode ? 'w-9 h-9' : 'w-12 h-12', fingerScanning ? 'scale-110 text-emerald-300' : 'group-hover:scale-105']"
+                  :class="[isAppMode ? 'w-9 h-9' : 'w-12 h-12', fingerScanning ? 'scale-110 text-[#A7D9BC]' : 'group-hover:scale-105']"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -250,7 +250,7 @@
                   <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
                 </svg>
 
-                <span class="text-[9px] font-mono text-emerald-300/80 mt-0.5">
+                <span class="text-[9px] font-mono text-[#A7D9BC]/80 mt-0.5">
                   {{ fingerScanning ? ($t('payment.touchIdScanning') || '比对中...') : 'TOUCH ID' }}
                 </span>
               </button>
@@ -258,7 +258,7 @@
 
             <el-button
               type="primary"
-              class="w-full font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500 !rounded-xl"
+              class="w-full font-bold shadow-md bg-[#2F7A50] border-[#2F7A50] hover:bg-[#3E9B68] !rounded-lg"
               :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
               :loading="fingerScanning"
               @click="triggerFingerprintScan"
@@ -272,25 +272,25 @@
           <!-- ======================================================== -->
           <div v-else-if="verifyMode === 'face'" :class="isAppMode ? 'space-y-2 py-1' : 'space-y-4 py-2'" class="text-center">
             <div class="space-y-0.5">
-              <div class="text-xs font-semibold text-slate-800">{{ $t('payment.faceIdTitle') || '注视屏幕进行 Face ID 支付' }}</div>
-              <div class="text-[10px] text-slate-400">{{ $t('payment.faceIdSub') || '身份中心生物证书免密验签' }}</div>
+              <div class="text-xs font-semibold text-[#1F3326]">{{ $t('payment.faceIdTitle') || '注视屏幕进行 Face ID 支付' }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('payment.faceIdSub') || '身份中心生物证书免密验签' }}</div>
             </div>
 
             <!-- 微型刷脸取景扫描圆框 -->
             <div
-              class="relative mx-auto rounded-full bg-slate-900 border-2 border-indigo-400/80 overflow-hidden flex items-center justify-center shadow-lg"
+              class="relative mx-auto rounded-full bg-[#1B3123] border-2 border-[#7FA48C]/80 overflow-hidden flex items-center justify-center shadow-lg"
               :class="isAppMode ? 'w-22 h-22' : 'w-32 h-32'"
             >
               <!-- 激光环绕光环 -->
               <div
-                class="absolute inset-0 rounded-full border-2 border-indigo-400/30"
-                :class="faceScanning ? 'border-t-emerald-400 animate-spin shadow-[0_0_15px_#34d399]' : ''"
+                class="absolute inset-0 rounded-full border-2 border-[#7FA48C]/30"
+                :class="faceScanning ? 'border-t-emerald-400 animate-spin shadow-[0_0_15px_#6FBF92]' : ''"
               ></div>
 
               <!-- 仿真面孔剪影 -->
-              <div class="text-indigo-400/80 flex flex-col items-center">
+              <div class="text-[#7FA48C]/80 flex flex-col items-center">
                 <el-icon :size="isAppMode ? 32 : 48"><User /></el-icon>
-                <div class="text-[8px] font-mono text-indigo-300 mt-0.5">
+                <div class="text-[8px] font-mono text-[#AECBB8] mt-0.5">
                   {{ faceScanning ? ($t('payment.faceIdScanning') || 'SCANNING') : 'FACE ID' }}
                 </div>
               </div>
@@ -298,13 +298,13 @@
               <!-- 扫描对齐光标 -->
               <div
                 v-if="faceScanning"
-                class="absolute inset-x-2 h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399] animate-scan-face top-0"
+                class="absolute inset-x-2 h-0.5 bg-[#6FBF92] shadow-[0_0_8px_#6FBF92] animate-scan-face top-0"
               ></div>
             </div>
 
             <el-button
               type="primary"
-              class="w-full font-bold shadow-md bg-indigo-600 border-indigo-600 hover:bg-indigo-500 !rounded-xl"
+              class="w-full font-bold shadow-md bg-[#326445] border-[#326445] hover:bg-[#5C8A6B] !rounded-lg"
               :class="isAppMode ? '!h-8.5 text-xs' : '!h-10'"
               :loading="faceScanning"
               @click="triggerFacePayScan"
@@ -325,10 +325,10 @@
 
       <!-- 支付处理中 (Processing) -->
       <div v-else-if="paymentStatus === 'processing'" class="py-12 flex flex-col items-center justify-center space-y-4">
-        <div class="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin flex items-center justify-center shadow-md" />
+        <div class="w-16 h-16 rounded-full border-4 border-[#C7E0CE] border-t-emerald-600 animate-spin flex items-center justify-center shadow-md" />
         <div class="text-center space-y-1">
-          <h3 class="text-base font-bold text-slate-800">{{ $t('payment.processing') }}</h3>
-          <p class="text-xs text-slate-400 font-mono">
+          <h3 class="text-base font-bold text-[#1F3326]">{{ $t('payment.processing') }}</h3>
+          <p class="text-xs text-[#8A9A8F] font-mono">
             Channel: {{ currentChannelName }} · Verify: {{ currentVerifyLabel }} · Order: {{ orderId }}
           </p>
         </div>
@@ -336,19 +336,19 @@
 
       <!-- 支付成功 (Success) -->
       <div v-else-if="paymentStatus === 'success'" class="py-8 flex flex-col items-center justify-center space-y-4 text-center">
-        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-xs">
+        <div class="w-16 h-16 rounded-full bg-[#E1F4E4] text-[#2F7A50] flex items-center justify-center shadow-xs">
           <el-icon :size="36"><CircleCheckFilled /></el-icon>
         </div>
 
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900">{{ $t('payment.success') }}</h3>
-          <p class="text-xs text-emerald-700 font-medium">CBI E-Payment Clearance Verified · {{ $t('payment.treasuryBooked') }}</p>
-          <div class="font-mono text-xs text-slate-400 mt-2">
+          <h3 class="text-lg font-bold text-[#1B3123]">{{ $t('payment.success') }}</h3>
+          <p class="text-xs text-[#2F5B44] font-medium">CBI E-Payment Clearance Verified · {{ $t('payment.treasuryBooked') }}</p>
+          <div class="font-mono text-xs text-[#8A9A8F] mt-2">
             TXN-{{ successTxnNo || '883921' }}-IQD ({{ currentVerifyLabel }})
           </div>
         </div>
 
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 max-w-sm">
+        <div class="p-3 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg text-xs text-[#24483A] max-w-sm">
           {{ $t('payment.successHint') }}
         </div>
       </div>

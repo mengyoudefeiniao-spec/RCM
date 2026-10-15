@@ -40,6 +40,12 @@ const routes = [
         meta: { title: '数据看板', roles: ['admin', 'agent'] }
       },
       {
+        path: 'stats',
+        name: 'GeoStats',
+        component: () => import('../views/stats/RationGeoStatsView.vue'),
+        meta: { title: '配给地理统计', roles: ['admin', 'agent'] }
+      },
+      {
         path: 'citizen',
         name: 'CitizenFamily',
         component: () => import('../views/citizen/CitizenFamilyView.vue'),
@@ -88,6 +94,12 @@ const routes = [
         meta: { title: '投诉和处理', roles: ['admin'] }
       },
       {
+        path: 'family-agent',
+        name: 'FamilyAgent',
+        component: () => import('../views/citizen/FamilyAgentView.vue'),
+        meta: { title: '家庭代理', roles: ['citizen'] }
+      },
+      {
         path: 'warehouse',
         name: 'Warehouse',
         component: () => import('../views/warehouse/WarehouseView.vue'),
@@ -98,6 +110,18 @@ const routes = [
         name: 'AgentMgmt',
         component: () => import('../views/agent/AgentMgmtView.vue'),
         meta: { title: '代理管理', roles: ['admin', 'agent'] }
+      },
+      {
+        path: 'agent-orders',
+        name: 'AgentOrders',
+        component: () => import('../views/agent/AgentOrdersView.vue'),
+        meta: { title: '代理订单', roles: ['agent', 'admin'] }
+      },
+      {
+        path: 'agent-analytics',
+        name: 'AgentAnalytics',
+        component: () => import('../views/agent/AgentAnalyticsView.vue'),
+        meta: { title: '库存台账', roles: ['agent', 'admin'] }
       },
       {
         path: 'admin',

@@ -1,17 +1,17 @@
 <template>
   <div class="electronic-review-view space-y-4">
     <!-- 头部说明 (已简化介绍词) -->
-    <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="bg-white rounded-lg p-4 border border-[#D9E5DB]/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <ModuleDescTip
           :title="$t('review.title')"
           :content="$t('review.subtitle')"
           :badge="$t('review.badgeFullProcess')"
           badge-type="warning"
-          title-class="text-sm font-bold text-slate-900"
+          title-class="text-sm font-bold text-[#1B3123]"
         >
           <template #icon>
-            <el-icon class="text-amber-500 text-base"><Stamp /></el-icon>
+            <el-icon class="text-[#D3AF62] text-base"><Stamp /></el-icon>
           </template>
           <template #extra>
             <el-tag :type="authStore.isMinisterCenter ? 'primary' : authStore.isDeputyMinister ? 'danger' : 'warning'" effect="dark" size="small" class="font-bold ml-1">
@@ -36,26 +36,26 @@
         class="lg:col-span-5 space-y-3"
         :class="{ 'hidden lg:block': mobileTab === 'detail' }"
       >
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-3">
-          <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+        <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB] shadow-2xs space-y-3">
+          <div class="flex items-center justify-between text-xs font-bold text-[#43554B]">
             <span class="flex items-center gap-1.5">
               <span>{{ $t('review.filterTitle') }}</span>
               <button
                 type="button"
-                class="lg:hidden text-[11px] text-blue-600 font-normal underline ml-1"
+                class="lg:hidden text-[11px] text-[#326445] font-normal underline ml-1"
                 @click="showMobileFilter = !showMobileFilter"
               >
                 {{ showMobileFilter ? $t('review.collapseFilters') : $t('review.expandFilters') }}
               </button>
             </span>
-            <span class="text-[11px] text-slate-400 font-mono">
+            <span class="text-[11px] text-[#8A9A8F] font-mono">
               {{ $t('review.filterMatch', { count: filteredTickets.length, total: reviewStore.tickets.length }) }}
             </span>
           </div>
 
           <!-- 组合过滤参数表单 (移动端可折叠) -->
           <div
-            class="space-y-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100"
+            class="space-y-2 text-xs bg-[#F3F8F4] p-2.5 rounded-lg border border-[#E9F1EB]"
             :class="{ 'hidden sm:block': !showMobileFilter }"
           >
             <!-- 关键词过滤 -->
@@ -116,7 +116,7 @@
           </div>
 
           <!-- 来源类型快速切换 -->
-          <div class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-lg text-xs">
+          <div class="flex flex-wrap gap-1 p-1 bg-[#E9F1EB] rounded-lg text-xs">
             <button
               v-for="source in sourceList"
               :key="source"
@@ -124,8 +124,8 @@
               class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1"
               :class="
                 isSourceActive(source)
-                  ? 'bg-white text-amber-600 shadow-2xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-[#C9A13B] shadow-2xs font-bold'
+                  : 'text-[#58685D] hover:text-[#1F3326]'
               "
               @click="changeSourceFilter(source)"
             >
@@ -134,8 +134,8 @@
                 class="text-[9px] px-1 rounded-full"
                 :class="
                   isSourceActive(source)
-                    ? 'bg-amber-100 text-amber-600'
-                    : 'bg-slate-200 text-slate-500'
+                    ? 'bg-[#FDF3E0] text-[#C9A13B]'
+                    : 'bg-[#D9E5DB] text-[#58685D]'
                 "
               >
                 {{ getSourceCount(source) }}
@@ -147,7 +147,7 @@
           <div class="space-y-2 max-h-[580px] overflow-y-auto pr-0.5">
             <div
               v-if="filteredTickets.length === 0"
-              class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-lg"
+              class="p-6 text-center text-xs text-[#8A9A8F] border border-dashed border-[#D9E5DB] rounded-lg"
             >
               {{ $t('review.noTickets') }}
             </div>
@@ -158,8 +158,8 @@
               class="p-3 rounded-lg border text-xs cursor-pointer transition-all active:scale-[0.99]"
               :class="
                 reviewStore.selectedTicket?.id === tk.id
-                  ? 'border-amber-500 bg-amber-50/40 shadow-2xs'
-                  : 'border-slate-200 hover:border-slate-300 bg-white'
+                  ? 'border-[#D3AF62] bg-[#FDF3E0]/40 shadow-2xs'
+                  : 'border-[#D9E5DB] hover:border-[#C9DBCE] bg-white'
               "
               @click="handleSelectTicket(tk)"
             >
@@ -168,7 +168,7 @@
                   <el-tag size="small" :type="getSourceTagType(tk.source)" effect="plain" class="font-bold">
                     {{ getSourceDisplayName(tk.source) }}
                   </el-tag>
-                  <span class="font-bold font-mono text-slate-900">{{ tk.id }}</span>
+                  <span class="font-bold font-mono text-[#1B3123]">{{ tk.id }}</span>
                 </div>
 
                 <el-tag
@@ -179,14 +179,14 @@
                 </el-tag>
               </div>
 
-              <div class="font-semibold text-slate-800 truncate">{{ tk.appType }}</div>
+              <div class="font-semibold text-[#1F3326] truncate">{{ tk.appType }}</div>
               
-              <div class="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+              <div class="text-[11px] text-[#58685D] mt-1 flex items-center justify-between">
                 <span class="truncate">{{ $t('review.targetPrefix') }}{{ tk.targetMemberName }}</span>
-                <span class="font-mono text-slate-400 shrink-0">{{ tk.submittedAt?.slice(5) }}</span>
+                <span class="font-mono text-[#8A9A8F] shrink-0">{{ tk.submittedAt?.slice(5) }}</span>
               </div>
 
-              <div v-if="tk.province || tk.center" class="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
+              <div v-if="tk.province || tk.center" class="text-[10px] text-[#8A9A8F] mt-1 flex items-center gap-1.5">
                 <span class="truncate">{{ $t('review.regionPrefix') }}{{ tk.province }} {{ tk.center ? '· ' + tk.center : '' }}</span>
               </div>
             </div>
@@ -200,77 +200,77 @@
         :class="{ 'hidden lg:block': mobileTab === 'list' }"
       >
         <!-- 移动端专属：返回待审工单列表操作条 (Pixel 9 专属便捷导航) -->
-        <div class="lg:hidden flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-2.5 rounded-xl border border-amber-200 shadow-2xs">
+        <div class="lg:hidden flex items-center justify-between bg-gradient-to-r from-[#FDF3E0] to-[#FDF3E0] px-3.5 py-2.5 rounded-lg border border-[#F2E3C6] shadow-2xs">
           <button
             type="button"
-            class="flex items-center gap-1.5 text-xs text-amber-900 font-bold active:scale-95 transition-transform"
+            class="flex items-center gap-1.5 text-xs text-[#5A4718] font-bold active:scale-95 transition-transform"
             @click="mobileTab = 'list'"
           >
             <el-icon class="text-sm"><Back /></el-icon>
             <span>{{ $t('review.backToList') }} ({{ filteredTickets.length }})</span>
           </button>
-          <span class="text-[11px] font-mono font-semibold text-amber-800">{{ reviewStore.selectedTicket?.id }}</span>
+          <span class="text-[11px] font-mono font-semibold text-[#6B5321]">{{ reviewStore.selectedTicket?.id }}</span>
         </div>
 
-        <div v-if="!reviewStore.selectedTicket" class="bg-white p-12 rounded-xl border border-slate-200 text-center text-slate-400 text-xs">
+        <div v-if="!reviewStore.selectedTicket" class="bg-white p-12 rounded-lg border border-[#D9E5DB] text-center text-[#8A9A8F] text-xs">
           {{ $t('review.selectTicketHint') }}
         </div>
 
         <div v-else class="space-y-4">
           <!-- 工单基础信息面板 -->
-          <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3 text-xs">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+          <div class="bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3 text-xs">
+            <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB]">
               <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-slate-900 font-mono">
+                <span class="font-bold text-sm text-[#1B3123] font-mono">
                   {{ $t('review.ticketIdLabel') }}{{ reviewStore.selectedTicket.id }}
                 </span>
                 <el-tag size="small" :type="getSourceTagType(reviewStore.selectedTicket.source)" effect="dark" class="font-bold">
                   {{ $t('review.sourceLabel') }}{{ getSourceDisplayName(reviewStore.selectedTicket.source) }}
                 </el-tag>
               </div>
-              <span class="text-slate-400 font-mono">{{ reviewStore.selectedTicket.submittedAt }}</span>
+              <span class="text-[#8A9A8F] font-mono">{{ reviewStore.selectedTicket.submittedAt }}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div>
-                <span class="text-slate-400 block text-[11px]">{{ $t('review.businessTypeLabel') }}</span>
-                <span class="font-bold text-slate-800">{{ reviewStore.selectedTicket.appType }}</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.businessTypeLabel') }}</span>
+                <span class="font-bold text-[#1F3326]">{{ reviewStore.selectedTicket.appType }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block text-[11px]">{{ $t('review.cardNoLabel') }}</span>
-                <span class="font-mono font-bold text-slate-800">{{ reviewStore.selectedTicket.cardNo }}</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.cardNoLabel') }}</span>
+                <span class="font-mono font-bold text-[#1F3326]">{{ reviewStore.selectedTicket.cardNo }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block text-[11px]">{{ $t('review.targetPersonLabel') }}</span>
-                <span class="font-bold text-slate-800">{{ reviewStore.selectedTicket.targetMemberName }}</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.targetPersonLabel') }}</span>
+                <span class="font-bold text-[#1F3326]">{{ reviewStore.selectedTicket.targetMemberName }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block text-[11px]">{{ $t('review.currentStatusLabel') }}</span>
-                <span class="font-bold text-amber-600">{{ getStatusDisplayName(reviewStore.selectedTicket.status) }}</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.currentStatusLabel') }}</span>
+                <span class="font-bold text-[#C9A13B]">{{ getStatusDisplayName(reviewStore.selectedTicket.status) }}</span>
               </div>
               <div v-if="reviewStore.selectedTicket.province">
-                <span class="text-slate-400 block text-[11px]">{{ $t('review.centerLabel') }}</span>
-                <span class="text-slate-800">{{ reviewStore.selectedTicket.province }} · {{ reviewStore.selectedTicket.center }}</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.centerLabel') }}</span>
+                <span class="text-[#1F3326]">{{ reviewStore.selectedTicket.province }} · {{ reviewStore.selectedTicket.center }}</span>
               </div>
             </div>
 
             <!-- 触发电子审核原因 -->
-            <div class="p-3 bg-rose-50 rounded-lg border border-rose-200 text-rose-700 text-xs">
+            <div class="p-3 bg-[#FBEAE9] rounded-lg border border-[#F2D5D4] text-[#A93B39] text-xs">
               <span class="font-bold">{{ $t('review.triggerReasonLabel') }}</span>
               {{ reviewStore.selectedTicket.reason }}
             </div>
 
             <!-- 附件材料一览 -->
             <div v-if="reviewStore.selectedTicket.attachments?.length" class="space-y-1.5 pt-1">
-              <div class="text-[11px] font-bold text-slate-700">{{ $t('review.attachmentListLabel') }}</div>
+              <div class="text-[11px] font-bold text-[#43554B]">{{ $t('review.attachmentListLabel') }}</div>
               <div
                 v-for="att in reviewStore.selectedTicket.attachments"
                 :key="att.name"
-                class="p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs"
+                class="p-2 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] flex items-center justify-between text-xs"
               >
                 <div class="flex items-center gap-2">
-                  <el-icon class="text-blue-600"><Document /></el-icon>
-                  <span class="font-mono text-slate-800">{{ att.name }}</span>
+                  <el-icon class="text-[#326445]"><Document /></el-icon>
+                  <span class="font-mono text-[#1F3326]">{{ att.name }}</span>
                 </div>
                 <el-tag size="small" type="success">{{ $t('review.sealValid') }}</el-tag>
               </div>
@@ -278,20 +278,20 @@
           </div>
 
           <!-- 第一级：分部员工审核 (资格与数据查验) -->
-          <div class="bg-white p-4.5 rounded-xl border border-blue-200 shadow-2xs space-y-3 text-xs">
-            <div class="flex items-center justify-between font-bold text-blue-700">
+          <div class="bg-white p-4.5 rounded-lg border border-[#C7DED0] shadow-2xs space-y-3 text-xs">
+            <div class="flex items-center justify-between font-bold text-[#2A5440]">
               <span class="flex items-center gap-1.5">
                 <el-icon><Check /></el-icon>
                 <span>{{ $t('review.stage1Title') }}</span>
               </span>
-              <span v-if="reviewStore.selectedTicket.staffReviewedAt" class="text-emerald-600 font-normal">
+              <span v-if="reviewStore.selectedTicket.staffReviewedAt" class="text-[#2F7A50] font-normal">
                 {{ $t('review.stage1Done', { time: reviewStore.selectedTicket.staffReviewedAt }) }}
               </span>
             </div>
 
-            <div v-if="reviewStore.selectedTicket.staffOpinion" class="p-3 bg-blue-50/40 rounded-lg border border-blue-100 space-y-1">
-              <div class="text-[11px] text-slate-400">{{ $t('review.staffReviewerLabel') }}{{ reviewStore.selectedTicket.staffName }}</div>
-              <div class="text-slate-800">{{ reviewStore.selectedTicket.staffOpinion }}</div>
+            <div v-if="reviewStore.selectedTicket.staffOpinion" class="p-3 bg-[#EFF5F1]/40 rounded-lg border border-[#E1F4E4] space-y-1">
+              <div class="text-[11px] text-[#8A9A8F]">{{ $t('review.staffReviewerLabel') }}{{ reviewStore.selectedTicket.staffName }}</div>
+              <div class="text-[#1F3326]">{{ reviewStore.selectedTicket.staffOpinion }}</div>
             </div>
 
             <div v-else class="space-y-2">
@@ -313,20 +313,20 @@
           </div>
 
           <!-- 第二级：分部经理/长官终审裁决 -->
-          <div class="bg-white p-4.5 rounded-xl border border-amber-200 shadow-2xs space-y-3 text-xs">
-            <div class="flex items-center justify-between font-bold text-amber-700">
+          <div class="bg-white p-4.5 rounded-lg border border-[#F2E3C6] shadow-2xs space-y-3 text-xs">
+            <div class="flex items-center justify-between font-bold text-[#7A5F21]">
               <span class="flex items-center gap-1.5">
                 <el-icon><Stamp /></el-icon>
                 <span>{{ $t('review.stage2Title', { title: authStore.userProfile?.title || $t('common.branchManager') }) }}</span>
               </span>
-              <span v-if="reviewStore.selectedTicket.managerDecidedAt" class="font-normal" :class="isDecisionApproved(reviewStore.selectedTicket.managerDecision) ? 'text-emerald-600' : 'text-rose-600'">
+              <span v-if="reviewStore.selectedTicket.managerDecidedAt" class="font-normal" :class="isDecisionApproved(reviewStore.selectedTicket.managerDecision) ? 'text-[#2F7A50]' : 'text-[#C04442]'">
                 {{ $t('review.stage2Result', { decision: reviewStore.selectedTicket.managerDecision, time: reviewStore.selectedTicket.managerDecidedAt }) }}
               </span>
             </div>
 
-            <div v-if="reviewStore.selectedTicket.managerNotes && reviewStore.selectedTicket.managerDecision !== '待决' && reviewStore.selectedTicket.managerDecision !== 'Pending'" class="p-3 bg-amber-50/40 rounded-lg border border-amber-100 space-y-1">
-              <div class="text-[11px] text-slate-400">{{ $t('review.managerReviewerLabel') }}{{ reviewStore.selectedTicket.managerName }}</div>
-              <div class="text-slate-800">{{ reviewStore.selectedTicket.managerNotes }}</div>
+            <div v-if="reviewStore.selectedTicket.managerNotes && reviewStore.selectedTicket.managerDecision !== '待决' && reviewStore.selectedTicket.managerDecision !== 'Pending'" class="p-3 bg-[#FDF3E0]/40 rounded-lg border border-[#FDF3E0] space-y-1">
+              <div class="text-[11px] text-[#8A9A8F]">{{ $t('review.managerReviewerLabel') }}{{ reviewStore.selectedTicket.managerName }}</div>
+              <div class="text-[#1F3326]">{{ reviewStore.selectedTicket.managerNotes }}</div>
             </div>
 
             <div v-else-if="isWaitingManager(reviewStore.selectedTicket.status)" class="space-y-2">
@@ -357,7 +357,7 @@
               </div>
             </div>
 
-            <div v-else class="text-slate-400 text-[11px]">
+            <div v-else class="text-[#8A9A8F] text-[11px]">
               {{ $t('review.stage2WaitStage1') }}
             </div>
           </div>

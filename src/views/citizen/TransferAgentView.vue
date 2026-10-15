@@ -1,15 +1,15 @@
 <template>
   <div class="transfer-agent-view space-y-4 sm:space-y-6">
-    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 sm:space-y-6">
+    <div class="bg-white rounded-lg p-4 sm:p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4 sm:space-y-6">
       <!-- 顶部标题与返回导航 -->
-      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div class="flex items-start sm:items-center justify-between gap-4 border-b border-[#E9F1EB] pb-4">
         <ModuleDescTip
           :title="$t('transfer.title')"
           :content="$t('transfer.subtitle')"
-          title-class="text-base font-bold text-slate-900"
+          title-class="text-base font-bold text-[#1B3123]"
         >
           <template #icon>
-            <el-icon class="text-blue-600 text-lg"><Switch /></el-icon>
+            <el-icon class="text-[#326445] text-lg"><Switch /></el-icon>
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
@@ -19,38 +19,38 @@
       </div>
 
       <!-- 当前家庭配给卡与原代理存根概览 -->
-      <div v-if="citizenStore.currentFamily" class="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
         <div>
-          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.rationCardNo') }}：</span>
-          <span class="font-mono font-bold text-blue-600">{{ citizenStore.currentFamily.rationCardNo }}</span>
+          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.rationCardNo') }}：</span>
+          <span class="font-mono font-bold text-[#326445]">{{ citizenStore.currentFamily.rationCardNo }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">{{ $t('citizen.headName') }}：</span>
-          <span class="font-bold text-slate-800">{{ citizenStore.currentFamily.headName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
+          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.headName') }}：</span>
+          <span class="font-bold text-[#1F3326]">{{ citizenStore.currentFamily.headName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">{{ $t('transfer.currentProvince') }}：</span>
-          <span class="font-medium text-slate-800">{{ currentFromProvince }}</span>
+          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentProvince') }}：</span>
+          <span class="font-medium text-[#1F3326]">{{ currentFromProvince }}</span>
         </div>
         <div>
-          <span class="text-slate-400 block text-[11px]">{{ $t('transfer.currentAgent') }}：</span>
-          <span class="font-medium text-amber-700 truncate block">{{ citizenStore.currentFamily.agentName }}</span>
+          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentAgent') }}：</span>
+          <span class="font-medium text-[#7A5F21] truncate block">{{ citizenStore.currentFamily.agentName }}</span>
         </div>
       </div>
 
       <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
-      <div class="process-card-wrapper relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+      <div class="process-card-wrapper relative bg-white rounded-lg border border-[#D9E5DB] overflow-hidden shadow-xs">
         <div class="flex flex-col lg:flex-row items-stretch">
           
           <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
-          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-slate-50/80 lg:border-r border-slate-200 lg:p-6 p-0">
+          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
-            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-slate-200">
-              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <el-icon class="text-blue-600"><Guide /></el-icon>
+            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]">
+              <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
+                <el-icon class="text-[#326445]"><Guide /></el-icon>
                 <span>{{ cleanTransferTitle }}</span>
               </span>
-              <span class="text-[11px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-semibold">
+              <span class="text-[11px] font-mono text-[#2A5440] bg-[#EFF5F1] px-2 py-0.5 rounded border border-[#C7DED0] font-semibold">
                 {{ $t('common.stepsCount', { current: currentStep, total: 5 }) }}
               </span>
             </div>
@@ -78,10 +78,10 @@
 
                 <!-- 节点文本 (仅桌面端显示) -->
                 <div class="node-text-wrapper hidden lg:block">
-                  <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-blue-600' : s.step < currentStep ? 'text-slate-700' : 'text-slate-400'">
+                  <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-[#326445]' : s.step < currentStep ? 'text-[#43554B]' : 'text-[#8A9A8F]'">
                     {{ s.name }}
                   </div>
-                  <div class="node-desc text-[11px] text-slate-400 mt-0.5">
+                  <div class="node-desc text-[11px] text-[#8A9A8F] mt-0.5">
                     {{ s.desc }}
                   </div>
                 </div>
@@ -92,30 +92,30 @@
           <!-- 右侧主操作区 -->
           <div class="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7 space-y-6">
             <!-- 移动端顶部轻量步骤指示器 -->
-            <div class="lg:hidden flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <span class="font-bold text-slate-800 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <div class="lg:hidden flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs">
+              <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
                 <span>{{ $t('common.stepNumber', { step: currentStep }) }}：{{ processSteps[currentStep - 1]?.name }}</span>
               </span>
-              <span class="font-mono text-slate-400 text-[11px]">{{ $t('common.progress', { current: currentStep, total: 5 }) }}</span>
+              <span class="font-mono text-[#8A9A8F] text-[11px]">{{ $t('common.progress', { current: currentStep, total: 5 }) }}</span>
             </div>
 
             <!-- ======================================================== -->
             <!-- 步骤 1: 选择目标分部、中心及代理 (带 1,500 户容量红线监控) -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 1" class="space-y-4 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2 flex-wrap">
-                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">1</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2 flex-wrap">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">1</span>
                   <span>{{ $t('transfer.step1TargetTitle') }}</span>
                   <el-tag size="small" type="danger" effect="plain" class="scale-90">{{ $t('transfer.capacityAlert') }}</el-tag>
                 </label>
-                <span class="text-xs text-slate-400">{{ $t('transfer.capacityNotice') }}</span>
+                <span class="text-xs text-[#8A9A8F]">{{ $t('transfer.capacityNotice') }}</span>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetProvince') }}</span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.targetProvince') }}</span>
                   <el-select v-model="targetProvince" class="w-full" size="large" @change="handleProvinceChange">
                     <el-option
                       v-for="prov in provinceOptions"
@@ -127,7 +127,7 @@
                 </div>
 
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetBranch') }}</span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.targetBranch') }}</span>
                   <el-select v-model="targetBranchName" class="w-full" size="large" @change="handleBranchChange">
                     <el-option
                       v-for="branch in currentBranchList"
@@ -139,7 +139,7 @@
                 </div>
 
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.targetCenter') }}</span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.targetCenter') }}</span>
                   <el-select v-model="targetCenterId" class="w-full" size="large" @change="handleCenterChange">
                     <el-option
                       v-for="cnt in currentCenterList"
@@ -153,8 +153,8 @@
 
               <!-- 路径快速感知提示 -->
               <div
-                class="p-3 rounded-xl border text-xs flex items-center justify-between"
-                :class="isSameProvince ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'"
+                class="p-3 rounded-lg border text-xs flex items-center justify-between"
+                :class="isSameProvince ? 'bg-[#EFF5F1] border-[#C7E0CE] text-[#12241A]' : 'bg-[#FDF3E0] border-[#F2E3C6] text-[#5A4718]'"
               >
                 <div class="flex items-center gap-2">
                   <el-icon><Compass /></el-icon>
@@ -170,11 +170,11 @@
               <!-- 双代理选择：面粉代理 & 食品代理 -->
               <div v-if="selectedCenter" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <!-- 面粉代理网点选择 -->
-                <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
-                  <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
-                    <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4]/70 border-[#D9E5DB]">
+                  <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]/80">
+                    <span class="text-xs font-bold text-[#5A4718] flex items-center gap-1.5">
                       <span>{{ $t('transfer.flourAgent') }}</span>
-                      <span class="text-[11px] text-slate-400 font-normal">({{ $t('transfer.limit1500') }})</span>
+                      <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
                     </span>
                     <el-tag size="small" type="warning" effect="dark">{{ $t('transfer.flourSupply') }}</el-tag>
                   </div>
@@ -183,21 +183,21 @@
                     <div
                       v-for="ag in selectedCenter.flourAgents"
                       :key="ag.id"
-                      class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      class="p-3 rounded-lg border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
                       :class="[
-                        selectedFlourAgentId === ag.id ? 'border-amber-500 ring-1 ring-amber-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
-                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
+                        selectedFlourAgentId === ag.id ? 'border-[#D3AF62] ring-1 ring-[#D3AF62] shadow-2xs' : 'border-[#D9E5DB] hover:border-[#C9DBCE]',
+                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-[#E9F1EB] cursor-not-allowed' : ''
                       ]"
                     >
                       <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
-                        <span class="font-bold text-slate-800">{{ ag.name }}</span>
-                        <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                        <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
+                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
 
                       <div class="text-right shrink-0">
                         <span
                           class="font-mono font-bold text-xs"
-                          :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
+                          :class="ag.currentHouseholds >= 1500 ? 'text-[#C04442]' : 'text-[#326445]'"
                         >
                           {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} {{ $t('common.households') }}
                         </span>
@@ -210,18 +210,18 @@
                         >
                           {{ $t('transfer.capacityFull') }}
                         </el-tag>
-                        <span v-else class="text-[10px] text-emerald-600 block">{{ $t('transfer.capacityAvailable') }}</span>
+                        <span v-else class="text-[10px] text-[#2F7A50] block">{{ $t('transfer.capacityAvailable') }}</span>
                       </div>
                     </div>
                   </el-radio-group>
                 </div>
 
                 <!-- 食品代理网点选择 -->
-                <div class="border rounded-2xl p-4 space-y-3 bg-slate-50/70 border-slate-200">
-                  <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
-                    <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4]/70 border-[#D9E5DB]">
+                  <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]/80">
+                    <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
                       <span>{{ $t('transfer.foodAgent') }}</span>
-                      <span class="text-[11px] text-slate-400 font-normal">({{ $t('transfer.limit1500') }})</span>
+                      <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
                     </span>
                     <el-tag size="small" type="primary" effect="dark">{{ $t('transfer.foodSupply') }}</el-tag>
                   </div>
@@ -230,21 +230,21 @@
                     <div
                       v-for="ag in selectedCenter.foodAgents"
                       :key="ag.id"
-                      class="p-3 rounded-xl border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      class="p-3 rounded-lg border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
                       :class="[
-                        selectedFoodAgentId === ag.id ? 'border-blue-500 ring-1 ring-blue-500 shadow-2xs' : 'border-slate-200 hover:border-slate-300',
-                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
+                        selectedFoodAgentId === ag.id ? 'border-[#5C8A6B] ring-1 ring-[#5C8A6B] shadow-2xs' : 'border-[#D9E5DB] hover:border-[#C9DBCE]',
+                        ag.currentHouseholds >= 1500 ? 'opacity-60 bg-[#E9F1EB] cursor-not-allowed' : ''
                       ]"
                     >
                       <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
-                        <span class="font-bold text-slate-800">{{ ag.name }}</span>
-                        <span class="text-[11px] text-slate-400 block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                        <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
+                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
 
                       <div class="text-right shrink-0">
                         <span
                           class="font-mono font-bold text-xs"
-                          :class="ag.currentHouseholds >= 1500 ? 'text-rose-600' : 'text-blue-600'"
+                          :class="ag.currentHouseholds >= 1500 ? 'text-[#C04442]' : 'text-[#326445]'"
                         >
                           {{ ag.currentHouseholds }} / {{ ag.maxCapacity }} {{ $t('common.households') }}
                         </span>
@@ -257,7 +257,7 @@
                         >
                           {{ $t('transfer.capacityFull') }}
                         </el-tag>
-                        <span v-else class="text-[10px] text-emerald-600 block">{{ $t('transfer.capacityAvailable') }}</span>
+                        <span v-else class="text-[10px] text-[#2F7A50] block">{{ $t('transfer.capacityAvailable') }}</span>
                       </div>
                     </div>
                   </el-radio-group>
@@ -269,25 +269,25 @@
             <!-- 步骤 2: 录入新居住信息与上传居住证明 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 2" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">2</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">2</span>
                   <span>{{ $t('transfer.step2Title') }}</span>
                 </label>
-                <span class="text-xs text-rose-500">{{ $t('transfer.mandatoryNotice') }}</span>
+                <span class="text-xs text-[#C04442]">{{ $t('transfer.mandatoryNotice') }}</span>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceDistrict') }} <span class="text-rose-500">*</span></span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.residenceDistrict') }} <span class="text-[#C04442]">*</span></span>
                   <el-input v-model="residenceForm.district" size="large" :placeholder="$t('transfer.districtPlaceholder')" />
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceSubDistrict') }} <span class="text-rose-500">*</span></span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.residenceSubDistrict') }} <span class="text-[#C04442]">*</span></span>
                   <el-input v-model="residenceForm.subDistrict" size="large" :placeholder="$t('transfer.subDistrictPlaceholder')" />
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-slate-600 mb-1.5">{{ $t('transfer.residenceLandmark') }} <span class="text-rose-500">*</span></span>
+                  <span class="block text-xs font-semibold text-[#58685D] mb-1.5">{{ $t('transfer.residenceLandmark') }} <span class="text-[#C04442]">*</span></span>
                   <el-input v-model="residenceForm.nearestLandmark" size="large" :placeholder="$t('transfer.landmarkPlaceholder')" />
                 </div>
               </div>
@@ -310,9 +310,9 @@
             <!-- 步骤 3: 第 140 号决议合规核验 (特定争议领土强制要求) -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 3" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">3</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">3</span>
                   <span>{{ $t('transfer.article140Title') }}</span>
                 </label>
                 <el-tag :type="requiresArticle140 ? 'danger' : 'success'" size="small">
@@ -322,8 +322,8 @@
 
               <!-- 涉及第 140 号决议的警示与上传模块 -->
               <div v-if="requiresArticle140" class="space-y-4">
-                <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1.5">
-                  <div class="font-bold flex items-center gap-1.5 text-sm text-rose-900">
+                <div class="p-4 bg-[#FBEAE9] border border-[#F2D5D4] rounded-lg text-xs text-[#6E2F2E] space-y-1.5">
+                  <div class="font-bold flex items-center gap-1.5 text-sm text-[#6E2F2E]">
                     <el-icon><WarningFilled /></el-icon>
                     <span>{{ $t('transfer.art140NoticeTitle') }}</span>
                   </div>
@@ -344,12 +344,12 @@
               </div>
 
               <!-- 不涉及第 140 号决议的友好提示 -->
-              <div v-else class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-xs space-y-3">
-                <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                  <el-icon class="text-emerald-600" :size="18"><CircleCheckFilled /></el-icon>
+              <div v-else class="p-6 bg-[#EFF5F1]/50 border border-[#C7E0CE] rounded-lg text-xs space-y-3">
+                <div class="flex items-center gap-2 text-[#24483A] font-bold text-sm">
+                  <el-icon class="text-[#2F7A50]" :size="18"><CircleCheckFilled /></el-icon>
                   <span>{{ $t('transfer.art140ExemptTitle') }}</span>
                 </div>
-                <p class="text-emerald-700 leading-relaxed">
+                <p class="text-[#2F5B44] leading-relaxed">
                   {{ $t('transfer.art140ExemptContent', { from: currentFromProvince, target: `${targetProvince} · ${targetBranchName}` }) }}
                 </p>
                 <div>
@@ -362,9 +362,9 @@
             <!-- 步骤 4: 确认信息与规费电子支付 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 4" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <label class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">4</span>
+              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
+                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">4</span>
                   <span>{{ $t('transfer.step4Title') }}</span>
                 </label>
                 <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark">
@@ -373,33 +373,33 @@
               </div>
 
               <!-- 申请明细摘要核对卡 -->
-              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.summaryTarget') }}：</span>
-                  <span class="font-bold text-slate-800">{{ targetProvince }} / {{ targetBranchName }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.summaryTarget') }}：</span>
+                  <span class="font-bold text-[#1F3326]">{{ targetProvince }} / {{ targetBranchName }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.flourAgent') }}：</span>
-                  <span class="font-bold text-amber-800">{{ currentSelectedFlourAgent?.name }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.flourAgent') }}：</span>
+                  <span class="font-bold text-[#6B5321]">{{ currentSelectedFlourAgent?.name }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.foodAgent') }}：</span>
-                  <span class="font-bold text-blue-800">{{ currentSelectedFoodAgent?.name }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.foodAgent') }}：</span>
+                  <span class="font-bold text-[#24483A]">{{ currentSelectedFoodAgent?.name }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 block text-[11px]">{{ $t('transfer.summaryLandmark') }}：</span>
-                  <span class="font-bold text-slate-800 truncate block">{{ residenceForm.nearestLandmark }}</span>
+                  <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.summaryLandmark') }}：</span>
+                  <span class="font-bold text-[#1F3326] truncate block">{{ residenceForm.nearestLandmark }}</span>
                 </div>
               </div>
 
               <!-- 规费账单提示 -->
-              <div class="p-4 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
-                  <div class="text-xs text-slate-400">{{ $t('transfer.feeDescription') }}：</div>
-                  <div class="text-2xl font-bold font-mono text-emerald-400">
-                    5,000 IQD <span class="text-xs text-slate-400 font-normal">({{ $t('common.iqdUnit') }})</span>
+                  <div class="text-xs text-[#8A9A8F]">{{ $t('transfer.feeDescription') }}：</div>
+                  <div class="text-2xl font-bold font-mono text-[#6FBF92]">
+                    5,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
                   </div>
-                  <div class="text-[11px] text-slate-400">
+                  <div class="text-[11px] text-[#8A9A8F]">
                     {{ $t('transfer.payChannels') }}
                   </div>
                 </div>
@@ -411,20 +411,20 @@
               </div>
 
               <!-- 引导进行扫码支付卡片 -->
-              <div class="p-6 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-center space-y-3">
-                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <div class="p-6 bg-[#EFF5F1]/50 border border-[#C7E0CE] rounded-lg text-center space-y-3">
+                <div class="w-12 h-12 rounded-lg bg-[#E1F4E4] text-[#2F7A50] flex items-center justify-center mx-auto">
                   <el-icon :size="24"><CreditCard /></el-icon>
                 </div>
                 <div>
-                  <h4 class="text-sm font-bold text-slate-900">{{ $t('transfer.lastStepTitle') }}</h4>
-                  <p class="text-xs text-slate-500 mt-1">
+                  <h4 class="text-sm font-bold text-[#1B3123]">{{ $t('transfer.lastStepTitle') }}</h4>
+                  <p class="text-xs text-[#58685D] mt-1">
                     {{ $t('transfer.lastStepSubtitle') }}
                   </p>
                 </div>
                 <el-button
                   type="success"
                   size="large"
-                  class="px-8 font-bold shadow-md bg-emerald-600 border-emerald-600 hover:bg-emerald-500"
+                  class="px-8 font-bold shadow-md bg-[#2F7A50] border-[#2F7A50] hover:bg-[#3E9B68]"
                   :loading="submitting"
                   @click="handleOpenPaymentDialog"
                 >
@@ -440,35 +440,35 @@
             <div v-show="currentStep === 5" class="space-y-6 animate-fade-in text-center py-6">
               <div
                 class="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
-                :class="transferResult?.autoApproved ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'"
+                :class="transferResult?.autoApproved ? 'bg-[#E1F4E4] text-[#2F7A50]' : 'bg-[#E1F4E4] text-[#326445]'"
               >
                 <el-icon :size="36"><CircleCheckFilled /></el-icon>
               </div>
 
               <div class="space-y-2">
-                <h3 class="text-lg font-bold text-slate-900">
+                <h3 class="text-lg font-bold text-[#1B3123]">
                   {{ transferResult?.autoApproved ? $t('transfer.autoSuccessTitle') : $t('transfer.reviewSuccessTitle') }}
                 </h3>
-                <p class="text-xs text-slate-500 max-w-lg mx-auto">
+                <p class="text-xs text-[#58685D] max-w-lg mx-auto">
                   {{ transferResult?.message || (transferResult?.autoApproved ? $t('transfer.autoSuccessDesc') : $t('transfer.reviewSuccessDesc')) }}
                 </p>
               </div>
 
               <!-- 凭证卡片 -->
-              <div class="max-w-xl mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left space-y-3 text-xs">
-                <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
-                  <span class="font-bold text-slate-800">{{ $t('transfer.receiptTitle') }}</span>
+              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-left space-y-3 text-xs">
+                <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
+                  <span class="font-bold text-[#1F3326]">{{ $t('transfer.receiptTitle') }}</span>
                   <el-tag :type="transferResult?.autoApproved ? 'success' : 'warning'" size="small">
                     {{ transferResult?.autoApproved ? $t('transfer.autoApprovedBadge') : $t('transfer.reviewingBadge') }}
                   </el-tag>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-slate-600">
-                  <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-slate-800">{{ transferResult?.ticketId || 'TR-2026-BAG-0918' }}</span></div>
-                  <div>{{ $t('citizen.headName') }}：<span class="font-bold text-slate-800">{{ citizenStore.currentFamily?.headName }}</span></div>
-                  <div>{{ $t('transfer.originalAgent') }}：<span class="text-slate-800">{{ citizenStore.currentFamily?.agentName }}</span></div>
-                  <div>{{ $t('transfer.flourAgent') }}：<span class="font-bold text-amber-700">{{ currentSelectedFlourAgent?.name }}</span></div>
-                  <div>{{ $t('transfer.foodAgent') }}：<span class="font-bold text-blue-700">{{ currentSelectedFoodAgent?.name }}</span></div>
-                  <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-emerald-600 font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
+                <div class="grid grid-cols-2 gap-3 text-[#58685D]">
+                  <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-[#1F3326]">{{ transferResult?.ticketId || 'TR-2026-BAG-0918' }}</span></div>
+                  <div>{{ $t('citizen.headName') }}：<span class="font-bold text-[#1F3326]">{{ citizenStore.currentFamily?.headName }}</span></div>
+                  <div>{{ $t('transfer.originalAgent') }}：<span class="text-[#1F3326]">{{ citizenStore.currentFamily?.agentName }}</span></div>
+                  <div>{{ $t('transfer.flourAgent') }}：<span class="font-bold text-[#7A5F21]">{{ currentSelectedFlourAgent?.name }}</span></div>
+                  <div>{{ $t('transfer.foodAgent') }}：<span class="font-bold text-[#2A5440]">{{ currentSelectedFoodAgent?.name }}</span></div>
+                  <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-[#2F7A50] font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
                 </div>
               </div>
 
@@ -482,7 +482,7 @@
             <!-- ======================================================== -->
             <!-- 底部步骤切换操作栏 (上一步 / 下一步) -->
             <!-- ======================================================== -->
-            <div v-if="currentStep < 5" class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div v-if="currentStep < 5" class="flex items-center justify-between pt-4 border-t border-[#E9F1EB]">
               <el-button
                 v-if="currentStep > 1"
                 size="large"
@@ -842,7 +842,7 @@ async function handlePaymentSuccess(paymentInfo) {
 
 <style scoped>
 .process-card-wrapper {
-  --theme-color: #2563eb;
+  --theme-color: #326445;
   --theme-color-rgb: 37, 99, 235;
 }
 
@@ -857,7 +857,7 @@ async function handlePaymentSuccess(paymentInfo) {
     top: 24px;
     bottom: 24px;
     width: 2px;
-    background-color: #e2e8f0;
+    background-color: #D9E5DB;
     z-index: 1;
   }
   .timeline-node-item {
@@ -880,13 +880,13 @@ async function handlePaymentSuccess(paymentInfo) {
     justify-content: center;
     flex-shrink: 0;
     background-color: #ffffff;
-    border: 2px solid #cbd5e1;
-    color: #64748b;
+    border: 2px solid #C9DBCE;
+    color: #58685D;
     transition: all 0.25s ease;
   }
   .timeline-node-item.is-finish .node-icon-wrapper {
-    background-color: #10b981;
-    border-color: #10b981;
+    background-color: #3E9B68;
+    border-color: #3E9B68;
     color: #ffffff;
   }
   .timeline-node-item.is-active .node-icon-wrapper {
@@ -924,7 +924,7 @@ async function handlePaymentSuccess(paymentInfo) {
     top: 0;
     bottom: 0;
     width: 2px;
-    background-color: #cbd5e1;
+    background-color: #C9DBCE;
     z-index: 1;
   }
   .timeline-node-item {
@@ -942,15 +942,15 @@ async function handlePaymentSuccess(paymentInfo) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f8fafc;
-    border: 2px solid #cbd5e1;
-    color: #94a3b8;
+    background-color: #F8FBF8;
+    border: 2px solid #C9DBCE;
+    color: #8A9A8F;
     font-size: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .timeline-node-item.is-finish .node-icon-wrapper {
-    background-color: #10b981;
-    border-color: #059669;
+    background-color: #3E9B68;
+    border-color: #2F7A50;
     color: #ffffff;
   }
   .timeline-node-item.is-active .node-icon-wrapper {

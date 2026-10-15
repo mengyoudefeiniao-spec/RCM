@@ -1,23 +1,23 @@
 <template>
-  <div class="agent-hierarchy-gis-map relative bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-lg select-none">
+  <div class="agent-hierarchy-gis-map relative bg-[#12241A] rounded-lg border border-[#1F3326] overflow-hidden shadow-lg select-none">
     <!-- 顶部 GIS 地图控制台与图层工具栏 -->
     <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
       <!-- 视角与定位状态指示 -->
-      <div class="flex items-center gap-2 pointer-events-auto bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs shadow-md">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+      <div class="flex items-center gap-2 pointer-events-auto bg-[#1B3123]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#43554B]/80 text-xs shadow-md">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#6FBF92] animate-ping"></span>
         <span class="font-bold text-white tracking-wide">巴格达 GIS 空间网格</span>
-        <span class="text-slate-400 font-mono text-[11px] hidden sm:inline">33.315°N, 44.366°E</span>
+        <span class="text-[#8A9A8F] font-mono text-[11px] hidden sm:inline">33.315°N, 44.366°E</span>
         <el-tag size="small" type="primary" effect="dark" class="scale-90 font-mono">
           {{ selectedDistrictName || '全省运营总览' }}
         </el-tag>
       </div>
 
       <!-- 图层开关与缩放控制按钮 -->
-      <div class="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur-md p-1 rounded-xl border border-slate-700/80 shadow-md">
+      <div class="flex items-center gap-1.5 pointer-events-auto bg-[#1B3123]/90 backdrop-blur-md p-1 rounded-lg border border-[#43554B]/80 shadow-md">
         <el-tooltip content="区域边界图层" placement="top">
           <button
             class="px-2 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-            :class="showDistrictBoundaries ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'"
+            :class="showDistrictBoundaries ? 'bg-[#326445] text-white' : 'text-[#8A9A8F] hover:text-[#D9E5DB]'"
             @click="showDistrictBoundaries = !showDistrictBoundaries"
           >
             <span>区划</span>
@@ -27,31 +27,31 @@
         <el-tooltip content="街道网格覆盖半径 (500~1500m)" placement="top">
           <button
             class="px-2 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-            :class="showStreetRadius ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'"
+            :class="showStreetRadius ? 'bg-[#326445] text-white' : 'text-[#8A9A8F] hover:text-[#D9E5DB]'"
             @click="showStreetRadius = !showStreetRadius"
           >
             <span>网格半径</span>
           </button>
         </el-tooltip>
 
-        <div class="w-px h-3.5 bg-slate-700 mx-0.5"></div>
+        <div class="w-px h-3.5 bg-[#43554B] mx-0.5"></div>
 
         <button
-          class="w-6 h-6 rounded-lg text-slate-300 hover:bg-slate-800 flex items-center justify-center text-sm font-bold"
+          class="w-6 h-6 rounded-lg text-[#C9DBCE] hover:bg-[#1F3326] flex items-center justify-center text-sm font-bold"
           title="放大"
           @click="zoomIn"
         >
           +
         </button>
         <button
-          class="w-6 h-6 rounded-lg text-slate-300 hover:bg-slate-800 flex items-center justify-center text-sm font-bold"
+          class="w-6 h-6 rounded-lg text-[#C9DBCE] hover:bg-[#1F3326] flex items-center justify-center text-sm font-bold"
           title="缩小"
           @click="zoomOut"
         >
           -
         </button>
         <button
-          class="w-6 h-6 rounded-lg text-slate-300 hover:bg-slate-800 flex items-center justify-center text-xs"
+          class="w-6 h-6 rounded-lg text-[#C9DBCE] hover:bg-[#1F3326] flex items-center justify-center text-xs"
           title="重置视角"
           @click="resetView"
         >
@@ -62,23 +62,23 @@
 
     <!-- 底部 GIS 图例 (Legend) 与饱和度健康指南 -->
     <div class="absolute bottom-3 left-3 z-20 pointer-events-none">
-      <div class="pointer-events-auto bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-800 text-[10px] sm:text-xs text-slate-300 space-y-1 shadow-md max-w-[280px] sm:max-w-none">
+      <div class="pointer-events-auto bg-[#1B3123]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-[#1F3326] text-[10px] sm:text-xs text-[#C9DBCE] space-y-1 shadow-md max-w-[280px] sm:max-w-none">
         <div class="font-bold text-white flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          <span class="w-2 h-2 rounded-full bg-[#5C8A6B]"></span>
           <span>街道代理 1,500 户负荷图例：</span>
         </div>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span class="flex items-center gap-1">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#3E9B68] shadow-xs"></span>
             <span>正常 (<1400户)</span>
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-xs"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#D3AF62] shadow-xs"></span>
             <span>临界 (1400~1499户)</span>
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-xs"></span>
-            <span class="text-rose-400 font-bold">饱和锁定 (1500户)</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#C04442] animate-pulse shadow-xs"></span>
+            <span class="text-[#D0827F] font-bold">饱和锁定 (1500户)</span>
           </span>
         </div>
       </div>
@@ -89,7 +89,7 @@
       v-if="hoveredOrActiveStation"
       class="absolute bottom-3 right-3 z-20 pointer-events-none max-w-[240px] sm:max-w-[290px]"
     >
-      <div class="pointer-events-auto bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-blue-500/60 shadow-xl space-y-1.5 text-xs text-slate-200 animate-fadeIn">
+      <div class="pointer-events-auto bg-[#1B3123]/95 backdrop-blur-md p-3 rounded-lg border border-[#5C8A6B]/60 shadow-xl space-y-1.5 text-xs text-[#D9E5DB] animate-fadeIn">
         <div class="flex items-center justify-between">
           <span class="font-bold text-white truncate">{{ hoveredOrActiveStation.storeName }}</span>
           <el-tag
@@ -101,12 +101,12 @@
             {{ hoveredOrActiveStation.householdsCount }} / 1500 户
           </el-tag>
         </div>
-        <div class="text-[11px] text-slate-400 truncate">
+        <div class="text-[11px] text-[#8A9A8F] truncate">
           {{ hoveredOrActiveStation.district }} · {{ hoveredOrActiveStation.streetName }}
         </div>
-        <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+        <div class="flex items-center justify-between text-[10px] text-[#8A9A8F] pt-1 border-t border-[#1F3326]">
           <span>经营人：{{ hoveredOrActiveStation.name }}</span>
-          <span class="font-mono text-emerald-400">{{ hoveredOrActiveStation.saturationRate }}%</span>
+          <span class="font-mono text-[#6FBF92]">{{ hoveredOrActiveStation.saturationRate }}%</span>
         </div>
       </div>
     </div>
@@ -130,31 +130,31 @@
         <!-- 1. 背景科技经纬网格线 -->
         <defs>
           <pattern id="gisGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.6" />
-            <circle cx="0" cy="0" r="1" fill="#334155" />
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2A3A30" stroke-width="0.7" opacity="0.6" />
+            <circle cx="0" cy="0" r="1" fill="#43554B" />
           </pattern>
 
           <!-- 径向辐射渐变 (正常) -->
           <radialGradient id="gradNormal" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
-            <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+            <stop offset="0%" stop-color="#3E9B68" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#3E9B68" stop-opacity="0.0" />
           </radialGradient>
 
           <!-- 径向辐射渐变 (预警) -->
           <radialGradient id="gradWarning" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.4" />
-            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0" />
+            <stop offset="0%" stop-color="#D9B567" stop-opacity="0.4" />
+            <stop offset="100%" stop-color="#D9B567" stop-opacity="0.0" />
           </radialGradient>
 
           <!-- 径向辐射渐变 (饱和锁定) -->
           <radialGradient id="gradSaturated" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.5" />
-            <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0" />
+            <stop offset="0%" stop-color="#C04442" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#C04442" stop-opacity="0.0" />
           </radialGradient>
         </defs>
 
         <!-- 底层网格背景板 -->
-        <rect width="800" height="600" fill="#090d16" />
+        <rect width="800" height="600" fill="#1A241E" />
         <rect width="800" height="600" fill="url(#gisGrid)" />
 
         <!-- 2. 底格里斯河水系河流贯通 (底格里斯河从西北向东南纵贯巴格达) -->
@@ -162,7 +162,7 @@
           <path
             d="M 380 0 Q 360 120 400 200 T 370 320 T 420 440 T 490 600"
             fill="none"
-            stroke="#0284c7"
+            stroke="#2F7A50"
             stroke-width="26"
             stroke-linecap="round"
             opacity="0.25"
@@ -170,26 +170,26 @@
           <path
             d="M 380 0 Q 360 120 400 200 T 370 320 T 420 440 T 490 600"
             fill="none"
-            stroke="#38bdf8"
+            stroke="#6FBF92"
             stroke-width="12"
             stroke-linecap="round"
             opacity="0.4"
           />
           <!-- 河流文字标注 -->
-          <text x="390" y="80" fill="#38bdf8" font-size="11" font-weight="bold" opacity="0.6" font-family="sans-serif">
+          <text x="390" y="80" fill="#6FBF92" font-size="11" font-weight="bold" opacity="0.6" font-family="sans-serif">
             底格里斯河 (Tigris River)
           </text>
         </g>
 
         <!-- 3. 巴格达城市骨干公路路网 (环线与射线) -->
-        <g class="road-network-layer stroke-slate-700/60" stroke-width="2" fill="none">
+        <g class="road-network-layer stroke-[#43554B]/60" stroke-width="2" fill="none">
           <!-- 城市内环高架线 -->
           <ellipse cx="400" cy="300" rx="260" ry="200" stroke-dasharray="6,4" opacity="0.4" />
-          <ellipse cx="400" cy="300" rx="150" ry="120" stroke="#334155" stroke-width="2" opacity="0.6" />
+          <ellipse cx="400" cy="300" rx="150" ry="120" stroke="#43554B" stroke-width="2" opacity="0.6" />
           <!-- 机场主干高速公路 (卡尔赫方向) -->
-          <line x1="80" y1="420" x2="380" y2="300" stroke="#475569" stroke-width="3" opacity="0.7" />
-          <line x1="400" y1="300" x2="720" y2="180" stroke="#475569" stroke-width="2.5" opacity="0.7" />
-          <line x1="400" y1="300" x2="420" y2="580" stroke="#334155" stroke-width="2" opacity="0.5" />
+          <line x1="80" y1="420" x2="380" y2="300" stroke="#58685D" stroke-width="3" opacity="0.7" />
+          <line x1="400" y1="300" x2="720" y2="180" stroke="#58685D" stroke-width="2.5" opacity="0.7" />
+          <line x1="400" y1="300" x2="420" y2="580" stroke="#43554B" stroke-width="2" opacity="0.5" />
         </g>
 
         <!-- 4. 区域行政边界与网格多边形图层 (District Sectors) -->
@@ -197,54 +197,54 @@
           <!-- 4.1 卡尔赫区 (Al-Karkh - 西岸区域) -->
           <polygon
             points="120,120 370,160 360,460 150,480 90,320"
-            fill="#1e3a8a"
+            fill="#24483A"
             fill-opacity="0.18"
-            stroke="#3b82f6"
+            stroke="#5C8A6B"
             stroke-width="2"
             stroke-dasharray="4,2"
             class="transition-colors hover:fill-opacity-30 cursor-pointer"
             @click="selectDistrict('卡尔赫区')"
           />
-          <text x="210" y="160" fill="#93c5fd" font-size="14" font-weight="bold">
+          <text x="210" y="160" fill="#AECBB8" font-size="14" font-weight="bold">
             卡尔赫区 (Al-Karkh)
           </text>
-          <text x="210" y="180" fill="#60a5fa" font-size="10">
+          <text x="210" y="180" fill="#7FA48C" font-size="10">
             3个街道代销站 · 4,100户签约
           </text>
 
           <!-- 4.2 鲁萨法区 (Al-Rusafa - 东岸区域) -->
           <polygon
             points="410,220 540,240 520,520 430,480 390,340"
-            fill="#065f46"
+            fill="#2F5B44"
             fill-opacity="0.15"
-            stroke="#10b981"
+            stroke="#3E9B68"
             stroke-width="2"
             stroke-dasharray="4,2"
             class="transition-colors hover:fill-opacity-30 cursor-pointer"
             @click="selectDistrict('鲁萨法区')"
           />
-          <text x="440" y="250" fill="#6ee7b7" font-size="13" font-weight="bold">
+          <text x="440" y="250" fill="#A7D9BC" font-size="13" font-weight="bold">
             鲁萨法区 (Al-Rusafa)
           </text>
-          <text x="440" y="270" fill="#34d399" font-size="10">
+          <text x="440" y="270" fill="#6FBF92" font-size="10">
             2个街道代销站 · 1,950户
           </text>
 
           <!-- 4.3 萨德尔城区 (Sadr City - 东北高密区域) -->
           <polygon
             points="530,90 730,120 710,320 520,280"
-            fill="#581c87"
+            fill="#6B5321"
             fill-opacity="0.18"
-            stroke="#a855f7"
+            stroke="#C9A13B"
             stroke-width="2"
             stroke-dasharray="4,2"
             class="transition-colors hover:fill-opacity-30 cursor-pointer"
             @click="selectDistrict('萨德尔城区')"
           />
-          <text x="560" y="125" fill="#d8b4fe" font-size="13" font-weight="bold">
+          <text x="560" y="125" fill="#E5CEA1" font-size="13" font-weight="bold">
             萨德尔城区 (Sadr City)
           </text>
-          <text x="560" y="145" fill="#c084fc" font-size="10">
+          <text x="560" y="145" fill="#DFC08B" font-size="10">
             2个街道代销站 · 1,600户
           </text>
         </g>
@@ -258,7 +258,7 @@
               :cy="st.gisCoords.y"
               :r="st.gisCoords.radiusMeters / 10"
               :fill="st.lockStatus === 'SATURATED_LOCKED' ? 'url(#gradSaturated)' : (st.lockStatus === 'WARNING' ? 'url(#gradWarning)' : 'url(#gradNormal)')"
-              :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#ef4444' : (st.lockStatus === 'WARNING' ? '#f59e0b' : '#10b981')"
+              :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#C04442' : (st.lockStatus === 'WARNING' ? '#D9B567' : '#3E9B68')"
               stroke-width="1.2"
               stroke-dasharray="3,3"
               opacity="0.8"
@@ -267,7 +267,7 @@
             <text
               :x="st.gisCoords.x"
               :y="st.gisCoords.y + (st.gisCoords.radiusMeters / 10) + 12"
-              fill="#94a3b8"
+              fill="#8A9A8F"
               font-size="9"
               text-anchor="middle"
               opacity="0.8"
@@ -295,7 +295,7 @@
                 :cy="st.gisCoords.y"
                 r="22"
                 fill="none"
-                stroke="#ef4444"
+                stroke="#C04442"
                 stroke-width="2"
                 class="animate-ping origin-center"
               />
@@ -304,7 +304,7 @@
                 :cy="st.gisCoords.y"
                 r="30"
                 fill="none"
-                stroke="#f87171"
+                stroke="#D0827F"
                 stroke-width="1"
                 stroke-dasharray="4,4"
                 opacity="0.6"
@@ -318,7 +318,7 @@
               :cy="st.gisCoords.y"
               r="24"
               fill="none"
-              stroke="#38bdf8"
+              stroke="#6FBF92"
               stroke-width="3"
               stroke-dasharray="6,2"
               class="animate-spin"
@@ -329,8 +329,8 @@
               :cx="st.gisCoords.x"
               :cy="st.gisCoords.y"
               r="14"
-              :fill="st.lockStatus === 'SATURATED_LOCKED' ? '#7f1d1d' : (st.lockStatus === 'WARNING' ? '#78350f' : '#064e3b')"
-              :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#ef4444' : (st.lockStatus === 'WARNING' ? '#f59e0b' : '#10b981')"
+              :fill="st.lockStatus === 'SATURATED_LOCKED' ? '#6E2F2E' : (st.lockStatus === 'WARNING' ? '#6B5321' : '#24483A')"
+              :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#C04442' : (st.lockStatus === 'WARNING' ? '#D9B567' : '#3E9B68')"
               stroke-width="2.5"
             />
 
@@ -339,14 +339,14 @@
               :cx="st.gisCoords.x"
               :cy="st.gisCoords.y"
               r="6"
-              :fill="st.lockStatus === 'SATURATED_LOCKED' ? '#fca5a5' : (st.lockStatus === 'WARNING' ? '#fde68a' : '#a7f3d0')"
+              :fill="st.lockStatus === 'SATURATED_LOCKED' ? '#E8B7B5' : (st.lockStatus === 'WARNING' ? '#E9D5A3' : '#C7E9D5')"
             />
 
             <!-- “自己”站点皇冠/星标标识 (FA-00128) -->
             <polygon
               v-if="st.isSelf"
               :points="`${st.gisCoords.x},${st.gisCoords.y - 20} ${st.gisCoords.x - 5},${st.gisCoords.y - 14} ${st.gisCoords.x + 5},${st.gisCoords.y - 14}`"
-              fill="#fbbf24"
+              fill="#D9B567"
             />
 
             <!-- 站点名称与户数角标看板 (横幅胶囊) -->
@@ -358,8 +358,8 @@
                 width="130"
                 height="22"
                 rx="6"
-                :fill="activeStationId === st.id ? '#1e3a8a' : '#0f172a'"
-                :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#ef4444' : (activeStationId === st.id ? '#60a5fa' : '#334155')"
+                :fill="activeStationId === st.id ? '#24483A' : '#1F3326'"
+                :stroke="st.lockStatus === 'SATURATED_LOCKED' ? '#C04442' : (activeStationId === st.id ? '#7FA48C' : '#43554B')"
                 stroke-width="1.5"
                 class="shadow-sm"
               />

@@ -6,7 +6,7 @@
       aria-label="Application Loading Splash Screen"
     >
       <!-- 1. 深度沉浸式背景：深邃中东政务绿与微金氛围光，无缝融合矢量图 -->
-      <div class="absolute inset-0 bg-gradient-radial from-[#005a2d] via-[#004221] to-[#0a1f17] pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-radial from-[#2A5440] via-[#24483A] to-[#12241A] pointer-events-none"></div>
       
       <!-- 2. 极微弱的麦穗金色暗纹点阵 -->
       <div class="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#C59D5F_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none"></div>
@@ -19,21 +19,21 @@
         <!-- 官方徽标容器：完全与背景结合的无白边设计 -->
         <div class="relative mb-4 flex items-center justify-center">
           <!-- 环形金色与翡翠绿双层氛围呼吸光晕 -->
-          <div class="absolute w-44 h-44 rounded-full bg-gradient-to-r from-[#1FA35E]/30 to-[#C59D5F]/25 blur-2xl animate-pulse pointer-events-none"></div>
+          <div class="absolute w-44 h-44 rounded-full bg-gradient-to-r from-[#3E8A5E]/30 to-[#D3AF62]/25 blur-2xl animate-pulse pointer-events-none"></div>
 
           <!-- 官方矢量徽标：直接与深绿背景融合，自然呈现其原生绿金圆角底座与国徽细节 -->
           <div class="w-32 h-32 sm:w-36 sm:h-36 relative flex items-center justify-center transform transition-transform duration-700 animate-splash-pop">
             <img
               src="/logo.svg"
               alt="Iraq Electronic Ration Card Official Logo"
-              class="w-full h-full object-contain filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.6)] drop-shadow-[0_0_24px_rgba(31,163,94,0.35)] select-none pointer-events-none"
+              class="w-full h-full object-contain filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.6)] drop-shadow-[0_0_24px_rgba(62, 138, 94,0.35)] select-none pointer-events-none"
               draggable="false"
             />
           </div>
         </div>
 
         <!-- 阿拉伯文主标 (采用 SomarSans 字体) -->
-        <h1 class="text-2xl sm:text-3xl font-black text-[#F4E8D1] tracking-wide mb-1 drop-shadow-sm font-sans" dir="rtl">
+        <h1 class="text-2xl sm:text-3xl font-black text-[#FDF3E0] tracking-wide mb-1 drop-shadow-sm font-sans" dir="rtl">
           البطاقة التموينية
         </h1>
 
@@ -43,10 +43,10 @@
         </h2>
 
         <!-- 官方权威所属机构注记 -->
-        <p class="text-[11px] sm:text-xs text-[#C59D5F] font-semibold tracking-wide opacity-95 max-w-[280px]">
+        <p class="text-[11px] sm:text-xs text-[#D3AF62] font-semibold tracking-wide opacity-95 max-w-[280px]">
           جمهورية العراق · وزارة التجارة
         </p>
-        <p class="text-[9px] text-[#A6C4BA] tracking-widest uppercase mt-0.5 font-mono">
+        <p class="text-[9px] text-[#AECBB8] tracking-widest uppercase mt-0.5 font-mono">
           Republic of Iraq · Ministry of Trade
         </p>
       </div>
@@ -54,13 +54,13 @@
       <!-- 4. 底部平滑加载指示区 -->
       <div class="relative z-10 w-full flex flex-col items-center pb-10 sm:pb-14 px-8">
         <!-- 金绿渐变流动加载进度条 -->
-        <div class="w-40 sm:w-48 h-1 rounded-full bg-[#0a2318] overflow-hidden mb-3 border border-[#C59D5F]/20">
-          <div class="h-full bg-gradient-to-r from-[#007A3D] via-[#E2C38E] to-[#1FA35E] rounded-full animate-splash-progress"></div>
+        <div class="w-40 sm:w-48 h-1 rounded-full bg-[#12241A] overflow-hidden mb-3 border border-[#D3AF62]/20">
+          <div class="h-full bg-gradient-to-r from-[#326445] via-[#E5CEA1] to-[#3E8A5E] rounded-full animate-splash-progress"></div>
         </div>
 
         <!-- 极简系统初始化状态提示 -->
-        <div class="flex items-center gap-2 text-[11px] text-[#9EB5AC] tracking-wider font-mono">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#1FA35E] animate-ping"></span>
+        <div class="flex items-center gap-2 text-[11px] text-[#AECBB8] tracking-wider font-mono">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#3E8A5E] animate-ping"></span>
           <span>System Initializing...</span>
         </div>
       </div>
@@ -94,7 +94,7 @@ onMounted(() => {
 
 <style scoped>
 .splash-screen {
-  background-color: #004221;
+  background-color: #24483A;
   transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
