@@ -66,10 +66,10 @@
             </div>
           </div>
 
-          <!-- 配给月份周期：APP 视口内独占一行并限制弹层宽度，避免越界 -->
+          <!-- 配给月份周期：APP 视口内独占一行并靠左排列，日期控件远离右边界，弹层不再越界 -->
           <div
-            class="flex items-center gap-2 min-w-0"
-            :class="isAppMode ? 'w-full justify-between' : 'justify-end'"
+            class="flex items-center gap-2 min-w-0 justify-start"
+            :class="isAppMode ? 'w-full' : 'justify-end'"
           >
             <span class="text-xs text-[#58685D] whitespace-nowrap">{{ $t('warehouse.periodLabel') || '配给月份' }}:</span>
             <el-date-picker
