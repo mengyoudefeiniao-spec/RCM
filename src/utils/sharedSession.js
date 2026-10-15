@@ -3,11 +3,13 @@
  * 管理公文申请(Tickets)、选购订单(Orders)、家庭配给档案(Families)在多标签页间的持久化与实时同步
  */
 import { broadcastTabMessage } from './crossTabBus.js';
-import { MOCK_REVIEW_TICKETS } from '../mock/data/reviewData.js';
+import { MOCK_REVIEW_TICKETS as MOCK_REVIEW_TICKETS_ZH } from '../mock/data/reviewData.js';
+import { MOCK_REVIEW_TICKETS as MOCK_REVIEW_TICKETS_EN } from '../mock/data/en/reviewData.js';
 import { MOCK_FAMILIES as MOCK_FAMILIES_ZH } from '../mock/data/citizenData.js';
 import { MOCK_FAMILIES as MOCK_FAMILIES_EN } from '../mock/data/en/citizenData.js';
 
 const STORAGE_KEY_TICKETS = 'rcm_shared_tickets';
+const LEGACY_STORAGE_KEY_TICKETS = 'rcm_shared_tickets';
 const STORAGE_KEY_ORDERS = 'rcm_shared_orders';
 const STORAGE_KEY_FAMILIES = 'rcm_shared_families';
 
@@ -148,20 +150,37 @@ const INITIAL_DEMO_ORDERS = [
 ];
 
 // =====================================================================
-// 1. 审核公文共享池 (Tickets)
+// 1. 审核公文共享池 (Tickets) —— 与 Families 保持一致：按语言分 key 持久化
 // =====================================================================
 
-export function getSharedTickets() {
+function getInitialTickets(lang) {
+  if (lang === 'en') return JSON.parse(JSON.stringify(MOCK_REVIEW_TICKETS_EN));
+  return JSON.parse(JSON.stringify(MOCK_REVIEW_TICKETS_ZH));
+}
+
+export function getSharedTickets(langOverride) {
+  const lang = langOverride || getActiveLanguage();
+  const storageKey = `${STORAGE_KEY_TICKETS}_${lang}`;
+
+  // 一次性迁移清理历史不分语言的旧缓存
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_TICKETS);
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(LEGACY_STORAGE_KEY_TICKETS)) {
+      localStorage.removeItem(LEGACY_STORAGE_KEY_TICKETS);
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  try {
+    const raw = localStorage.getItem(storageKey);
     if (raw) return JSON.parse(raw);
   } catch (e) {
     console.warn('[SharedSession] Failed to parse tickets', e);
   }
 
-  const initial = JSON.parse(JSON.stringify(MOCK_REVIEW_TICKETS));
+  const initial = getInitialTickets(lang);
   try {
-    localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(initial));
+    localStorage.setItem(storageKey, JSON.stringify(initial));
   } catch (e) {
     // ignore
   }
@@ -169,28 +188,31 @@ export function getSharedTickets() {
 }
 
 export function addSharedTicket(ticketPayload) {
-  const currentList = getSharedTickets();
+  const lang = getActiveLanguage();
+  const isEn = lang === 'en';
+  const currentList = getSharedTickets(lang);
+  const storageKey = `${STORAGE_KEY_TICKETS}_${lang}`;
   const idSuffix = String(Date.now()).slice(-4);
   const newTicket = {
     id: ticketPayload.id || `REV-${(ticketPayload.sourceCode || 'SUB').toUpperCase()}-${idSuffix}`,
-    source: ticketPayload.source || '业务申办',
-    categoryType: ticketPayload.categoryType || '在线公民自主申办',
-    appType: ticketPayload.appType || ticketPayload.source || '配给申办业务公文',
+    source: ticketPayload.source || (isEn ? 'Online Application' : '业务申办'),
+    categoryType: ticketPayload.categoryType || (isEn ? 'Online Citizen Self-Service Application' : '在线公民自主申办'),
+    appType: ticketPayload.appType || ticketPayload.source || (isEn ? 'Ration Service Application' : '配给申办业务公文'),
     cardNo: ticketPayload.cardNo || 'RC-10029381',
-    applicantName: ticketPayload.applicantName || '艾哈迈德·哈桑·萨利赫 (户主)',
-    targetMemberName: ticketPayload.targetMemberName || '艾哈迈德·哈桑·萨利赫',
-    province: ticketPayload.province || '巴格达省',
-    center: ticketPayload.center || '卡尔赫第一粮食供应分部',
-    reason: ticketPayload.reason || '公民通过移动 APP 提交法定业务申请，已附带身份证明材料。',
-    status: '待分部初审',
+    applicantName: ticketPayload.applicantName || (isEn ? 'Ahmed Hassan Saleh (Head)' : '艾哈迈德·哈桑·萨利赫 (户主)'),
+    targetMemberName: ticketPayload.targetMemberName || (isEn ? 'Ahmed Hassan Saleh' : '艾哈迈德·哈桑·萨利赫'),
+    province: ticketPayload.province || (isEn ? 'Baghdad Governorate' : '巴格达省'),
+    center: ticketPayload.center || (isEn ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
+    reason: ticketPayload.reason || (isEn ? 'Citizen submitted a statutory application via mobile APP with identity documents attached.' : '公民通过移动 APP 提交法定业务申请，已附带身份证明材料。'),
+    status: isEn ? 'Pending Staff Review' : '待分部初审',
     submittedAt: getCurrentFormattedTime(),
     staffOpinion: '',
     staffName: '',
     staffReviewedAt: '',
-    managerDecision: '待决',
+    managerDecision: isEn ? 'Pending' : '待决',
     managerNotes: '',
     attachments: ticketPayload.attachments || [
-      { name: '统一国家卡与法定户口登记证明_DOC-2026.pdf', type: 'required', verified: true }
+      { name: isEn ? 'Unified_National_Card_Legal_Registry_Certificate_DOC-2026.pdf' : '统一国家卡与法定户口登记证明_DOC-2026.pdf', type: 'required', verified: true }
     ],
     payload: ticketPayload.payload || {}
   };
@@ -198,7 +220,7 @@ export function addSharedTicket(ticketPayload) {
   currentList.unshift(newTicket);
 
   try {
-    localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(currentList));
+    localStorage.setItem(storageKey, JSON.stringify(currentList));
   } catch (e) {
     console.error('[SharedSession] Failed to save ticket', e);
   }
@@ -221,22 +243,32 @@ function safeBroadcast(type, payload) {
 }
 
 export function updateSharedTicket(ticketId, updates) {
-  const currentList = getSharedTickets();
-  const index = currentList.findIndex((t) => t.id === ticketId);
+  // 与 Families 一致：同步更新所有语言副本，保证跨语言状态一致
+  const langs = ['zh', 'en'];
+  let currentResult = null;
+  const currentLang = getActiveLanguage();
 
-  if (index !== -1) {
-    currentList[index] = { ...currentList[index], ...updates };
-    try {
-      localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(currentList));
-    } catch (e) {
-      console.error('[SharedSession] Failed to update ticket', e);
+  langs.forEach((lang) => {
+    const storageKey = `${STORAGE_KEY_TICKETS}_${lang}`;
+    const currentList = getSharedTickets(lang);
+    const index = currentList.findIndex((t) => t.id === ticketId);
+
+    if (index !== -1) {
+      currentList[index] = { ...currentList[index], ...updates };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(currentList));
+      } catch (e) {
+        console.error('[SharedSession] Failed to update ticket', e);
+      }
+      if (lang === currentLang) {
+        currentResult = currentList[index];
+      }
     }
+  });
 
-    // 跨标签页广播：工单状态已变更！
-    safeBroadcast('TICKET_UPDATED', currentList[index]);
-    return currentList[index];
-  }
-  return null;
+  // 跨标签页广播：工单状态已变更！
+  safeBroadcast('TICKET_UPDATED', currentResult || { id: ticketId, ...updates });
+  return currentResult;
 }
 
 // =====================================================================

@@ -24,10 +24,13 @@ export const useReviewStore = defineStore('review', () => {
         tickets.value.unshift(newTicket);
         selectedTicket.value = newTicket;
 
-        // 弹出高层政务跨标签页业务实时通知
+        // 弹出高层政务跨标签页业务实时通知 (按当前语言)
+        const isEn = i18n.global.locale.value === 'en';
         ElNotification({
-          title: '【跨标签页联动】收到新申报公文',
-          message: `公民【${newTicket.applicantName}】刚刚提交了《${newTicket.source}》（编号: #${newTicket.id}），已实时同步入库！`,
+          title: isEn ? '[Cross-Tab Linkage] New Application Received' : '【跨标签页联动】收到新申报公文',
+          message: isEn
+            ? `Citizen [${newTicket.applicantName}] just submitted "${newTicket.source}" (ID: #${newTicket.id}), synced in real time!`
+            : `公民【${newTicket.applicantName}】刚刚提交了《${newTicket.source}》（编号: #${newTicket.id}），已实时同步入库！`,
           type: 'success',
           duration: 5000,
           position: 'top-right'
@@ -97,11 +100,11 @@ export const useReviewStore = defineStore('review', () => {
       staffName
     });
     
-    // 同步到多标签页持久化存储并广播
+    // 同步到多标签页持久化存储并广播 (状态值按当前语言写入，与视图状态映射对齐)
     updateSharedTicket(ticketId, {
       staffOpinion: opinion,
       staffName,
-      status: '待经理终审'
+      status: isEn ? 'Pending Manager Review' : '待经理终审'
     });
 
     const msg = i18n.global.t('review.staffSubmitSuccess');
@@ -123,11 +126,14 @@ export const useReviewStore = defineStore('review', () => {
       managerName
     });
 
-    // 同步到多标签页持久化存储并广播
+    // 同步到多标签页持久化存储并广播 (状态值按当前语言写入，与视图状态映射对齐)
+    const isEnDecision = i18n.global.locale.value === 'en';
     updateSharedTicket(ticketId, {
       managerDecision: decision,
       managerNotes: notes,
-      status: decision === '接受' || decision === 'Approved' ? '已办结归档' : '已驳回'
+      status: decision === '接受' || decision === 'Approved'
+        ? (isEnDecision ? 'Approved' : '已办结归档')
+        : (isEnDecision ? 'Rejected' : '已驳回')
     });
 
     const decisionText = decision === '接受' || decision === 'Approved'

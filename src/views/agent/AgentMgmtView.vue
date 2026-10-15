@@ -279,7 +279,7 @@
                   <div class="text-xs text-slate-600 font-medium mt-0.5">{{ formatStoreName(row.name) }}</div>
                   <div class="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
                     <el-icon><LocationFilled class="text-slate-400" /></el-icon>
-                    <span class="truncate">{{ row.address }}</span>
+                    <span class="truncate">{{ formatAddress(row.address) }}</span>
                   </div>
                 </div>
 
@@ -413,7 +413,7 @@
                     </el-tag>
                   </div>
                   <div class="text-[11px] text-slate-600 mt-0.5">{{ formatStoreName(row.name) }}</div>
-                  <div class="text-[10px] text-slate-400">{{ row.address }}</div>
+                  <div class="text-[10px] text-slate-400">{{ formatAddress(row.address) }}</div>
                 </template>
               </el-table-column>
 
@@ -883,35 +883,38 @@ const isAppMode = computed(() => {
 const formatCenterName = (centerName) => {
   if (!centerName) return '';
   if (isEn.value) {
+    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔')) return 'Mansour Central Ration Center';
+    if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'Khanaqin 1st Ration Center';
     if (centerName.includes('卡拉达第一')) return 'Karrada 1st Ration Center';
-    if (centerName.includes('曼苏尔')) return 'Mansour Central Ration Center';
     if (centerName.includes('鲁萨法第二')) return 'Rusafa 2nd Food Security Center';
-    if (centerName.includes('卡尔赫第一')) return 'Karkh 1st Distribution Station';
-    if (centerName.includes('巴士拉港口')) return 'Basra Port Fair-Price Ration Center';
+    if (centerName.includes('巴士拉港口') || centerName.includes('阿沙尔')) return 'Basra Port Fair-Price Ration Center';
     if (centerName.includes('迪亚拉')) return 'Diyala Khanaqin Supply Station';
     if (centerName.includes('摩苏尔')) return 'Mosul Old City Security Agency';
     if (centerName.includes('亚尔穆克')) return 'Yarmouk 3rd Community Station';
     if (centerName.includes('萨德尔城')) return 'Sadr City Flour Distribution Center';
+    if (centerName.includes('卡达米亚')) return 'Kadhimiya 2nd Ration Center';
   } else if (isAr.value) {
+    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔')) return 'مركز المنصور المركزي للتموين';
+    if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'مركز خانقين الأول للتموين (المادة 140)';
     if (centerName.includes('卡拉达第一')) return 'مركز توزيع الكرادة الأول';
-    if (centerName.includes('曼苏尔')) return 'مركز المنصور المركزي للتموين';
     if (centerName.includes('鲁萨法第二')) return 'مركز الرصافة الثاني للأمن الغذائي';
-    if (centerName.includes('卡尔赫第一')) return 'منفذ الكرخ الأول لتوزيع التموين';
-    if (centerName.includes('巴士拉港口')) return 'مركز ميناء البصرة للسلع التموينية';
+    if (centerName.includes('巴士拉港口') || centerName.includes('阿沙尔')) return 'مركز ميناء البصرة للسلع التموينية';
     if (centerName.includes('迪亚拉')) return 'منفذ خانقين التمويني بديالى';
     if (centerName.includes('摩苏尔')) return 'وكالة الموصل القديمة للضمان الغذائي';
     if (centerName.includes('亚尔穆克')) return 'مركز اليرموك التمويني الثالث';
     if (centerName.includes('萨德尔城')) return 'مركز مدينة الصدر لتوزيع الطحين';
+    if (centerName.includes('卡达米亚')) return 'مركز الكاظمية الثاني للتموين';
   } else if (isKu.value) {
+    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔')) return 'Navenda Navendî ya Mansour';
+    if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'Navenda Xaneqîn 1 ya Xwarinê';
     if (centerName.includes('卡拉达第一')) return 'Navenda Belavkirinê ya Karrada 1';
-    if (centerName.includes('曼苏尔')) return 'Navenda Navendî ya Mansour';
     if (centerName.includes('鲁萨法第二')) return 'Navenda Ewlehiya Xwarinê ya Rusafa 2';
-    if (centerName.includes('卡尔赫第一')) return 'Binkeya Belavkirinê ya Karkh 1';
-    if (centerName.includes('巴士拉港口')) return 'Navenda Port Basra ya Xwarinê';
+    if (centerName.includes('巴士拉港口') || centerName.includes('阿沙尔')) return 'Navenda Port Basra ya Xwarinê';
     if (centerName.includes('迪亚拉')) return 'Binkeya Diyala Xaneqîn';
     if (centerName.includes('摩苏尔')) return 'Ajansa Ewlehiya Xwarinê ya Mûsil';
     if (centerName.includes('亚尔穆克')) return 'Binkeya Yarmouk 3';
     if (centerName.includes('萨德尔城')) return 'Navenda Belavkirina Arvan ya Şaristana Sadr';
+    if (centerName.includes('卡达米亚')) return 'Navenda Kazimiyya 2 ya Xwarinê';
   }
   return centerName;
 };
@@ -919,14 +922,54 @@ const formatCenterName = (centerName) => {
 const formatStoreName = (name) => {
   if (!name) return '';
   if (isEn.value) {
+    if (name.includes('卡尔赫第一') || name.includes('101')) return 'Karkh 1st Distribution Station';
+    if (name.includes('哈奈根第一') || name.includes('496')) return 'Khanaqin 1st Border Supply Station';
+    if (name.includes('萨德尔城') || name.includes('108')) return 'Sadr City 5th Flour Agency Outlet';
+    if (name.includes('鲁萨法') || name.includes('102')) return 'Rusafa Flour Special Agency Outlet';
+    if (name.includes('巴士拉') || name.includes('201')) return 'Basra Ashar Port Joint Agency Station';
     if (name.includes('拉希德')) return 'Al-Rasheed Community Supply Outlet';
-    if (name.includes('便民') || name.includes('代销')) return name.replace(/便民/g, 'Community ').replace(/代销点/g, ' Agency Outlet').replace(/综合代销站/g, ' Distribution Station');
+    return name.replace(/便民/g, 'Community ').replace(/代销点/g, ' Agency Outlet').replace(/综合代销站/g, ' Distribution Station').replace(/保供站/g, ' Supply Station');
   } else if (isAr.value) {
+    if (name.includes('卡尔赫第一') || name.includes('101')) return 'منفذ توزيع الكرخ الأول الشامل';
+    if (name.includes('哈奈根第一') || name.includes('496')) return 'محطة خانقين الأولى الحدودية';
+    if (name.includes('萨德尔城') || name.includes('108')) return 'منفذ مدينة الصدر المركزي الخامس للطحين';
+    if (name.includes('鲁萨法') || name.includes('102')) return 'منفذ الرصافة التمويني للطحين';
+    if (name.includes('巴士拉') || name.includes('201')) return 'محطة ميناء البصرة المشتركة';
     if (name.includes('拉希德')) return 'منفذ الرشيد للتموين الميسر';
   } else if (isKu.value) {
+    if (name.includes('卡尔赫第一') || name.includes('101')) return 'Binkeya Belavkirinê ya Karkh 1';
+    if (name.includes('哈奈根第一') || name.includes('496')) return 'Binkeya Sînorî ya Xaneqîn 1';
+    if (name.includes('萨德尔城') || name.includes('108')) return 'Binkeya Arvan ya Şaristana Sadr 5';
+    if (name.includes('鲁萨法') || name.includes('102')) return 'Binkeya Arvan ya Rusafa';
+    if (name.includes('巴士拉') || name.includes('201')) return 'Binkeya Port Basra';
     if (name.includes('拉希德')) return 'Binkeya Al-Rasheed ya Xizmetguzarî';
   }
   return name;
+};
+
+const formatAddress = (address) => {
+  if (!address) return '';
+  if (isEn.value) {
+    if (address.includes('曼苏尔商业街18号')) return '18 Mansour Commercial St, Karkh, Baghdad';
+    if (address.includes('粮库路12号')) return '12 Granary Rd, Old Town, Khanaqin';
+    if (address.includes('中央大道第5区综合楼')) return 'Bldg 5, Central Blvd, Sadr City, Baghdad';
+    if (address.includes('工业路9号')) return '9 Industry Rd, Rusafa, Baghdad';
+    if (address.includes('阿夏尔码头大道77号')) return '77 Ashar Port Blvd, Basra';
+    if (address.includes('贾劳拉')) return 'Near Jalawla Main Transit Hub, Diyala';
+    if (address.includes('萨阿迪耶')) return 'Block 3, Saadiya Oasis Blvd, Diyala';
+    if (address.includes('曼德利')) return '15 Market St, Mandali, Diyala';
+  } else if (isAr.value) {
+    if (address.includes('曼苏尔商业街18号')) return 'شارع المنصور التجاري 18، الكرخ، بغداد';
+    if (address.includes('粮库路12号')) return 'شارع مستودع الحبوب 12، خانقين';
+    if (address.includes('中央大道第5区综合楼')) return 'مبنى 5، شارع الصدر المركزي، بغداد';
+    if (address.includes('工业路9号')) return 'شارع الصناعة 9، الرصافة، بغداد';
+    if (address.includes('阿夏尔码头大道77号')) return 'شارع رصيف العشار 77، البصرة';
+  } else if (isKu.value) {
+    if (address.includes('曼苏尔商业街18号')) return 'Kolana Bazirganî ya Mansour 18, Bexda';
+    if (address.includes('粮库路12号')) return 'Kolana Embarê 12, Xaneqîn';
+    if (address.includes('中央大道第5区综合楼')) return 'Binyana 5, Şaristana Sadr, Bexda';
+  }
+  return address;
 };
 
 const formatProvince = (province) => {
@@ -943,12 +986,20 @@ const formatProvince = (province) => {
 const formatBranchName = (branch) => {
   if (!branch) return '';
   if (isEn.value) {
+    if (branch.includes('卡尔赫第一') || branch.includes('卡尔赫')) return 'Karkh 1st Grain Supply Branch';
+    if (branch.includes('迪亚拉')) return 'Diyala Eastern Grain Supply Branch';
+    if (branch.includes('鲁萨法第二') || branch.includes('鲁萨法')) return 'Rusafa 2nd Grain Supply Branch';
     if (branch.includes('卡拉达')) return 'Karrada Branch';
     if (branch.includes('曼苏尔')) return 'Mansour Branch';
-    if (branch.includes('粮食供应')) return 'Grain Supply Branch';
+    if (branch.includes('巴士拉')) return 'Basra Port Grain Supply Branch';
+    if (branch.includes('粮食供应') || branch.includes('粮食保障')) return 'Grain Supply Branch';
   } else if (isAr.value) {
+    if (branch.includes('卡尔赫第一') || branch.includes('卡尔赫')) return 'فرع الكرخ الأول للإمداد الغذائي';
+    if (branch.includes('迪亚拉')) return 'فرع شرق ديالى للإمداد الغذائي';
+    if (branch.includes('鲁萨法第二') || branch.includes('鲁萨法')) return 'فرع الرصافة الثاني للإمداد الغذائي';
     if (branch.includes('卡拉达')) return 'فرع الكرادة';
     if (branch.includes('曼苏尔')) return 'فرع المنصور';
+    if (branch.includes('巴士拉')) return 'فرع ميناء البصرة للإمداد الغذائي';
   } else if (isKu.value) {
     if (branch.includes('卡拉达')) return 'Beşa Karrada';
     if (branch.includes('曼苏尔')) return 'Beşa Mansour';
@@ -959,13 +1010,13 @@ const formatBranchName = (branch) => {
 const formatCategory = (cat) => {
   if (!cat) return '';
   if (cat.includes('综合') || cat.toLowerCase().includes('compre') || cat.toLowerCase().includes('general')) {
-    return t('agent.catComprehensive') || (isEn.value ? 'General' : isAr.value ? 'عام' : isKu.value ? 'Gشتی' : '综合');
+    return t('agent.catComprehensive') || (isEn.value ? 'General (Food + Flour)' : isAr.value ? 'عام' : isKu.value ? 'Gشتی' : '综合');
   }
   if (cat.includes('食品') || cat.toLowerCase().includes('food')) {
-    return t('agent.catFood') || (isEn.value ? 'Food Supplies' : isAr.value ? 'مواد غذائية' : isKu.value ? 'Xwarin' : '食品');
+    return t('agent.catFood') || (isEn.value ? 'Food' : isAr.value ? 'مواد غذائية' : isKu.value ? 'Xwarin' : '食品');
   }
   if (cat.includes('面粉') || cat.toLowerCase().includes('flour')) {
-    return t('agent.catFlour') || (isEn.value ? 'Wheat Flour' : isAr.value ? 'طحين' : isKu.value ? 'Arv' : '面粉');
+    return t('agent.catFlour') || (isEn.value ? 'Flour' : isAr.value ? 'طحين' : isKu.value ? 'Arv' : '面粉');
   }
   return cat;
 };
@@ -982,11 +1033,15 @@ const formatOwnerName = (name) => {
 
 const formatAgentStatus = (st) => {
   if (!st) return '';
-  if (st.includes('正常')) {
-    return t('agent.statusNormal') || (isEn.value ? 'Operational' : isAr.value ? 'تشغيل عادي' : isKu.value ? 'Çalak' : '正常营业');
+  const s = String(st).trim();
+  if (s.includes('正常') || s.includes('Active') || s.includes('Operational') || s.includes('Assigned')) {
+    return t('agent.statusNormal') || (isEn.value ? 'Normal Operation' : isAr.value ? 'تشغيل عادي' : isKu.value ? 'Çalak' : '正常营业');
   }
-  if (st.includes('注销')) {
-    return t('agent.statusCancelled') || (isEn.value ? 'Revoked/Cancelled' : isAr.value ? 'ملغى' : isKu.value ? 'Hatiye betalkirin' : '已注销');
+  if (s.includes('注销') || s.includes('Cancelled') || s.includes('Revoked') || s.includes('Deregistered')) {
+    return t('agent.statusCancelled') || (isEn.value ? 'Cancelled (Pending Rotation)' : isAr.value ? 'ملغى' : isKu.value ? 'Hatiye betalkirin' : '已注销');
+  }
+  if (s.includes('容量') || s.includes('Capacity')) {
+    return isEn.value ? 'Capacity Warning' : isAr.value ? 'تحذير السعة' : isKu.value ? 'هۆشداری بارستایی' : '容量预警';
   }
   return st;
 };

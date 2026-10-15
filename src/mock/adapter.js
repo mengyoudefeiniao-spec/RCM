@@ -291,12 +291,12 @@ const multiLangStores = {
     adminCardsStore: JSON.parse(JSON.stringify(enAdmin.MOCK_CITIZEN_CARDS)),
     adminFamiliesStore: JSON.parse(JSON.stringify(enAdmin.MOCK_FAMILIES_ADMIN)),
     adminAgentsStore: JSON.parse(JSON.stringify(enAdmin.MOCK_AGENTS_ADMIN)),
-    g2bOrdersStore: JSON.parse(JSON.stringify(zhAgent.MOCK_G2B_PURCHASE_ORDERS || [])),
-    b2cReservationsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_B2C_RESERVATIONS || [])),
+    g2bOrdersStore: JSON.parse(JSON.stringify(enAgent.MOCK_G2B_PURCHASE_ORDERS || zhAgent.MOCK_G2B_PURCHASE_ORDERS || [])),
+    b2cReservationsStore: JSON.parse(JSON.stringify(enAgent.MOCK_B2C_RESERVATIONS || zhAgent.MOCK_B2C_RESERVATIONS || [])),
     citizenPurchaseOrdersStore: JSON.parse(JSON.stringify(INITIAL_CITIZEN_PURCHASE_ORDERS_EN)),
-    agentTimeSlotsStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_TIME_SLOTS || [])),
-    agentLocalStocksStore: JSON.parse(JSON.stringify(zhAgent.MOCK_AGENT_LOCAL_STOCKS || [])),
-    fullTraceChainStore: JSON.parse(JSON.stringify(zhAgent.MOCK_FULL_TRACE_CHAIN || []))
+    agentTimeSlotsStore: JSON.parse(JSON.stringify(enAgent.MOCK_AGENT_TIME_SLOTS || zhAgent.MOCK_AGENT_TIME_SLOTS || [])),
+    agentLocalStocksStore: JSON.parse(JSON.stringify(enAgent.MOCK_AGENT_LOCAL_STOCKS || zhAgent.MOCK_AGENT_LOCAL_STOCKS || [])),
+    fullTraceChainStore: JSON.parse(JSON.stringify(enAgent.MOCK_FULL_TRACE_CHAIN || zhAgent.MOCK_FULL_TRACE_CHAIN || []))
   }
 };
 
@@ -636,24 +636,24 @@ export async function mockDispatch(config) {
     // 生成电子审核工单流转
     const newTicket = {
       id: ticketId,
-      source: '变更户主',
-      categoryType: '户主死亡注销与继承任命',
-      appType: '变更户主 (死亡医学鉴定核验)',
+      source: isEn ? 'Change Head' : '变更户主',
+      categoryType: isEn ? 'Deceased Head Deregistration & Succession Appointment' : '户主死亡注销与继承任命',
+      appType: isEn ? 'Change Head (Forensic Deceased Verification)' : '变更户主 (死亡医学鉴定核验)',
       cardNo: cardNo || 'RC-10029381',
-      applicantName: '继承户主候选人',
-      targetMemberName: '原户主 → 新任法定户主',
-      reason: `原户主身故注销，依据法医公函【${deathProofNo}】申请指定继任户主。`,
-      status: '待分部初审',
+      applicantName: isEn ? 'Successor Head Candidate' : '继承户主候选人',
+      targetMemberName: isEn ? 'Former Head → New Legal Head' : '原户主 → 新任法定户主',
+      reason: isEn ? `Former head deregistered as deceased; successor head appointment requested per forensic letter [${deathProofNo}].` : `原户主身故注销，依据法医公函【${deathProofNo}】申请指定继任户主。`,
+      status: isEn ? 'Pending Staff Review' : '待分部初审',
       submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
       staffOpinion: '',
-      managerDecision: '待决',
-      attachments: [{ name: `卫生部法医总局_死亡证明_${deathProofNo}.pdf`, type: 'required', verified: true }],
+      managerDecision: isEn ? 'Pending' : '待决',
+      attachments: [{ name: isEn ? `Ministry_of_Health_Forensic_Death_Certificate_${deathProofNo}.pdf` : `卫生部法医总局_死亡证明_${deathProofNo}.pdf`, type: 'required', verified: true }],
       payload: { newHeadId, deathProofNo, cardNo }
     };
     ticketsStore.unshift(newTicket);
     addSharedTicket(newTicket);
 
-    return createResponse({ ticketId }, 200, `户主变更申请已提交！已自动转入【审核工作台】(工单号 ${ticketId})`);
+    return createResponse({ ticketId }, 200, isEn ? `Change-head application submitted! Routed to [Audit Workbench] (Ticket No. ${ticketId})` : `户主变更申请已提交！已自动转入【审核工作台】(工单号 ${ticketId})`);
   }
 
   // 申请解冻 (POST)
@@ -663,24 +663,24 @@ export async function mockDispatch(config) {
 
     const newTicket = {
       id: ticketId,
-      source: '申请解冻',
-      categoryType: `解冻申诉 (${unfreezeType}情形)`,
-      appType: `解冻申请 (${unfreezeType}情形)`,
+      source: isEn ? 'Unfreeze Card' : '申请解冻',
+      categoryType: isEn ? `Unfreeze Appeal (${unfreezeType} Scenario)` : `解冻申诉 (${unfreezeType}情形)`,
+      appType: isEn ? `Unfreeze Application (${unfreezeType} Scenario)` : `解冻申请 (${unfreezeType}情形)`,
       cardNo: cardNo || 'RC-10029381',
-      applicantName: '配给卡持有人',
-      targetMemberName: '解冻当事人',
-      reason: `依据【${unfreezeType}】情形提交证明材料【${docName}】，申请恢复配给。`,
-      status: '待分部初审',
+      applicantName: isEn ? 'Ration Card Holder' : '配给卡持有人',
+      targetMemberName: isEn ? 'Unfreeze Subject Member' : '解冻当事人',
+      reason: isEn ? `Supporting material [${docName}] submitted under the [${unfreezeType}] scenario; ration entitlements restoration requested.` : `依据【${unfreezeType}】情形提交证明材料【${docName}】，申请恢复配给。`,
+      status: isEn ? 'Pending Staff Review' : '待分部初审',
       submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
       staffOpinion: '',
-      managerDecision: '待决',
+      managerDecision: isEn ? 'Pending' : '待决',
       attachments: [{ name: docName, type: 'required', verified: true }],
       payload: { unfreezeType, targetMemberId, docName }
     };
     ticketsStore.unshift(newTicket);
     addSharedTicket(newTicket);
 
-    return createResponse({ ticketId }, 200, `解冻申请已受理！已转入【审核工作台】(工单号 ${ticketId})`);
+    return createResponse({ ticketId }, 200, isEn ? `Unfreeze application accepted! Routed to [Audit Workbench] (Ticket No. ${ticketId})` : `解冻申请已受理！已转入【审核工作台】(工单号 ${ticketId})`);
   }
 
   // 申请分户：优先系统智能自动判别 (POST)
@@ -752,26 +752,26 @@ export async function mockDispatch(config) {
 
     const newTicket = {
       id: ticketId,
-      source: '申请分户',
-      categoryType: memberIds.length === 1 ? '单人分户人工审核' : '非夫妻组合分户审核',
-      appType: `配给卡分户 (${memberIds.length === 1 ? '单人分立' : '非夫妻组合'})`,
+      source: isEn ? 'Split Household' : '申请分户',
+      categoryType: memberIds.length === 1 ? (isEn ? 'Single Person Household Split Manual Audit' : '单人分户人工审核') : (isEn ? 'Non-Spousal Combination Split Audit' : '非夫妻组合分户审核'),
+      appType: isEn ? `Ration Card Split (${memberIds.length === 1 ? 'Single Person Split' : 'Non-Spousal Combination'})` : `配给卡分户 (${memberIds.length === 1 ? '单人分立' : '非夫妻组合'})`,
       cardNo: currentCardNo || 'RC-10029381',
-      applicantName: '原家庭户主/申请人',
-      targetMemberName: `分立人员(${memberIds.length}人)`,
-      reason: reason || '系统自动判别未通过，转交分部门人员手动审核',
-      status: '待分部初审',
+      applicantName: isEn ? 'Original Head of Household / Applicant' : '原家庭户主/申请人',
+      targetMemberName: isEn ? `Split Members (${memberIds.length})` : `分立人员(${memberIds.length}人)`,
+      reason: reason || (isEn ? 'Automatic judge failed; routed to branch staff for manual review' : '系统自动判别未通过，转交分部门人员手动审核'),
+      status: isEn ? 'Pending Staff Review' : '待分部初审',
       submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
       staffOpinion: '',
-      managerDecision: '待决',
+      managerDecision: isEn ? 'Pending' : '待决',
       attachments: [
-        { name: '民事结婚证书或等效分户司法文件.pdf', type: 'required', verified: true }
+        { name: isEn ? 'Civil_Marriage_Certificate_or_Equivalent_Split_Judicial_Document.pdf' : '民事结婚证书或等效分户司法文件.pdf', type: 'required', verified: true }
       ],
       payload: { splitMemberIds: memberIds }
     };
     ticketsStore.unshift(newTicket);
     addSharedTicket(newTicket);
 
-    return createResponse({ ticketId }, 200, `已成功提交电子审核！工单号【${ticketId}】，等待分部门人员手动审核`);
+    return createResponse({ ticketId }, 200, isEn ? `Electronic review submitted successfully! Ticket No. [${ticketId}], pending manual review by branch staff` : `已成功提交电子审核！工单号【${ticketId}】，等待分部门人员手动审核`);
   }
 
   // 代理转移候选分部、中心及代理元数据 (GET)

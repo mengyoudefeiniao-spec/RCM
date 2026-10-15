@@ -12,17 +12,17 @@
       <div class="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs flex items-center justify-between text-amber-900">
         <div class="flex items-center gap-2">
           <el-icon class="text-amber-600"><WarningFilled /></el-icon>
-          <span class="text-[11px]">拟申请中心须为已注销空置网点；优先授予三代内亲属；实地核查通过后缴纳 250,000 IQD 规费。</span>
+          <span class="text-[11px]">{{ isEn ? 'The applied center must be a vacant/cancelled outlet; priority for 3-gen relatives; pay 250,000 IQD fee upon field verification.' : '拟申请中心须为已注销空置网点；优先授予三代内亲属；实地核查通过后缴纳 250,000 IQD 规费。' }}</span>
         </div>
-        <el-tag size="small" type="warning" effect="light">规费 250,000 IQD</el-tag>
+        <el-tag size="small" type="warning" effect="light">{{ isEn ? 'Fee: 250,000 IQD' : '规费 250,000 IQD' }}</el-tag>
       </div>
 
       <!-- 4 步骤条导航 -->
       <el-steps :active="activeStep" finish-status="success" align-center class="my-2">
-        <el-step title="第 1 步" description="选择中心与资格核验" />
-        <el-step title="第 2 步" description="上传对应证明附件" />
-        <el-step title="第 3 步" description="自动与委员会联合审核" />
-        <el-step title="第 4 步" description="电子支付与完成申请" />
+        <el-step :title="isEn ? 'Step 1' : '第 1 步'" :description="isEn ? 'Center & Qualification' : '选择中心与资格核验'" />
+        <el-step :title="isEn ? 'Step 2' : '第 2 步'" :description="isEn ? 'Upload Proof Documents' : '上传对应证明附件'" />
+        <el-step :title="isEn ? 'Step 3' : '第 3 步'" :description="isEn ? 'Committee Joint Review' : '自动与委员会联合审核'" />
+        <el-step :title="isEn ? 'Step 4' : '第 4 步'" :description="isEn ? 'Electronic Payment' : '电子支付与完成申请'" />
       </el-steps>
 
       <!-- ======================================================== -->
@@ -32,15 +32,15 @@
         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
           <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <el-icon class="text-blue-600"><Location /></el-icon>
-            <span>拟申请授予的配给中心 (必须为已注销/空置中心)</span>
+            <span>{{ isEn ? 'Target Ration Center (Must be vacant / cancelled)' : '拟申请授予的配给中心 (必须为已注销/空置中心)' }}</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">选择配给中心 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-slate-600 mb-1">{{ isEn ? 'Select Ration Center' : '选择配给中心' }} <span class="text-rose-500">*</span></span>
               <el-select
                 v-model="form.centerId"
-                placeholder="请选择拟申请配给中心 (支持输入关键字搜索)"
+                :placeholder="isEn ? 'Select target center (keyword search supported)' : '请选择拟申请配给中心 (支持输入关键字搜索)'"
                 class="w-full"
                 filterable
                 @change="handleCenterSelect"
@@ -52,13 +52,13 @@
                   :value="c.centerId"
                 >
                   <div class="flex items-center justify-between gap-2">
-                    <span :class="{'text-rose-600 font-bold': c.status === '已被代理'}">
+                    <span :class="{'text-rose-600 font-bold': c.status === '已被代理' || c.status === 'Assigned'}">
                       <span v-if="c.isArticle140" class="text-amber-500 font-bold mr-1">★</span>{{ c.centerName }}
                       <span v-if="c.city" class="text-[11px] text-slate-400 font-normal ml-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <div class="flex items-center gap-1">
-                      <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">140号决议</el-tag>
-                      <el-tag size="small" :type="c.status === '已被代理' ? 'danger' : 'success'">
+                      <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">{{ isEn ? 'Article 140' : '140号决议' }}</el-tag>
+                      <el-tag size="small" :type="(c.status === '已被代理' || c.status === 'Assigned') ? 'danger' : 'success'">
                         {{ c.status }}
                       </el-tag>
                     </div>
@@ -68,31 +68,31 @@
             </div>
 
             <div>
-              <span class="block text-xs font-semibold text-slate-600 mb-1">经营品类选择 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs font-semibold text-slate-600 mb-1">{{ isEn ? 'Business Category' : '经营品类选择' }} <span class="text-rose-500">*</span></span>
               <el-select v-model="form.category" class="w-full">
-                <el-option label="面粉专项代理权 (Flour)" value="面粉" />
-                <el-option label="食品战略物资代理权 (Food)" value="食品" />
-                <el-option label="综合代销代理权 (Food + Flour)" value="综合 (食品+面粉)" />
+                <el-option :label="isEn ? 'Flour Agency License' : '面粉专项代理权 (Flour)'" value="面粉" />
+                <el-option :label="isEn ? 'Food Strategic Supplies License' : '食品战略物资代理权 (Food)'" value="食品" />
+                <el-option :label="isEn ? 'General Agency License (Food + Flour)' : '综合代销代理权 (Food + Flour)'" value="综合 (食品+面粉)" />
               </el-select>
             </div>
           </div>
 
           <!-- 中心状态前置拦截提示 (已精简) -->
-          <div v-if="selectedCenter" class="p-2.5 rounded-lg border text-xs" :class="selectedCenter.status === '已被代理' ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'">
+          <div v-if="selectedCenter" class="p-2.5 rounded-lg border text-xs" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'">
             <div class="flex items-center gap-2">
-              <el-icon class="text-sm" :class="selectedCenter.status === '已被代理' ? 'text-rose-600' : 'text-emerald-600'">
-                <component :is="selectedCenter.status === '已被代理' ? 'CircleCloseFilled' : 'SuccessFilled'" />
+              <el-icon class="text-sm" :class="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'text-rose-600' : 'text-emerald-600'">
+                <component :is="(selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned') ? 'CircleCloseFilled' : 'SuccessFilled'" />
               </el-icon>
               <div class="flex-1 flex items-center justify-between">
                 <span class="font-medium text-[11px]">
-                  <span v-if="selectedCenter.status === '已被代理'">
-                    该中心已有在任代理人【{{ selectedCenter.currentAgentName }}】，须先注销现有代理权后方可重新申请。
+                  <span v-if="selectedCenter.status === '已被代理' || selectedCenter.status === 'Assigned'">
+                    {{ isEn ? `This center already has an active agent [${selectedCenter.currentAgentName}]. Current license must be revoked first.` : `该中心已有在任代理人【${selectedCenter.currentAgentName}】，须先注销现有代理权后方可重新申请。` }}
                   </span>
                   <span v-else>
-                    该中心为已注销空置网点，符合准入申报条件。
+                    {{ isEn ? 'This center is vacant/deregistered, meeting legal criteria for application.' : '该中心为已注销空置网点，符合准入申报条件。' }}
                   </span>
                 </span>
-                <el-tag v-if="selectedCenter.isArticle140" size="small" type="warning" effect="dark" class="scale-90">第140号决议</el-tag>
+                <el-tag v-if="selectedCenter.isArticle140" size="small" type="warning" effect="dark" class="scale-90">{{ isEn ? 'Article 140' : '第140号决议' }}</el-tag>
               </div>
             </div>
           </div>
@@ -102,36 +102,36 @@
         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
           <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <el-icon class="text-blue-600"><User /></el-icon>
-            <span>申请人基本信息与法定排他资质核查</span>
+            <span>{{ isEn ? 'Applicant Info & Statutory Exclusion Verification' : '申请人基本信息与法定排他资质核查' }}</span>
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <span class="block text-xs text-slate-600 mb-1">申请人真实姓名 <span class="text-rose-500">*</span></span>
-              <el-input v-model="form.applicantName" placeholder="例如：穆罕默德·贾巴尔" />
+              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Applicant Full Name' : '申请人真实姓名' }} <span class="text-rose-500">*</span></span>
+              <el-input v-model="form.applicantName" :placeholder="isEn ? 'e.g., Mohammed Jabbar' : '例如：穆罕默德·贾巴尔'" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">国民身份证号 (National ID) <span class="text-rose-500">*</span></span>
-              <el-input v-model="form.applicantNationalId" placeholder="12位国家统一身份编号" />
+              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'National ID (UID)' : '国民身份证号 (National ID)' }} <span class="text-rose-500">*</span></span>
+              <el-input v-model="form.applicantNationalId" :placeholder="isEn ? '12-digit national identification number' : '12位国家统一身份编号'" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">候选人年龄 (周岁) <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Applicant Age' : '候选人年龄 (周岁)' }} <span class="text-rose-500">*</span></span>
               <el-input-number v-model="form.applicantAge" :min="16" :max="65" class="w-full" />
-              <span class="text-[10px] text-slate-400">法定红线：18 至 48 周岁之间</span>
+              <span class="text-[10px] text-slate-400">{{ isEn ? 'Statutory range: 18 - 48 years old' : '法定红线：18 至 48 周岁之间' }}</span>
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
-              <span class="block text-xs text-slate-600 mb-1">部长批准公函文号 <span class="text-rose-500">*</span></span>
-              <el-input v-model="form.ministerApprovalNo" placeholder="如：MO-TRD-MIN-2026-8812" />
+              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Ministerial Approval Reference' : '部长批准公函文号' }} <span class="text-rose-500">*</span></span>
+              <el-input v-model="form.ministerApprovalNo" placeholder="MO-TRD-MIN-2026-8812" />
             </div>
             <div>
-              <span class="block text-xs text-slate-600 mb-1">学历证明层级 <span class="text-rose-500">*</span></span>
+              <span class="block text-xs text-slate-600 mb-1">{{ isEn ? 'Education Qualification' : '学历证明层级' }} <span class="text-rose-500">*</span></span>
               <el-select v-model="form.educationLevel" class="w-full">
-                <el-option label="经教育部认证的小学毕业证书 (最低要求)" value="PRIMARY" />
-                <el-option label="初中或普通高中毕业证书" value="SECONDARY" />
-                <el-option label="大专或全日制本科及以上文凭" value="HIGHER" />
+                <el-option :label="isEn ? 'Primary School Cert (Min Requirement)' : '经教育部认证的小学毕业证书 (最低要求)'" value="PRIMARY" />
+                <el-option :label="isEn ? 'Secondary / High School Diploma' : '初中或普通高中毕业证书'" value="SECONDARY" />
+                <el-option :label="isEn ? 'College / University Degree or Higher' : '大专或全日制本科及以上文凭'" value="HIGHER" />
               </el-select>
             </div>
           </div>
@@ -139,19 +139,19 @@
           <!-- 法定排他条件承诺选择 (全部必勾) -->
           <div class="pt-2 border-t border-slate-200/60 space-y-2 text-xs text-slate-700">
             <el-checkbox v-model="form.isResidentInDistrict">
-              <strong>本辖区常住居民承诺</strong>：申请人确为相关家庭所在地区的法定常住居民，并持有街道户籍证明。
+              <strong>{{ isEn ? 'Permanent Resident Commitment' : '本辖区常住居民承诺' }}</strong>：{{ isEn ? 'The applicant is a legal permanent resident of the service district with official registry.' : '申请人确为相关家庭所在地区的法定常住居民，并持有街道户籍证明。' }}
             </el-checkbox>
             <br />
             <el-checkbox v-model="form.isNonPublicEmployee">
-              <strong>非公职身份排他承诺</strong>：申请人不得为学生、雇员、军人、公司所有者或股东或承包商，且不得以任何名义领取国家工资。
+              <strong>{{ isEn ? 'Exclusion of Public Employment' : '非公职身份排他承诺' }}</strong>：{{ isEn ? 'The applicant is not a student, public employee, military, company owner/shareholder, or recipient of state salary.' : '申请人不得为学生、雇员、军人、公司所有者或股东或承包商，且不得以任何名义领取国家工资。' }}
             </el-checkbox>
             <br />
             <el-checkbox v-model="form.isNoFamilyAgentDuplication">
-              <strong>家庭排他承诺</strong>：申请人配偶（丈夫/妻子）及其未婚子女名下均未持有代理权，不构成重复持权。
+              <strong>{{ isEn ? 'Family Non-Duplication Commitment' : '家庭排他承诺' }}</strong>：{{ isEn ? 'Neither spouse nor unmarried children hold any ration agency license.' : '申请人配偶（丈夫/妻子）及其未婚子女名下均未持有代理权，不构成重复持权。' }}
             </el-checkbox>
             <br />
             <el-checkbox v-model="form.hasKinshipPriority">
-              <strong>亲属优先声明</strong>：本人为原代理的三代以内亲属（若原代理权非因违法处罚被注销，依法享有优先授予权）。
+              <strong>{{ isEn ? 'Kinship Priority Declaration' : '亲属优先声明' }}</strong>：{{ isEn ? 'Applicant is a relative within 3 degrees of the original agent (entitled to legal priority if cancellation was not for malpractice).' : '本人为原代理的三代以内亲属（若原代理权非因违法处罚被注销，依法享有优先授予权）。' }}
             </el-checkbox>
           </div>
         </div>
@@ -336,16 +336,16 @@
     <!-- 底部操作按钮 -->
     <template #footer>
       <div class="flex items-center justify-between">
-        <el-button @click="visible = false">取消</el-button>
+        <el-button @click="visible = false">{{ $t('common.cancel') || '取消' }}</el-button>
         <div class="space-x-2">
-          <el-button v-if="activeStep > 0" @click="activeStep--">上一步</el-button>
+          <el-button v-if="activeStep > 0" @click="activeStep--">{{ isEn ? 'Previous' : '上一步' }}</el-button>
           <el-button
             v-if="activeStep < 3"
             type="primary"
             :disabled="!canProceedNextStep"
             @click="handleNext"
           >
-            下一步
+            {{ isEn ? 'Next Step' : '下一步' }}
           </el-button>
           <el-button
             v-else
@@ -354,7 +354,7 @@
             @click="handleSubmitAndPay"
           >
             <el-icon class="mr-1"><Check /></el-icon>
-            确认电子支付 250,000 IQD 并生成授权
+            {{ isEn ? 'Pay 250,000 IQD & Issue Grant' : '确认电子支付 250,000 IQD 并生成授权' }}
           </el-button>
         </div>
       </div>

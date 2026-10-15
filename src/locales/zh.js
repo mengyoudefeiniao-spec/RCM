@@ -655,6 +655,7 @@ export default {
     "securityAudit": "安全审计",
     "adminTitle": "配给计划管理",
     "agentTitle": "基层网格配给排程与代理履约执行",
+    "agentScheduleCenterTitle": "月度配给计划与三级代理配额排程中心",
     "directConnect": "贸易部直连",
     "createPlan": "制定配给新计划",
     "decomposeTasks": "自动分解排程至网点",

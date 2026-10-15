@@ -655,6 +655,7 @@ export default {
     "securityAudit": "Security Audit",
     "adminTitle": "Ration Plan Management",
     "agentTitle": "Grid Ration Scheduling & Agent Fulfillment",
+    "agentScheduleCenterTitle": "Monthly Ration Plan & 3-Tier Agent Dispatch Center",
     "directConnect": "MOT Direct Link",
     "createPlan": "Create New Ration Plan",
     "decomposeTasks": "Auto-Decompose to Stations",

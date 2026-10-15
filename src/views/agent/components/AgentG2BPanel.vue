@@ -345,7 +345,7 @@
             </el-tag>
           </div>
           <p class="text-[11px] leading-relaxed">
-            {{ $t('agentG2B.quotaConstraintDesc', { center: currentCenterName }) }}
+            {{ $t('agentG2B.quotaConstraintDesc', { center: formatG2BCenterName(currentCenterName) }) }}
           </p>
         </div>
 
@@ -805,17 +805,33 @@ const formatG2BUnit = (unit) => {
 const formatG2BCenterName = (name) => {
   if (!name) return '';
   if (isEn.value) {
-    if (name.includes('卡尔赫第一')) return 'Karkh 1st Ration Center (Mansour)';
-    if (name.includes('曼苏尔')) return 'Mansour Central Storage Depot';
-    if (name.includes('鲁萨法')) return 'Rusafa Central Ration Center';
+    if (name.includes('哈奈根') || name.toLowerCase().includes('khanaqin')) return 'Khanaqin 1st Ration Center';
+    if (name.includes('卡尔赫第一') || name.toLowerCase().includes('karkh')) return 'Karkh 1st Ration Center (Mansour)';
+    if (name.includes('曼苏尔') || name.toLowerCase().includes('mansour')) return 'Mansour Central Storage Depot';
+    if (name.includes('萨德尔城') || name.toLowerCase().includes('sadr')) return 'Sadr City Central Ration Center';
+    if (name.includes('鲁萨法') || name.toLowerCase().includes('rusafa')) return 'Rusafa Central Ration Center';
+    if (name.includes('基尔库克') || name.toLowerCase().includes('kirkuk')) return 'Kirkuk Strategic Ration Depot';
+    if (name.includes('巴士拉') || name.toLowerCase().includes('basra')) return 'Basra Port Strategic Supply Center';
+    if (name.includes('摩苏尔') || name.toLowerCase().includes('mosul')) return 'Mosul Old City Regional Supply Center';
+    if (name.includes('迪亚拉') || name.toLowerCase().includes('diyala')) return 'Diyala Regional Supply Center';
+    if (name.includes('卡达米亚') || name.toLowerCase().includes('kadhimiya')) return 'Kadhimiya 2nd Ration Center';
   } else if (isAr.value) {
-    if (name.includes('卡尔赫第一')) return 'مركز توزيع الكرخ الأول (المنصور)';
-    if (name.includes('曼苏尔')) return 'مستودع المنصور المركزي للتموين';
-    if (name.includes('鲁萨法')) return 'مركز توزيع الرصافة المركزي';
+    if (name.includes('哈奈根') || name.toLowerCase().includes('khanaqin')) return 'مركز خانقين الأول للتموين (المادة 140)';
+    if (name.includes('卡尔赫第一') || name.toLowerCase().includes('karkh')) return 'مركز توزيع الكرخ الأول (المنصور)';
+    if (name.includes('曼苏尔') || name.toLowerCase().includes('mansour')) return 'مستودع المنصور المركزي للتموين';
+    if (name.includes('萨德尔城') || name.toLowerCase().includes('sadr')) return 'مركز مدينة الصدر لتوزيع الطحين';
+    if (name.includes('鲁萨法') || name.toLowerCase().includes('rusafa')) return 'مركز توزيع الرصافة المركزي';
+    if (name.includes('基尔库克') || name.toLowerCase().includes('kirkuk')) return 'مستودع كركوك الاستراتيجي للتموين';
+    if (name.includes('巴士拉') || name.toLowerCase().includes('basra')) return 'مركز إمداد ميناء البصرة الاستراتيجي';
+    if (name.includes('摩苏尔') || name.toLowerCase().includes('mosul')) return 'مركز إمداد الموصل القديمة الإقليمي';
+    if (name.includes('迪亚拉') || name.toLowerCase().includes('diyala')) return 'مركز إمداد ديالى الإقليمي';
+    if (name.includes('卡达米亚') || name.toLowerCase().includes('kadhimiya')) return 'مركز الكاظمية الثاني للتموين';
   } else if (isKu.value) {
-    if (name.includes('卡尔赫第一')) return 'Navenda Belavkirinê ya Karkh 1 (Mansour)';
-    if (name.includes('曼苏尔')) return 'Embara Navendî ya Mansour';
-    if (name.includes('鲁萨法')) return 'Navenda Belavkirinê ya Rusafa';
+    if (name.includes('哈奈根') || name.toLowerCase().includes('khanaqin')) return 'Navenda Xaneqîn 1 ya Xwarinê';
+    if (name.includes('卡尔赫第一') || name.toLowerCase().includes('karkh')) return 'Navenda Belavkirinê ya Karkh 1 (Mansour)';
+    if (name.includes('曼苏尔') || name.toLowerCase().includes('mansour')) return 'Embara Navendî ya Mansour';
+    if (name.includes('萨德尔城') || name.toLowerCase().includes('sadr')) return 'Navenda Arvan ya Şaristana Sadr';
+    if (name.includes('鲁萨法') || name.toLowerCase().includes('rusafa')) return 'Navenda Belavkirinê ya Rusafa';
   }
   return name;
 };

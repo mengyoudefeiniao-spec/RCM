@@ -12,7 +12,7 @@
               ? ($t('warehouse.citizenTitle') || '配给管理与履约交付跟进')
               : isAdmin
               ? ($t('warehouse.adminTitle') || '国家物资配给计划制定与调度中心')
-              : '月度配给计划与三级代理配额排程中心'
+              : ($t('warehouse.agentScheduleCenterTitle') || '月度配给计划与三级代理配额排程中心')
           }}
         </span>
         <el-tag size="small" type="primary" effect="plain" class="shrink-0">
@@ -482,7 +482,7 @@
                 :key="item.itemCode"
                 class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200/60"
               >
-                {{ formatItemName(item.itemName) }} <b class="font-mono font-bold text-slate-900">{{ item.allocatedQtyTon ? item.allocatedQtyTon + '吨' : (item.plannedQty + item.unit) }}</b>
+                {{ formatItemName(item.itemName) }} <b class="font-mono font-bold text-slate-900">{{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty + ' ' + (item.unit === '吨' ? (isEn ? 'Tons' : '吨') : item.unit)) }}</b>
               </span>
               <span v-if="task.items && task.items.length > 3" class="text-[10px] text-slate-400">
                 +{{ task.items.length - 3 }}
@@ -581,7 +581,7 @@
                   >
                     <span class="text-slate-600 truncate">{{ formatItemName(item.itemName) }}</span>
                     <div class="font-mono text-right shrink-0">
-                      <span class="font-bold text-slate-800">{{ item.allocatedQtyTon ? item.allocatedQtyTon + ' 吨' : (item.plannedQty?.toLocaleString() + ' ' + item.unit) }}</span>
+                      <span class="font-bold text-slate-800">{{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty?.toLocaleString() + ' ' + (item.unit === '吨' ? (isEn ? 'Tons' : '吨') : item.unit)) }}</span>
                       <span class="text-[9px] text-amber-600 block">{{ $t('warehouse.priceCapPrefix') || '限价: ' }}{{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD</span>
                     </div>
                   </div>
@@ -717,100 +717,100 @@
         <!-- 三级代理层级自动分配测算预览列表 (只读，公式锁定) -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800">三级代理层级自动排程测算预览 (系统公式锁定计算，不可篡改)：</span>
-            <span class="text-[11px] text-slate-400">共将生成 8 个层级排程单据</span>
+            <span class="font-bold text-slate-800">{{ isEn ? '3-Tier Agent Quota Auto-Decompose Simulation (System Algorithm Locked):' : '三级代理层级自动排程测算预览 (系统公式锁定计算，不可篡改)：' }}</span>
+            <span class="text-[11px] text-slate-400">{{ isEn ? '8 hierarchical dispatch manifests to be generated' : '共将生成 8 个层级排程单据' }}</span>
           </div>
 
           <div class="max-h-56 overflow-y-auto border border-slate-200 rounded-xl">
             <table class="w-full text-left text-xs border-collapse">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                 <tr>
-                  <th class="p-2">层级</th>
-                  <th class="p-2">代理网点 / 负责人</th>
-                  <th class="p-2 text-center">核定签约户数</th>
-                  <th class="p-2 text-right">自动核算大米/面粉(吨)</th>
-                  <th class="p-2 text-right">指导总货值(IQD)</th>
+                  <th class="p-2">{{ isEn ? 'Level' : '层级' }}</th>
+                  <th class="p-2">{{ isEn ? 'Agency Station / Manager' : '代理网点 / 负责人' }}</th>
+                  <th class="p-2 text-center">{{ isEn ? 'Quota Households' : '核定签约户数' }}</th>
+                  <th class="p-2 text-right">{{ isEn ? 'Rice / Flour (Tons)' : '自动核算大米/面粉(吨)' }}</th>
+                  <th class="p-2 text-right">{{ isEn ? 'Guide Cap (IQD)' : '指导总货值(IQD)' }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 font-mono">
                 <!-- 1. 省级代理 -->
                 <tr class="bg-purple-50/40">
                   <td class="p-2">
-                    <el-tag size="small" type="danger" effect="dark" class="scale-90 font-sans">省级代理</el-tag>
+                    <el-tag size="small" type="danger" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('PROVINCE') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans font-bold text-slate-800">
-                    巴格达省配给运营总代理 (穆罕默德·贾巴尔)
+                    {{ isEn ? 'Baghdad Provincial Ration General Operations Agency (Mohammed Jabbar)' : '巴格达省配给运营总代理 (穆罕默德·贾巴尔)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-900">7,650 户</td>
-                  <td class="p-2 text-right text-blue-700">91.8 吨 / 275.4 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-900">7,650 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">91.8 {{ isEn ? 'T' : '吨' }} / 275.4 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right font-bold text-amber-700">411,570,000</td>
                 </tr>
                 <!-- 2. 区域代理 -->
                 <tr class="bg-blue-50/30">
                   <td class="p-2">
-                    <el-tag size="small" type="primary" effect="dark" class="scale-90 font-sans">区域代理</el-tag>
+                    <el-tag size="small" type="primary" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('DISTRICT') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-800">
-                    卡尔赫区区域代理运营部 (海德尔·法蒂赫)
+                    {{ isEn ? 'Karkh District Regional Operations Dept (Haider Fatih)' : '卡尔赫区区域代理运营部 (海德尔·法蒂赫)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-900">4,100 户</td>
-                  <td class="p-2 text-right text-blue-700">49.2 吨 / 147.6 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-900">4,100 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">49.2 {{ isEn ? 'T' : '吨' }} / 147.6 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right font-bold text-amber-700">220,580,000</td>
                 </tr>
                 <tr class="bg-blue-50/30">
                   <td class="p-2">
-                    <el-tag size="small" type="primary" effect="dark" class="scale-90 font-sans">区域代理</el-tag>
+                    <el-tag size="small" type="primary" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('DISTRICT') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-800">
-                    鲁萨法区区域代理运营部 (扎伊德·卡西姆)
+                    {{ isEn ? 'Rusafa District Regional Operations Dept (Zaid Qasim)' : '鲁萨法区区域代理运营部 (扎伊德·卡西姆)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-900">3,550 户</td>
-                  <td class="p-2 text-right text-blue-700">42.6 吨 / 127.8 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-900">3,550 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">42.6 {{ isEn ? 'T' : '吨' }} / 127.8 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right font-bold text-amber-700">190,990,000</td>
                 </tr>
                 <!-- 3. 街道代理网点 -->
                 <tr>
                   <td class="p-2">
-                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">街道代理</el-tag>
+                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('STREET') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-700">
-                    卡尔赫第一配给中心综合代销站 (曼苏尔)
+                    {{ isEn ? 'Karkh 1st Ration Center Comprehensive Store (Mansour)' : '卡尔赫第一配给中心综合代销站 (曼苏尔)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-800">1,120 户</td>
-                  <td class="p-2 text-right text-blue-700">13.4 吨 / 40.3 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-800">1,120 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">13.4 {{ isEn ? 'T' : '吨' }} / 40.3 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right text-amber-700">60,256,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
-                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">街道代理</el-tag>
+                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('STREET') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-700">
-                    亚尔穆克第3街道便民配给站 (奥马尔)
+                    {{ isEn ? 'Yarmouk 3rd Street Service Station (Omar)' : '亚尔穆克第3街道便民配给站 (奥马尔)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-800">1,480 户</td>
-                  <td class="p-2 text-right text-blue-700">17.8 吨 / 53.3 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-800">1,480 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">17.8 {{ isEn ? 'T' : '吨' }} / 53.3 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right text-amber-700">79,624,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
-                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">街道代理</el-tag>
+                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('STREET') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-700">
-                    多拉区第12配给便民站 (哈立德·瓦利德)
+                    {{ isEn ? 'Dora 12th District Ration Station (Khalid Waleed)' : '多拉区第12配给便民站 (哈立德·瓦利德)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-800">1,500 户</td>
-                  <td class="p-2 text-right text-blue-700">18.0 吨 / 54.0 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-800">1,500 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">18.0 {{ isEn ? 'T' : '吨' }} / 54.0 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right text-amber-700">80,700,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
-                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">街道代理</el-tag>
+                    <el-tag size="small" type="success" effect="dark" class="scale-90 font-sans">{{ formatAgentLevel('STREET') }}</el-tag>
                   </td>
                   <td class="p-2 font-sans text-slate-700">
-                    哈奈根第一边境综合代销保供站 (第140号区)
+                    {{ isEn ? 'Khanaqin 1st Border Supply Station (Art. 140 Zone)' : '哈奈根第一边境综合代销保供站 (第140号区)' }}
                   </td>
-                  <td class="p-2 text-center font-bold text-slate-800">890 户</td>
-                  <td class="p-2 text-right text-blue-700">10.7 吨 / 32.0 吨</td>
+                  <td class="p-2 text-center font-bold text-slate-800">890 {{ isEn ? 'HH' : '户' }}</td>
+                  <td class="p-2 text-right text-blue-700">10.7 {{ isEn ? 'T' : '吨' }} / 32.0 {{ isEn ? 'T' : '吨' }}</td>
                   <td class="p-2 text-right text-amber-700">47,882,000</td>
                 </tr>
               </tbody>
@@ -821,12 +821,12 @@
       <template #footer>
         <div class="flex items-center justify-between w-full">
           <span class="text-[11px] text-slate-400 font-mono">
-            分配算法：户数 × 4人 × 月度标准配额指标 (只读锁定)
+            {{ isEn ? 'Algorithm Formula: Households × 4 Persons × Monthly Quota (Read-Only Locked)' : '分配算法：户数 × 4人 × 月度标准配额指标 (只读锁定)' }}
           </span>
           <div class="flex items-center gap-2">
-            <el-button @click="decomposeDialogVisible = false">取消</el-button>
+            <el-button @click="decomposeDialogVisible = false">{{ $t('common.cancel') || '取消' }}</el-button>
             <el-button type="success" :loading="decomposing" @click="submitAutoDecompose">
-              确认并自动生成三级配额排程单
+              {{ isEn ? 'Confirm & Generate 3-Tier Manifests' : '确认并自动生成三级配额排程单' }}
             </el-button>
           </div>
         </div>

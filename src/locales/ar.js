@@ -635,6 +635,7 @@ export default {
     "securityAudit": "التدقيق الأمني",
     "adminTitle": "إدارة خطة التموين",
     "agentTitle": "جدولة التوزيع الميداني وتنفيذ الوكلاء",
+    "agentScheduleCenterTitle": "خطة التموين الشهرية ومركز جدولة حصص الوكلاء ثلاثي المستويات",
     "directConnect": "ربط مباشر مع وزارة التجارة",
     "createPlan": "إنشاء خطة توزيع جديدة",
     "decomposeTasks": "تفكيك المهام للمنافذ آلياً",
