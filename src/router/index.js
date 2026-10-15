@@ -164,8 +164,8 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // 若明确要求进入注册或切换模式，清除旧 session 避免被已登录拦截
-  if (to.path === '/login' && (to.query.mode === 'register' || to.query.action === 'register')) {
+  // 若明确要求进入演示模式或注册模式，清除旧 session 避免被已登录拦截
+  if (to.path === '/login' && (to.query.demo === 'true' || to.query.mode === 'register' || to.query.action === 'register')) {
     sessionStorage.removeItem('rcm_auth_token');
     sessionStorage.removeItem('rcm_user_profile');
     localStorage.removeItem('rcm_auth_token');

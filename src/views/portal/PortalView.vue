@@ -380,7 +380,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step1.title',
     descKey: 'portal.flowDemo.steps.step1.desc',
     actionHintKey: 'portal.flowDemo.steps.step1.actionHint',
-    targetPath: '/login?layout=app&mode=register'
+    targetPath: '/login?role=citizen&layout=app&demo=true&step=1'
   },
   {
     step: 2,

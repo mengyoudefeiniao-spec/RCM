@@ -35,10 +35,22 @@
             <span class="text-[10px] text-slate-400 font-mono">AUTOSCAN · READY</span>
           </div>
 
+          <!-- 演示引导指示说明框 (步骤 01-2: 拍照上传) -->
+          <div v-if="demoMode && demoSubStep === 'step1_2'" class="animate-fadeIn">
+            <DemoGuideTooltip
+              step-badge="全流程演示 · 步骤 01-2"
+            >
+              请点击下方「拍照上传」按钮，扫描纸质旧卡并触发自动 OCR 存根比对
+            </DemoGuideTooltip>
+          </div>
+
           <!-- 模拟取景器 / 上传预览卡片 -->
           <div
             class="aspect-4/3 rounded-lg border-2 border-dashed transition-all relative overflow-hidden flex flex-col items-center justify-center p-3 cursor-pointer"
-            :class="hasUploadedPhoto ? 'border-emerald-500 bg-amber-950/40 text-amber-200' : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-blue-500 hover:bg-slate-900'"
+            :class="[
+              hasUploadedPhoto ? 'border-emerald-500 bg-amber-950/40 text-amber-200' : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-blue-500 hover:bg-slate-900',
+              demoMode && demoSubStep === 'step1_2' ? 'ring-2 ring-[#C59D5F] border-[#C59D5F]' : ''
+            ]"
             @click="triggerPhotoCapture"
           >
             <!-- 正在扫描激光束动效 -->
@@ -81,7 +93,14 @@
 
           <!-- 拍照上传操作按钮 -->
           <div class="grid grid-cols-2 gap-2">
-            <el-button size="small" type="primary" :loading="scanning" class="w-full font-bold" @click="triggerPhotoCapture">
+            <el-button
+              size="small"
+              type="primary"
+              :loading="scanning"
+              class="w-full font-bold transition-all"
+              :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_2' }"
+              @click="triggerPhotoCapture"
+            >
               <el-icon class="mr-1"><Camera /></el-icon>
               {{ hasUploadedPhoto ? $t('register.retakeBtn') : $t('register.captureBtn') }}
             </el-button>
@@ -173,9 +192,30 @@
     <div v-else-if="currentStep === 1" class="space-y-4">
       <el-form label-position="top" :model="registerForm" class="space-y-3">
         <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
-          <el-form-item :label="$t('register.headNameLabel')" required>
-            <el-input v-model="registerForm.headName" disabled />
+          <el-form-item :label="$t('register.headNameLabel')" required class="relative">
+            <!-- 演示引导说明框 (步骤 01-3: 输入户主姓名，点击即可自动填入) -->
+            <div v-if="demoMode && demoSubStep === 'step1_3'" class="mb-1 w-full animate-fadeIn">
+              <DemoGuideTooltip
+                step-badge="全流程演示 · 步骤 01-3"
+              >
+                请点击下方「户主姓名」输入框（无需键盘打字，点击自动输入就绪）
+              </DemoGuideTooltip>
+            </div>
+
+            <div
+              class="w-full cursor-pointer transition-all"
+              :class="{ 'demo-target-highlight rounded-lg': demoMode && demoSubStep === 'step1_3' }"
+              @click="handleDemoClickHeadName"
+            >
+              <el-input
+                v-model="registerForm.headName"
+                :disabled="!demoMode && !!registerForm.headName"
+                :placeholder="$t('register.defaultUserName') || '艾哈迈德·哈桑·拉希德'"
+                class="w-full"
+              />
+            </div>
           </el-form-item>
+
           <el-form-item :label="$t('register.cardNoBindLabel')" required>
             <el-input v-model="registerForm.paperCardNo" disabled class="font-mono" />
           </el-form-item>
@@ -195,10 +235,26 @@
             <el-input v-model="registerForm.phone" placeholder="+964 780 123 4567" />
           </el-form-item>
 
-          <el-form-item :label="$t('register.smsLabel')" required>
+          <el-form-item :label="$t('register.smsLabel')" required class="relative">
+            <!-- 演示引导说明框 (步骤 01-4: 获取验证码) -->
+            <div v-if="demoMode && demoSubStep === 'step1_4'" class="mb-1 w-full animate-fadeIn">
+              <DemoGuideTooltip
+                step-badge="全流程演示 · 步骤 01-4"
+              >
+                请点击下方「获取验证码」按钮，发送安全短信核验码
+              </DemoGuideTooltip>
+            </div>
+
             <div class="flex gap-2 w-full">
               <el-input v-model="registerForm.smsCode" :placeholder="$t('register.smsPlaceholder')" maxlength="6" class="font-mono" />
-              <el-button type="primary" plain :disabled="smsCountdown > 0" @click="handleSendSms">
+              <el-button
+                type="primary"
+                plain
+                :disabled="smsCountdown > 0"
+                class="font-bold transition-all shrink-0"
+                :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_4' }"
+                @click="handleDemoSendSms"
+              >
                 {{ smsCountdown > 0 ? `${smsCountdown}s` : $t('register.getSmsCode') }}
               </el-button>
             </div>
@@ -206,11 +262,28 @@
         </div>
 
         <!-- 模拟收到的短信提示框 -->
-        <div v-if="simulatedSmsCode" class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
-          <span>{{ $t('register.smsReceived') }}<strong class="font-mono text-emerald-700 text-sm">{{ simulatedSmsCode }}</strong></span>
-          <el-button type="success" size="small" text @click="registerForm.smsCode = simulatedSmsCode">
-            {{ $t('register.fillIn') }}
-          </el-button>
+        <div v-if="simulatedSmsCode" class="space-y-1.5">
+          <!-- 演示引导说明框 (步骤 01-5: 一键填入) -->
+          <div v-if="demoMode && demoSubStep === 'step1_5'" class="animate-fadeIn">
+            <DemoGuideTooltip
+              step-badge="全流程演示 · 步骤 01-5"
+            >
+              请点击下方「一键填入」按钮，自动录入短信验证码
+            </DemoGuideTooltip>
+          </div>
+
+          <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
+            <span>{{ $t('register.smsReceived') }}<strong class="font-mono text-emerald-700 text-sm">{{ simulatedSmsCode }}</strong></span>
+            <el-button
+              type="success"
+              size="small"
+              class="font-bold transition-all"
+              :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_5' }"
+              @click="handleDemoFillSms"
+            >
+              {{ $t('register.fillIn') }}
+            </el-button>
+          </div>
         </div>
 
         <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
@@ -223,11 +296,28 @@
         </div>
       </el-form>
 
-      <div class="flex items-center justify-between pt-2">
+      <div class="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 pt-2">
         <el-button @click="currentStep = 0">{{ $t('register.backPrev') }}</el-button>
-        <el-button type="primary" @click="handleProceedToVerify">
-          {{ $t('register.nextChooseAuth') }}
-        </el-button>
+
+        <div class="flex flex-col items-end gap-1.5 w-full sm:w-auto">
+          <!-- 演示引导说明框 (步骤 01-6: 选择身份认证方式) -->
+          <div v-if="demoMode && demoSubStep === 'step1_6'" class="w-full sm:w-auto animate-fadeIn">
+            <DemoGuideTooltip
+              step-badge="全流程演示 · 步骤 01-6"
+            >
+              信息补录已就绪，请点击「选择身份认证方式」按钮继续
+            </DemoGuideTooltip>
+          </div>
+
+          <el-button
+            type="primary"
+            class="font-bold transition-all w-full sm:w-auto"
+            :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_6' }"
+            @click="handleDemoProceedToVerify"
+          >
+            {{ $t('register.nextChooseAuth') }}
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -253,7 +343,22 @@
             </p>
           </div>
 
-          <el-button type="primary" :plain="!biometricPassed" @click="showBiometricModal = true">
+          <!-- 演示引导说明框 (步骤 01-7: 立即启动人脸与国民卡核验) -->
+          <div v-if="demoMode && demoSubStep === 'step1_7'" class="animate-fadeIn">
+            <DemoGuideTooltip
+              step-badge="全流程演示 · 步骤 01-7"
+            >
+              请点击下方「立即启动人脸与国民卡核验」按钮
+            </DemoGuideTooltip>
+          </div>
+
+          <el-button
+            type="primary"
+            :plain="!biometricPassed"
+            class="font-bold transition-all"
+            :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_7' }"
+            @click="handleDemoStartBiometric"
+          >
             {{ biometricPassed ? $t('register.biometricBtnRedo') : $t('register.biometricBtn') }}
           </el-button>
         </div>
@@ -277,18 +382,31 @@
       </div>
 
       <!-- 最终提交按钮 -->
-      <div class="pt-4 flex items-center justify-between">
+      <div class="pt-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3">
         <el-button @click="currentStep = 1">{{ $t('register.backPrev') }}</el-button>
-        <el-button
-          type="success"
-          size="large"
-          class="font-bold shadow-md"
-          :disabled="!biometricPassed && !remotePassed"
-          :loading="registering"
-          @click="handleCompleteRegistration"
-        >
-          {{ $t('register.finishBtn') }}
-        </el-button>
+
+        <div class="flex flex-col items-end gap-1.5 w-full sm:w-auto">
+          <!-- 演示引导说明框 (步骤 01-9: 完成注册并签发电子配给卡) -->
+          <div v-if="demoMode && demoSubStep === 'step1_9'" class="w-full sm:w-auto animate-fadeIn">
+            <DemoGuideTooltip
+              step-badge="全流程演示 · 步骤 01-9"
+            >
+              所有核验已通过！请点击「完成注册并签发电子配给卡」
+            </DemoGuideTooltip>
+          </div>
+
+          <el-button
+            type="success"
+            size="large"
+            class="font-bold shadow-md transition-all w-full sm:w-auto"
+            :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_9' }"
+            :disabled="!biometricPassed && !remotePassed"
+            :loading="registering"
+            @click="handleCompleteRegistration"
+          >
+            {{ $t('register.finishBtn') }}
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -297,6 +415,7 @@
       v-model="showBiometricModal"
       :user-name="registerForm.headName || $t('register.defaultUserName')"
       user-card-no="NEW-REGISTER"
+      :demo-mode="demoMode"
       @success="onBiometricSuccess"
     />
 
@@ -319,6 +438,8 @@ import { ocrScanPaperCard, sendSmsCode, registerCitizen } from '../../api/auth.j
 import { ElMessage } from 'element-plus';
 import BiometricVerifyDialog from './BiometricVerifyDialog.vue';
 import RemoteVerifyDialog from './RemoteVerifyDialog.vue';
+import DemoGuideTooltip from '../common/DemoGuideTooltip.vue';
+import { demoSubStep, setDemoStep } from '../../utils/demoState.js';
 import {
   Document,
   Edit,
@@ -330,7 +451,8 @@ import {
 } from '@element-plus/icons-vue';
 
 const props = defineProps({
-  modelValue: { type: Boolean, default: false }
+  modelValue: { type: Boolean, default: false },
+  demoMode: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['update:modelValue', 'registered']);
@@ -346,6 +468,9 @@ watch(() => props.modelValue, (val) => {
   if (val) {
     // 弹窗打开时重置状态
     currentStep.value = 0;
+    if (props.demoMode) {
+      setDemoStep('step1_2');
+    }
   }
 });
 
@@ -420,9 +545,12 @@ async function executeAutoOcrProcess(mockInvalid = false) {
       setTimeout(() => {
         if (currentStep.value === 0 && isValidCard.value) {
           currentStep.value = 1;
+          if (props.demoMode) {
+            setDemoStep('step1_3');
+          }
           ElMessage.info(t('register.msgAutoNext'));
         }
-      }, 1200);
+      }, 1000);
     } else {
       ElMessage.error(res.validationNotice || t('register.msgInvalidCardFallback'));
     }
@@ -454,6 +582,53 @@ const registerForm = reactive({
 
 const smsCountdown = ref(0);
 const simulatedSmsCode = ref('');
+
+function handleDemoClickHeadName() {
+  if (props.demoMode) {
+    registerForm.headName = '艾哈迈德·哈桑·拉希德';
+    if (!registerForm.nationalId) registerForm.nationalId = 'IQ-1980-0419-8271';
+    if (!registerForm.phone) registerForm.phone = '+964 780 123 4567';
+    ElMessage.success('户主姓名输入完成：艾哈迈德·哈桑·拉希德');
+    setDemoStep('step1_4');
+  }
+}
+
+async function handleDemoSendSms() {
+  if (props.demoMode) {
+    if (!registerForm.phone) registerForm.phone = '+964 780 123 4567';
+  }
+  await handleSendSms();
+  if (props.demoMode) {
+    setDemoStep('step1_5');
+  }
+}
+
+function handleDemoFillSms() {
+  registerForm.smsCode = simulatedSmsCode.value || '839201';
+  if (props.demoMode) {
+    setDemoStep('step1_6');
+  }
+}
+
+function handleDemoProceedToVerify() {
+  if (props.demoMode) {
+    if (!registerForm.headName) registerForm.headName = '艾哈迈德·哈桑·拉希德';
+    if (!registerForm.nationalId) registerForm.nationalId = 'IQ-1980-0419-8271';
+    if (!registerForm.phone) registerForm.phone = '+964 780 123 4567';
+    if (!registerForm.smsCode) registerForm.smsCode = simulatedSmsCode.value || '839201';
+    currentStep.value = 2;
+    setDemoStep('step1_7');
+    return;
+  }
+  handleProceedToVerify();
+}
+
+function handleDemoStartBiometric() {
+  if (props.demoMode) {
+    setDemoStep('step1_8');
+  }
+  showBiometricModal.value = true;
+}
 
 async function handleSendSms() {
   if (!registerForm.phone) {
@@ -516,18 +691,29 @@ async function handleCompleteRegistration() {
 
     ElMessage.success(res.message || t('register.msgRegisterSuccessFallback'));
 
-    // 自动登录到系统
+    // 自动登录到系统（修复 BUG：写入 sessionStorage 与 layoutMode 为 app）
     authStore.token = res.token;
     authStore.userProfile = res.user;
+    sessionStorage.setItem('rcm_auth_token', res.token);
+    sessionStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
+    sessionStorage.setItem('rcm_layout_mode', 'app');
     localStorage.setItem('rcm_auth_token', res.token);
     localStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
     localStorage.setItem('rcm_trusted_device', 'true');
+    localStorage.setItem('rcm_layout_mode', 'app');
+
+    authStore.setSessionUser(res.user, res.token);
 
     visible.value = false;
     emit('update:modelValue', false);
     emit('registered', res);
 
-    router.push('/citizen');
+    if (props.demoMode) {
+      setDemoStep('step1_done');
+    }
+
+    // 核心修复 BUG：明确设置 session 与 layout 为 app，确保进入公民端时展示最新移动 APP 页面
+    router.push('/citizen?role=citizen&layout=app&demo=true&step=1&done=true');
   } catch (e) {
     ElMessage.error(t('register.msgRegisterFail'));
   } finally {

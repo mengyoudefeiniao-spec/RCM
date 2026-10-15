@@ -141,16 +141,30 @@
     </div>
 
     <template #footer>
-      <div class="flex items-center justify-end gap-2">
-        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          :disabled="!allCaptured"
-          :loading="verifying"
-          @click="handleExecuteVerify"
-        >
-          {{ $t('register.bio.confirmBtn') }}
-        </el-button>
+      <div class="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 w-full">
+        <!-- 演示引导指示说明框 (步骤 01-8) -->
+        <div v-if="demoMode && demoSubStep === 'step1_8'" class="w-full sm:w-auto">
+          <DemoGuideTooltip
+            step-badge="全流程演示 · 步骤 01-8"
+          >
+            生物特征比对已就绪，请点击「确认核验并放行进入」
+          </DemoGuideTooltip>
+        </div>
+        <div v-else></div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
+          <el-button
+            type="primary"
+            :disabled="!allCaptured"
+            :loading="verifying"
+            class="font-bold transition-all"
+            :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_8' }"
+            @click="handleExecuteVerify"
+          >
+            {{ $t('register.bio.confirmBtn') }}
+          </el-button>
+        </div>
       </div>
     </template>
   </el-dialog>
@@ -179,10 +193,14 @@ import {
   Loading
 } from '@element-plus/icons-vue';
 
+import DemoGuideTooltip from '../common/DemoGuideTooltip.vue';
+import { demoSubStep, setDemoStep } from '../../utils/demoState.js';
+
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   userName: { type: String, default: '' },
-  userCardNo: { type: String, default: 'RC-10029381' }
+  userCardNo: { type: String, default: 'RC-10029381' },
+  demoMode: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['update:modelValue', 'success']);
@@ -194,7 +212,13 @@ const { isCompact, dialogWidth } = useCompactDialog(720);
 const displayName = computed(() => props.userName || t('register.defaultUserName'));
 
 const visible = ref(props.modelValue);
-watch(() => props.modelValue, (val) => { visible.value = val; });
+watch(() => props.modelValue, (val) => {
+  visible.value = val;
+  if (val && props.demoMode) {
+    // 演示模式下自动就绪要素采集，确保用户能直接点击指示按钮
+    handleQuickCollectAll();
+  }
+});
 
 const faceLivenessDialogVisible = ref(false);
 const faceCaptured = ref(false);
@@ -217,7 +241,6 @@ function handleQuickCollectAll() {
   faceCaptured.value = true;
   cardFrontCaptured.value = true;
   cardBackCaptured.value = true;
-  ElMessage.success(t('register.bio.msgQuickFill'));
 }
 
 async function handleExecuteVerify() {
@@ -229,11 +252,14 @@ async function handleExecuteVerify() {
     });
     verificationPassed.value = true;
     ElMessage.success(res.message || t('register.bio.msgVerifySuccess'));
+    if (props.demoMode) {
+      setDemoStep('step1_9');
+    }
     setTimeout(() => {
       visible.value = false;
       emit('update:modelValue', false);
       emit('success', res);
-    }, 800);
+    }, 600);
   } catch (e) {
     ElMessage.error(t('register.bio.msgVerifyFail'));
   } finally {
