@@ -1,17 +1,17 @@
 <template>
   <div class="dashboard-view space-y-3 sm:space-y-6">
     <!-- 模式 1: 现代中东高端政务质感看板 (参考图风格 100% 还原) -->
-    <div v-show="dashboardMode === 'overview'" class="animate-fadeIn">
+    <div v-if="dashboardMode === 'overview'" class="animate-fadeIn">
       <DashboardOverview />
     </div>
 
     <!-- 模式 2: 现场核销作业 APP (基于 Google Pixel 9 深度适配) -->
-    <div v-show="dashboardMode === 'mobile'" class="animate-fadeIn">
+    <div v-else-if="dashboardMode === 'mobile'" class="animate-fadeIn">
       <MobileAgentDashboard @switch-mode="dashboardMode = $event" />
     </div>
 
-    <!-- 模式 2: 原角色专属细化业务大盘 (保供/管理) -->
-    <div v-show="dashboardMode === 'operational'" class="space-y-4 animate-fadeIn">
+    <!-- 模式 3: 原角色专属细化业务大盘 (保供/管理) -->
+    <div v-else-if="dashboardMode === 'operational'" class="space-y-4 animate-fadeIn">
       <!-- 原顶部控制栏 -->
       <div class="bg-white px-4 py-3 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">

@@ -45,15 +45,12 @@
       .skeleton-logo-card {
         width: 120px;
         height: 120px;
-        border-radius: 28px;
-        background-color: rgba(255, 255, 255, 0.96);
-        padding: 12px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-        border: 2px solid rgba(197, 157, 95, 0.4);
+        background: transparent;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
+        filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(31, 163, 94, 0.4));
         animation: skeletonPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       .skeleton-logo-img {
@@ -135,7 +132,7 @@
         <div class="skeleton-splash-header"></div>
         <div class="skeleton-splash-center">
           <div class="skeleton-logo-card">
-            <img src="/logo.png" alt="Logo" class="skeleton-logo-img" />
+            <img src="/logo.svg" alt="Official Logo" class="skeleton-logo-img" />
           </div>
           <h1 class="skeleton-title-ar">البطاقة التموينية</h1>
           <h2 class="skeleton-title-en">Ration Card Management</h2>

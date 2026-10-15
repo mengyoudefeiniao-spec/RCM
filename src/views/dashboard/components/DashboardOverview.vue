@@ -109,7 +109,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalOrders') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
-              {{ countTotalOrders.displayValue.value }}
+              {{ countTotalOrders.displayValue }}
             </span>
           </div>
 
@@ -117,7 +117,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.underReview') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countUnderReview.displayValue.value }}
+              {{ countUnderReview.displayValue }}
             </span>
           </div>
 
@@ -125,7 +125,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.waitingDocs') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countWaitingDocs.displayValue.value }}
+              {{ countWaitingDocs.displayValue }}
             </span>
           </div>
 
@@ -133,7 +133,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.avgProcessingDays') }}</span>
             <span class="font-mono font-semibold text-sm text-[#18231E]">
-              {{ countAvgProcessingDays.displayValue.value }}
+              {{ countAvgProcessingDays.displayValue }}
               <span class="text-xs font-normal text-[#5E6862] ml-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
             </span>
           </div>
@@ -142,7 +142,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.overdueOrders') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
-              <span>{{ countOverdueOrders.displayValue.value }}</span>
+              <span>{{ countOverdueOrders.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
             </span>
           </div>
@@ -172,7 +172,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledCitizens') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
-              {{ countEnrolledCitizens.displayValue.value }}
+              {{ countEnrolledCitizens.displayValue }}
             </span>
           </div>
 
@@ -180,7 +180,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.enrolledFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countEnrolledFamilies.displayValue.value }}
+              {{ countEnrolledFamilies.displayValue }}
             </span>
           </div>
 
@@ -188,7 +188,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.benefitedFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countBenefitedFamilies.displayValue.value }}
+              {{ countBenefitedFamilies.displayValue }}
             </span>
           </div>
 
@@ -196,7 +196,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.monthlyChanges') }}</span>
             <span class="font-mono font-bold text-sm text-[#2C6E49] bg-[#EDF6F1] px-2 py-0.5 rounded-md">
-              +{{ countMonthlyChanges.displayValue.value }}
+              +{{ countMonthlyChanges.displayValue }}
             </span>
           </div>
         </div>
@@ -225,7 +225,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.totalVerifications') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
-              {{ countTotalVerifications.displayValue.value }}
+              {{ countTotalVerifications.displayValue }}
             </span>
           </div>
 
@@ -233,7 +233,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.successRate') }}</span>
             <span class="font-mono font-bold text-sm text-[#1E3F35]">
-              {{ countSuccessRate.displayValue.value }}
+              {{ countSuccessRate.displayValue }}
             </span>
           </div>
 
@@ -249,7 +249,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.manualReview') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
-              <span>{{ countManualReviews.displayValue.value }}</span>
+              <span>{{ countManualReviews.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
             </span>
           </div>
@@ -279,7 +279,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.eligibleFamilies') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
-              {{ countEligibleFamilies.displayValue.value }}
+              {{ countEligibleFamilies.displayValue }}
             </span>
           </div>
 
@@ -287,7 +287,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.receivedFamilies') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countReceivedFamilies.displayValue.value }}
+              {{ countReceivedFamilies.displayValue }}
             </span>
           </div>
 
@@ -295,7 +295,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.completionRate') }}</span>
             <span class="font-mono font-bold text-sm text-[#1E3F35]">
-              {{ countCompletionRate.displayValue.value }}
+              {{ countCompletionRate.displayValue }}
             </span>
           </div>
 
@@ -303,7 +303,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingClaims') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FAF3E6] border border-[#E8D9BF] text-[#966C2E] font-mono font-bold text-xs">
-              <span>{{ countPendingClaims.displayValue.value }}</span>
+              <span>{{ countPendingClaims.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#C59D5F]"></span>
             </span>
           </div>
@@ -333,7 +333,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.activeAgents') }}</span>
             <span class="font-mono font-bold text-base text-[#18231E]">
-              {{ countActiveAgents.displayValue.value }}
+              {{ countActiveAgents.displayValue }}
             </span>
           </div>
 
@@ -341,7 +341,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.todayDispatches') }}</span>
             <span class="font-mono font-bold text-sm text-[#18231E]">
-              {{ countTodayDispatches.displayValue.value }}
+              {{ countTodayDispatches.displayValue }}
             </span>
           </div>
 
@@ -357,7 +357,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.exceptionCases') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
-              <span>{{ countExceptionCases.displayValue.value }}</span>
+              <span>{{ countExceptionCases.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545] animate-pulse"></span>
             </span>
           </div>
@@ -387,7 +387,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.apiSuccessRate') }}</span>
             <span class="font-mono font-bold text-base text-[#1E3F35]">
-              {{ countApiSuccessRate.displayValue.value }}
+              {{ countApiSuccessRate.displayValue }}
             </span>
           </div>
 
@@ -403,7 +403,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.failedTasks') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
-              <span>{{ countFailedTasks.displayValue.value }}</span>
+              <span>{{ countFailedTasks.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
             </span>
           </div>
@@ -412,7 +412,7 @@
           <div class="flex items-center justify-between pt-1">
             <span class="text-[#5E6862]">{{ $t('dashboardOverview.pendingDiscrepancies') }}</span>
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEECEC] border border-[#FCD5D5] text-[#D34545] font-mono font-bold text-xs">
-              <span>{{ countPendingDiscrepancies.displayValue.value }}</span>
+              <span>{{ countPendingDiscrepancies.displayValue }}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-[#D34545]"></span>
             </span>
           </div>

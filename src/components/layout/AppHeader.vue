@@ -119,25 +119,28 @@
 
         <!-- 角色身份切换下拉 (公民app和代理app视口内彻底隐藏) -->
         <el-dropdown v-if="!isAppMode" trigger="click" @command="handleRoleCommand">
-          <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
-          <span
-            class="hidden sm:flex items-center gap-1 text-xs text-[#DFE8E3] hover:text-white cursor-pointer px-2.5 py-1.5 rounded-lg bg-[#16332B] border border-[#295447]"
-          >
-            <span class="w-2 h-2 rounded-full shrink-0" :class="roleDotColor"></span>
-            <span class="whitespace-nowrap font-medium">{{ roleLabel }}</span>
-            <el-icon class="text-[10px]"><ArrowDown /></el-icon>
-          </span>
+          <!-- 统一单一根容器，杜绝 ElementPlusError: [ElOnlyChild] requires exact only one valid child -->
+          <div class="inline-flex items-center cursor-pointer select-none">
+            <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
+            <span
+              class="hidden sm:flex items-center gap-1 text-xs text-[#DFE8E3] hover:text-white px-2.5 py-1.5 rounded-lg bg-[#16332B] border border-[#295447]"
+            >
+              <span class="w-2 h-2 rounded-full shrink-0" :class="roleDotColor"></span>
+              <span class="whitespace-nowrap font-medium">{{ roleLabel }}</span>
+              <el-icon class="text-[10px]"><ArrowDown /></el-icon>
+            </span>
 
-          <!-- 移动端非APP小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
-          <button
-            type="button"
-            class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative cursor-pointer"
-            :title="roleLabel"
-          >
-            <el-icon :size="15"><UserFilled /></el-icon>
-            <!-- 角色小圆点徽标 -->
-            <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#16332B]" :class="roleDotColor"></span>
-          </button>
+            <!-- 移动端非APP小屏：简化为一个精巧图标按钮 (带身份指示光点) -->
+            <button
+              type="button"
+              class="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-[#16332B] border border-[#295447] text-[#DFE8E3] hover:text-white active:scale-95 transition-all relative"
+              :title="roleLabel"
+            >
+              <el-icon :size="15"><UserFilled /></el-icon>
+              <!-- 角色小圆点徽标 -->
+              <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#16332B]" :class="roleDotColor"></span>
+            </button>
+          </div>
           <template #dropdown>
             <el-dropdown-menu>
               <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-100">

@@ -52,9 +52,9 @@ export function useNumberCounter(targetValue, options = {}) {
   const initialNum = parseToNumber(isRef(targetValue) ? targetValue.value : targetValue);
   const decimals = detectDecimals(isRef(targetValue) ? targetValue.value : targetValue);
 
-  // 内部 GSAP 补间状态对象
+  // 内部 GSAP 补间状态对象：初值直接设为目标值，杜绝首屏空白或闪烁，在 mounted 后启动动态平滑滚动
   const state = reactive({
-    current: 0
+    current: initialNum
   });
 
   // 保存 GSAP Tween 实例引用以便随时销毁
