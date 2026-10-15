@@ -21,23 +21,26 @@
 
       <!-- 文字内容图层：加在图片图层上方 (relative z-10)，支持独立排版与交互 -->
       <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center items-start md:items-end text-left md:text-right">
-        <!-- 顶部金色服务标识 -->
-        <div class="text-[#B58542] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-1.5">
+        <!-- 顶部金色服务标识 (含 ht.iq 官方矢量 Logo) -->
+        <div class="text-[#B58542] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-white/95 p-0.5 border border-[#C3E6D2] shadow-2xs flex items-center justify-center shrink-0">
+            <img src="/logo.svg" alt="ht.iq Logo" class="w-full h-full object-contain" />
+          </div>
           <span>{{ $t('dashboardOverview.serviceTag') }}</span>
         </div>
 
         <!-- 核心大标题 -->
-        <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-black text-[#1E3F35] tracking-tight leading-tight">
+        <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-black text-[#007A3D] tracking-tight leading-tight">
           {{ $t('dashboardOverview.mainTitle') }}
         </h1>
 
         <!-- 战略大盘副标题 -->
-        <div class="text-xs sm:text-sm font-bold text-[#3D6357] mt-1 font-sans">
+        <div class="text-xs sm:text-sm font-bold text-[#1FA35E] mt-1 font-sans">
           {{ $t('dashboardOverview.subTitle') }}
         </div>
 
         <!-- 底部说明文案 -->
-        <p class="text-xs text-[#62706A] mt-2 max-w-md font-medium leading-relaxed">
+        <p class="text-xs text-[#5E7368] mt-2 max-w-md font-medium leading-relaxed">
           {{ $t('dashboardOverview.bannerDescription') }}
         </p>
       </div>
@@ -60,11 +63,11 @@
           <span>{{ $t('dashboardOverview.hijriCalendarDate') }}</span>
         </div>
 
-        <!-- 刷新数据按钮 (带加载动画与触发效果) -->
+        <!-- 刷新数据按钮 (采用 ht.iq 官方绿色圆角药丸按钮) -->
         <el-button
           type="primary"
           size="default"
-          class="!bg-[#1E3F35] !border-[#1E3F35] hover:!bg-[#2B5749] text-white shadow-xs font-semibold"
+          class="ht-btn-primary !px-4 text-xs font-bold"
           :loading="isRefreshing"
           @click="handleManualRefresh"
         >
@@ -646,19 +649,25 @@ async function handleManualRefresh() {
 }
 
 .rcm-metric-card {
-  transition: border-color 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rcm-metric-card:hover {
+  border-color: #1fa35e !important;
+  box-shadow: 0 10px 28px -4px rgba(0, 122, 61, 0.08) !important;
+  transform: translateY(-2px);
 }
 
 /* 优雅加载遮罩风格微调 */
 :deep(.rcm-government-loading .el-loading-spinner .el-loading-text) {
-  color: #1E3F35 !important;
-  font-weight: 600;
+  color: #007A3D !important;
+  font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.02em;
 }
 
 :deep(.rcm-government-loading .el-loading-spinner .path) {
-  stroke: #C59D5F !important;
+  stroke: #1FA35E !important;
   stroke-width: 3;
 }
 </style>

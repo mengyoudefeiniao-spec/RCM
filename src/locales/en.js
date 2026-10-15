@@ -1012,6 +1012,7 @@ export default {
     "searchQuery": "Search",
     "tabWarehouse": "Strategic Storage & Provincial Transfers",
     "tabReconciliation": "Fiscal Reconciliation & Clearing",
+    "tabRegulations": "Regulatory FAQ & Guidelines",
     "tabAgents": "Agent Lifecycle & Licensing",
     "tabFamilies": "Household Relations & Splits",
     "tabCards": "Citizen Ration Cards",

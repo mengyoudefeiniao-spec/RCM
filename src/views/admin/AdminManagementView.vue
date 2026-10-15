@@ -1,29 +1,34 @@
 <template>
   <div class="admin-management-view space-y-4">
-    <!-- 顶部后台管理综合调度栏 -->
-    <div class="bg-white px-4 py-3 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+    <!-- 顶部后台管理综合调度栏 (采用 ht.iq 官方绿色系与矢量 Logo) -->
+    <div class="bg-[#FDFCF9] px-4 py-3 rounded-2xl border border-[#C3E6D2] shadow-2xs flex items-center justify-between">
       <ModuleDescTip
         :title="$t('admin.pageTitle') || '全国配给系统后台综合治理与调度中心'"
         :content="$t('admin.pageSubtitle') || '负责全国电子配给卡发卡监管、家庭关系档案治理、网格代销网点全生命周期准入与战略仓储调度。'"
         :badge="$t('admin.centralSupervision') || '中央监管'"
-        badge-type="primary"
-        title-class="text-sm font-bold text-slate-900"
+        badge-type="success"
+        title-class="text-sm font-bold text-[#007A3D]"
       >
         <template #icon>
-          <div class="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-            <el-icon :size="16"><Tools /></el-icon>
+          <div class="w-8 h-8 rounded-xl bg-white border border-[#C3E6D2] p-1 flex items-center justify-center shrink-0 shadow-2xs">
+            <img src="/logo.svg" alt="ht.iq Logo" class="w-full h-full object-contain" />
           </div>
         </template>
         <template #extra>
           <div class="flex items-center gap-2">
-            <el-tag size="small" type="primary" effect="dark" class="font-bold">
+            <el-tag size="small" type="success" effect="dark" class="font-bold !bg-[#007A3D] !border-[#007A3D]">
               {{ currentRoleTitle }}
             </el-tag>
             <el-button
               size="small"
-              type="success"
-              plain
-              class="font-bold text-xs shrink-0"
+              class="font-bold text-xs shrink-0 ht-btn-secondary"
+              @click="activeTab = 'regulations'"
+            >
+              <span>📜 {{ $t('admin.tabRegulations') || '官方业务法规指南' }}</span>
+            </el-button>
+            <el-button
+              size="small"
+              class="font-bold text-xs shrink-0 ht-btn-primary"
               @click="activeTab = 'reconciliation'"
             >
               <span>💳 {{ $t('admin.tabReconciliation') || '财政对账与清算' }}</span>
@@ -811,6 +816,21 @@
             <ReconciliationTab />
           </div>
         </el-tab-pane>
+
+        <!-- ========================================== -->
+        <!-- Tab 6: ht.iq 官方业务制度与政策问答指南 (FAQ) -->
+        <!-- ========================================== -->
+        <el-tab-pane name="regulations">
+          <template #label>
+            <span class="flex items-center gap-1.5">
+              <span>{{ $t('admin.tabRegulations') || '官方业务法规指南' }}</span>
+              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left font-mono font-bold">FAQ</el-tag>
+            </span>
+          </template>
+          <div class="py-2">
+            <OfficialRegulationsTab />
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -1204,6 +1224,7 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
 import ReconciliationTab from './components/ReconciliationTab.vue';
+import OfficialRegulationsTab from './components/OfficialRegulationsTab.vue';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
@@ -2472,4 +2493,63 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ========================================================
+ * ht.iq 官方绿色系 UI 风格定制
+ * ======================================================== */
+:deep(.custom-admin-tabs .el-tabs__item) {
+  font-weight: 600;
+  color: #4a5c53;
+  transition: all 0.2s ease;
+}
+
+:deep(.custom-admin-tabs .el-tabs__item:hover) {
+  color: #1fa35e;
+}
+
+:deep(.custom-admin-tabs .el-tabs__item.is-active) {
+  color: #007a3d !important;
+  font-weight: 800;
+}
+
+:deep(.custom-admin-tabs .el-tabs__active-bar) {
+  background-color: #007a3d !important;
+  height: 3px;
+  border-radius: 9999px;
+}
+
+:deep(.custom-admin-tabs .el-tabs__nav-wrap::after) {
+  background-color: #e2ede6;
+  height: 1px;
+}
+
+/* 单选切换胶囊 (Radio Group) */
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background-color: #007a3d !important;
+  border-color: #007a3d !important;
+  box-shadow: -1px 0 0 0 #007a3d !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+:deep(.el-radio-button__inner:hover) {
+  color: #007a3d;
+}
+
+/* 表格头部与边框 */
+:deep(.el-table th.el-table__cell) {
+  background-color: #f7faf8 !important;
+  color: #1a2e26 !important;
+  font-weight: 700;
+  border-bottom: 1px solid #dce8e1 !important;
+}
+
+/* 分页激活态 */
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #007a3d !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-pagination.is-background .el-pager li:hover) {
+  color: #007a3d;
+}
 </style>

@@ -1,0 +1,136 @@
+/* ========================================================
+ * ht.iq 官方 UI 主题样式表 (伊拉克贸易部电子配给卡官方规范)
+ * 来源: reference/ht-iq (包含 SomarSans 字体、绿色系色彩规范与 RTL 适配)
+ * ======================================================== */
+
+/* 1. 官方阿拉伯语正文字体 */
+@font-face {
+  font-family: 'somer';
+  src: url('/fonts/SomarSans-Regular.7b1555ea.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. 主题全局 CSS 变量 */
+:root {
+  --ht-primary: #007a3d;         /* ht.iq 官方主色 (深翠政务绿) */
+  --ht-primary-dark: #005a2d;    /* 深色悬浮态 */
+  --ht-accent: #1fa35e;          /* 官方亮绿提亮色 */
+  --ht-accent-light: #eaf6ef;    /* 极浅绿背景衬底 */
+  --ht-accent-border: #c3e6d2;   /* 浅绿边框 */
+  --ht-warm-bg: #fdfcf9;         /* 暖调米白背景底色 */
+  --ht-gold: #c59d5f;            /* 麦穗微金装饰色 */
+  --ht-text-main: #1a2e26;       /* 正文墨色 */
+  --ht-text-muted: #5e7368;      /* 辅助次级说明文字 */
+  --ht-radius-lg: 18px;          /* 官方大圆角 */
+  --ht-radius-md: 12px;          /* 官方标准圆角 */
+}
+
+/* 阿拉伯语与库尔德语环境下优先应用 somer 官方官方字体 */
+html[lang="ar"],
+html[lang="ku"],
+[dir="rtl"] {
+  font-family: 'somer', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 3. 官方按钮类 (还原 01-home.png / 03-about.png 中的绿色药丸与圆角按钮) */
+.ht-btn-primary {
+  background-color: var(--ht-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ht-accent) !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 14px -2px rgba(31, 163, 94, 0.35) !important;
+}
+
+.ht-btn-primary:hover {
+  background-color: var(--ht-primary) !important;
+  border-color: var(--ht-primary) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -2px rgba(0, 122, 61, 0.45) !important;
+}
+
+.ht-btn-secondary {
+  background-color: var(--ht-accent-light) !important;
+  color: var(--ht-primary) !important;
+  border: 1px solid var(--ht-accent-border) !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.ht-btn-secondary:hover {
+  background-color: #d8f0e2 !important;
+  color: var(--ht-primary-dark) !important;
+}
+
+/* 4. 官方大圆角卡片容器 (还原 01-home.png 卡片质感) */
+.ht-card {
+  background-color: #ffffff;
+  border: 1px solid var(--ht-accent-border);
+  border-radius: var(--ht-radius-lg);
+  box-shadow: 0 4px 20px -2px rgba(0, 122, 61, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ht-card:hover {
+  border-color: var(--ht-accent);
+  box-shadow: 0 10px 28px -4px rgba(0, 122, 61, 0.1);
+}
+
+/* 5. 官方 FAQ 手风琴展开项风格 (100% 还原 04-faq.png / 05-faq-expanded.png) */
+.ht-faq-item {
+  background-color: #ffffff;
+  border: 1.5px solid #d5e5dc;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.ht-faq-item:hover {
+  border-color: var(--ht-accent);
+  background-color: #fcfdfd;
+}
+
+.ht-faq-item.is-expanded {
+  border-color: var(--ht-accent);
+  box-shadow: 0 4px 16px -2px rgba(31, 163, 94, 0.12);
+}
+
+.ht-faq-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ht-faq-question {
+  font-weight: 700;
+  color: #1a2e26;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.ht-faq-arrow {
+  color: var(--ht-accent);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.ht-faq-arrow.is-rotated {
+  transform: rotate(180deg);
+}
+
+.ht-faq-content {
+  padding: 0 18px 16px 18px;
+  font-size: 13px;
+  color: #4a5c53;
+  line-height: 1.7;
+  border-top: 1px dashed #e2ede6;
+  margin-top: 2px;
+  padding-top: 12px;
+}

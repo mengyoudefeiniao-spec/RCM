@@ -1012,6 +1012,7 @@ export default {
     "searchQuery": "查询",
     "tabWarehouse": "战略仓储与跨省调拨",
     "tabReconciliation": "财政对账与清算",
+    "tabRegulations": "官方业务法规指南",
     "tabAgents": "代销商准入与全生命周期",
     "tabFamilies": "家庭关系与分立管理",
     "tabCards": "公民配给卡管理",
