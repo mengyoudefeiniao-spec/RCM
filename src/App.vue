@@ -10,6 +10,9 @@
     <router-view />
     <!-- 全局智能客服助手：严格限制必须拥有用户 Token 鉴权认证通过方可显示与使用；在 portal 调度门户页面禁止使用智能客服 -->
     <FloatingCustomerService v-if="authStore.isAuthenticated && isNotPortalPage" />
+
+    <!-- 全局演示引导遮罩：提供非侵入式聚焦高亮与可操作/不可操作区域拦截 -->
+    <DemoSpotlightOverlay />
   </el-config-provider>
 </template>
 
@@ -20,6 +23,7 @@ import { ElConfigProvider } from 'element-plus';
 import { elementLocale } from './locales/index.js';
 import FloatingCustomerService from './components/chat/FloatingCustomerService.vue';
 import SplashScreen from './components/common/SplashScreen.vue';
+import DemoSpotlightOverlay from './components/common/DemoSpotlightOverlay.vue';
 import { useAuthStore } from './stores/auth.js';
 
 const authStore = useAuthStore();

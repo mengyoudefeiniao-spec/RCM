@@ -141,30 +141,18 @@
     </div>
 
     <template #footer>
-      <div class="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 w-full">
-        <!-- 演示引导指示说明框 (步骤 01-8) -->
-        <div v-if="demoMode && demoSubStep === 'step1_8'" class="w-full sm:w-auto">
-          <DemoGuideTooltip
-            step-badge="全流程演示 · 步骤 01-8"
-          >
-            生物特征比对已就绪，请点击「确认核验并放行进入」
-          </DemoGuideTooltip>
-        </div>
-        <div v-else></div>
-
-        <div class="flex items-center gap-2 shrink-0">
-          <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
-          <el-button
-            type="primary"
-            :disabled="!allCaptured"
-            :loading="verifying"
-            class="font-bold transition-all"
-            :class="{ 'demo-target-highlight': demoMode && demoSubStep === 'step1_8' }"
-            @click="handleExecuteVerify"
-          >
-            {{ $t('register.bio.confirmBtn') }}
-          </el-button>
-        </div>
+      <div class="flex items-center justify-end gap-2 w-full">
+        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
+        <el-button
+          type="primary"
+          :disabled="!allCaptured"
+          :loading="verifying"
+          class="font-bold"
+          data-demo-target="btn-confirm-bio"
+          @click="handleExecuteVerify"
+        >
+          {{ $t('register.bio.confirmBtn') }}
+        </el-button>
       </div>
     </template>
   </el-dialog>
@@ -193,7 +181,6 @@ import {
   Loading
 } from '@element-plus/icons-vue';
 
-import DemoGuideTooltip from '../common/DemoGuideTooltip.vue';
 import { demoSubStep, setDemoStep } from '../../utils/demoState.js';
 
 const props = defineProps({

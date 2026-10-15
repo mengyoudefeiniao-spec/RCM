@@ -125,35 +125,19 @@
         </el-form>
 
         <!-- 纸质配给卡数字化注册通道入口 -->
-        <div class="relative space-y-2">
-          <!-- 演示引导指示说明框 (步骤 01-1: 提示用户点击注册按钮) -->
-          <div v-if="isDemoActive && demoSubStep === 'step1_1'" class="animate-fadeIn">
-            <DemoGuideTooltip
-              step-badge="全流程演示 · 步骤 01-1"
-              :allow-exit="true"
-              @exit="deactivateDemo"
-            >
-              请点击下方「注册」按钮，开启公民首次申领建档与电子卡申请全流程
-            </DemoGuideTooltip>
-          </div>
-
-          <div
-            class="bg-[#FAF6EE] border rounded-xl p-2.5 flex items-center justify-between text-xs transition-all"
-            :class="isDemoActive && demoSubStep === 'step1_1' ? 'border-[#C59D5F] ring-2 ring-[#C59D5F]/50 shadow-md' : 'border-[#E8DCC6]'"
+        <div class="bg-[#FAF6EE] border border-[#E8DCC6] rounded-xl p-2.5 flex items-center justify-between text-xs">
+          <span class="text-[#5E6862] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
+          <el-button
+            type="primary"
+            plain
+            size="small"
+            class="font-bold px-4"
+            data-demo-target="btn-register"
+            style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
+            @click="handleStartRegister"
           >
-            <span class="text-[#5E6862] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
-            <el-button
-              type="primary"
-              plain
-              size="small"
-              class="font-bold px-4 transition-all"
-              :class="{ 'demo-target-highlight': isDemoActive && demoSubStep === 'step1_1' }"
-              style="color: #1E3F35; border-color: #C59D5F; background-color: #FAF5ED;"
-              @click="handleStartRegister"
-            >
-              {{ $t('login.registerBtn') }}
-            </el-button>
-          </div>
+            {{ $t('login.registerBtn') }}
+          </el-button>
         </div>
 
         <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
@@ -345,7 +329,6 @@ import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.v
 import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
-import DemoGuideTooltip from '../../components/common/DemoGuideTooltip.vue';
 import { isDemoActive, demoSubStep, setDemoStep, activateDemo, deactivateDemo } from '../../utils/demoState.js';
 import {
   User,

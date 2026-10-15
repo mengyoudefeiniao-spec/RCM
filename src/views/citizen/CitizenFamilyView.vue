@@ -4,48 +4,6 @@
     <!-- 移动端 APP 视图 (针对 Google Pixel 9 412px 视口极致适配) -->
     <!-- ======================================================== -->
     <div v-if="isAppMode" class="p-3.5 space-y-4">
-      <!-- 全流程演示 01 阶段完成提示横幅与推进指引 -->
-      <div
-        v-if="isDemoActive && showDemoDoneBanner && (demoSubStep === 'step1_done' || $route.query.done === 'true')"
-        class="p-3.5 rounded-2xl bg-gradient-to-r from-[#FAF5ED] to-[#F3EAD9] border-2 border-[#C59D5F] shadow-lg space-y-2.5 animate-fadeIn select-none"
-      >
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-xl bg-[#1E3F35] text-[#C59D5F] flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-              ✓
-            </div>
-            <div>
-              <div class="text-xs font-black text-[#1E3F35]">
-                🎉 【全流程演示 · 01 阶段完成】公民注册与电子配给卡建档已完成！
-              </div>
-              <div class="text-[11px] text-[#5E6862] mt-0.5 leading-snug">
-                您现在看到的是最新版公民 APP 移动视口界面。已为您签发专属电子配给卡与在册家庭成员。
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="text-[#8C958F] hover:text-[#1E3F35] text-xs p-1 cursor-pointer shrink-0"
-            @click="dismissDemoDoneBanner"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div class="pt-2 border-t border-[#E8D9BF] flex items-center justify-between gap-2">
-          <span class="text-[10px] text-[#966C2E] font-medium">下一步：进入 02 阶段配给选购与下单</span>
-          <el-button
-            type="primary"
-            size="small"
-            class="font-bold shadow-xs !bg-[#1E3F35] !border-[#1E3F35] text-white hover:!bg-[#2A594B]"
-            @click="handleProceedToStep2"
-          >
-            <span>继续 02 阶段：公民在线下单</span>
-            <el-icon class="ml-1"><Right /></el-icon>
-          </el-button>
-        </div>
-      </div>
-
       <!-- 1. 典雅电子配给卡 (Digital Ration Card) -->
       <div
         v-if="citizenStore.currentFamily"
@@ -942,7 +900,6 @@ import {
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { onTabMessage } from '../../utils/crossTabBus.js';
-import { isDemoActive, demoSubStep, setDemoStep, deactivateDemo } from '../../utils/demoState.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -958,19 +915,6 @@ const isAppMode = computed(() => {
   if (route.query.layout === 'web') return false;
   return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
 });
-
-// 全流程演示完成横幅控制
-const showDemoDoneBanner = ref(true);
-
-function dismissDemoDoneBanner() {
-  showDemoDoneBanner.value = false;
-  deactivateDemo();
-}
-
-function handleProceedToStep2() {
-  showDemoDoneBanner.value = false;
-  router.push('/warehouse?role=citizen&layout=app&tab=purchase');
-}
 
 // 公民电子配给卡弹窗与动态防伪凭证
 const cardModalVisible = ref(false);
