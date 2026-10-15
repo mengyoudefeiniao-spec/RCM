@@ -1,33 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
   <defs>
-    <linearGradient id="rcmBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563eb" />
-      <stop offset="50%" stop-color="#1d4ed8" />
-      <stop offset="100%" stop-color="#4338ca" />
-    </linearGradient>
-    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#f59e0b" />
-    </linearGradient>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25" flood-color="#0f172a" />
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3" flood-color="#142B24" />
     </filter>
   </defs>
-
-  <!-- 背景圆角矩形底座 -->
-  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#rcmBg)" filter="url(#shadow)" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.4" />
-
-  <!-- 芯片与配给卡几何轮廓线条 -->
-  <path d="M10 14h28a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V16a2 2 0 0 1 2-2z" fill="#1e293b" fill-opacity="0.25" stroke="#93c5fd" stroke-width="1" stroke-dasharray="2 1" />
-  
-  <!-- 麦穗/粮食保障微金徽记 (代表配给粮食保供) -->
-  <path d="M24 10c0 2-1.5 3.5-3 4 1.5.5 3 2 3 4 0-2 1.5-3.5 3-4-1.5-.5-3-2-3-4z" fill="url(#goldAccent)" opacity="0.9" />
-
-  <!-- RCM 专属几何字母徽标 -->
-  <text x="24" y="30.5" font-family="system-ui, -apple-system, sans-serif, 'Arial Black'" font-size="12" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">RCM</text>
-
-  <!-- 底部微芯片触点装饰 -->
-  <circle cx="16" cy="36" r="1.5" fill="#38bdf8" />
-  <circle cx="24" cy="36" r="1.5" fill="#38bdf8" />
-  <circle cx="32" cy="36" r="1.5" fill="#38bdf8" />
+  <!-- 圆形白底衬托底座 -->
+  <circle cx="24" cy="24" r="22" fill="#FFFFFF" stroke="#C59D5F" stroke-width="1.5" filter="url(#shadow)" />
+  <!-- 官方徽标图片 -->
+  <image href="/logo.png" x="4" y="4" width="40" height="40" preserveAspectRatio="xMidYMid meet" />
 </svg>

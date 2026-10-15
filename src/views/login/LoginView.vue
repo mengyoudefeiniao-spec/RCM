@@ -60,15 +60,19 @@
             : 'space-y-4 sm:space-y-5'
         ]"
       >
-        <!-- 官方徽标与标题 (只保留 Ration Card Management 描述) -->
-        <div class="text-center space-y-2">
+        <!-- 官方徽标与标题 (契合伊拉克配给卡官方体系) -->
+        <div class="text-center space-y-1.5">
           <div class="flex justify-center">
             <AppLogo size="lg" theme="light" />
           </div>
           <div>
+            <div class="text-xs font-bold text-[#C59D5F] font-sans" dir="rtl">البطاقة التموينية</div>
             <h2 class="text-base sm:text-lg font-bold text-[#18231E] tracking-normal">
               Ration Card Management
             </h2>
+            <div class="text-[9px] text-[#7A827D] font-mono tracking-wider mt-0.5">
+              REPUBLIC OF IRAQ · MINISTRY OF TRADE
+            </div>
           </div>
         </div>
 

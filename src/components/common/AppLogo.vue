@@ -1,52 +1,22 @@
 <template>
   <div class="app-logo flex items-center select-none" :class="[gapClass, inline ? 'inline-flex' : 'flex']">
-    <!-- SVG 核心 Logo 图标 -->
+    <!-- 官方核心 Logo 徽标 (用户上传伊拉克配给卡国徽麦穗图徽) -->
     <div
-      class="logo-icon relative shrink-0 transition-transform duration-300 hover:scale-105"
+      class="logo-icon relative shrink-0 transition-transform duration-300 hover:scale-105 flex items-center justify-center"
       :style="{ width: `${sizePx}px`, height: `${sizePx}px` }"
     >
-      <svg
-        viewBox="0 0 48 48"
-        class="w-full h-full drop-shadow-md"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      <!-- 高清徽标图片容器，自适应大小并带有精致光影 -->
+      <div
+        class="w-full h-full rounded-full flex items-center justify-center overflow-hidden bg-white/95 shadow-xs border border-[#C59D5F]/30"
+        :class="isDark ? 'ring-1 ring-[#C59D5F]/40' : 'ring-1 ring-slate-200/80'"
       >
-        <defs>
-          <linearGradient :id="`rcmGrad-${uniqueId}`" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#285447" />
-            <stop offset="50%" stop-color="#1E3F35" />
-            <stop offset="100%" stop-color="#142B24" />
-          </linearGradient>
-        </defs>
-
-        <!-- 外层圆角卡片底座 (保留 RCM 背景框以及深墨绿+暖砂金底色) -->
-        <rect
-          x="1.5"
-          y="1.5"
-          width="45"
-          height="45"
-          rx="12"
-          :fill="`url(#rcmGrad-${uniqueId})`"
-          stroke="#C59D5F"
-          stroke-width="1.4"
-          stroke-opacity="0.8"
+        <img
+          src="/logo.png"
+          alt="Ration Card Management Logo"
+          class="w-full h-full object-contain p-0.5 select-none pointer-events-none"
+          draggable="false"
         />
-
-        <!-- 纯粹的核心 RCM 字母造型，完美居中 -->
-        <text
-          x="24"
-          y="24"
-          text-anchor="middle"
-          dominant-baseline="central"
-          fill="#FFFFFF"
-          font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-          font-weight="900"
-          font-size="14.5"
-          letter-spacing="1"
-        >
-          RCM
-        </text>
-      </svg>
+      </div>
     </div>
 
     <!-- 文字排印区域：全称与缩写不并存，仅呈现品牌名称 -->
@@ -76,7 +46,7 @@ import { computed } from 'vue';
 const props = defineProps({
   size: {
     type: [String, Number],
-    default: 'md' // 'sm'(32), 'md'(38), 'lg'(48), 'xl'(60) 或直接数字像素
+    default: 'md' // 'sm'(32), 'md'(38), 'lg'(52), 'xl'(64) 或直接数字像素
   },
   showText: {
     type: Boolean,
@@ -108,16 +78,16 @@ const props = defineProps({
   }
 });
 
-const uniqueId = Math.random().toString(36).substring(2, 9);
 const isDark = computed(() => props.theme === 'dark');
 
 const sizePx = computed(() => {
   if (typeof props.size === 'number') return props.size;
   switch (props.size) {
+    case 'xs': return 26;
     case 'sm': return 32;
     case 'md': return 38;
-    case 'lg': return 52;
-    case 'xl': return 64;
+    case 'lg': return 56;
+    case 'xl': return 72;
     default: return parseInt(props.size) || 38;
   }
 });
