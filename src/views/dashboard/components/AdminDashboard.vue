@@ -426,9 +426,10 @@ function getTypeTag(type) {
  * 1. 公民结构与新增走势 (柱折混合图)
  */
 function renderCitizenTrendChart(citizens = {}) {
-  if (!citizenTrendChartRef.value) return;
+  const el = citizenTrendChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!citizenTrendChart) {
-    citizenTrendChart = echarts.init(citizenTrendChartRef.value);
+    citizenTrendChart = echarts.init(el);
   }
 
   const trend = citizens.growthTrend || { dates: [], newRegistered: [], biometricVerified: [] };
@@ -493,9 +494,10 @@ function renderCitizenTrendChart(citizens = {}) {
  * 2. 家庭规模与业务办理统计 (双柱状图)
  */
 function renderFamilyBusinessChart(families = {}) {
-  if (!familyBusinessChartRef.value) return;
+  const el = familyBusinessChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!familyBusinessChart) {
-    familyBusinessChart = echarts.init(familyBusinessChartRef.value);
+    familyBusinessChart = echarts.init(el);
   }
 
   const bStats = families.businessStats || [];
@@ -552,9 +554,10 @@ function renderFamilyBusinessChart(families = {}) {
  * 3. 代理商分布与服务负荷 (柱折混合图)
  */
 function renderAgentRegionChart(agents = {}) {
-  if (!agentRegionChartRef.value) return;
+  const el = agentRegionChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!agentRegionChart) {
-    agentRegionChart = echarts.init(agentRegionChartRef.value);
+    agentRegionChart = echarts.init(el);
   }
 
   const regions = agents.regionDistribution || [];
@@ -622,9 +625,10 @@ function renderAgentRegionChart(agents = {}) {
  * 4. 实际配给完成进度 (横向对比柱状图)
  */
 function renderRationDistributionChart(distribution = {}) {
-  if (!rationDistributionChartRef.value) return;
+  const el = rationDistributionChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!rationDistributionChart) {
-    rationDistributionChart = echarts.init(rationDistributionChartRef.value);
+    rationDistributionChart = echarts.init(el);
   }
 
   const commodities = distribution.commodities || [];
@@ -681,9 +685,10 @@ function renderRationDistributionChart(distribution = {}) {
  * 5. 投诉类型分类 (南丁格尔玫瑰图)
  */
 function renderComplaintPieChart(complaints = {}) {
-  if (!complaintPieChartRef.value) return;
+  const el = complaintPieChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!complaintPieChart) {
-    complaintPieChart = echarts.init(complaintPieChartRef.value);
+    complaintPieChart = echarts.init(el);
   }
 
   const list = complaints.categoryDistribution || [];
@@ -728,9 +733,10 @@ function renderComplaintPieChart(complaints = {}) {
  * 6. 投诉受理与办结趋势 (折线图)
  */
 function renderComplaintTrendChart(complaints = {}) {
-  if (!complaintTrendChartRef.value) return;
+  const el = complaintTrendChartRef.value;
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
   if (!complaintTrendChart) {
-    complaintTrendChart = echarts.init(complaintTrendChartRef.value);
+    complaintTrendChart = echarts.init(el);
   }
 
   const trend = complaints.trend || { dates: [], received: [], resolved: [], avgHours: [] };
@@ -820,12 +826,15 @@ async function loadData() {
     dashboardData.value = res || {};
 
     await nextTick();
-    renderCitizenTrendChart(dashboardData.value.citizens);
-    renderFamilyBusinessChart(dashboardData.value.families);
-    renderAgentRegionChart(dashboardData.value.agents);
-    renderRationDistributionChart(dashboardData.value.distribution);
-    renderComplaintPieChart(dashboardData.value.complaints);
-    renderComplaintTrendChart(dashboardData.value.complaints);
+    setTimeout(() => {
+      renderCitizenTrendChart(dashboardData.value.citizens);
+      renderFamilyBusinessChart(dashboardData.value.families);
+      renderAgentRegionChart(dashboardData.value.agents);
+      renderRationDistributionChart(dashboardData.value.distribution);
+      renderComplaintPieChart(dashboardData.value.complaints);
+      renderComplaintTrendChart(dashboardData.value.complaints);
+      handleResize();
+    }, 120);
   } catch (err) {
     console.error('加载管理角色数据看板失败:', err);
   }
