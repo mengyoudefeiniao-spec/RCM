@@ -27,9 +27,9 @@
             class="mt-3 w-full"
             @change="handleSearchSelect"
           >
-            <el-option v-for="p in provinceList" :key="p.id" :label="p.name" :value="p.name">
+            <el-option v-for="p in provinceList" :key="p.id" :label="provinceLabel(t, locale, p)" :value="p.name">
               <span class="flex justify-between items-center">
-                <span>{{ p.name }}</span>
+                <span>{{ provinceLabel(t, locale, p) }}</span>
                 <span class="text-[10px] text-[#8A9A8F] font-mono">{{ formatMetricValue(p[activeMetric]) }}</span>
               </span>
             </el-option>
@@ -121,7 +121,7 @@
       <aside class="hidden xl:flex flex-col w-[336px] shrink-0 bg-white border-l border-[#E4EAE5] overflow-y-auto">
         <div class="px-5 pt-5 pb-4 border-b border-[#EEF1EE]">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-[#152233]">{{ selectedProvince ? selectedProvince.name : $t('geoStats.nationalView') }}</h2>
+            <h2 class="text-lg font-bold text-[#152233]">{{ selectedProvince ? provinceLabel(t, locale, selectedProvince) : $t('geoStats.nationalView') }}</h2>
             <el-button v-if="selectedProvince" size="small" text @click="selectProvince(null)">
               <el-icon class="mr-1"><Back /></el-icon>{{ $t('geoStats.backToNational') }}
             </el-button>
@@ -238,7 +238,7 @@
           <el-collapse-item name="open">
             <template #title>
               <span class="text-sm font-bold text-[#152233] px-1">
-                {{ selectedProvince ? selectedProvince.name : $t('geoStats.nationalView') }} · {{ metricLabel(activeMetric) }}
+                {{ selectedProvince ? provinceLabel(t, locale, selectedProvince) : $t('geoStats.nationalView') }} · {{ metricLabel(activeMetric) }}
                 <b class="font-mono text-[#1E3A5F] ml-1">{{ formatMetricValue(displayStats[activeMetric]) }}</b>
               </span>
             </template>
@@ -275,8 +275,11 @@ import {
   getMetricLabel, NATIONAL_SUMMARY
 } from '../../mock/data/geoStatsData.js';
 import { useI18n } from 'vue-i18n';
+import {
+  commodityLabel, ageLabel, monthLabel, provinceLabel, tonAxisFormatter
+} from '../../utils/dataLabels.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
@@ -471,8 +474,9 @@ function onMapReady() {
 
 function tooltipHtml(prov) {
   if (!prov) return '';
+  const displayName = locale.value === 'zh' ? `${prov.name} ${prov.enName}` : prov.enName;
   return `<div style="font-family:inherit">
-    <div style="font-weight:700;font-size:12px;color:#152233">${prov.name} ${prov.enName}</div>
+    <div style="font-weight:700;font-size:12px;color:#152233">${displayName}</div>
     <div style="font-size:11px;color:#4A5A50;margin-top:2px">${metricLabel(activeMetric.value)}: <b style="font-family:monospace">${formatMetricValue(prov[activeMetric.value])}</b> ${activeMetricUnit.value}</div>
     <div style="font-size:10px;color:#8A9A8F">${t('scrollHome.warehouses')} ${prov.warehouseTotal} · ${t('scrollHome.agents')} ${formatInt(prov.agentCount)}</div>
   </div>`;
@@ -586,7 +590,7 @@ function renderPanelCharts() {
   if (!stats) return;
   nextTick(() => {
     // 月度趋势
-    const months = stats.monthlyTrend.map(m => m.month);
+    const months = stats.monthlyTrend.map(m => monthLabel(t, locale.value, m.month));
     const quota = stats.monthlyTrend.map(m => m.quotaTon);
     const actual = stats.monthlyTrend.map(m => m.actualTon);
     const trendOption = {
@@ -594,7 +598,7 @@ function renderPanelCharts() {
       tooltip: { trigger: 'axis', valueFormatter: (v) => formatInt(v) + ' t' },
       legend: { top: 0, right: 0, itemWidth: 10, itemHeight: 8, textStyle: { fontSize: 9, color: '#58685D' } },
       xAxis: { type: 'category', data: months, ...chartAxis },
-      yAxis: { type: 'value', ...chartAxis, axisLabel: { ...chartAxis.axisLabel, formatter: (v) => v >= 10000 ? (v / 10000) + '万' : v } },
+      yAxis: { type: 'value', ...chartAxis, axisLabel: { ...chartAxis.axisLabel, formatter: tonAxisFormatter(locale.value) } },
       series: [
         { name: t('geoStats.quotaShort'), type: 'bar', data: quota, barWidth: 8, itemStyle: { color: '#C9D8CD', borderRadius: [2, 2, 0, 0] } },
         { name: t('geoStats.actualShort'), type: 'line', data: actual, smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#1E3A5F' } }
@@ -619,7 +623,7 @@ function renderPanelCharts() {
         grid: { left: 74, right: 40, top: 6, bottom: 18 },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) },
         xAxis: { type: 'value', ...chartAxis },
-        yAxis: { type: 'category', data: age.map(a => a.name).reverse(), ...chartAxis },
+        yAxis: { type: 'category', data: age.map(a => ageLabel(t, a.name)).reverse(), ...chartAxis },
         series: [{
           type: 'bar', barWidth: 10,
           data: age.map(a => a.value).reverse(),
@@ -638,7 +642,7 @@ function renderPanelCharts() {
         grid: { left: 52, right: 46, top: 6, bottom: 18 },
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) + ' t' },
         xAxis: { type: 'value', ...chartAxis },
-        yAxis: { type: 'category', data: items.map(i => i.name).reverse(), ...chartAxis },
+        yAxis: { type: 'category', data: items.map(i => commodityLabel(t, i.name)).reverse(), ...chartAxis },
         series: [{
           type: 'bar', barWidth: 9,
           data: items.map(i => i.provinceTon).reverse(),

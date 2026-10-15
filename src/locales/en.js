@@ -2389,6 +2389,12 @@ export default {
     "regulatory": "Regulatory Compliance",
     "frozen": "Frozen"
   },
+  "dataLabels": {
+    "commodity": { "flour": "Flour", "rice": "Rice", "oil": "Vegetable Oil", "sugar": "Sugar", "milkPowder": "Milk Powder", "salt": "Salt" },
+    "age": { "child": "Ages 0-14", "working": "Ages 15-59", "senior": "Ages 60+" },
+    "family": { "f12": "1-2 members", "f34": "3-4 members", "f56": "5-6 members", "f7p": "7+ members" },
+    "months": { "m5": "May", "m6": "Jun", "m7": "Jul", "m8": "Aug", "m9": "Sep", "m10": "Oct" }
+  },
   "scrollHome": {
     "nav": {
       "sec-overview": "Overview",
@@ -2429,7 +2435,7 @@ export default {
     "whereFamiliesLive": "Where Families Live",
     "urban": "Urban",
     "rural": "Rural",
-    "populationInsight": "Baghdad alone accounts for {n} people of the national ration population — resources keep tilting toward densely populated governorates.",
+    "populationInsight": "{p} alone accounts for {n} people of the national ration population — resources keep tilting toward densely populated governorates.",
     "familySizeDist": "Family Size Distribution",
     "distributionTag": "DISTRIBUTION",
     "distributionTitle": "Provincial Progress & Quota Deviation",

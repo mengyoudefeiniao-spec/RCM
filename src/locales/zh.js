@@ -2389,6 +2389,12 @@ export default {
     "regulatory": "监管合规冻结",
     "frozen": "已冻结"
   },
+  "dataLabels": {
+    "commodity": { "flour": "小麦粉", "rice": "大米", "oil": "食用油", "sugar": "白糖", "milkPowder": "奶粉", "salt": "食盐" },
+    "age": { "child": "0-14岁", "working": "15-59岁", "senior": "60岁及以上" },
+    "family": { "f12": "1-2人家庭", "f34": "3-4人家庭", "f56": "5-6人家庭", "f7p": "7人及以上家庭" },
+    "months": { "m5": "5月", "m6": "6月", "m7": "7月", "m8": "8月", "m9": "9月", "m10": "10月" }
+  },
   "scrollHome": {
     "nav": {
       "sec-overview": "配给总览",

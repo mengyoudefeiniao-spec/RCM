@@ -1,0 +1,1 @@
+import{_ as e}from"./AgentG2BPanel-YNgdis3-.js";import{o as r,c as t,b as o}from"./index-CaNhWZfc.js";import"./agent-D0j5NECv.js";import"./ElectronicPaymentDialog-dewh0kBc.js";const s={class:"agent-orders-view space-y-4"},d={__name:"AgentOrdersView",setup(a){return(c,_)=>(r(),t("div",s,[o(e)]))}};export{d as default};

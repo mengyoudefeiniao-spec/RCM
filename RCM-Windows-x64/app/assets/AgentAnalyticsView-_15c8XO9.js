@@ -1,0 +1,1 @@
+import{_ as e}from"./AgentInventoryLedger-2BcvBU8I.js";import{o as a,c as t,b as s}from"./index-CaNhWZfc.js";const c={class:"agent-analytics-view space-y-4"},m={__name:"AgentAnalyticsView",setup(o){return(n,_)=>(a(),t("div",c,[s(e)]))}};export{m as default};

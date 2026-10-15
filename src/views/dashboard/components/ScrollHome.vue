@@ -109,7 +109,7 @@
                 </div>
               </div>
               <div class="mt-4 bg-white rounded-lg border border-[#EAEFEA] p-3 text-xs text-[#4A5A50] leading-relaxed">
-                {{ $t('scrollHome.populationInsight', { n: formatInt(topProvince.population), p: topProvince.name }) }}
+                {{ $t('scrollHome.populationInsight', { n: formatInt(topProvince.population), p: provinceLabel(t, locale, topProvince) }) }}
               </div>
             </div>
             <div class="bg-[#FAFBFA] rounded-xl border border-[#EAEFEA] p-5">
@@ -149,7 +149,7 @@
               <h4 class="text-xs font-bold text-[#6B5A2E] uppercase tracking-widest mb-2">{{ $t('scrollHome.quotaStandard') }}</h4>
               <div class="space-y-2">
                 <div v-for="item in rationStandards" :key="item.name" class="flex items-center gap-3">
-                  <span class="text-xs text-[#4A4230] w-14 shrink-0">{{ item.name }}</span>
+                  <span class="text-xs text-[#4A4230] w-20 shrink-0">{{ commodityLabel(t, item.name) }}</span>
                   <div class="flex-1 h-2 rounded-full bg-[#EFE8D5] overflow-hidden">
                     <div class="h-full rounded-full bg-gradient-to-r from-[#C8A45C] to-[#E0C288]" :style="{ width: (item.kgPerPerson / maxStandardKg * 100) + '%' }"></div>
                   </div>
@@ -206,7 +206,7 @@
                   >
                     <td class="px-4 py-2.5 text-[#8A9A8F] font-mono">{{ i + 1 }}</td>
                     <td class="px-4 py-2.5 font-medium text-[#152233]">
-                      {{ p.name }}
+                      {{ provinceLabel(t, locale, p) }}
                       <el-tag v-if="p.isArticle140" size="small" effect="plain" type="warning" class="ml-1 !text-[9px] !px-1">140</el-tag>
                     </td>
                     <td class="px-4 py-2.5 text-right font-mono">{{ p.warehouseTotal }}</td>
@@ -272,8 +272,11 @@ import {
 } from '../../../mock/data/geoStatsData.js';
 import { MOCK_ADMIN_DASHBOARD_DATA } from '../../../mock/data/dashboardData.js';
 import { useI18n } from 'vue-i18n';
+import {
+  commodityLabel, ageLabel, familyLabel, monthLabel, provinceLabel, tonAxisFormatter
+} from '../../../utils/dataLabels.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const router = useRouter();
 
 const emit = defineEmits(['switch-mode']);
@@ -322,15 +325,15 @@ const initedCharts = new Set();
 
 function renderTrend() {
   trendChart = echarts.init(trendChartRef.value);
-  const months = PROVINCE_STATS[0].monthlyTrend.map(m => m.month);
-  const quota = months.map((m, i) => PROVINCE_STATS.reduce((a, p) => a + p.monthlyTrend[i].quotaTon, 0));
-  const actual = months.map((m, i) => PROVINCE_STATS.reduce((a, p) => a + p.monthlyTrend[i].actualTon, 0));
+  const months = PROVINCE_STATS[0].monthlyTrend.map(m => monthLabel(t, locale.value, m.month));
+  const quota = PROVINCE_STATS[0].monthlyTrend.map((m, i) => PROVINCE_STATS.reduce((a, p) => a + p.monthlyTrend[i].quotaTon, 0));
+  const actual = PROVINCE_STATS[0].monthlyTrend.map((m, i) => PROVINCE_STATS.reduce((a, p) => a + p.monthlyTrend[i].actualTon, 0));
   trendChart.setOption({
     grid: { left: 56, right: 16, top: 30, bottom: 24 },
     legend: { data: [t('scrollHome.quotaLegend'), t('scrollHome.actualLegend')], top: 0, textStyle: { color: '#58685D', fontSize: 11 }, itemWidth: 14 },
     tooltip: { trigger: 'axis', valueFormatter: (v) => formatInt(v) + ' t' },
     xAxis: { type: 'category', data: months, ...chartAxis },
-    yAxis: { type: 'value', ...chartAxis, axisLabel: { ...chartAxis.axisLabel, formatter: (v) => (v / 10000) + '万' } },
+    yAxis: { type: 'value', ...chartAxis, axisLabel: { ...chartAxis.axisLabel, formatter: tonAxisFormatter(locale.value) } },
     series: [
       { name: t('scrollHome.quotaLegend'), type: 'bar', data: quota, itemStyle: { color: '#B9CDBD', borderRadius: [3, 3, 0, 0] }, barWidth: 18 },
       { name: t('scrollHome.actualLegend'), type: 'line', data: actual, smooth: true, symbolSize: 6, lineStyle: { width: 3, color: C.green }, itemStyle: { color: C.green } }
@@ -342,10 +345,10 @@ function renderCommodity() {
   commodityChart = echarts.init(commodityChartRef.value);
   const items = MOCK_ADMIN_DASHBOARD_DATA.quarter.distribution.commodities;
   commodityChart.setOption({
-    grid: { left: 60, right: 40, top: 8, bottom: 24 },
+    grid: { left: 84, right: 40, top: 8, bottom: 24 },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) + ' t' },
     xAxis: { type: 'value', ...chartAxis },
-    yAxis: { type: 'category', data: items.map(i => i.name).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
+    yAxis: { type: 'category', data: items.map(i => commodityLabel(t, i.name)).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
     series: [
       { name: t('scrollHome.plannedLegend'), type: 'bar', data: items.map(i => i.plannedTon).reverse(), barWidth: 8, itemStyle: { color: '#D5DFD7', borderRadius: 4 }, barGap: '-100%' },
       { name: t('scrollHome.actualLegend'), type: 'bar', data: items.map(i => i.actualTon).reverse(), barWidth: 8, itemStyle: { color: C.green, borderRadius: 4 } }
@@ -360,7 +363,7 @@ function renderAge() {
     grid: { left: 130, right: 60, top: 10, bottom: 24 },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) },
     xAxis: { type: 'value', ...chartAxis },
-    yAxis: { type: 'category', data: age.map(a => a.name).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
+    yAxis: { type: 'category', data: age.map(a => ageLabel(t, a.name)).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
     series: [{
       type: 'bar',
       data: age.map(a => a.value).reverse(),
@@ -376,9 +379,9 @@ function renderFamily() {
   const fam = MOCK_ADMIN_DASHBOARD_DATA.quarter.families.sizeDistribution;
   familyChart.setOption({
     grid: { left: 110, right: 56, top: 8, bottom: 24 },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) + ' 户' },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => formatInt(v) + ' ' + t('scrollHome.householdsUnit') },
     xAxis: { type: 'value', ...chartAxis },
-    yAxis: { type: 'category', data: fam.map(f => f.name).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
+    yAxis: { type: 'category', data: fam.map(f => familyLabel(t, f.name)).reverse(), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50' } },
     series: [{
       type: 'bar',
       data: fam.map(f => f.count).reverse(),
@@ -396,7 +399,7 @@ function renderProvinceChart() {
     grid: { left: 90, right: 70, top: 10, bottom: 30 },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: (v) => v + ' %' },
     xAxis: { type: 'value', min: 95, max: 100, ...chartAxis },
-    yAxis: { type: 'category', data: sorted.map(p => p.name), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50', fontSize: 11 } },
+    yAxis: { type: 'category', data: sorted.map(p => provinceLabel(t, locale.value, p)), ...chartAxis, axisLabel: { ...chartAxis.axisLabel, color: '#4A5A50', fontSize: 11 } },
     series: [{
       type: 'bar',
       data: sorted.map(p => p.fulfillmentRate),

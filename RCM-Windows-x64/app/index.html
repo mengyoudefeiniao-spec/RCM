@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#326445" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Ration Card Management (RCM) - جمهورية العراق</title>
+    <meta name="description" content="Ration Card Management (RCM) - جمهورية العراق - وزارة التجارة" />
+    <style>
+      /* 原生首屏冷启动秒开过渡层样式 (在 JS / Vue 尚未加载解析完毕前生效) */
+      #app-skeleton-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #326445;
+        background: radial-gradient(circle at 50% 40%, #2F5B44 0%, #326445 60%, #2A5440 100%);
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        user-select: none;
+        overflow: hidden;
+      }
+      .skeleton-splash-header {
+        height: 48px;
+        width: 100%;
+      }
+      .skeleton-splash-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0 24px;
+        margin-top: -30px;
+      }
+      .skeleton-logo-card {
+        width: 120px;
+        height: 120px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(62, 138, 94, 0.4));
+        animation: skeletonPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .skeleton-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .skeleton-title-ar {
+        font-size: 24px;
+        font-weight: 900;
+        color: #FDF3E0;
+        letter-spacing: 0.5px;
+        margin: 0 0 4px 0;
+        direction: rtl;
+      }
+      .skeleton-title-en {
+        font-size: 14px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 0 0 10px 0;
+      }
+      .skeleton-org-ar {
+        font-size: 11px;
+        color: #D3AF62;
+        font-weight: 500;
+        margin: 0;
+      }
+      .skeleton-org-en {
+        font-size: 9px;
+        color: #AECBB8;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 3px;
+        font-family: monospace;
+      }
+      .skeleton-splash-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 48px;
+      }
+      .skeleton-progress-track {
+        width: 160px;
+        height: 4px;
+        border-radius: 9999px;
+        background-color: #17332A;
+        border: 1px solid rgba(211, 175, 98, 0.25);
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .skeleton-progress-bar {
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, #A98A45, #E5CEA1, #D3AF62);
+        animation: skeletonProgress 1s ease-in-out infinite alternate;
+      }
+      .skeleton-status-text {
+        font-size: 11px;
+        color: #AECBB8;
+        font-family: monospace;
+        letter-spacing: 1px;
+      }
+      @keyframes skeletonPop {
+        0% { opacity: 0; transform: scale(0.85); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes skeletonProgress {
+        0% { width: 10%; transform: translateX(-20%); }
+        100% { width: 100%; transform: translateX(0%); }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-CaNhWZfc.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-ChxHtj_Q.css">
+  </head>
+  <body class="bg-[#F3F8F4] text-[#1B3123] font-sans antialiased overflow-x-hidden selection:bg-[#326445] selection:text-white">
+    <div id="app">
+      <!-- 纯原生首屏冷启动骨架启动页 (秒开过渡，Vue mount 后即被完全接管) -->
+      <div id="app-skeleton-splash">
+        <div class="skeleton-splash-header"></div>
+        <div class="skeleton-splash-center">
+          <div class="skeleton-logo-card">
+            <img src="/logo.svg" alt="Official Logo" class="skeleton-logo-img" />
+          </div>
+          <h1 class="skeleton-title-ar">البطاقة التموينية</h1>
+          <h2 class="skeleton-title-en">Ration Card Management</h2>
+          <p class="skeleton-org-ar">جمهورية العراق · وزارة التجارة</p>
+          <p class="skeleton-org-en">Republic of Iraq · Ministry of Trade</p>
+        </div>
+        <div class="skeleton-splash-footer">
+          <div class="skeleton-progress-track">
+            <div class="skeleton-progress-bar"></div>
+          </div>
+          <div class="skeleton-status-text" id="skeleton-status-text">系统初始化中…</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // 首屏过渡层国际化：在 Vue/i18n 尚未加载前同步读取持久化语言偏好（与 src/locales/index.js 的 rcm_language 键保持一致）
+      (function () {
+        var langMap = {
+          zh: '系统初始化中…',
+          en: 'System Initializing...',
+          ar: 'جارٍ تهيئة النظام...',
+          ku: 'سیستەم ئامادە دەکات...'
+        };
+        var lang = 'zh';
+        try {
+          var saved = window.localStorage && window.localStorage.getItem('rcm_language');
+          if (saved && langMap[saved]) lang = saved;
+        } catch (e) { /* 隐私模式下 localStorage 不可用时保持默认 */ }
+        var el = document.getElementById('skeleton-status-text');
+        if (el) el.textContent = langMap[lang];
+        document.documentElement.setAttribute('lang', lang);
+      })();
+    </script>
+  </body>
+</html>
