@@ -2393,7 +2393,10 @@ export default {
     "commodity": { "flour": "小麦粉", "rice": "大米", "oil": "食用油", "sugar": "白糖", "milkPowder": "奶粉", "salt": "食盐" },
     "age": { "child": "0-14岁", "working": "15-59岁", "senior": "60岁及以上" },
     "family": { "f12": "1-2人家庭", "f34": "3-4人家庭", "f56": "5-6人家庭", "f7p": "7人及以上家庭" },
-    "months": { "m5": "5月", "m6": "6月", "m7": "7月", "m8": "8月", "m9": "9月", "m10": "10月" }
+    "months": { "m5": "5月", "m6": "6月", "m7": "7月", "m8": "8月", "m9": "9月", "m10": "10月" },
+    "units": { "ton": "吨", "kgPersonMonth": "kg/人/月", "percent": "%", "people": "人", "households": "户", "perKm2": "人/km²", "sites": "座", "outlets": "个", "householdsPerOutlet": "户/网点" },
+    "pointWarehouse": "{province}第{seq}配给储备中心",
+    "pointAgent": "{province}代理网点 {seq}"
   },
   "scrollHome": {
     "nav": {

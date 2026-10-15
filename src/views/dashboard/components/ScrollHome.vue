@@ -273,7 +273,8 @@ import {
 import { MOCK_ADMIN_DASHBOARD_DATA } from '../../../mock/data/dashboardData.js';
 import { useI18n } from 'vue-i18n';
 import {
-  commodityLabel, ageLabel, familyLabel, monthLabel, provinceLabel, tonAxisFormatter
+  commodityLabel, ageLabel, familyLabel, monthLabel, provinceLabel, tonAxisFormatter,
+  facilityPointLabel
 } from '../../../utils/dataLabels.js';
 
 const { t, locale } = useI18n();
@@ -441,7 +442,7 @@ function initNetworkMap() {
         radius: 3.5,
         color: '#FFFFFF', weight: 0.6,
         fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.9
-      }).addTo(networkMap).bindTooltip(`${pt.name} · ${pt.households || 0} 户`, { direction: 'top' });
+      }).addTo(networkMap).bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households || 0} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
     } else {
       L.circleMarker([pt.lat, pt.lng], {
         radius: 2.2, stroke: false,

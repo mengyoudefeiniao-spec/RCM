@@ -276,7 +276,8 @@ import {
 } from '../../mock/data/geoStatsData.js';
 import { useI18n } from 'vue-i18n';
 import {
-  commodityLabel, ageLabel, monthLabel, provinceLabel, tonAxisFormatter
+  commodityLabel, ageLabel, monthLabel, provinceLabel, tonAxisFormatter,
+  unitLabel, facilityPointLabel
 } from '../../utils/dataLabels.js';
 
 const { t, locale } = useI18n();
@@ -331,7 +332,7 @@ const NATIONAL_SUMMARY_PROXIED = computed(() => {
 
 // ============ 指标配置 ============
 const activeMetricConfig = computed(() => allMetrics.find(m => m.key === activeMetric.value) || allMetrics[0]);
-const activeMetricUnit = computed(() => activeMetricConfig.value.unit);
+const activeMetricUnit = computed(() => unitLabel(t, activeMetricConfig.value.unit));
 const metricLabel = (key) => t(`geoStats.metrics.${key}`) !== `geoStats.metrics.${key}` ? t(`geoStats.metrics.${key}`) : getMetricLabel(key);
 const formatInt = (n) => Number(n || 0).toLocaleString('en-US');
 const formatMetricValue = (v) => {
@@ -456,7 +457,7 @@ function onMapReady() {
         color: '#FFFFFF', weight: 0.8,
         fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.92
       });
-      marker.bindTooltip(`${pt.name} · ${pt.households} 户`, { direction: 'top' });
+      marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
       marker.on('click', () => selectProvince(pt.province));
       target.addLayer(marker);
     } else {
@@ -464,7 +465,7 @@ function onMapReady() {
         radius: 2.5, stroke: false,
         fillColor: '#1E3A5F', fillOpacity: 0.7
       });
-      marker.bindTooltip(`${pt.name} · ${pt.households} 户`, { direction: 'top' });
+      marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
       marker.on('click', () => selectProvince(pt.province));
       target.addLayer(marker);
     }

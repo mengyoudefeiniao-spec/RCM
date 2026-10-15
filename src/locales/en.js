@@ -2393,7 +2393,10 @@ export default {
     "commodity": { "flour": "Flour", "rice": "Rice", "oil": "Vegetable Oil", "sugar": "Sugar", "milkPowder": "Milk Powder", "salt": "Salt" },
     "age": { "child": "Ages 0-14", "working": "Ages 15-59", "senior": "Ages 60+" },
     "family": { "f12": "1-2 members", "f34": "3-4 members", "f56": "5-6 members", "f7p": "7+ members" },
-    "months": { "m5": "May", "m6": "Jun", "m7": "Jul", "m8": "Aug", "m9": "Sep", "m10": "Oct" }
+    "months": { "m5": "May", "m6": "Jun", "m7": "Jul", "m8": "Aug", "m9": "Sep", "m10": "Oct" },
+    "units": { "ton": "t", "kgPersonMonth": "kg/person/mo", "percent": "%", "people": "people", "households": "families", "perKm2": "people/km²", "sites": "sites", "outlets": "outlets", "householdsPerOutlet": "families/outlet" },
+    "pointWarehouse": "{province} Ration Storage Center {seq}",
+    "pointAgent": "{province} Agent Outlet {seq}"
   },
   "scrollHome": {
     "nav": {

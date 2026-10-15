@@ -192,6 +192,7 @@ function buildFacilityPoints() {
       pts.push({
         id: `WH-${p.id}-${String(seq++).padStart(3, '0')}`,
         name: `${p.name}第${i + 1}配给储备中心`,
+        seq: i + 1,
         province: p.name,
         type: 'warehouse',
         status: isVacant ? 'vacant' : 'assigned',
@@ -208,6 +209,7 @@ function buildFacilityPoints() {
       pts.push({
         id: `AGT-${p.id}-${String(i + 1).padStart(3, '0')}`,
         name: `${p.name}代理网点 ${String(i + 1).padStart(2, '0')}`,
+        seq: i + 1,
         province: p.name,
         type: 'agent',
         households: 450 + Math.round(rnd() * 1050),

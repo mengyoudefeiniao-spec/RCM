@@ -30,6 +30,38 @@ const FAMILY_KEYS = {
   '7人及以上多代家庭': 'f7p'
 };
 
+const UNIT_KEYS = {
+  '吨': 'ton',
+  'kg/人/月': 'kgPersonMonth',
+  '%': 'percent',
+  '人': 'people',
+  '户': 'households',
+  '人/km²': 'perKm2',
+  '座': 'sites',
+  '个': 'outlets',
+  '户/网点': 'householdsPerOutlet'
+};
+
+/** 统计单位: 吨 → t */
+export function unitLabel(t, unit) {
+  const key = UNIT_KEYS[unit];
+  if (!key) return unit;
+  const i18nKey = `dataLabels.units.${key}`;
+  const res = t(i18nKey);
+  return res === i18nKey ? unit : res;
+}
+
+/** 配给设施点位名称: 苏莱曼尼亚省第15配给储备中心 → Sulaymaniyah Ration Storage Center 15 */
+export function facilityPointLabel(t, locale, pt) {
+  const prov = getProvinceStatsByName(pt.province);
+  const province = provinceLabel(t, locale, prov || pt.province);
+  const kind = pt.type === 'agent' ? 'pointAgent' : 'pointWarehouse';
+  const i18nKey = `dataLabels.${kind}`;
+  let res = t(i18nKey, { province, seq: pt.seq });
+  if (res === i18nKey) res = pt.name;
+  return res;
+}
+
 function lookup(t, prefix, name, map) {
   const key = map[name];
   if (!key) return name;
