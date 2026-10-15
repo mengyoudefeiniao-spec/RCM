@@ -2461,6 +2461,7 @@ export default {
   },
   "geoStats": {
     "title": "Ration Geo-Stats",
+    "backToDashboard": "Back to Dashboard",
     "searchPlaceholder": "Search governorate...",
     "legend": "Legend",
     "currentMetric": "Current Metric",

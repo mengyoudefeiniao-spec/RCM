@@ -8,11 +8,17 @@
             <div class="w-7 h-7 rounded-lg bg-[#1E3A5F] flex items-center justify-center text-white">
               <el-icon class="text-sm"><DataAnalysis /></el-icon>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
               <div class="text-sm font-bold text-[#152233] leading-none">{{ $t('geoStats.title') }}</div>
               <div class="text-[10px] text-[#8A9A8F] mt-1">IRAQ RATION GEO-STATS</div>
             </div>
           </div>
+          <button
+            class="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs text-[#4A5A50] bg-[#F7FAF8] hover:bg-[#EEF3EF] border border-[#E4EAE5] transition-colors"
+            @click="goBackDashboard"
+          >
+            <el-icon :size="12"><Back /></el-icon>{{ $t('geoStats.backToDashboard') }}
+          </button>
           <el-select
             v-model="searchProvinceName"
             filterable clearable
@@ -258,7 +264,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import * as echarts from 'echarts';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -272,6 +278,11 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
+
+function goBackDashboard() {
+  router.push('/dashboard');
+}
 
 // ============ 状态 ============
 const themes = GEO_STAT_THEMES;

@@ -22,11 +22,12 @@
 
       <!-- 2. 主工作区：仅在 app 内下滑，完全不滚动外层浏览器 -->
       <main
-        class="flex-1 w-full mx-auto overflow-y-auto overflow-x-hidden min-h-0 custom-pixel-scrollbar"
+        class="flex-1 w-full mx-auto min-h-0 custom-pixel-scrollbar"
         :class="[
-          isAppMode
-            ? 'px-0 py-0 pb-16'
-            : (isWideLayout ? 'max-w-[1720px] px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8' : 'max-w-7xl px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8')
+          isAppMode ? 'overflow-y-auto overflow-x-hidden px-0 py-0 pb-16' : '',
+          !isAppMode
+            ? (isWideLayout ? 'max-w-[1720px] px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8' : 'max-w-7xl px-0 sm:px-6 py-0 sm:py-6 pb-20 sm:pb-8')
+            : ''
         ]"
       >
         <router-view v-slot="{ Component }">
@@ -83,7 +84,7 @@ const isAppMode = computed(() => {
 });
 
 const isWideLayout = computed(() => {
-  return ['/admin', '/dashboard', '/warehouse', '/family-agent', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
+  return ['/admin', '/dashboard', '/stats', '/warehouse', '/family-agent', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
 });
 </script>
 

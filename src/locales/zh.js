@@ -2461,6 +2461,7 @@ export default {
   },
   "geoStats": {
     "title": "配给地理统计",
+    "backToDashboard": "返回数据看板",
     "searchPlaceholder": "搜索省份...",
     "legend": "图例",
     "currentMetric": "当前指标",

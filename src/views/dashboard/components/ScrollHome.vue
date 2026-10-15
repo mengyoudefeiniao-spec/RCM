@@ -1,7 +1,7 @@
 <template>
   <div class="scroll-home -mt-0 sm:-mt-6 -mx-0 sm:-mx-6 -mb-0 sm:-mb-6 bg-[#FDFDFB]">
     <!-- ============ 顶部吸附区块导航 (参考 Iraq Census GeoPortal) ============ -->
-    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-[#E8EDE9]">
+    <nav class="sticky top-[65px] z-[50] bg-white/90 backdrop-blur border-b border-[#E8EDE9]">
       <div class="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto no-scrollbar h-11">
         <button
           v-for="s in sections"
@@ -23,7 +23,7 @@
     </nav>
 
     <!-- ============ HERO: 卫星地图沉浸首屏 ============ -->
-    <section id="sec-hero" class="relative h-[calc(100vh-140px)] min-h-[540px] overflow-hidden bg-[#1B2A33]">
+    <section id="sec-hero" class="relative isolate z-0 h-[calc(100vh-140px)] min-h-[540px] overflow-hidden bg-[#1B2A33]">
       <div ref="heroMapRef" class="absolute inset-0 z-0"></div>
       <!-- 渐变遮罩 -->
       <div class="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-black/30"></div>
@@ -170,7 +170,7 @@
         <h2 class="text-2xl sm:text-4xl font-bold text-[#152233] mt-2 mb-8">{{ $t('scrollHome.networkTitle') }}</h2>
 
         <div class="grid lg:grid-cols-2 gap-6 items-stretch">
-          <div class="rounded-xl overflow-hidden border border-[#EAEFEA] shadow-sm relative min-h-[420px]">
+          <div class="rounded-xl overflow-hidden border border-[#EAEFEA] shadow-sm relative isolate z-0 min-h-[420px]">
             <div ref="networkMapRef" class="absolute inset-0"></div>
             <div class="absolute top-3 left-3 z-[500] bg-white/95 rounded-lg shadow px-3 py-2 space-y-1.5">
               <div class="flex items-center gap-2 text-[11px] text-[#4A5A50]"><span class="w-2.5 h-2.5 rounded-sm bg-[#2F7A50] inline-block"></span>{{ $t('scrollHome.activeWarehouse') }} <b class="font-mono">{{ formatInt(national.warehouseTotal - national.warehouseVacant) }}</b></div>
