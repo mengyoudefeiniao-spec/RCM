@@ -108,6 +108,7 @@
           ref="scanCtaBtnRef"
           type="button"
           class="rcm-btn-cta-gold relative overflow-hidden group shadow-md"
+          data-demo-target="btn-scan-verify"
           @click="handleTriggerScan"
         >
           <!-- 几何暗纹装饰底纹 -->
@@ -319,7 +320,7 @@
       append-to-body
       class="mobile-scan-dialog"
     >
-      <div class="space-y-3.5 text-center">
+      <div class="space-y-3.5 text-center" data-demo-target="scan-viewfinder">
         <!-- 扫码取景框模拟 -->
         <div class="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-2xl bg-black/95 overflow-hidden border-2 border-[#D3A757] shadow-inner flex items-center justify-center">
           <!-- 激光扫描线 -->
@@ -436,10 +437,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
+import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 import {
   CircleCheck,
   FullScreen,
@@ -500,9 +502,20 @@ onMounted(() => {
     ElMessage.success(`${t('mobileAgent.toastOrderReceived')} [#${newOrder.id}]，${newOrder.headName} ${t('mobileAgent.toastCitizenClaimed')}`);
   });
 
-  // 若路由指定进入扫码核销，自动弹出扫码取景框
-  if (route.query.action === 'scan' || route.query.tab === 'verify') {
+  // 演示模式：URL 携带 demo 参数时激活 06 阶段引导（不自动弹扫码窗，由引导提示用户点击）
+  if (route.query.demo === 'true') {
+    activateDemo(String(route.query.demoStep || 'step6_1'));
+  } else if (route.query.action === 'scan' || route.query.tab === 'verify') {
+    // 若路由指定进入扫码核销，自动弹出扫码取景框
     handleTriggerScan();
+  }
+});
+
+// 演示模式：组件已挂载时 URL 变更携带新演示步骤，同步引导子步骤
+watch(() => route.query, (q) => {
+  if (q.demo === 'true' && isDemoActive.value) {
+    const step = String(q.demoStep || 'step6_1');
+    if (step && step !== demoSubStep.value) setDemoStep(step);
   }
 });
 
@@ -583,11 +596,15 @@ const distributionRecords = computed(() => {
 function handleTriggerScan() {
   triggerPressEffect();
   scanDialogVisible.value = true;
+  // 演示模式 06-1：点击「扫码核销」弹出扫描窗口后，推进至 06-2
+  if (isDemoActive.value && demoSubStep.value === 'step6_1') setDemoStep('step6_2');
 }
 
 function handleConfirmSimulatedScan() {
   scanDialogVisible.value = false;
   ElMessage.success(t('mobileAgent.toastVerifySuccess'));
+  // 演示模式 06-2：扫描公民二维码确认收货完成后，进入全流程演示完成提示
+  if (isDemoActive.value && demoSubStep.value === 'step6_2') setDemoStep('step6_done');
   // 动效增加发放数
   countDispatched.animateTo(129);
   countRemaining.animateTo(341);

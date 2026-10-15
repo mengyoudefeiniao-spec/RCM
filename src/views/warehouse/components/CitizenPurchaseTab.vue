@@ -136,7 +136,7 @@
           </div>
 
           <div :class="isAppMode ? 'grid grid-cols-2 gap-2 w-full' : 'flex items-center gap-2'">
-            <el-button size="small" type="primary" plain class="!m-0 w-full" @click="handleFillAllQuota">
+            <el-button size="small" type="primary" plain class="!m-0 w-full" data-demo-target="btn-fill-quota" @click="handleFillAllQuota">
               <el-icon class="mr-1"><Check /></el-icon>
               {{ $t('citizenPurchase.fillAllQuota') }}
             </el-button>
@@ -278,6 +278,7 @@
             type="primary"
             size="large"
             class="font-bold shadow-xs !h-11 rounded-xl"
+            data-demo-target="btn-next-delivery"
             :class="isAppMode ? 'w-full !m-0 text-sm' : 'px-6'"
             :disabled="totalSelectedWeight <= 0"
             @click="handleProceedToStep2"
@@ -356,12 +357,13 @@
           <!-- 方式 B: 送货上门 -->
           <div
             class="border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between space-y-3"
+            data-demo-target="card-home-delivery"
             :class="
               deliveryType === 'HOME_DELIVERY'
                 ? 'border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-500/20 shadow-xs'
                 : 'border-slate-200 hover:border-slate-300 bg-white'
             "
-            @click="deliveryType = 'HOME_DELIVERY'"
+            @click="handleSelectHomeDelivery"
           >
             <!-- 头部：图标、标题与费用标签 (左右两侧均防换行和溢出) -->
             <div class="flex items-center justify-between gap-2">
@@ -433,7 +435,7 @@
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
 
-          <el-button type="primary" size="large" class="w-full font-bold shadow-xs rounded-xl" @click="handleProceedToStep3">
+          <el-button type="primary" size="large" class="w-full font-bold shadow-xs rounded-xl" data-demo-target="btn-next-pay" @click="handleProceedToStep3">
             <span>{{ $t('citizenPurchase.nextStepPay') }}</span>
             <el-icon class="ml-1"><Right /></el-icon>
           </el-button>
@@ -526,6 +528,7 @@
             type="success"
             size="large"
             class="w-full font-bold shadow-md bg-emerald-600 hover:bg-emerald-700 border-none text-white rounded-xl px-2"
+            data-demo-target="btn-pay"
             :loading="submitting"
             @click="handleStartPayment"
           >
@@ -608,6 +611,7 @@
                 type="primary"
                 size="small"
                 class="font-bold rounded-xl px-2.5 flex items-center gap-1"
+                data-demo-target="btn-show-qr"
                 @click="openQrModal(ord)"
               >
                 <el-icon><FullScreen /></el-icon>
@@ -645,7 +649,7 @@
       :close-on-click-modal="false"
       class="qr-voucher-dialog"
     >
-      <div v-if="currentQrOrder" class="p-2 sm:p-4 space-y-4 select-none text-center">
+      <div v-if="currentQrOrder" class="p-2 sm:p-4 space-y-4 select-none text-center" data-demo-target="qr-voucher">
         <!-- 抬头 -->
         <div class="space-y-1 border-b border-slate-100 pb-3">
           <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold mx-auto border border-emerald-100 shadow-xs">
@@ -742,6 +746,7 @@
 
 <script setup>
 import { isEnNow } from '../../../utils/langHint.js';
+import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -1016,6 +1021,11 @@ onMounted(() => {
   loadOrders();
   startLiveClock();
 
+  // 全流程演示 02 阶段：URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点）
+  if (route.query.demo === 'true') {
+    activateDemo(String(route.query.demoStep || 'step2_1'));
+  }
+
   // 跨标签页监听代理端核销通知
   const unsubVerified = onTabMessage('ORDER_VERIFIED', (verifiedOrder) => {
     loadOrders();
@@ -1102,6 +1112,8 @@ function handleFillAllQuota() {
     selectedMap[item.itemCode] = item.remainingQuota;
   });
   ElMessage.success(t('citizenPurchase.fillAllQuota'));
+  // 演示模式：推进至 02-2 选择配送方式
+  if (isDemoActive.value) setDemoStep('step2_2');
 }
 
 // 清空所选
@@ -1133,6 +1145,19 @@ function handleProceedToStep2() {
   }
   currentProcessStep.value = 2;
   scrollToTop();
+  // 演示模式：推进至 02-3 选择送货上门
+  if (isDemoActive.value) setDemoStep('step2_3');
+}
+
+// 选择送货上门配送方式
+function handleSelectHomeDelivery() {
+  deliveryType.value = 'HOME_DELIVERY';
+  // 演示模式：自动预填档案默认收货信息，保证演示流程可无中断推进
+  if (isDemoActive.value) {
+    if (!deliveryAddress.value) deliveryAddress.value = quotaInfo.defaultAddress;
+    if (!contactPhone.value) contactPhone.value = quotaInfo.phone;
+    setDemoStep('step2_4');
+  }
 }
 
 // 推进到步骤 3
@@ -1143,6 +1168,8 @@ function handleProceedToStep3() {
   }
   currentProcessStep.value = 3;
   scrollToTop();
+  // 演示模式：推进至 02-5 确认支付金额并支付
+  if (isDemoActive.value) setDemoStep('step2_5');
 }
 
 // 唤起第三方电子支付
@@ -1156,6 +1183,8 @@ function handleStartPayment() {
     return;
   }
   showPaymentDialog.value = true;
+  // 演示模式：推进至 02-6 输入支付密码确认支付
+  if (isDemoActive.value) setDemoStep('step2_6');
 }
 
 // 电子支付成功回调
@@ -1219,6 +1248,8 @@ async function handlePaymentSuccess(payResult) {
 function openQrModal(order) {
   currentQrOrder.value = order;
   showQrDialog.value = true;
+  // 演示模式 05-1：点击「提货码」弹出二维码凭证后，推进至 05-2（将二维码交配送人员扫描确认收货）
+  if (isDemoActive.value && demoSubStep.value === 'step5_1') setDemoStep('step5_2');
 }
 
 // 复制提货码

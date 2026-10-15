@@ -268,6 +268,7 @@
               v-if="order.deliveryType === 'HOME_DELIVERY' && (order.status === 'PENDING_DELIVERY' || order.status === 'PAID')"
               type="primary"
               class="w-full font-bold shadow-xs rounded-xl !h-8 sm:!h-9 text-xs"
+              data-demo-target="btn-dispatch"
               @click="openDispatchModal(order)"
             >
               <el-icon class="mr-1"><Van /></el-icon>
@@ -354,6 +355,7 @@
             <button
               type="button"
               class="p-2 rounded-xl text-left border transition-all"
+              data-demo-target="btn-quick-driver"
               :class="dispatchForm.vehicleNo.includes('78219') ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
               @click="applyQuickDriver(0)"
             >
@@ -406,7 +408,7 @@
       <template #footer>
         <div class="flex items-center justify-end gap-2">
           <el-button @click="dispatchModalVisible = false">{{ $t('common.cancel') }}</el-button>
-          <el-button type="primary" :loading="dispatching" class="font-bold px-5" @click="confirmDispatch">
+          <el-button type="primary" :loading="dispatching" class="font-bold px-5" data-demo-target="btn-confirm-dispatch" @click="confirmDispatch">
             <el-icon class="mr-1"><Van /></el-icon>
             {{ $t('agentOrders.confirmDispatchBtn') }}
           </el-button>
@@ -821,6 +823,7 @@ import {
   verifyAndClaimCitizenOrder
 } from '@/api/agent';
 import { onTabMessage } from '@/utils/crossTabBus';
+import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
@@ -1039,6 +1042,8 @@ function applyQuickDriver(idx) {
     dispatchForm.value.vehicleNo = idx === 0 ? (t('agentOrders.driver1Desc') || d.vehicleNo) : (t('agentOrders.driver2Desc') || d.vehicleNo);
     dispatchForm.value.estimatedTime = idx === 0 ? (t('agentOrders.est30Mins') || d.time) : (t('agentOrders.est1Hour') || d.time);
   }
+  // 演示模式：用户点选配送员后推进至 04-3 确认出车发货（openDispatchModal 预填时弹窗尚未打开，不会误触发）
+  if (isDemoActive.value && dispatchModalVisible.value) setDemoStep('step4_3');
 }
 
 // ==========================================
@@ -1369,12 +1374,16 @@ function openDispatchModal(order) {
   currentDispatchOrder.value = order;
   applyQuickDriver(0);
   dispatchModalVisible.value = true;
+  // 演示模式：推进至 04-2 选择配送员
+  if (isDemoActive.value) setDemoStep('step4_2');
 }
 
 // 确认出车派单
 async function confirmDispatch() {
   if (!currentDispatchOrder.value) return;
   dispatching.value = true;
+  // 演示模式：确认出车发货后 04 阶段演示完成（扫码核销交货由配送员线下执行，不在引导范围内）
+  if (isDemoActive.value) setDemoStep('step4_done');
   try {
     await dispatchCitizenOrder(currentDispatchOrder.value.orderId, {
       deliveryPerson: dispatchForm.value.deliveryPerson,
@@ -1441,6 +1450,11 @@ const crossTabUnsubs = [];
 
 onMounted(() => {
   loadOrders();
+
+  // 全流程演示 04 阶段：URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点）
+  if (route.query.demo === 'true') {
+    activateDemo(String(route.query.demoStep || 'step4_1'));
+  }
 
   // 跨标签页监听公民端下单通知
   const unsubPurchased = onTabMessage('ORDER_PURCHASED', (newOrder) => {

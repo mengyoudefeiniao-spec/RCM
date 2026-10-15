@@ -190,9 +190,9 @@
               <span
                 v-if="!isMemberActive(member.status) && member.freezeReason"
                 class="text-[9px] text-[#D34545] font-semibold bg-[#FEECEC] px-1.5 py-0.5 rounded border border-[#FCD5D5] max-w-[90px] truncate"
-                :title="member.freezeReason"
+                :title="formatFreezeReason(member.freezeReason)"
               >
-                {{ member.freezeReason }}
+                {{ formatFreezeReason(member.freezeReason) }}
               </span>
               <button
                 type="button"
@@ -367,7 +367,7 @@
                 :type="isMemberActive(row.status) ? 'success' : 'danger'"
                 effect="light"
               >
-                {{ formatMemberStatus(row.status) }}{{ row.freezeReason ? ` (${row.freezeReason})` : '' }}
+                {{ formatMemberStatus(row.status) }}{{ row.freezeReason ? ` (${formatFreezeReason(row.freezeReason)})` : '' }}
               </el-tag>
             </template>
           </el-table-column>
@@ -900,6 +900,7 @@ import {
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { onTabMessage } from '../../utils/crossTabBus.js';
+import { localizeFreezeReason } from '../../utils/freezeReason.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -987,6 +988,11 @@ function formatMemberStatus(status) {
     return t('citizenCard.statusFrozen');
   }
   return status;
+}
+
+// 冻结原因本地化展示：稳定代码/历史中英文持久化值 → 当前语言词根 (备注保留原文)
+function formatFreezeReason(reason) {
+  return localizeFreezeReason(reason, t);
 }
 
 function isMemberActive(status) {

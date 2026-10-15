@@ -45,7 +45,7 @@
             </div>
           </div>
 
-          <el-button size="small" type="primary" plain class="w-full" @click="faceLivenessDialogVisible = true">
+          <el-button size="small" type="primary" plain class="w-full" data-demo-target="btn-bio-face" @click="faceLivenessDialogVisible = true">
             {{ faceCaptured ? $t('register.bio.livenessBtnRedo') : $t('register.bio.livenessBtn') }}
           </el-button>
         </div>
@@ -76,7 +76,7 @@
             </div>
           </div>
 
-          <el-button size="small" type="primary" plain class="w-full" @click="cardFrontCaptured = !cardFrontCaptured">
+          <el-button size="small" type="primary" plain class="w-full" data-demo-target="btn-bio-front" @click="handleCaptureFront">
             {{ cardFrontCaptured ? $t('register.bio.scanFrontBtnRedo') : $t('register.bio.scanFrontBtn') }}
           </el-button>
         </div>
@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <el-button size="small" type="primary" plain class="w-full" @click="cardBackCaptured = !cardBackCaptured">
+          <el-button size="small" type="primary" plain class="w-full" data-demo-target="btn-bio-chip" @click="handleCaptureChip">
             {{ cardBackCaptured ? $t('register.bio.chipBtnRedo') : $t('register.bio.chipBtn') }}
           </el-button>
         </div>
@@ -183,6 +183,20 @@ import {
 
 import { demoSubStep, setDemoStep } from '../../utils/demoState.js';
 
+// 演示引导：三要素采集步骤推进（从任意未完成的三要素子步骤强制推进，避免提示延迟导致卡步）
+const DEMO_CAPTURE_ORDER = ['step1_7a', 'step1_7b', 'step1_7c'];
+
+function advanceDemoAfterCapture(nextStep) {
+  if (!props.demoMode) return;
+  const idx = DEMO_CAPTURE_ORDER.indexOf(nextStep);
+  if (idx === -1) return;
+  const currentIdx = DEMO_CAPTURE_ORDER.indexOf(demoSubStep.value);
+  // 仅当当前仍处于该步骤或更早的三要素子步骤时推进
+  if (currentIdx !== -1 && currentIdx <= idx && idx < DEMO_CAPTURE_ORDER.length - 1) {
+    setDemoStep(DEMO_CAPTURE_ORDER[idx + 1]);
+  }
+}
+
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   userName: { type: String, default: '' },
@@ -202,8 +216,7 @@ const visible = ref(props.modelValue);
 watch(() => props.modelValue, (val) => {
   visible.value = val;
   if (val && props.demoMode) {
-    // 演示模式下自动就绪要素采集，确保用户能直接点击指示按钮
-    handleQuickCollectAll();
+    // 演示模式下不自动就绪：引导用户依次完成 3 项验证（人脸/卡正面/卡芯片）
   }
 });
 
@@ -220,9 +233,44 @@ function handleFaceLivenessSuccess(payload) {
   faceCaptured.value = true;
   faceImage.value = payload?.image || '';
   ElMessage.success(t('register.bio.msgLivenessDone'));
+  // 演示引导：人脸活体核验完成后推进至卡正面采集
+  if (props.demoMode && demoSubStep.value === 'step1_7a') {
+    setTimeout(() => {
+      if (demoSubStep.value === 'step1_7a') {
+        setDemoStep('step1_7b');
+      }
+    }, 400);
+  }
+}
+
+function handleCaptureFront() {
+  if (props.demoMode) {
+    // 演示模式：单击即完成采集并推进引导，避免切换语义导致状态回翻卡步
+    cardFrontCaptured.value = true;
+    advanceDemoAfterCapture('step1_7b');
+    return;
+  }
+  cardFrontCaptured.value = !cardFrontCaptured.value;
+}
+
+function handleCaptureChip() {
+  if (props.demoMode) {
+    // 演示模式：单击「感应卡片背面芯片」即完成采集并进入「确认核验并放行进入」
+    cardBackCaptured.value = true;
+    advanceDemoAfterCapture('step1_7c');
+    return;
+  }
+  cardBackCaptured.value = !cardBackCaptured.value;
 }
 
 const allCaptured = computed(() => faceCaptured.value && cardFrontCaptured.value && cardBackCaptured.value);
+
+// 演示引导兜底：三要素任一路径全部就绪后，自动推进到「确认核验并放行进入」
+watch(allCaptured, (val) => {
+  if (val && props.demoMode && DEMO_CAPTURE_ORDER.includes(demoSubStep.value)) {
+    setDemoStep('step1_8');
+  }
+});
 
 function handleQuickCollectAll() {
   faceCaptured.value = true;

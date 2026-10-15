@@ -159,7 +159,13 @@ const route = useRoute();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
 
-const isAppMode = computed(() => route.query.layout === 'app');
+// 与 AppLayout 保持完全一致的三级判定：URL query 优先，其次会话记忆兜底，
+// 防止应用内路由丢失 layout=app 参数后底部导航误降级为 fixed 悬浮遮挡内容
+const isAppMode = computed(() => {
+  if (route.query.layout === 'app') return true;
+  if (route.query.layout === 'web') return false;
+  return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
+});
 
 function getNavTarget(path) {
   if (isAppMode.value) {

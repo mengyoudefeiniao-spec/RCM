@@ -369,7 +369,7 @@
     <!-- ======================================================== -->
     <!-- 6. 订单明细穿透展示表格 (全域穿透真实订单与高亮新订单) -->
     <!-- ======================================================== -->
-    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden text-xs">
+    <div data-demo-target="citizen-orders-table" class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden text-xs">
       <div class="p-3.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
         <div class="font-bold text-slate-800 flex items-center gap-2">
           <span class="w-2 h-4 bg-[#1E3F35] rounded-xs"></span>
@@ -404,6 +404,7 @@
         size="small"
         class="text-xs"
         :row-class-name="tableRowClassName"
+        @row-click="handleOrderRowClick"
       >
         <el-table-column prop="orderId" :label="$t('orderStats.orderColId')" min-width="170">
           <template #default="{ row }">
@@ -510,14 +511,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { ElMessage, ElNotification } from 'element-plus';
 import { Refresh, Location, Search } from '@element-plus/icons-vue';
 import { getAgentCitizenOrders } from '../../../api/agent.js';
 import { onTabMessage } from '../../../utils/crossTabBus.js';
+import { isDemoActive, activateDemo, setDemoStep } from '../../../utils/demoState.js';
 
 const { t, locale } = useI18n();
+const route = useRoute();
 const isEn = computed(() => locale.value === 'en');
 
 const emit = defineEmits(['apply-plan']);
@@ -653,6 +657,24 @@ function tableRowClassName({ row }) {
     return 'bg-amber-50/40 font-medium';
   }
   return '';
+}
+
+// ============================================================
+// 全流程演示 03 阶段：政府端订单统计监控与审核穿透
+// ============================================================
+// URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点；
+// watch 兼容同一路由组件复用时的查询参数变化，如 02 阶段完成页跳转）
+watch(() => route.query, (q) => {
+  if (q.demo === 'true') {
+    activateDemo(String(q.demoStep || 'step3_1'));
+  }
+}, { immediate: true });
+
+// 点击选中的订单记录 -> 完成 Stage 03（兜底通道：遮罩镂空区捕获层为主通道）
+function handleOrderRowClick() {
+  if (isDemoActive.value && demoSubStep.value === 'step3_1') {
+    setDemoStep('step3_done');
+  }
 }
 
 async function loadData() {

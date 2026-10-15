@@ -1035,14 +1035,14 @@
                 {{ $t('admin.selectFreezeReason') || '官方冻结原因 (参考解冻法定分类)' }} <span class="text-rose-500">*</span>
               </label>
               <el-select v-model="freezeForm.reasonType" class="w-full" size="small">
-                <el-option :label="$t('unfreeze.caseCommercial') || '商业 (拥有商业注册/执照)'" value="商业" />
-                <el-option :label="$t('unfreeze.caseTravel') || '旅行 (出国或长期境外滞留)'" value="旅行" />
-                <el-option :label="$t('unfreeze.caseHighIncome') || '高收入 (月收入超保供救济上限)'" value="高收入" />
-                <el-option :label="$t('unfreeze.caseUnknownAddress') || '住址不明 (户籍居住地址核验失联)'" value="住址不明" />
-                <el-option :label="$t('unfreeze.caseUpdate') || '更新 (户籍核心资料待更新)'" value="更新" />
-                <el-option :label="$t('unfreeze.caseDuplicate') || '重复 (存在跨省/跨卡重复申报)'" value="重复" />
-                <el-option :label="$t('unfreeze.caseTemporary') || '临时 (未按期完成人脸/生物识别年检)'" value="临时" />
-                <el-option :label="$t('unfreeze.caseGeoLocation') || '地理位置 (申领基站与归属分部不符)'" value="地理位置" />
+                <el-option :label="$t('unfreeze.caseCommercial') || '商业 (拥有商业注册/执照)'" value="commercial" />
+                <el-option :label="$t('unfreeze.caseTravel') || '旅行 (出国或长期境外滞留)'" value="travel" />
+                <el-option :label="$t('unfreeze.caseHighIncome') || '高收入 (月收入超保供救济上限)'" value="highIncome" />
+                <el-option :label="$t('unfreeze.caseUnknownAddress') || '住址不明 (户籍居住地址核验失联)'" value="unknownAddress" />
+                <el-option :label="$t('unfreeze.caseUpdate') || '更新 (户籍核心资料待更新)'" value="update" />
+                <el-option :label="$t('unfreeze.caseDuplicate') || '重复 (存在跨省/跨卡重复申报)'" value="duplicate" />
+                <el-option :label="$t('unfreeze.caseTemporary') || '临时 (未按期完成人脸/生物识别年检)'" value="temporary" />
+                <el-option :label="$t('unfreeze.caseGeoLocation') || '地理位置 (申领基站与归属分部不符)'" value="geoLocation" />
               </el-select>
             </div>
 
@@ -1223,6 +1223,7 @@ import { isEnNow } from '../../utils/langHint.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { localizeFreezeReason, resolveFreezeReasonCode } from '../../utils/freezeReason.js';
 import { useAuthStore } from '../../stores/auth.js';
 import ReconciliationTab from './components/ReconciliationTab.vue';
 import OfficialRegulationsTab from './components/OfficialRegulationsTab.vue';
@@ -1365,51 +1366,10 @@ function formatCardStatus(status) {
   return status;
 }
 
-// 冻结原因双语映射（含历史持久化数据兼容）
-const FREEZE_REASON_I18N = {
-  '商业': 'Commercial Activity',
-  '旅行': 'Overseas Travel',
-  '高收入': 'High Income Threshold',
-  '住址不明': 'Unknown Residence Address',
-  '更新': 'Civil Registry Update Required',
-  '重复': 'Duplicate Registration',
-  '临时': 'Temporary Biometric Audit',
-  '地理位置': 'Geographic Discrepancy',
-  '冻结': 'Frozen',
-  '监管合规冻结': 'Regulatory Compliance Freeze',
-  'Commercial Activity': '商业',
-  'Overseas Travel': '旅行',
-  'High Income Threshold': '高收入',
-  'Unknown Residence Address': '住址不明',
-  'Civil Registry Update Required': '更新',
-  'Duplicate Registration': '重复',
-  'Temporary Biometric Audit': '临时',
-  'Geographic Discrepancy': '地理位置',
-  'Regulatory Compliance Freeze': '监管合规冻结',
-  'Commercial': '商业',
-  'Travel': '旅行',
-  'Frozen': '冻结'
-};
-
+// 冻结原因统一处理：稳定代码持久化 + 词根 i18n 展示（兼容历史中英文持久化值）
 function formatFreezeReason(reason) {
   if (!reason) return '—';
-  const str = String(reason);
-  if (isEn.value) {
-    // 组合式 "原因 (备注)"：分别翻译原因词根，保留备注原文
-    const m = str.match(/^(.*?)\s*\((.*)\)$/);
-    if (m) {
-      const head = FREEZE_REASON_I18N[m[1]] || m[1];
-      return `${head} (${m[2]})`;
-    }
-    return FREEZE_REASON_I18N[str] || str;
-  }
-  // 中文模式：兼容英文持久化值反查
-  const m = str.match(/^(.*?)\s*\((.*)\)$/);
-  if (m) {
-    const head = FREEZE_REASON_I18N[m[1]] || m[1];
-    return `${head} (${m[2]})`;
-  }
-  return FREEZE_REASON_I18N[str] || str;
+  return localizeFreezeReason(reason, t) || String(reason);
 }
 
 // ----------------------------------------------------
@@ -1420,7 +1380,7 @@ const selectedCardForFreeze = ref(null);
 const selectedMemberToFreeze = ref(null);
 const freezeLoading = ref(false);
 const freezeForm = reactive({
-  reasonType: '商业',
+  reasonType: 'commercial',
   customReason: ''
 });
 
@@ -1429,7 +1389,7 @@ function openMemberFreezeDialog(row) {
   const targetMembers = getFreezeTargetMembers();
   const firstActive = targetMembers.find(m => m.status === '正常' || m.status === 'Active');
   selectedMemberToFreeze.value = firstActive || targetMembers[0] || null;
-  freezeForm.reasonType = '商业';
+  freezeForm.reasonType = 'commercial';
   freezeForm.customReason = '';
   memberFreezeDialogVisible.value = true;
 }
@@ -1438,7 +1398,7 @@ function openMemberFreezeDialogFromMember(memberRow) {
   const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
   selectedCardForFreeze.value = currentCard;
   selectedMemberToFreeze.value = memberRow;
-  freezeForm.reasonType = FREEZE_REASON_I18N[memberRow.freezeReason] || memberRow.freezeReason || '商业';
+  freezeForm.reasonType = resolveFreezeReasonCode(memberRow.freezeReason) || memberRow.freezeReason || 'commercial';
   freezeForm.customReason = '';
   memberFreezeDialogVisible.value = true;
 }
@@ -1464,7 +1424,7 @@ function handleSelectMemberForFreeze(row) {
   if (!row) return;
   selectedMemberToFreeze.value = row;
   if (row.freezeReason) {
-    freezeForm.reasonType = FREEZE_REASON_I18N[row.freezeReason] || row.freezeReason;
+    freezeForm.reasonType = resolveFreezeReasonCode(row.freezeReason) || row.freezeReason;
   }
 }
 
@@ -1475,8 +1435,8 @@ async function handleConfirmFreezeMember() {
   }
   const member = selectedMemberToFreeze.value;
   const en = isEnNow();
-  // 原因值按当前语言写入，保证各语言共享池数据一致可读
-  const reasonBase = en ? (FREEZE_REASON_I18N[freezeForm.reasonType] || freezeForm.reasonType) : freezeForm.reasonType;
+  // 持久化稳定原因代码 (展示端按语言翻译)，备注保留原文
+  const reasonBase = resolveFreezeReasonCode(freezeForm.reasonType) || freezeForm.reasonType;
   const targetReason = freezeForm.customReason ? `${reasonBase} (${freezeForm.customReason})` : reasonBase;
 
   freezeLoading.value = true;

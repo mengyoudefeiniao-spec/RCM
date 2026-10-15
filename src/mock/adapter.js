@@ -1186,7 +1186,8 @@ export async function mockDispatch(config) {
       return createResponse({}, 400, (isEn ? 'Please select at least one supply ration item!' : '请至少选择一种保供配给口粮物资！'));
     }
 
-    // 校验限额逻辑
+    // 校验限额逻辑（全流程演示模式：rcm_demo_active 激活时暂时跳过超限校验，保证 02 阶段演示链路可完整重复走通）
+    const isDemoSession = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_demo_active') === 'true';
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
     const memberCount = family?.memberCount || 5;
 
@@ -1210,10 +1211,12 @@ export async function mockDispatch(config) {
       });
     });
 
-    for (const item of selectedItems) {
-      const allowed = (maxLimitMap[item.itemCode] || 999) - (alreadyConsumedMap[item.itemCode] || 0);
-      if (item.qty > allowed) {
-        return createResponse({}, 400, (isEn ? `[Quota Overrun Interception]: The requested purchase quantity of ${item.itemName} (${item.qty}${item.unit}) exceeds the legal remaining monthly quota (${allowed}${item.unit})!` : `【配额超限拦截】：${item.itemName} 申请购买量 (${item.qty}${item.unit}) 已超出本月法定剩余可用额度 (${allowed}${item.unit})！`));
+    if (!isDemoSession) {
+      for (const item of selectedItems) {
+        const allowed = (maxLimitMap[item.itemCode] || 999) - (alreadyConsumedMap[item.itemCode] || 0);
+        if (item.qty > allowed) {
+          return createResponse({}, 400, (isEn ? `[Quota Overrun Interception]: The requested purchase quantity of ${item.itemName} (${item.qty}${item.unit}) exceeds the legal remaining monthly quota (${allowed}${item.unit})!` : `【配额超限拦截】：${item.itemName} 申请购买量 (${item.qty}${item.unit}) 已超出本月法定剩余可用额度 (${allowed}${item.unit})！`));
+        }
       }
     }
 

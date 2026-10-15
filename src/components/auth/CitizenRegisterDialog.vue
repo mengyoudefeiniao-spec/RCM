@@ -510,10 +510,13 @@ const simulatedSmsCode = ref('');
 
 function handleDemoClickHeadName() {
   if (props.demoMode) {
-    registerForm.headName = '艾哈迈德·哈桑·拉希德';
+    // 不覆盖已有姓名（保留 OCR 识别结果），仅在为空时填入默认演示姓名
+    if (!registerForm.headName) {
+      registerForm.headName = t('register.defaultUserName');
+    }
     if (!registerForm.nationalId) registerForm.nationalId = 'IQ-1980-0419-8271';
     if (!registerForm.phone) registerForm.phone = '+964 780 123 4567';
-    ElMessage.success('户主姓名输入完成：艾哈迈德·哈桑·拉希德');
+    ElMessage.success(t('register.demoNameFilled', { name: registerForm.headName }));
     setDemoStep('step1_4');
   }
 }
@@ -537,7 +540,7 @@ function handleDemoFillSms() {
 
 function handleDemoProceedToVerify() {
   if (props.demoMode) {
-    if (!registerForm.headName) registerForm.headName = '艾哈迈德·哈桑·拉希德';
+    if (!registerForm.headName) registerForm.headName = t('register.defaultUserName');
     if (!registerForm.nationalId) registerForm.nationalId = 'IQ-1980-0419-8271';
     if (!registerForm.phone) registerForm.phone = '+964 780 123 4567';
     if (!registerForm.smsCode) registerForm.smsCode = simulatedSmsCode.value || '839201';
@@ -550,7 +553,8 @@ function handleDemoProceedToVerify() {
 
 function handleDemoStartBiometric() {
   if (props.demoMode) {
-    setDemoStep('step1_8');
+    // 打开三要素核验弹窗，引导用户依次完成 3 项验证 (人脸/卡正面/卡芯片)
+    setDemoStep('step1_7a');
   }
   showBiometricModal.value = true;
 }

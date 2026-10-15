@@ -380,7 +380,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step1.title',
     descKey: 'portal.flowDemo.steps.step1.desc',
     actionHintKey: 'portal.flowDemo.steps.step1.actionHint',
-    targetPath: '/login?role=citizen&layout=app&demo=true&step=1'
+    targetPath: '/login?role=citizen&layout=app&demo=true&demoStep=step1_1'
   },
   {
     step: 2,
@@ -390,7 +390,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step2.title',
     descKey: 'portal.flowDemo.steps.step2.desc',
     actionHintKey: 'portal.flowDemo.steps.step2.actionHint',
-    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase'
+    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase&demo=true&demoStep=step2_1'
   },
   {
     step: 3,
@@ -400,7 +400,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step3.title',
     descKey: 'portal.flowDemo.steps.step3.desc',
     actionHintKey: 'portal.flowDemo.steps.step3.actionHint',
-    targetPath: '/warehouse?role=minister_center&layout=web&tab=orderStats'
+    targetPath: '/warehouse?role=minister_center&layout=web&tab=orderStats&demo=true&demoStep=step3_1'
   },
   {
     step: 4,
@@ -410,7 +410,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step4.title',
     descKey: 'portal.flowDemo.steps.step4.desc',
     actionHintKey: 'portal.flowDemo.steps.step4.actionHint',
-    targetPath: '/warehouse?role=agent&layout=app&tab=orderStats'
+    targetPath: '/warehouse?role=agent&layout=app&tab=orderStats&demo=true&demoStep=step4_1'
   },
   {
     step: 5,
@@ -420,7 +420,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step5.title',
     descKey: 'portal.flowDemo.steps.step5.desc',
     actionHintKey: 'portal.flowDemo.steps.step5.actionHint',
-    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase&action=showQr'
+    targetPath: '/warehouse?role=citizen&layout=app&tab=purchase&demo=true&demoStep=step5_1'
   },
   {
     step: 6,
@@ -430,7 +430,7 @@ const flowSteps = [
     titleKey: 'portal.flowDemo.steps.step6.title',
     descKey: 'portal.flowDemo.steps.step6.desc',
     actionHintKey: 'portal.flowDemo.steps.step6.actionHint',
-    targetPath: '/dashboard?role=agent&mode=mobile&layout=app&action=scan'
+    targetPath: '/dashboard?role=agent&mode=mobile&layout=app&demo=true&demoStep=step6_1'
   }
 ];
 
@@ -444,7 +444,13 @@ function openFlowStep(stepItem) {
   const title = t(stepItem.titleKey);
 
   ElMessage.success(t('portal.openingNotice', { title }));
-  window.open(fullUrl, '_blank');
+
+  // 按步骤命名窗口：浏览器自动复用已打开的同名演示标签页（跳转并聚焦），
+  // 已关闭则重新打开，避免每次都新开标签页
+  const win = window.open(fullUrl, `rcm_demo_flow_${stepItem.step}`);
+  if (win && typeof win.focus === 'function') {
+    win.focus();
+  }
 }
 
 /**

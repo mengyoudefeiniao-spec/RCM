@@ -119,7 +119,7 @@
           <!-- ======================================================== -->
           <!-- 验证模式 1: 输入 6 位安全支付密码 (PIN 码) (APP 模式紧凑化) -->
           <!-- ======================================================== -->
-          <div v-if="verifyMode === 'pin'" :class="isAppMode ? 'space-y-1.5' : 'space-y-4 py-1'">
+          <div v-if="verifyMode === 'pin'" class="pin-verify-area" data-demo-target="pin-area" :class="isAppMode ? 'space-y-1.5' : 'space-y-4 py-1'">
             <!-- 6 个独立方格输入框展示 (暗文圆点) -->
             <div class="flex justify-center gap-1.5 sm:gap-3 py-0.5">
               <div
@@ -361,6 +361,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
+import { isDemoActive, setDemoStep } from '../../utils/demoState.js';
 import {
   CreditCard,
   Lock,
@@ -555,6 +556,8 @@ function triggerFacePayScan() {
 function executePaymentProcess(method) {
   paymentStatus.value = 'processing';
   successTxnNo.value = Math.floor(100000 + Math.random() * 900000).toString();
+  // 演示模式：推进至 02-7 支付成功并弹出提货二维码凭证
+  if (isDemoActive.value) setDemoStep('step2_7');
 
   setTimeout(() => {
     paymentStatus.value = 'success';

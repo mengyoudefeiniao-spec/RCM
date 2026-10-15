@@ -373,7 +373,7 @@ onMounted(() => {
     loginForm.password = 'iq-pass-2026';
   }
   if (route.query.demo === 'true') {
-    activateDemo('step1_1');
+    activateDemo(String(route.query.demoStep || 'step1_1'));
   } else if (route.query.mode === 'register' || route.query.action === 'register') {
     registerDialogVisible.value = true;
   }

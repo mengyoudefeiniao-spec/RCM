@@ -229,6 +229,7 @@ export default {
     "defaultMemberName": "Zaid Ahmed Saleh",
     "msgOcrSuccess": "Paper ration card photo recognized, stub is genuine and valid!",
     "msgAutoNext": "Moved to the next step: please complete citizen identity information",
+    "demoNameFilled": "Head name confirmed: {name}",
     "msgInvalidCardFallback": "This paper ration card is invalid or revoked; registration is prohibited!",
     "msgOcrCrash": "This paper ration card has been revoked or its stub is invalid; upgrade registration is not possible!",
     "msgOcrBlock": "Paper card verification failed; cannot proceed!",
@@ -351,6 +352,9 @@ export default {
       "stepMouth": "3. Open mouth",
       "camOnline": "HD camera online",
       "camSimulated": "Digital human simulation",
+      "camInsecure": "This page is not served over HTTPS, so the browser has disabled the real camera (showing the demo simulation stream). Please access via HTTPS or localhost to enable the camera.",
+      "camDenied": "Camera permission was denied; switched to the demo simulation stream. You can re-allow it in the browser address-bar permission settings and retry.",
+      "camUnavailable": "No available camera device detected; switched to the demo simulation stream.",
       "verifyTarget": "Verifying person: ",
       "defaultTarget": "Cardholder",
       "restart": "Restart",
@@ -733,6 +737,159 @@ export default {
     "cbiClearanceSub": "Central Bank Fee Online Direct Clearing System · SSL 256-bit Encrypted",
     "treasuryBooked": "Treasury Booked",
     "paidToast": "Payment succeeded! Fee paid via [{channel}]"
+  },
+  "demo": {
+    "badge": "Full-Process Demo",
+    "stepBadge": "Step {cur}/{total}",
+    "exitTitle": "Exit full-process demo mode",
+    "exit": "Exit Demo",
+    "exitToast": "Demo mode exited; feel free to explore the Citizen APP",
+    "blockTip": "In demo mode, only the function inside the gold frame can be operated!",
+    "footerActive": "Spotlight guidance active",
+    "footerHint": "Click as instructed to continue",
+    "locating": "Locating the demo target, please wait...",
+    "doneBadge": "STAGE 01 COMPLETED",
+    "doneTitle": "Stage 01 Completed - Citizen Ration Card Registered!",
+    "doneBody": "The citizen paper ration card has been captured via photo OCR, supplemented with personal information and multi-source biometric verification, successfully registered in the digital ration ledger with an electronic ration card issued!",
+    "doneAppNote": "The page has seamlessly switched to the latest mobile Citizen APP interface; you can view the issued family ration card and registered members in the phone viewport.",
+    "doneBadge2": "STAGE 02 COMPLETED",
+    "doneTitle2": "Stage 02 Completed - Online Ration Purchase & E-Payment Successful!",
+    "doneBody2": "The monthly household quota has been filled with one click, home delivery confirmed, and the order amount paid via PIN verification through the unified secure payment gateway. The ration order has been generated and synced to the agent station and government dispatch console in real time!",
+    "doneAppNote2": "The pickup QR voucher remains open and the pickup code can be copied anytime. Continue to Stage 03 (Government Monitoring & Dispatch) demo?",
+    "btnExplore": "Explore the Citizen APP Freely",
+    "btnBackPortal": "Continue to Stage 02 (Ration Purchase & Pickup)",
+    "btnNextStage": "Enter Stage 03 (Government Monitoring Console)",
+    "doneBadge3": "STAGE 03 COMPLETED",
+    "doneTitle3": "Stage 03 Completed - Government Order Monitoring & Audit Penetration Succeeded!",
+    "doneBody3": "After the citizen's order payment succeeded, the delivery order was automatically routed to the agent station corresponding to the citizen's district; the government console can penetrate the full domain to view order details, delivery regions and audit status — the regulatory closed loop is complete!",
+    "doneAppNote3": "The current page is the government Web [Order Statistics Monitoring] console; feel free to keep browsing or enter Stage 04 (Agent Fulfillment).",
+    "btnNextStage4": "Enter Stage 04 (Agent Fulfillment)",
+    "doneBadge4": "STAGE 04 COMPLETED",
+    "doneTitle4": "Stage 04 Completed - Courier Assigned & Dispatch Confirmed!",
+    "doneBody4": "The agent station has selected the supply courier for the citizen order and confirmed the dispatch. The order status has been updated to [In Delivery] in real time; the courier will later scan the citizen's dynamic anti-counterfeit order QR code on arrival to complete the physical handover!",
+    "doneAppNote4": "The dispatch status has been synced to the government monitoring console and the citizen APP in real time. Continue to Stage 05 (Citizen Anti-Counterfeit Pickup Code) demo?",
+    "btnNextStage5": "Enter Stage 05 (Citizen Pickup Code Presentation)",
+    "doneBadge5": "STAGE 05 COMPLETED",
+    "doneTitle5": "Stage 05 Completed - Pickup Code Presented & Receipt Confirmed!",
+    "doneBody5": "The citizen opened the pickup QR voucher of the in-transit order from the claim records. The courier scanned the dynamic anti-counterfeit QR code on arrival to complete the physical delivery, and the citizen confirmed receipt — this month's ration handover loop is complete!",
+    "doneAppNote5": "The dialog shows the citizen's pickup QR voucher; feel free to view it or copy the pickup code. Continue to Stage 06 (Agent Scan Verification) demo?",
+    "btnNextStage6": "Enter Stage 06 (Agent Scan Verification)",
+    "doneBadge6": "FULL-PROCESS DEMO COMPLETED",
+    "doneTitle6": "All Stages 01-06 Demonstrated Successfully!",
+    "doneBody6": "From digitized ration card registration, online ration purchase & e-payment, government order monitoring & dispatch, agent fulfillment, citizen pickup code presentation, to on-site agent scan verification completing the physical handover — the full end-to-end ration management loop demo is complete!",
+    "doneAppNote6": "You have completed the entire demo flow. Feel free to explore each terminal app, or return to the portal to restart the demo.",
+    "btnFinishAll": "Finish Demo & Back to Portal",
+    "btnStayAgent": "Explore the Agent APP freely",
+    "steps": {
+      "step3_1": {
+        "title": "Full-Process Demo · Step 03-1",
+        "desc": "Scroll down to the [Citizen Ration Order Details List] and click the highlighted first order record (the latest submitted order by default): once the order payment succeeds, the delivery order automatically enters the agent station of the citizen's district, where the government can view and audit orders"
+      },
+      "step4_1": {
+        "title": "Full-Process Demo · Step 04-1",
+        "desc": "You are now in the Agent APP [Order Delivery] page. Select the first order in the list (the citizen's latest ration order) and click [Arrange Delivery] to enter fleet assignment"
+      },
+      "step4_2": {
+        "title": "Full-Process Demo · Step 04-2",
+        "desc": "Click to select a courier in the dialog (the recommended express courier Hashim Ali is preselected) and confirm the vehicle and estimated delivery time"
+      },
+      "step4_3": {
+        "title": "Full-Process Demo · Step 04-3",
+        "desc": "Courier and vehicle ready! Click [Confirm Dispatch & Ship Out] and the order status will be synced to In Delivery, completing the Stage 04 demo"
+      },
+      "step5_1": {
+        "title": "Full-Process Demo · Step 05-1",
+        "desc": "You are back in the Citizen APP [Ration Purchase & Pickup] claim records. Select the first record (the latest in-delivery order) and click the [Pickup Code] button inside the gold frame to open the dynamic anti-counterfeit pickup QR voucher"
+      },
+      "step5_2": {
+        "title": "Full-Process Demo · Step 05-2",
+        "desc": "The pickup QR voucher is shown! Present the QR code to the courier for scanning; after a successful match, confirm receipt — click the QR voucher inside the gold frame to complete this stage"
+      },
+      "step6_1": {
+        "title": "Full-Process Demo · Step 06-1",
+        "desc": "You are now in the Agent APP [On-site Verification] module. Click the [Scan & Verify] button inside the gold frame to open the scan viewfinder window for scanning the citizen's ration order QR code"
+      },
+      "step6_2": {
+        "title": "Full-Process Demo · Step 06-2",
+        "desc": "The scan viewfinder is open! Scan the dynamic anti-counterfeit QR code of the citizen's ration order to confirm the recipient and complete the delivery — click the viewfinder area (or [Simulate Success]) to finish"
+      },
+      "step1_1": {
+        "title": "Full-Process Demo · Step 01-1",
+        "desc": "Click the [Register] button inside the gold frame below to start digitized paper ration card registration and e-card application"
+      },
+      "step1_2": {
+        "title": "Full-Process Demo · Step 01-2",
+        "desc": "Click the highlighted [Capture Photo] button to scan the paper ration card stub and automatically start OCR stub matching"
+      },
+      "step1_3": {
+        "title": "Full-Process Demo · Step 01-3",
+        "desc": "Click the [Head Name] input field (no typing needed; the preset head name and citizen info are filled automatically)"
+      },
+      "step1_4": {
+        "title": "Full-Process Demo · Step 01-4",
+        "desc": "Click the [Get Verification Code] button to send the secure SMS verification code"
+      },
+      "step1_5": {
+        "title": "Full-Process Demo · Step 01-5",
+        "desc": "Click the [Auto-Fill] button in the SMS notification card to enter the SMS verification code automatically"
+      },
+      "step1_6": {
+        "title": "Full-Process Demo · Step 01-6",
+        "desc": "Basic identity verification passed; click [Choose Identity Authentication Method] to enter the multi-source verification stage"
+      },
+      "step1_7": {
+        "title": "Full-Process Demo · Step 01-7",
+        "desc": "Click [Start Face & National Card Verification Now] to open the three-factor verification dialog and complete the face, card front and card chip checks in sequence"
+      },
+      "step1_7a": {
+        "title": "Full-Process Demo · Step 01-8",
+        "desc": "Three-Factor Verification 1/3: click [Live Face Capture] and complete the look-straight, head-shake and mouth-open liveness actions"
+      },
+      "step1_7b": {
+        "title": "Full-Process Demo · Step 01-9",
+        "desc": "Three-Factor Verification 2/3: face capture passed! Click [Scan National Card Front] to complete the person-vs-card matching capture"
+      },
+      "step1_7c": {
+        "title": "Full-Process Demo · Step 01-10",
+        "desc": "Three-Factor Verification 3/3: click [Read National Card Back Chip] to complete the NFC chip integrity check"
+      },
+      "step1_8": {
+        "title": "Full-Process Demo · Step 01-11",
+        "desc": "All three factors captured! Click [Confirm Verification & Enter] to submit the multi-source matching verification"
+      },
+      "step1_9": {
+        "title": "Full-Process Demo · Step 01-12",
+        "desc": "All verifications ready! Click [Complete Registration & Issue E-Ration Card] to finish registration and issue the e-card"
+      },
+      "step2_1": {
+        "title": "Full-Process Demo · Step 02-1",
+        "desc": "You are now in the Citizen APP [Ration Purchase & Pickup] page. Click [Fill Full Monthly Quota] to add all remaining household quota for this month to the list"
+      },
+      "step2_2": {
+        "title": "Full-Process Demo · Step 02-2",
+        "desc": "Monthly quota fully selected! Click [Choose Delivery Method] to enter the delivery stage"
+      },
+      "step2_3": {
+        "title": "Full-Process Demo · Step 02-3",
+        "desc": "Click to select the [Home Delivery] option (in demo mode the default address and contact phone from the household profile are filled automatically)"
+      },
+      "step2_4": {
+        "title": "Full-Process Demo · Step 02-4",
+        "desc": "Home Delivery selected! Click [Next: Payment] to enter the order review and payment stage"
+      },
+      "step2_5": {
+        "title": "Full-Process Demo · Step 02-5",
+        "desc": "Review the order list and the payable amount (goods fee + delivery fee), then click [Pay] to open the unified secure payment gateway"
+      },
+      "step2_6": {
+        "title": "Full-Process Demo · Step 02-6",
+        "desc": "Enter the 6-digit payment password in the payment dialog (or click [Auto-Fill]), confirm the payable amount and complete the secure debit"
+      },
+      "step2_7": {
+        "title": "Full-Process Demo · Step 02-7",
+        "desc": "Payment succeeded! The anti-counterfeit pickup QR voucher has been generated. No need to close this window - Stage 02 demo completed; click [Exit Demo] above to end the guidance"
+      }
+    }
   },
   "review": {
     "title": "Audit Workbench",
@@ -1931,9 +2088,9 @@ export default {
       "btnText": "Operation Flow Demo",
       "dialogTitle": "Citizen E-Ration Card End-to-End Operation Flow",
       "dialogSubtitle": "Complete 6-step lifecycle: citizen registration, online ordering, government oversight, agent fulfillment, QR presentation & scan verification.",
-      "bannerTip": "Click any flow card to automatically open that specific module with the designated role & device viewport in a new tab. Follow each step to replay the full digital ration workflow.",
+      "bannerTip": "Click any flow card to automatically reuse the already-opened demo tab (a new tab opens if none exists) and switch to the designated role & device viewport. Follow each step to replay the full digital ration workflow.",
       "stepBadge": "Step {step}",
-      "openInNewTab": "Open in New Tab",
+      "openInNewTab": "Open Demo Terminal",
       "roleCitizenApp": "Citizen App · Pixel 9",
       "roleAgentApp": "Agent App · Pixel 9",
       "roleAdminWeb": "Admin Web · PC Desktop",
@@ -2191,6 +2348,18 @@ export default {
     "crossTabTicketMsg": "New citizen application detected [{source}], ID: {id}. Dashboard metrics updated.",
     "crossTabOrderTitle": "Cross-Tab Ration Claim Notification",
     "crossTabOrderMsg": "Citizen [{cardNo}] completed quota collection ({amount} IQD). Today's dispatches updated."
+  },
+  "freezeReason": {
+    "commercial": "Commercial",
+    "travel": "Travel",
+    "highIncome": "High Income",
+    "unknownAddress": "Unknown Address",
+    "update": "Update",
+    "duplicate": "Duplicate",
+    "temporary": "Temporary",
+    "geoLocation": "Geographic Location",
+    "regulatory": "Regulatory Compliance",
+    "frozen": "Frozen"
   }
 };
 

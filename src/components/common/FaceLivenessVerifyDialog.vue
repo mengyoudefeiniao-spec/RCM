@@ -83,6 +83,20 @@
               ></div>
             </div>
           </div>
+
+          <!-- 摄像头不可用原因提示（非 HTTPS 安全环境 / 权限被拒 / 无设备） -->
+          <div v-if="cameraUnavailableReason" class="absolute bottom-3 inset-x-4 z-20">
+            <div class="px-3 py-2 rounded-xl bg-black/45 backdrop-blur-sm border border-[#C59D5F]/30 flex items-start gap-2">
+              <span class="text-sm leading-none mt-0.5">💡</span>
+              <span class="text-[10px] leading-relaxed text-[#E2C38E] text-left">
+                {{ cameraUnavailableReason === 'insecure'
+                  ? $t('register.liveness.camInsecure')
+                  : cameraUnavailableReason === 'denied'
+                    ? $t('register.liveness.camDenied')
+                    : $t('register.liveness.camUnavailable') }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <!-- 隐藏的画面采样分析 Canvas (用于实时分析摇头与张嘴微表情) -->
@@ -350,6 +364,8 @@ const { isCompact, dialogWidth } = useCompactDialog(520);
 const videoRef = ref(null);
 const canvasRef = ref(null);
 const cameraActive = ref(false);
+// 摄像头不可用原因诊断：'insecure' 非 HTTPS 安全上下文 | 'denied' 权限被拒 | 'unavailable' 无设备 | '' 可用
+const cameraUnavailableReason = ref('');
 const capturedImage = ref('');
 let mediaStream = null;
 
@@ -532,6 +548,9 @@ function startFrameAnalysisEngine() {
 async function initCamera() {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     cameraActive.value = false;
+    // 诊断：navigator.mediaDevices 仅在安全上下文（HTTPS 或 localhost）暴露，
+    // 通过 http://IP 部署访问时浏览器会直接禁用 getUserMedia
+    cameraUnavailableReason.value = (typeof window !== 'undefined' && window.isSecureContext === false) ? 'insecure' : 'unavailable';
     return;
   }
   try {
@@ -549,8 +568,10 @@ async function initCamera() {
       videoRef.value.play().catch(() => {});
     }
     cameraActive.value = true;
+    cameraUnavailableReason.value = '';
   } catch (err) {
     console.warn('摄像头未开启或无权限，已平滑启用高保真活体仿真视讯流', err);
+    cameraUnavailableReason.value = (err && err.name === 'NotAllowedError') ? 'denied' : 'unavailable';
     cameraActive.value = false;
   }
 }
