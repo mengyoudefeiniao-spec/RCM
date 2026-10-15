@@ -95,9 +95,8 @@
       >
         <!-- 卡片头部：小标题与浅砂金底线性图标 -->
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">الطلبات</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardOrdersTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardOrdersTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Document /></el-icon>
@@ -160,9 +159,8 @@
         @mouseleave="onCardMouseLeave"
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">المواطنون والأسر</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardCitizensTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardCitizensTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><House /></el-icon>
@@ -214,9 +212,8 @@
         @mouseleave="onCardMouseLeave"
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">التحقق من الهوية</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardVerificationTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardVerificationTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Avatar /></el-icon>
@@ -269,9 +266,8 @@
         @mouseleave="onCardMouseLeave"
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">توزيع الغذاء</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardDistributionTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardDistributionTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Box /></el-icon>
@@ -324,9 +320,8 @@
         @mouseleave="onCardMouseLeave"
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">عمليات الوكلاء</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardAgentsTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardAgentsTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Shop /></el-icon>
@@ -379,9 +374,8 @@
         @mouseleave="onCardMouseLeave"
       >
         <div class="flex items-center justify-between pb-4 border-b border-[#F4EFE6]">
-          <h3 class="text-sm font-bold text-[#18231E] flex items-center gap-1.5">
-            <span class="font-serif font-bold">النظام والربط</span>
-            <span class="text-xs font-medium text-[#8C958F] font-sans">/ {{ $t('dashboardOverview.cardSystemTitle') }}</span>
+          <h3 class="text-sm font-bold text-[#18231E]">
+            {{ $t('dashboardOverview.cardSystemTitle') }}
           </h3>
           <div class="rcm-icon-box">
             <el-icon :size="16"><Connection /></el-icon>
