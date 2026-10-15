@@ -3,18 +3,18 @@
     <!-- ======================================================== -->
     <!-- 1. 优化点3：极简户主信息胶囊栏 (释放 APP 移动端首屏宝贵空间) -->
     <!-- ======================================================== -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-xl px-3.5 py-2.5 shadow-xs border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+    <div class="bg-gradient-to-r from-[#1B3123] via-[#12241A] to-[#1B3123] text-white rounded-lg px-3.5 py-2.5 shadow-xs border border-[#1F3326] flex flex-wrap items-center justify-between gap-2 text-xs">
       <!-- 左侧：户主、卡号与人数徽章 -->
       <div class="flex items-center gap-2 flex-wrap">
-        <div class="w-6 h-6 rounded-lg bg-blue-600/80 flex items-center justify-center text-white shrink-0">
+        <div class="w-6 h-6 rounded-lg bg-[#326445]/80 flex items-center justify-center text-white shrink-0">
           <el-icon :size="13"><UserFilled /></el-icon>
         </div>
         <div class="flex items-center gap-1.5 font-bold">
           <span>{{ quotaInfo.headName || '艾哈迈德·哈桑' }}</span>
-          <span class="text-slate-400 font-normal">({{ $t('citizenPurchase.compactHead') }})</span>
+          <span class="text-[#8A9A8F] font-normal">({{ $t('citizenPurchase.compactHead') }})</span>
         </div>
-        <span class="text-slate-500 font-mono">·</span>
-        <span class="font-mono text-blue-300 font-bold tracking-tight">
+        <span class="text-[#58685D] font-mono">·</span>
+        <span class="font-mono text-[#AECBB8] font-bold tracking-tight">
           {{ quotaInfo.cardNo || 'RC-10029381' }}
         </span>
         <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono font-bold origin-left">
@@ -23,17 +23,17 @@
       </div>
 
       <!-- 右侧：签约网点与快速刷新 -->
-      <div class="flex items-center gap-2 ml-auto text-[11px] text-slate-300">
-        <div class="hidden sm:flex items-center gap-1 text-slate-300">
-          <el-icon class="text-amber-400"><Shop /></el-icon>
+      <div class="flex items-center gap-2 ml-auto text-[11px] text-[#C9DBCE]">
+        <div class="hidden sm:flex items-center gap-1 text-[#C9DBCE]">
+          <el-icon class="text-[#DFC08B]"><Shop /></el-icon>
           <span class="truncate max-w-[190px]">{{ quotaInfo.agentName || '卡尔赫第一代销站' }}</span>
         </div>
-        <span class="hidden sm:inline text-slate-500 font-mono">·</span>
-        <span class="font-mono text-amber-300 text-[10px]">{{ displayQuotaPeriod }}</span>
+        <span class="hidden sm:inline text-[#58685D] font-mono">·</span>
+        <span class="font-mono text-[#E5CEA1] text-[10px]">{{ displayQuotaPeriod }}</span>
         <el-tooltip :content="$t('citizenPurchase.refreshTooltip')" placement="top">
           <button
             type="button"
-            class="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
+            class="text-[#8A9A8F] hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
             @click="loadQuotaData"
           >
             <el-icon :size="14"><Refresh /></el-icon>
@@ -45,7 +45,7 @@
     <!-- ======================================================== -->
     <!-- 2. 优化点2：拆分为 3 步流程导航指示器 (选购 -> 配送 -> 付款) -->
     <!-- ======================================================== -->
-    <div class="bg-white rounded-xl border border-slate-200/80 p-2.5 sm:p-3 shadow-2xs">
+    <div class="bg-white rounded-lg border border-[#D9E5DB]/80 p-2.5 sm:p-3 shadow-2xs">
       <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
         <!-- 步骤 1 -->
         <button
@@ -53,16 +53,16 @@
           class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer border"
           :class="
             currentProcessStep === 1
-              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+              ? 'bg-[#326445] text-white border-[#326445] shadow-xs'
               : currentProcessStep > 1
-              ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-              : 'bg-slate-50 text-slate-400 border-slate-200'
+              ? 'bg-[#EFF5F1] text-[#2A5440] border-[#C7DED0] hover:bg-[#E1F4E4]'
+              : 'bg-[#F3F8F4] text-[#8A9A8F] border-[#D9E5DB]'
           "
           @click="currentProcessStep = 1; scrollToTop()"
         >
           <span
             class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0"
-            :class="currentProcessStep === 1 ? 'bg-white text-blue-600 font-bold' : currentProcessStep > 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'"
+            :class="currentProcessStep === 1 ? 'bg-white text-[#326445] font-bold' : currentProcessStep > 1 ? 'bg-[#326445] text-white' : 'bg-[#D9E5DB] text-[#58685D]'"
           >
             {{ currentProcessStep > 1 ? '✓' : '1' }}
           </span>
@@ -75,17 +75,17 @@
           class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer border"
           :class="
             currentProcessStep === 2
-              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+              ? 'bg-[#326445] text-white border-[#326445] shadow-xs'
               : currentProcessStep > 2
-              ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-              : 'bg-slate-50 text-slate-400 border-slate-200'
+              ? 'bg-[#EFF5F1] text-[#2A5440] border-[#C7DED0] hover:bg-[#E1F4E4]'
+              : 'bg-[#F3F8F4] text-[#8A9A8F] border-[#D9E5DB]'
           "
           :disabled="totalSelectedWeight <= 0"
           @click="handleJumpToStep(2)"
         >
           <span
             class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0"
-            :class="currentProcessStep === 2 ? 'bg-white text-blue-600 font-bold' : currentProcessStep > 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'"
+            :class="currentProcessStep === 2 ? 'bg-white text-[#326445] font-bold' : currentProcessStep > 2 ? 'bg-[#326445] text-white' : 'bg-[#D9E5DB] text-[#58685D]'"
           >
             {{ currentProcessStep > 2 ? '✓' : '2' }}
           </span>
@@ -98,15 +98,15 @@
           class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer border"
           :class="
             currentProcessStep === 3
-              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-              : 'bg-slate-50 text-slate-400 border-slate-200'
+              ? 'bg-[#326445] text-white border-[#326445] shadow-xs'
+              : 'bg-[#F3F8F4] text-[#8A9A8F] border-[#D9E5DB]'
           "
           :disabled="totalSelectedWeight <= 0"
           @click="handleJumpToStep(3)"
         >
           <span
             class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0"
-            :class="currentProcessStep === 3 ? 'bg-white text-blue-600 font-bold' : 'bg-slate-200 text-slate-500'"
+            :class="currentProcessStep === 3 ? 'bg-white text-[#326445] font-bold' : 'bg-[#D9E5DB] text-[#58685D]'"
           >
             3
           </span>
@@ -119,18 +119,18 @@
     <!-- 流程第一步：选购口粮商品 (Step 1) -->
     <!-- ======================================================== -->
     <div v-if="currentProcessStep === 1" class="space-y-4">
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-4">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 p-4 sm:p-5 shadow-xs space-y-4">
         <!-- 步骤 1 顶栏操作 -->
         <div
-          class="pb-3 border-b border-slate-100"
+          class="pb-3 border-b border-[#E9F1EB]"
           :class="isAppMode ? 'flex flex-col gap-2.5 items-start' : 'flex flex-col sm:flex-row sm:items-center justify-between gap-2.5'"
         >
           <div class="w-full">
-            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <el-icon class="text-blue-600"><GoodsFilled /></el-icon>
+            <h4 class="text-sm font-bold text-[#1B3123] flex items-center gap-1.5">
+              <el-icon class="text-[#326445]"><GoodsFilled /></el-icon>
               <span>{{ $t('citizenPurchase.step1Title') }}</span>
             </h4>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-[#8A9A8F] mt-0.5">
               {{ $t('citizenPurchase.step1Subtitle') }}
             </p>
           </div>
@@ -154,19 +154,19 @@
           <div
             v-for="item in quotaItems"
             :key="item.itemCode"
-            class="rounded-xl border transition-all p-3.5 flex flex-col justify-between space-y-3"
+            class="rounded-lg border transition-all p-3.5 flex flex-col justify-between space-y-3"
             :class="
               selectedMap[item.itemCode] > 0
-                ? 'border-blue-500 bg-blue-50/20 shadow-xs ring-1 ring-blue-400/30'
-                : 'border-slate-200 bg-white hover:border-slate-300'
+                ? 'border-[#5C8A6B] bg-[#EFF5F1]/20 shadow-xs ring-1 ring-[#7FA48C]/30'
+                : 'border-[#D9E5DB] bg-white hover:border-[#C9DBCE]'
             "
           >
             <!-- 头部品名与价格 -->
             <div class="space-y-1.5">
               <div class="flex items-start justify-between gap-1">
                 <div>
-                  <span class="font-bold text-slate-900 text-xs sm:text-sm block">{{ formatItemName(item.itemName) }}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ formatOriginPack(item) }}</span>
+                  <span class="font-bold text-[#1B3123] text-xs sm:text-sm block">{{ formatItemName(item.itemName) }}</span>
+                  <span class="text-[10px] text-[#8A9A8F] font-mono">{{ formatOriginPack(item) }}</span>
                 </div>
                 <el-tag size="small" type="success" effect="plain" class="scale-90 origin-right font-bold">
                   {{ formatStockStatus(item.stockStatus) }}
@@ -174,18 +174,18 @@
               </div>
 
               <!-- 价格卡片 -->
-              <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 space-y-1 text-xs">
+              <div class="p-2 rounded-lg bg-[#F3F8F4] border border-[#E9F1EB] space-y-1 text-xs">
                 <div class="flex items-center justify-between">
-                  <span class="text-slate-500 text-[11px]">{{ $t('citizenPurchase.priceSelfPay') }}:</span>
-                  <span class="font-mono font-bold text-blue-600 text-sm">
-                    {{ item.guidePriceIQD.toLocaleString() }} IQD<span class="text-[10px] text-slate-400">/{{ item.unit }}</span>
+                  <span class="text-[#58685D] text-[11px]">{{ $t('citizenPurchase.priceSelfPay') }}:</span>
+                  <span class="font-mono font-bold text-[#326445] text-sm">
+                    {{ item.guidePriceIQD.toLocaleString() }} IQD<span class="text-[10px] text-[#8A9A8F]">/{{ item.unit }}</span>
                   </span>
                 </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                <div class="flex items-center justify-between text-[10px] text-[#8A9A8F]">
                   <span>{{ $t('citizenPurchase.priceMarket') }}:</span>
                   <span class="line-through font-mono">{{ item.marketPriceIQD.toLocaleString() }} IQD</span>
                 </div>
-                <div class="flex items-center justify-between text-[10px] text-emerald-700 font-semibold pt-0.5 border-t border-slate-200/50">
+                <div class="flex items-center justify-between text-[10px] text-[#2F5B44] font-semibold pt-0.5 border-t border-[#D9E5DB]/50">
                   <span>{{ $t('citizenPurchase.priceSubsidy') }}:</span>
                   <span class="font-mono">+{{ item.subsidyIQD.toLocaleString() }} IQD/{{ item.unit }}</span>
                 </div>
@@ -195,14 +195,14 @@
             <!-- 配额与限额 -->
             <div class="space-y-1 text-xs">
               <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-500">{{ $t('citizenPurchase.householdQuota') }}:</span>
-                <span class="font-mono font-bold text-slate-800">{{ item.totalHouseholdQuota }} {{ item.unit }}</span>
+                <span class="text-[#58685D]">{{ $t('citizenPurchase.householdQuota') }}:</span>
+                <span class="font-mono font-bold text-[#1F3326]">{{ item.totalHouseholdQuota }} {{ item.unit }}</span>
               </div>
               <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-500">{{ $t('citizenPurchase.remainingQuota') }}:</span>
+                <span class="text-[#58685D]">{{ $t('citizenPurchase.remainingQuota') }}:</span>
                 <span
                   class="font-mono font-bold"
-                  :class="item.remainingQuota > 0 ? 'text-emerald-600' : 'text-slate-400'"
+                  :class="item.remainingQuota > 0 ? 'text-[#2F7A50]' : 'text-[#8A9A8F]'"
                 >
                   {{ item.remainingQuota }} {{ item.unit }}
                 </span>
@@ -215,13 +215,16 @@
               />
             </div>
 
-            <!-- 数量输入框 (严格限制 :max="item.remainingQuota") -->
-            <div class="pt-2 border-t border-slate-100 space-y-2">
+            <!-- 数量输入框 (严格限制 :max="item.remainingQuota"；剩余额度为0时整块禁用，不可点击/输入) -->
+            <div
+              class="pt-2 border-t border-[#E9F1EB] space-y-2"
+              :class="item.remainingQuota <= 0 ? 'pointer-events-none select-none' : ''"
+            >
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-700">{{ $t('citizenPurchase.selectedQty') }}:</span>
+                <span class="text-xs font-semibold text-[#43554B]">{{ $t('citizenPurchase.selectedQty') }}:</span>
                 <button
                   type="button"
-                  class="text-[11px] text-blue-600 hover:underline cursor-pointer font-medium"
+                  class="text-[11px] text-[#326445] hover:underline cursor-pointer font-medium"
                   :disabled="item.remainingQuota <= 0"
                   @click="selectedMap[item.itemCode] = item.remainingQuota"
                 >
@@ -240,14 +243,14 @@
                   size="default"
                   :disabled="item.remainingQuota <= 0"
                 />
-                <span class="text-xs text-slate-500 font-bold shrink-0 w-6">{{ item.unit }}</span>
+                <span class="text-xs text-[#58685D] font-bold shrink-0 w-6">{{ item.unit }}</span>
               </div>
 
-              <div v-if="selectedMap[item.itemCode] >= item.remainingQuota && item.remainingQuota > 0" class="text-[10px] text-amber-600 font-semibold flex items-center gap-1">
+              <div v-if="selectedMap[item.itemCode] >= item.remainingQuota && item.remainingQuota > 0" class="text-[10px] text-[#C9A13B] font-semibold flex items-center gap-1">
                 <el-icon><Warning /></el-icon>
                 <span>{{ $t('citizenPurchase.maxLimitReached') }}</span>
               </div>
-              <div v-if="item.remainingQuota <= 0" class="text-[10px] text-slate-400">
+              <div v-if="item.remainingQuota <= 0" class="text-[10px] text-[#8A9A8F]">
                 {{ $t('citizenPurchase.quotaExhausted') }}
               </div>
             </div>
@@ -256,28 +259,28 @@
 
         <!-- 步骤 1 底部统计与下一步按钮 -->
         <div
-          class="pt-3 border-t border-slate-100"
+          class="pt-3 border-t border-[#E9F1EB]"
           :class="isAppMode ? 'flex flex-col gap-3 w-full' : 'flex flex-col sm:flex-row sm:items-center justify-between gap-3'"
         >
           <!-- 统计摘要行 (APP 模式下双列两端对齐，避免挤压折行) -->
           <div
-            :class="isAppMode ? 'flex items-center justify-between text-xs text-slate-700 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/60' : 'flex items-center gap-3 text-xs text-slate-600 flex-wrap'"
+            :class="isAppMode ? 'flex items-center justify-between text-xs text-[#43554B] bg-[#F3F8F4] px-3 py-2 rounded-lg border border-[#D9E5DB]/60' : 'flex items-center gap-3 text-xs text-[#58685D] flex-wrap'"
           >
             <span>
               {{ $t('citizenPurchase.totalWeight') }}:
-              <strong class="font-mono text-slate-900 text-sm ml-1">{{ totalSelectedWeight }} kg/L</strong>
+              <strong class="font-mono text-[#1B3123] text-sm ml-1">{{ totalSelectedWeight }} kg/L</strong>
             </span>
             <span v-if="!isAppMode">·</span>
             <span>
               {{ $t('citizenPurchase.goodsAmount') }}:
-              <strong class="font-mono text-blue-600 text-sm ml-1">{{ totalGoodsAmount.toLocaleString() }} IQD</strong>
+              <strong class="font-mono text-[#326445] text-sm ml-1">{{ totalGoodsAmount.toLocaleString() }} IQD</strong>
             </span>
           </div>
 
           <el-button
             type="primary"
             size="large"
-            class="font-bold shadow-xs !h-11 rounded-xl"
+            class="font-bold shadow-xs !h-11 rounded-lg"
             data-demo-target="btn-next-delivery"
             :class="isAppMode ? 'w-full !m-0 text-sm' : 'px-6'"
             :disabled="totalSelectedWeight <= 0"
@@ -294,14 +297,14 @@
     <!-- 流程第二步：选择配送方式 (Step 2) -->
     <!-- ======================================================== -->
     <div v-else-if="currentProcessStep === 2" class="space-y-4">
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-4">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 p-4 sm:p-5 shadow-xs space-y-4">
         <!-- 步骤 2 顶栏 -->
-        <div class="pb-3 border-b border-slate-100">
-          <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <el-icon class="text-indigo-600"><Van /></el-icon>
+        <div class="pb-3 border-b border-[#E9F1EB]">
+          <h4 class="text-sm font-bold text-[#1B3123] flex items-center gap-1.5">
+            <el-icon class="text-[#326445]"><Van /></el-icon>
             <span>{{ $t('citizenPurchase.step2Title') }}</span>
           </h4>
-          <p class="text-[11px] text-slate-400 mt-0.5">
+          <p class="text-[11px] text-[#8A9A8F] mt-0.5">
             {{ $t('citizenPurchase.step2Subtitle') }}
           </p>
         </div>
@@ -313,11 +316,11 @@
         >
           <!-- 方式 A: 到店自提 -->
           <div
-            class="border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between space-y-3"
+            class="border rounded-lg p-4 cursor-pointer transition-all flex flex-col justify-between space-y-3"
             :class="
               deliveryType === 'PICKUP'
-                ? 'border-blue-500 bg-blue-50/40 ring-2 ring-blue-500/20 shadow-xs'
-                : 'border-slate-200 hover:border-slate-300 bg-white'
+                ? 'border-[#5C8A6B] bg-[#EFF5F1]/40 ring-2 ring-[#5C8A6B]/20 shadow-xs'
+                : 'border-[#D9E5DB] hover:border-[#C9DBCE] bg-white'
             "
             @click="deliveryType = 'PICKUP'"
           >
@@ -325,12 +328,12 @@
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div
-                  class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
-                  :class="deliveryType === 'PICKUP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'"
+                  class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base transition shrink-0"
+                  :class="deliveryType === 'PICKUP' ? 'bg-[#326445] text-white' : 'bg-[#E9F1EB] text-[#58685D]'"
                 >
                   <el-icon><Shop /></el-icon>
                 </div>
-                <span class="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap">{{ $t('citizenPurchase.pickupTitle') }}</span>
+                <span class="text-xs sm:text-sm font-bold text-[#1B3123] whitespace-nowrap">{{ $t('citizenPurchase.pickupTitle') }}</span>
               </div>
               <el-tag size="small" type="success" effect="dark" class="font-bold shrink-0">
                 {{ $t('citizenPurchase.pickupFree') }}
@@ -338,30 +341,30 @@
             </div>
 
             <!-- 说明文本通栏展开 -->
-            <p class="text-[11px] text-slate-500 leading-relaxed">
+            <p class="text-[11px] text-[#58685D] leading-relaxed">
               {{ $t('citizenPurchase.pickupSub') }}
             </p>
 
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
+            <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/60 text-[11px] text-[#58685D] space-y-1">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.pickupStationLabel') }}:</span>
-                <span class="font-bold text-slate-800 truncate text-right">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
+                <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.pickupStationLabel') }}:</span>
+                <span class="font-bold text-[#1F3326] truncate text-right">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
               </div>
-              <div class="flex items-center justify-between gap-2 text-slate-500">
-                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.pickupHoursLabel') }}:</span>
-                <span class="text-slate-600 text-right font-medium">{{ $t('citizenPurchase.pickupHoursVal') }}</span>
+              <div class="flex items-center justify-between gap-2 text-[#58685D]">
+                <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.pickupHoursLabel') }}:</span>
+                <span class="text-[#58685D] text-right font-medium">{{ $t('citizenPurchase.pickupHoursVal') }}</span>
               </div>
             </div>
           </div>
 
           <!-- 方式 B: 送货上门 -->
           <div
-            class="border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between space-y-3"
+            class="border rounded-lg p-4 cursor-pointer transition-all flex flex-col justify-between space-y-3"
             data-demo-target="card-home-delivery"
             :class="
               deliveryType === 'HOME_DELIVERY'
-                ? 'border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-500/20 shadow-xs'
-                : 'border-slate-200 hover:border-slate-300 bg-white'
+                ? 'border-[#5C8A6B] bg-[#EFF5F1]/40 ring-2 ring-[#5C8A6B]/20 shadow-xs'
+                : 'border-[#D9E5DB] hover:border-[#C9DBCE] bg-white'
             "
             @click="handleSelectHomeDelivery"
           >
@@ -369,12 +372,12 @@
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div
-                  class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base transition shrink-0"
-                  :class="deliveryType === 'HOME_DELIVERY' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'"
+                  class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base transition shrink-0"
+                  :class="deliveryType === 'HOME_DELIVERY' ? 'bg-[#326445] text-white' : 'bg-[#E9F1EB] text-[#58685D]'"
                 >
                   <el-icon><Van /></el-icon>
                 </div>
-                <span class="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap">{{ $t('citizenPurchase.deliveryTitle') }}</span>
+                <span class="text-xs sm:text-sm font-bold text-[#1B3123] whitespace-nowrap">{{ $t('citizenPurchase.deliveryTitle') }}</span>
               </div>
               <el-tag size="small" type="warning" effect="dark" class="font-bold font-mono shrink-0">
                 {{ $t('citizenPurchase.deliveryFee') }}
@@ -382,26 +385,26 @@
             </div>
 
             <!-- 说明文本通栏展开，绝不挤压折行 -->
-            <p class="text-[11px] text-slate-500 leading-relaxed">
+            <p class="text-[11px] text-[#58685D] leading-relaxed">
               {{ $t('citizenPurchase.deliverySub') }}
             </p>
 
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600 space-y-1">
+            <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/60 text-[11px] text-[#58685D] space-y-1">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.deliverySlaLabel') }}</span>
-                <span class="font-bold text-indigo-700 text-right">{{ $t('citizenPurchase.deliverySlaValue') }}</span>
+                <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.deliverySlaLabel') }}</span>
+                <span class="font-bold text-[#2A5440] text-right">{{ $t('citizenPurchase.deliverySlaValue') }}</span>
               </div>
               <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400 shrink-0">{{ $t('citizenPurchase.verifyHandover') }}</span>
-                <span class="font-medium text-slate-700 text-right">{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
+                <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.verifyHandover') }}</span>
+                <span class="font-medium text-[#43554B] text-right">{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 送货上门收货信息编辑表单 -->
-        <div v-if="deliveryType === 'HOME_DELIVERY'" class="p-3.5 bg-indigo-50/50 rounded-xl border border-indigo-100 text-xs space-y-3">
-          <div class="flex items-center justify-between text-indigo-900 font-bold">
+        <div v-if="deliveryType === 'HOME_DELIVERY'" class="p-3.5 bg-[#EFF5F1]/50 rounded-lg border border-[#E1F4E4] text-xs space-y-3">
+          <div class="flex items-center justify-between text-[#1F3326] font-bold">
             <span class="flex items-center gap-1.5">
               <el-icon><LocationFilled /></el-icon>
               <span>{{ $t('citizenPurchase.deliveryInfoTitle') }}</span>
@@ -413,29 +416,29 @@
             :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'grid-cols-1 sm:grid-cols-2 gap-3'"
           >
             <div>
-              <span class="text-slate-500 mb-1 block">{{ $t('citizenPurchase.deliveryStreet') }}:</span>
+              <span class="text-[#58685D] mb-1 block">{{ $t('citizenPurchase.deliveryStreet') }}:</span>
               <el-input v-model="deliveryAddress" :placeholder="$t('citizenPurchase.addressPlaceholder')" size="small" />
             </div>
             <div>
-              <span class="text-slate-500 mb-1 block">{{ $t('citizenPurchase.deliveryPhone') }}:</span>
+              <span class="text-[#58685D] mb-1 block">{{ $t('citizenPurchase.deliveryPhone') }}:</span>
               <el-input v-model="contactPhone" placeholder="+964 780 123 4567" size="small" />
             </div>
           </div>
 
           <div>
-            <span class="text-slate-500 mb-1 block">{{ $t('citizenPurchase.deliveryNotes') }}:</span>
+            <span class="text-[#58685D] mb-1 block">{{ $t('citizenPurchase.deliveryNotes') }}:</span>
             <el-input v-model="orderNotes" :placeholder="$t('citizenPurchase.notesPlaceholder')" size="small" />
           </div>
         </div>
 
         <!-- 步骤 2 底部操作栏 (等宽自适应网格防挤压) -->
-        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2" :class="isAppMode ? 'pb-2' : ''">
-          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 1; scrollToTop()">
+        <div class="pt-3 border-t border-[#E9F1EB] grid grid-cols-2 gap-2" :class="isAppMode ? 'pb-2' : ''">
+          <el-button class="w-full font-medium rounded-lg" @click="currentProcessStep = 1; scrollToTop()">
             <el-icon class="mr-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
 
-          <el-button type="primary" size="large" class="w-full font-bold shadow-xs rounded-xl" data-demo-target="btn-next-pay" @click="handleProceedToStep3">
+          <el-button type="primary" size="large" class="w-full font-bold shadow-xs rounded-lg" data-demo-target="btn-next-pay" @click="handleProceedToStep3">
             <span>{{ $t('citizenPurchase.nextStepPay') }}</span>
             <el-icon class="ml-1"><Right /></el-icon>
           </el-button>
@@ -447,21 +450,21 @@
     <!-- 流程第三步：核对清单与付款 (Step 3) -->
     <!-- ======================================================== -->
     <div v-else-if="currentProcessStep === 3" class="space-y-4">
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-4">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/80 p-4 sm:p-5 shadow-xs space-y-4">
         <!-- 步骤 3 顶栏 -->
-        <div class="pb-3 border-b border-slate-100">
-          <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <el-icon class="text-emerald-600"><CreditCard /></el-icon>
+        <div class="pb-3 border-b border-[#E9F1EB]">
+          <h4 class="text-sm font-bold text-[#1B3123] flex items-center gap-1.5">
+            <el-icon class="text-[#2F7A50]"><CreditCard /></el-icon>
             <span>{{ $t('citizenPurchase.step3Title') }}</span>
           </h4>
-          <p class="text-[11px] text-slate-400 mt-0.5">
+          <p class="text-[11px] text-[#8A9A8F] mt-0.5">
             {{ $t('citizenPurchase.step3Subtitle') }}
           </p>
         </div>
 
         <!-- 订单清单核对卡片 -->
-        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 text-xs">
-          <div class="font-bold text-slate-800 flex items-center justify-between">
+        <div class="p-3.5 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-2.5 text-xs">
+          <div class="font-bold text-[#1F3326] flex items-center justify-between">
             <span>{{ $t('citizenPurchase.orderSummary') }}</span>
             <el-tag size="small" :type="deliveryType === 'PICKUP' ? 'primary' : 'warning'" effect="light" class="font-bold">
               {{ deliveryType === 'PICKUP' ? $t('citizenPurchase.pickupTitle') : $t('citizenPurchase.deliveryTitle') }}
@@ -472,54 +475,54 @@
             <div
               v-for="it in activeSelectedSummary"
               :key="it.itemCode"
-              class="p-2 rounded-lg bg-white border border-slate-200/60 flex items-center justify-between"
+              class="p-2 rounded-lg bg-white border border-[#D9E5DB]/60 flex items-center justify-between"
             >
               <div>
-                <span class="font-semibold text-slate-800">{{ it.name }}</span>
-                <span class="text-[10px] text-slate-400 block">{{ it.unitPrice.toLocaleString() }} IQD/{{ it.unit }}</span>
+                <span class="font-semibold text-[#1F3326]">{{ it.name }}</span>
+                <span class="text-[10px] text-[#8A9A8F] block">{{ it.unitPrice.toLocaleString() }} IQD/{{ it.unit }}</span>
               </div>
-              <span class="font-mono font-bold text-blue-600">{{ it.qty }} {{ it.unit }}</span>
+              <span class="font-mono font-bold text-[#326445]">{{ it.qty }} {{ it.unit }}</span>
             </div>
           </div>
 
-          <div class="pt-2 border-t border-slate-200/60 flex flex-wrap justify-between text-[11px] text-slate-500">
+          <div class="pt-2 border-t border-[#D9E5DB]/60 flex flex-wrap justify-between text-[11px] text-[#58685D]">
             <span>{{ $t('citizenPurchase.agentStationLabel') }} {{ quotaInfo.agentName }}</span>
             <span v-if="deliveryType === 'HOME_DELIVERY'">{{ $t('citizenPurchase.deliveryAddrLabel') }} {{ deliveryAddress }}</span>
           </div>
         </div>
 
         <!-- 费用明细卡与国家直补横幅 -->
-        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="bg-gradient-to-br from-[#1B3123] to-[#12241A] text-white rounded-lg p-4 sm:p-5 shadow-sm space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div class="space-y-0.5">
-              <span class="text-slate-400 text-[11px]">{{ $t('citizenPurchase.goodsAmount') }}</span>
+              <span class="text-[#8A9A8F] text-[11px]">{{ $t('citizenPurchase.goodsAmount') }}</span>
               <div class="font-mono font-bold text-lg text-white">{{ totalGoodsAmount.toLocaleString() }} IQD</div>
             </div>
             <div class="space-y-0.5">
-              <span class="text-slate-400 text-[11px]">{{ $t('citizenPurchase.deliveryFeeLabel') }}</span>
-              <div class="font-mono font-bold text-lg text-amber-300">
+              <span class="text-[#8A9A8F] text-[11px]">{{ $t('citizenPurchase.deliveryFeeLabel') }}</span>
+              <div class="font-mono font-bold text-lg text-[#E5CEA1]">
                 {{ deliveryType === 'HOME_DELIVERY' ? '1,000 IQD' : $t('citizenPurchase.freePickupFee') }}
               </div>
             </div>
             <div class="space-y-0.5">
-              <span class="text-slate-400 text-[11px]">{{ $t('citizenPurchase.finalPayLabel') }}</span>
-              <div class="font-mono font-black text-2xl text-emerald-400">{{ finalTotalPayAmount.toLocaleString() }} IQD</div>
+              <span class="text-[#8A9A8F] text-[11px]">{{ $t('citizenPurchase.finalPayLabel') }}</span>
+              <div class="font-mono font-black text-2xl text-[#6FBF92]">{{ finalTotalPayAmount.toLocaleString() }} IQD</div>
             </div>
           </div>
 
           <!-- 国家财政直补效益标签 -->
-          <div class="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
-            <el-icon class="text-emerald-400 text-base"><CircleCheckFilled /></el-icon>
+          <div class="p-2.5 rounded-lg bg-[#12241A]/70 border border-[#3E9B68]/40 text-[#A7D9BC] text-xs flex items-center gap-2">
+            <el-icon class="text-[#6FBF92] text-base"><CircleCheckFilled /></el-icon>
             <div>
               <span>{{ $t('citizenPurchase.subsidyAmount') }}：<strong class="font-mono text-white text-sm">+{{ totalSubsidyAmount.toLocaleString() }} IQD</strong></span>
-              <span class="text-[10px] text-emerald-400/80 block">({{ $t('citizenPurchase.subsidyBanner') }})</span>
+              <span class="text-[10px] text-[#6FBF92]/80 block">({{ $t('citizenPurchase.subsidyBanner') }})</span>
             </div>
           </div>
         </div>
 
         <!-- 步骤 3 底部操作栏 (等宽自适应网格防截断) -->
-        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-          <el-button class="w-full font-medium rounded-xl" @click="currentProcessStep = 2; scrollToTop()">
+        <div class="pt-3 border-t border-[#E9F1EB] grid grid-cols-2 gap-2">
+          <el-button class="w-full font-medium rounded-lg" @click="currentProcessStep = 2; scrollToTop()">
             <el-icon class="mr-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
@@ -527,7 +530,7 @@
           <el-button
             type="success"
             size="large"
-            class="w-full font-bold shadow-md bg-emerald-600 hover:bg-emerald-700 border-none text-white rounded-xl px-2"
+            class="w-full font-bold shadow-md bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white rounded-lg px-2"
             data-demo-target="btn-pay"
             :loading="submitting"
             @click="handleStartPayment"
@@ -542,20 +545,20 @@
     <!-- ======================================================== -->
     <!-- 4. 我的历史购买与提货流水 (附随时出示二维码) -->
     <!-- ======================================================== -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-xs space-y-3">
-      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+    <div class="bg-white rounded-lg border border-[#D9E5DB]/80 p-4 sm:p-5 shadow-xs space-y-3">
+      <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB]">
         <div class="flex items-center gap-1.5 min-w-0">
-          <el-icon class="text-emerald-600 shrink-0"><Tickets /></el-icon>
-          <h4 class="text-xs sm:text-sm font-bold text-slate-800 truncate">
+          <el-icon class="text-[#2F7A50] shrink-0"><Tickets /></el-icon>
+          <h4 class="text-xs sm:text-sm font-bold text-[#1F3326] truncate">
             {{ $t('citizenPurchase.orderHistoryTitle') }} ({{ myOrders.length }})
           </h4>
         </div>
         <el-button size="small" circle text @click="loadOrders" :title="$t('common.refresh') || '刷新'">
-          <el-icon class="text-slate-500"><Refresh /></el-icon>
+          <el-icon class="text-[#58685D]"><Refresh /></el-icon>
         </el-button>
       </div>
 
-      <div v-if="myOrders.length === 0" class="py-8 text-center text-slate-400 text-xs">
+      <div v-if="myOrders.length === 0" class="py-8 text-center text-[#8A9A8F] text-xs">
         {{ $t('citizenPurchase.noHistory') }}
       </div>
 
@@ -563,15 +566,15 @@
         <div
           v-for="ord in myOrders"
           :key="ord.orderId"
-          class="p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-white hover:border-slate-300 transition space-y-2 text-xs shadow-2xs"
+          class="p-3 sm:p-3.5 rounded-lg border border-[#D9E5DB]/90 bg-white hover:border-[#C9DBCE] transition space-y-2 text-xs shadow-2xs"
         >
           <!-- 头部：左侧单号与时间，右侧履约模式与状态标签 -->
-          <div class="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-2">
+          <div class="flex items-center justify-between gap-1.5 border-b border-[#E9F1EB] pb-2">
             <div class="min-w-0 flex-1">
-              <div class="font-mono font-bold text-slate-900 text-xs sm:text-sm truncate">
+              <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-sm truncate">
                 #{{ ord.orderId }}
               </div>
-              <div class="text-slate-400 font-mono text-[10px]">
+              <div class="text-[#8A9A8F] font-mono text-[10px]">
                 {{ (ord.createdAt || ord.paidAt || '').replace('T', ' ').slice(5, 16) }}
               </div>
             </div>
@@ -579,7 +582,7 @@
             <div class="flex items-center gap-1 shrink-0">
               <span
                 class="px-1.5 py-0.5 rounded text-[10px] font-bold"
-                :class="ord.deliveryType === 'PICKUP' ? 'bg-blue-50 text-blue-700 border border-blue-200/60' : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60'"
+                :class="ord.deliveryType === 'PICKUP' ? 'bg-[#EFF5F1] text-[#2A5440] border border-[#C7DED0]/60' : 'bg-[#EFF5F1] text-[#2A5440] border border-[#C7DED0]/60'"
               >
                 {{ ord.deliveryType === 'PICKUP' ? '🏬 ' + $t('citizenPurchase.pickupTitle') : '🚚 ' + $t('citizenPurchase.deliveryTitle') }}
               </span>
@@ -596,21 +599,21 @@
               <span
                 v-for="(it, idx) in ord.items"
                 :key="idx"
-                class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200/60 whitespace-nowrap"
+                class="px-1.5 py-0.5 rounded bg-[#E9F1EB] text-[#43554B] text-[10px] font-medium border border-[#D9E5DB]/60 whitespace-nowrap"
               >
-                {{ formatItemShort(it) }} <b class="font-mono text-slate-900">×{{ it.qty }}{{ it.unit }}</b>
+                {{ formatItemShort(it) }} <b class="font-mono text-[#1B3123]">×{{ it.qty }}{{ it.unit }}</b>
               </span>
             </div>
 
             <!-- 金额与提货二维码按钮 -->
             <div class="flex items-center gap-2 shrink-0 ml-auto">
-              <span class="font-mono font-bold text-emerald-700 text-xs sm:text-sm">
+              <span class="font-mono font-bold text-[#2F5B44] text-xs sm:text-sm">
                 IQD {{ (ord.selfPayAmount || ord.amount || 0).toLocaleString() }}
               </span>
               <el-button
                 type="primary"
                 size="small"
-                class="font-bold rounded-xl px-2.5 flex items-center gap-1"
+                class="font-bold rounded-lg px-2.5 flex items-center gap-1"
                 data-demo-target="btn-show-qr"
                 @click="openQrModal(ord)"
               >
@@ -651,33 +654,33 @@
     >
       <div v-if="currentQrOrder" class="p-2 sm:p-4 space-y-4 select-none text-center" data-demo-target="qr-voucher">
         <!-- 抬头 -->
-        <div class="space-y-1 border-b border-slate-100 pb-3">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold mx-auto border border-emerald-100 shadow-xs">
+        <div class="space-y-1 border-b border-[#E9F1EB] pb-3">
+          <div class="w-12 h-12 rounded-lg bg-[#EFF5F1] text-[#2F7A50] flex items-center justify-center font-bold mx-auto border border-[#E1F4E4] shadow-xs">
             <el-icon :size="24"><CircleCheckFilled /></el-icon>
           </div>
-          <h3 class="text-base font-bold text-slate-900">{{ $t('citizenPurchase.qrVoucherTitle') }}</h3>
-          <p class="text-xs text-emerald-700 font-medium">{{ $t('citizenPurchase.qrVoucherSub') }}</p>
-          <div class="text-[10px] text-slate-400 font-mono">
+          <h3 class="text-base font-bold text-[#1B3123]">{{ $t('citizenPurchase.qrVoucherTitle') }}</h3>
+          <p class="text-xs text-[#2F5B44] font-medium">{{ $t('citizenPurchase.qrVoucherSub') }}</p>
+          <div class="text-[10px] text-[#8A9A8F] font-mono">
             {{ currentQrOrder.orderId }}
           </div>
         </div>
 
         <!-- 核心动态二维码 -->
-        <div class="relative w-60 h-60 mx-auto p-3.5 rounded-2xl bg-white border-2 border-slate-800 shadow-xl flex flex-col items-center justify-center overflow-hidden">
-          <div class="absolute inset-x-2 h-0.5 bg-emerald-500 shadow-[0_0_12px_#10b981] animate-scan-qr z-20"></div>
+        <div class="relative w-60 h-60 mx-auto p-3.5 rounded-lg bg-white border-2 border-[#1F3326] shadow-xl flex flex-col items-center justify-center overflow-hidden">
+          <div class="absolute inset-x-2 h-0.5 bg-[#3E9B68] shadow-[0_0_12px_#3E9B68] animate-scan-qr z-20"></div>
 
           <!-- SVG 高保真二维码矩阵 -->
-          <svg viewBox="0 0 200 200" class="w-full h-full text-slate-900" fill="currentColor">
+          <svg viewBox="0 0 200 200" class="w-full h-full text-[#1B3123]" fill="currentColor">
             <rect width="200" height="200" fill="#ffffff" />
-            <rect x="15" y="15" width="45" height="45" fill="#0f172a" rx="6" />
+            <rect x="15" y="15" width="45" height="45" fill="#1F3326" rx="6" />
             <rect x="23" y="23" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="29" y="29" width="17" height="17" fill="#0f172a" rx="2" />
-            <rect x="140" y="15" width="45" height="45" fill="#0f172a" rx="6" />
+            <rect x="29" y="29" width="17" height="17" fill="#1F3326" rx="2" />
+            <rect x="140" y="15" width="45" height="45" fill="#1F3326" rx="6" />
             <rect x="148" y="23" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="154" y="29" width="17" height="17" fill="#0f172a" rx="2" />
-            <rect x="15" y="140" width="45" height="45" fill="#0f172a" rx="6" />
+            <rect x="154" y="29" width="17" height="17" fill="#1F3326" rx="2" />
+            <rect x="15" y="140" width="45" height="45" fill="#1F3326" rx="6" />
             <rect x="23" y="148" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="29" y="154" width="17" height="17" fill="#0f172a" rx="2" />
+            <rect x="29" y="154" width="17" height="17" fill="#1F3326" rx="2" />
             <rect x="75" y="20" width="12" height="12" />
             <rect x="95" y="20" width="12" height="12" />
             <rect x="115" y="20" width="12" height="12" />
@@ -710,28 +713,28 @@
             <rect x="95" y="165" width="12" height="12" />
             <rect x="125" y="165" width="12" height="12" />
             <rect x="155" y="165" width="12" height="12" />
-            <rect x="82" y="82" width="36" height="36" fill="#0f172a" rx="8" />
-            <rect x="86" y="86" width="28" height="28" fill="#10b981" rx="6" />
+            <rect x="82" y="82" width="36" height="36" fill="#1F3326" rx="8" />
+            <rect x="86" y="86" width="28" height="28" fill="#3E9B68" rx="6" />
             <text x="100" y="105" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="monospace">RCM</text>
           </svg>
 
-          <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-slate-500 bg-white/90 py-0.5 rounded">
+          <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#58685D] bg-white/90 py-0.5 rounded">
             {{ liveTimerString }}
           </div>
         </div>
 
         <!-- 提货核验码 -->
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-          <div class="text-[11px] text-slate-500">{{ $t('citizenPurchase.pickupCodeLabel') }}:</div>
+        <div class="p-3 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] text-xs space-y-1">
+          <div class="text-[11px] text-[#58685D]">{{ $t('citizenPurchase.pickupCodeLabel') }}:</div>
           <div class="flex items-center justify-center gap-2">
-            <span class="font-mono font-black text-slate-900 text-base sm:text-lg tracking-wider">
+            <span class="font-mono font-black text-[#1B3123] text-base sm:text-lg tracking-wider">
               {{ currentQrOrder.pickupCode }}
             </span>
             <el-button size="small" type="primary" link @click="copyPickupCode(currentQrOrder.pickupCode)">
               {{ $t('citizenPurchase.copyCode') }}
             </el-button>
           </div>
-          <div class="text-[10px] text-slate-400">
+          <div class="text-[10px] text-[#8A9A8F]">
             {{ $t('citizenPurchase.qrScanHint') }}
           </div>
         </div>
@@ -1074,8 +1077,11 @@ async function loadQuotaData() {
         contactPhone.value = res.phone || '';
       }
       quotaItems.value.forEach((item) => {
-        if (selectedMap[item.itemCode] === undefined) {
-          selectedMap[item.itemCode] = 0;
+        // 剩余额度归零后强制清零已选数量，且不允许超出剩余额度
+        const maxQty = Math.max(0, Number(item.remainingQuota) || 0);
+        const current = Number(selectedMap[item.itemCode]);
+        if (selectedMap[item.itemCode] === undefined || Number.isNaN(current) || current > maxQty) {
+          selectedMap[item.itemCode] = maxQty;
         }
       });
     }

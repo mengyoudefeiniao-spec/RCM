@@ -1,16 +1,16 @@
 <template>
   <div
-    class="mobile-agent-dashboard w-full bg-[#F7F6F1] flex flex-col font-sans pb-4 text-slate-800 transition-all duration-300"
+    class="mobile-agent-dashboard w-full bg-[#F8FBF8] flex flex-col font-sans pb-4 text-[#1F3326] transition-all duration-300"
     :class="[
       isStandaloneLayout
         ? 'min-h-full'
-        : 'sm:max-w-[412px] sm:h-[924px] sm:max-h-[924px] sm:mx-auto sm:rounded-3xl sm:shadow-2xl sm:border sm:border-[#ECE7DE] sm:overflow-y-auto sm:relative'
+        : 'sm:max-w-[412px] sm:h-[924px] sm:max-h-[924px] sm:mx-auto sm:rounded-3xl sm:shadow-2xl sm:border sm:border-[#D9E5DB] sm:overflow-y-auto sm:relative'
     ]"
   >
     <!-- ======================================================== -->
     <!-- 1. Hero Banner 头部：沉浸式石拱门建筑纹理背景 + 业务大标题 (100% 满宽流式适配) -->
     <!-- ======================================================== -->
-    <div class="relative w-full h-44 sm:h-52 overflow-hidden select-none shrink-0 border-b border-[#ECE7DE]">
+    <div class="relative w-full h-44 sm:h-52 overflow-hidden select-none shrink-0 border-b border-[#D9E5DB]">
       <!-- 背景图图层：真实截图处理后的无字背景大图 -->
       <img
         src="/images/dashboard-banner.png"
@@ -20,21 +20,21 @@
       />
 
       <!-- 柔和微弱渐变保护层：确保在移动端窄屏下文字对比度与清晰度 -->
-      <div class="absolute inset-0 bg-gradient-to-t from-[#F7F6F1]/90 via-[#FAF8F5]/30 to-black/5 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#F8FBF8]/90 via-[#F3F8F4]/30 to-black/5 pointer-events-none"></div>
 
       <!-- 头部文字排版：位于图片图层上方 (relative z-10)，不要直接加在图片里面 -->
       <div class="relative z-10 h-full p-4 flex flex-col justify-between items-end text-right">
         <!-- 右上角小副标签与安全盾牌小图标 -->
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E5DAC8] shadow-xs">
-          <span class="text-xs font-bold text-[#966C2E] font-sans">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E5CEA1] shadow-xs">
+          <span class="text-xs font-bold text-[#7A5F21] font-sans">
             {{ $t('mobileAgent.foodSupportService') }}
           </span>
-          <el-icon :size="13" class="text-[#966C2E]"><CircleCheck /></el-icon>
+          <el-icon :size="13" class="text-[#7A5F21]"><CircleCheck /></el-icon>
         </div>
 
         <!-- 主标题：今日配给发放 -->
         <div class="pb-1">
-          <h1 class="text-2xl sm:text-3xl font-black text-[#1E3F35] tracking-tight">
+          <h1 class="text-2xl sm:text-3xl font-black text-[#326445] tracking-tight">
             {{ $t('mobileAgent.todayDistribution') }}
           </h1>
         </div>
@@ -47,7 +47,7 @@
     <div class="flex-1 px-4 space-y-3 pt-2" ref="contentContainerRef">
       
       <!-- ======================================================== -->
-      <!-- 2. 汇总状态卡片 (淡灰绿微底 #EBF3EE, 浅绿细描边 #D6E6DC) -->
+      <!-- 2. 汇总状态卡片 (淡灰绿微底 #E2F4E4, 浅绿细描边 #C7E0CE) -->
       <!-- ======================================================== -->
       <div class="rcm-summary-card rcm-stagger-item space-y-3">
         <!-- 卡片右上角网点标识与浮层规则说明 -->
@@ -59,8 +59,8 @@
             badge-type="success"
           />
           
-          <div class="flex items-center gap-1 text-[#275A3E] font-medium font-sans">
-            <span class="font-mono text-xs font-bold text-[#1E3F35]">AG-0217#</span>
+          <div class="flex items-center gap-1 text-[#326445] font-medium font-sans">
+            <span class="font-mono text-xs font-bold text-[#326445]">AG-0217#</span>
             <span>·</span>
             <span>{{ $t('mobileAgent.siteBadgeName') }}</span>
           </div>
@@ -70,30 +70,30 @@
         <div class="grid grid-cols-3 gap-2 text-center pt-1">
           <!-- 列 1: 今日发放 -->
           <div class="space-y-1">
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#1E3F35] tracking-tight">
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#326445] tracking-tight">
               {{ countDispatched.displayValue.value }}
             </div>
-            <div class="text-xs font-bold text-[#5E6862] leading-tight">
+            <div class="text-xs font-bold text-[#58685D] leading-tight">
               {{ $t('mobileAgent.todayDistribution') }}
             </div>
           </div>
 
           <!-- 列 2: 剩余户数 -->
-          <div class="space-y-1 border-x border-[#D6E6DC]/80">
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#1E3F35] tracking-tight">
+          <div class="space-y-1 border-x border-[#C7E0CE]/80">
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#326445] tracking-tight">
               {{ countRemaining.displayValue.value }}
             </div>
-            <div class="text-xs font-bold text-[#5E6862] leading-tight">
+            <div class="text-xs font-bold text-[#58685D] leading-tight">
               {{ $t('mobileAgent.remainingHouseholds') }}
             </div>
           </div>
 
           <!-- 列 3: 待办预警 -->
           <div class="space-y-1">
-            <div class="text-2xl sm:text-3xl font-black font-mono text-[#D04343] tracking-tight">
+            <div class="text-2xl sm:text-3xl font-black font-mono text-[#C04442] tracking-tight">
               {{ countAlerts.displayValue.value }}
             </div>
-            <div class="text-xs font-bold text-[#D04343] leading-tight">
+            <div class="text-xs font-bold text-[#C04442] leading-tight">
               {{ $t('mobileAgent.pendingAlerts') }}
             </div>
           </div>
@@ -130,7 +130,7 @@
       <!-- ======================================================== -->
       <div class="rcm-list-card rcm-stagger-item space-y-3.5">
         <!-- 头部标题区：左侧辅助公式说明，右侧主标题 -->
-        <div class="flex items-center justify-between border-b border-[#F4EFE6] pb-2.5">
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
           <!-- 左侧公式说明：台账平衡稽查公式 -->
           <div class="flex items-center gap-1">
             <ModuleDescTip
@@ -143,7 +143,7 @@
 
           <!-- 右侧标题 -->
           <div class="flex items-center gap-1.5 text-right">
-            <h3 class="text-sm font-bold text-[#18231E]">{{ $t('mobileAgent.periodInventoryTitle') }}</h3>
+            <h3 class="text-sm font-bold text-[#1F3326]">{{ $t('mobileAgent.periodInventoryTitle') }}</h3>
           </div>
         </div>
 
@@ -151,7 +151,7 @@
         <div class="space-y-3" ref="materialsListRef">
           
           <!-- 物料 1: 面粉 -->
-          <div class="p-3 rounded-xl border border-[#ECE7DE] bg-[#FCFBF8] space-y-2 hover:border-[#D4AA6A]/60 transition-colors">
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
               <!-- 状态胶囊：平账 -->
               <span class="rcm-pill-badge rcm-pill-success">
@@ -160,7 +160,7 @@
               </span>
 
               <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#18231E]">
+              <span class="font-bold text-sm text-[#1F3326]">
                 {{ $t('mobileAgent.materialFlour') }}
               </span>
             </div>
@@ -168,35 +168,35 @@
             <!-- 4 列对账参数 (调拨 / 已发 / 理论 / 实盘) -->
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">2,000</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">2,000</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">1,240</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">1,240</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">760</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">760</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#1E3F35]">760</div>
-                <div class="text-[9px] text-[#275A3E] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[13px] font-bold text-[#326445]">760</div>
+                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
-          <!-- 物料 2: 大米 -->
-          <div class="p-3 rounded-xl border border-[#FAD8D8] bg-[#FFFBFB] space-y-2 hover:border-[#D04343]/60 transition-colors">
+          <!-- 物料 2: 大米 (调拨 900 - 已发 720 = 理论 180 = 实盘 180，账实相符) -->
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
-              <!-- 状态胶囊：损益差异 -->
-              <span class="rcm-pill-badge rcm-pill-danger">
+              <!-- 状态胶囊：平账 -->
+              <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
-                <span>{{ $t('mobileAgent.deficitStatus') }}</span>
+                <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
 
               <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#18231E]">
+              <span class="font-bold text-sm text-[#1F3326]">
                 {{ $t('mobileAgent.materialRice') }}
               </span>
             </div>
@@ -204,53 +204,53 @@
             <!-- 4 列对账参数 -->
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">900</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">900</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">720</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">720</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#8C958F]">180</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">180</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#D04343]">160</div>
-                <div class="text-[9px] text-[#D04343] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[13px] font-bold text-[#326445]">180</div>
+                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
           <!-- 物料 3: 食用油 -->
-          <div class="p-3 rounded-xl border border-[#ECE7DE] bg-[#FCFBF8] space-y-2 hover:border-[#D4AA6A]/60 transition-colors">
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
                 <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
 
-              <span class="font-bold text-sm text-[#18231E]">
+              <span class="font-bold text-sm text-[#1F3326]">
                 {{ $t('mobileAgent.materialOil') }}
               </span>
             </div>
 
             <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">800</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">800</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">490</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">490</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#18231E]">310</div>
-                <div class="text-[9px] text-[#8C958F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[13px] font-bold text-[#1F3326]">310</div>
+                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
-                <div class="text-[13px] font-bold text-[#1E3F35]">310</div>
-                <div class="text-[9px] text-[#275A3E] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[13px] font-bold text-[#326445]">310</div>
+                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
@@ -260,47 +260,47 @@
       <!-- ======================================================== -->
       <!-- 6. 核心保供服务直通车 (和公民APP 1:1 规范对标的功能模块条) -->
       <!-- ======================================================== -->
-      <div class="rcm-list-card rcm-stagger-item space-y-3 p-4 bg-white rounded-2xl border border-[#ECE7DE] shadow-xs">
-        <div class="flex items-center justify-between pb-2.5 border-b border-[#F4EFE6]">
-          <span class="text-xs font-bold text-[#1E3F35] flex items-center gap-1.5">
-            <span class="w-1.5 h-3.5 bg-[#C59D5F] rounded-full"></span>
+      <div class="rcm-list-card rcm-stagger-item space-y-3 p-4 bg-white rounded-lg border border-[#D9E5DB] shadow-xs">
+        <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB]">
+          <span class="text-xs font-bold text-[#326445] flex items-center gap-1.5">
+            <span class="w-1.5 h-3.5 bg-[#D3AF62] rounded-full"></span>
             <span>{{ $t('dashboard.quickServices.title') || '代理保供核心服务直通车' }}</span>
           </span>
-          <span class="text-[11px] text-[#8C958F] font-medium">{{ $t('dashboard.quickServices.subtitle') || '网点现场协同' }}</span>
+          <span class="text-[11px] text-[#8A9A8F] font-medium">{{ $t('dashboard.quickServices.subtitle') || '网点现场协同' }}</span>
         </div>
 
         <div class="grid grid-cols-3 gap-3 text-center select-none">
           <!-- 1. 现场智能核销 (扫码弹窗) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="handleTriggerScan"
           >
-            <div class="w-12 h-12 rounded-2xl bg-[#EAF5EF] text-[#1E3F35] flex items-center justify-center text-xl border border-[#D1E7DA] shadow-xs">
+            <div class="w-12 h-12 rounded-lg bg-[#E1F4E4] text-[#326445] flex items-center justify-center text-xl border border-[#CFE2D5] shadow-xs">
               <el-icon><FullScreen /></el-icon>
             </div>
-            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
+            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
           </div>
 
           <!-- 2. 物资配给履约 (跳转配给配送) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToModule('/warehouse')"
           >
-            <div class="w-12 h-12 rounded-2xl bg-[#F4EFFB] text-[#7C3AED] flex items-center justify-center text-xl border border-[#E4D8F7] shadow-xs">
+            <div class="w-12 h-12 rounded-lg bg-[#FDF3E0] text-[#B8934A] flex items-center justify-center text-xl border border-[#EED9AE] shadow-xs">
               <el-icon><Van /></el-icon>
             </div>
-            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
+            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
           </div>
 
           <!-- 3. 签约网点档案 (跳转代理档案) -->
           <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
             @click="navigateToModule('/agent')"
           >
-            <div class="w-12 h-12 rounded-2xl bg-[#FAF3E6] text-[#C59D5F] flex items-center justify-center text-xl border border-[#F2E3C6] shadow-xs">
+            <div class="w-12 h-12 rounded-lg bg-[#FDF3E0] text-[#D3AF62] flex items-center justify-center text-xl border border-[#EED9AE] shadow-xs">
               <el-icon><Shop /></el-icon>
             </div>
-            <span class="text-[11px] font-medium text-slate-700 leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
+            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
           </div>
         </div>
       </div>
@@ -322,29 +322,29 @@
     >
       <div class="space-y-3.5 text-center" data-demo-target="scan-viewfinder">
         <!-- 扫码取景框模拟 -->
-        <div class="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-2xl bg-black/95 overflow-hidden border-2 border-[#D3A757] shadow-inner flex items-center justify-center">
+        <div class="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-lg bg-black/95 overflow-hidden border-2 border-[#D3AF62] shadow-inner flex items-center justify-center">
           <!-- 激光扫描线 -->
-          <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-[#D3A757] to-transparent shadow-[0_0_12px_#D3A757] animate-scanBeam"></div>
+          <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scanBeam"></div>
           
           <!-- 取景角标 -->
-          <div class="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-[#D3A757]"></div>
-          <div class="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-[#D3A757]"></div>
-          <div class="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-[#D3A757]"></div>
-          <div class="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-[#D3A757]"></div>
+          <div class="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-[#D3AF62]"></div>
+          <div class="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-[#D3AF62]"></div>
+          <div class="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-[#D3AF62]"></div>
+          <div class="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-[#D3AF62]"></div>
 
           <div class="text-white/70 text-xs font-mono space-y-1">
-            <el-icon :size="28" class="text-[#D3A757] animate-pulse"><FullScreen /></el-icon>
+            <el-icon :size="28" class="text-[#D3AF62] animate-pulse"><FullScreen /></el-icon>
             <div class="text-[11px]">{{ $t('mobileAgent.scanModalAlignQr') }}</div>
           </div>
         </div>
 
-        <div class="text-[11px] text-slate-500">
+        <div class="text-[11px] text-[#58685D]">
           {{ $t('mobileAgent.scanModalTips') }}
         </div>
 
         <div class="pt-1 flex items-center justify-center gap-2">
           <el-button size="small" @click="scanDialogVisible = false">{{ $t('common.cancel') }}</el-button>
-          <el-button size="small" type="primary" color="#1E3F35" class="font-bold" @click="handleConfirmSimulatedScan">
+          <el-button size="small" type="primary" color="#326445" class="font-bold" @click="handleConfirmSimulatedScan">
             {{ $t('mobileAgent.simulateSuccessBtn') }}
           </el-button>
         </div>
@@ -362,22 +362,22 @@
       append-to-body
     >
       <div class="space-y-3 p-1">
-        <div class="text-xs text-[#5E6862] flex justify-between items-center pb-2 border-b">
+        <div class="text-xs text-[#58685D] flex justify-between items-center pb-2 border-b">
           <span>{{ $t('mobileAgent.historyDrawerSiteTitle') }}</span>
-          <span class="font-bold text-[#1E3F35]">{{ $t('mobileAgent.historyDrawerDispatchedCount') }}</span>
+          <span class="font-bold text-[#326445]">{{ $t('mobileAgent.historyDrawerDispatchedCount') }}</span>
         </div>
 
         <div class="space-y-2 max-h-[360px] overflow-y-auto">
           <div
             v-for="(item, idx) in distributionRecords"
             :key="idx"
-            class="p-2.5 rounded-lg border border-[#ECE7DE] bg-white flex items-center justify-between text-xs"
+            class="p-2.5 rounded-lg border border-[#D9E5DB] bg-white flex items-center justify-between text-xs"
           >
             <div>
-              <div class="font-bold text-[#18231E]">{{ item.name }} ({{ $t('mobileAgent.unitCardNo') }}: {{ item.cardNo }})</div>
-              <div class="text-[11px] text-[#8C958F]">{{ item.time }} · {{ $t('mobileAgent.flourShort') }} {{ item.flour }}kg · {{ $t('mobileAgent.riceShort') }} {{ item.rice }}kg</div>
+              <div class="font-bold text-[#1F3326]">{{ item.name }} ({{ $t('mobileAgent.unitCardNo') }}: {{ item.cardNo }})</div>
+              <div class="text-[11px] text-[#8A9A8F]">{{ item.time }} · {{ $t('mobileAgent.flourShort') }} {{ item.flour }}kg · {{ $t('mobileAgent.riceShort') }} {{ item.rice }}kg</div>
             </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E4F2E9] text-[#275A3E]">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E1F4E4] text-[#326445]">
               {{ $t('mobileAgent.statusVerified') }}
             </span>
           </div>
@@ -396,35 +396,35 @@
       append-to-body
     >
       <div class="space-y-4 p-2 text-xs">
-        <div class="flex items-center gap-3 p-3 rounded-xl bg-[#FAF8F4] border border-[#ECE7DE]">
-          <div class="w-10 h-10 rounded-full bg-[#1E3F35] text-white flex items-center justify-center font-bold text-base">
+        <div class="flex items-center gap-3 p-3 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]">
+          <div class="w-10 h-10 rounded-full bg-[#326445] text-white flex items-center justify-center font-bold text-base">
             AG
           </div>
           <div class="flex-1">
-            <div class="font-bold text-sm text-[#18231E]">{{ $t('mobileAgent.profileSiteName') }}</div>
-            <div class="text-[#8C958F] font-mono">{{ $t('mobileAgent.profileSiteDesc') }}</div>
+            <div class="font-bold text-sm text-[#1F3326]">{{ $t('mobileAgent.profileSiteName') }}</div>
+            <div class="text-[#8A9A8F] font-mono">{{ $t('mobileAgent.profileSiteDesc') }}</div>
           </div>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E4F2E9] text-[#275A3E]">
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E1F4E4] text-[#326445]">
             {{ $t('mobileAgent.statusOperating') }}
           </span>
         </div>
 
         <div class="space-y-2">
-          <div class="text-[11px] font-bold text-[#8C958F]">{{ $t('mobileAgent.sectionBizStats') }}</div>
+          <div class="text-[11px] font-bold text-[#8A9A8F]">{{ $t('mobileAgent.sectionBizStats') }}</div>
           <div class="grid grid-cols-2 gap-2 text-center">
-            <div class="p-2.5 rounded-lg bg-white border border-[#ECE7DE]">
-              <div class="text-base font-bold text-[#1E3F35] font-mono">1,480 {{ $t('mobileAgent.unitHousehold') }}</div>
-              <div class="text-[10px] text-[#5E6862]">{{ $t('mobileAgent.totalServiceHouseholds') }}</div>
+            <div class="p-2.5 rounded-lg bg-white border border-[#D9E5DB]">
+              <div class="text-base font-bold text-[#326445] font-mono">1,480 {{ $t('mobileAgent.unitHousehold') }}</div>
+              <div class="text-[10px] text-[#58685D]">{{ $t('mobileAgent.totalServiceHouseholds') }}</div>
             </div>
-            <div class="p-2.5 rounded-lg bg-white border border-[#ECE7DE]">
-              <div class="text-base font-bold text-[#D3A757] font-mono">92.4%</div>
-              <div class="text-[10px] text-[#5E6862]">{{ $t('mobileAgent.monthFulfillmentRate') }}</div>
+            <div class="p-2.5 rounded-lg bg-white border border-[#D9E5DB]">
+              <div class="text-base font-bold text-[#D3AF62] font-mono">92.4%</div>
+              <div class="text-[10px] text-[#58685D]">{{ $t('mobileAgent.monthFulfillmentRate') }}</div>
             </div>
           </div>
         </div>
 
         <div class="pt-2 flex flex-col gap-2">
-          <el-button type="primary" class="!bg-[#1E3F35] !border-[#1E3F35]" @click="goToOverview">
+          <el-button type="primary" class="!bg-[#326445] !border-[#326445]" @click="goToOverview">
             {{ $t('mobileAgent.btnSwitchOverview') }}
           </el-button>
           <el-button @click="showProfileDrawer = false">
@@ -696,7 +696,7 @@ function openInventoryAudit() {
 :deep(.mobile-scan-dialog .el-dialog__title) {
   font-size: 13px !important;
   font-weight: 800 !important;
-  color: #1E3F35 !important;
+  color: #326445 !important;
 }
 
 :deep(.mobile-scan-dialog .el-dialog__body) {

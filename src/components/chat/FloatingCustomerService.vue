@@ -16,24 +16,24 @@
         <!-- 悬浮提示气泡 (仅宽屏桌面模式显示，APP模式下隐藏避免横向遮挡) -->
         <div
           v-if="!isAppMode"
-          class="hidden sm:flex items-center mr-3 px-3.5 py-1.5 rounded-full bg-[#1E3F35]/95 text-white text-xs font-medium shadow-xl backdrop-blur-md border border-[#C59D5F]/40 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300"
+          class="hidden sm:flex items-center mr-3 px-3.5 py-1.5 rounded-full bg-white text-[#326445] text-xs font-medium shadow-[0_3px_18px_-6px_rgba(58,77,62,0.18)] backdrop-blur-md border border-[#E5CEA1] transform translate-x-2 group-hover:translate-x-0 transition-all duration-300"
         >
-          <span class="inline-block w-2 h-2 rounded-full bg-[#D3A757] mr-2 animate-pulse"></span>
+          <span class="inline-block w-2 h-2 rounded-full bg-[#D3AF62] mr-2 animate-pulse"></span>
           <span>{{ $t('chat.fabTitle') }}</span>
         </div>
 
         <!-- 悬浮球体主体 (深墨绿+暖砂金高端政务质感) -->
         <button
           type="button"
-          class="relative rounded-full bg-gradient-to-tr from-[#142D25] via-[#1E3F35] to-[#C59D5F] text-white flex items-center justify-center transition-all duration-300"
+          class="relative rounded-full bg-white text-[#326445] flex items-center justify-center transition-all duration-300"
           :class="[
             isAppMode
-              ? 'w-9.5 h-9.5 shadow-md border border-[#C59D5F]/50 ring-1 ring-[#C59D5F]/20 active:scale-90'
-              : 'w-10 h-10 sm:w-13 sm:h-13 shadow-xl hover:scale-105 active:scale-95 border-2 border-[#C59D5F]/50 ring-2 sm:ring-4 ring-[#C59D5F]/20'
+              ? 'w-9.5 h-9.5 shadow-md border border-[#D3AF62]/50 ring-1 ring-[#D3AF62]/20 active:scale-90'
+              : 'w-10 h-10 sm:w-13 sm:h-13 shadow-xl hover:scale-105 active:scale-95 border-2 border-[#D3AF62]/50 ring-2 sm:ring-4 ring-[#D3AF62]/20'
           ]"
           :title="$t('chat.fabTooltip')"
         >
-          <el-icon :class="isAppMode ? 'text-base text-white' : 'text-lg sm:text-xl text-white drop-shadow-xs'">
+          <el-icon :class="isAppMode ? 'text-base text-[#326445]' : 'text-lg sm:text-xl text-[#326445] drop-shadow-xs'">
             <ChatDotRound />
           </el-icon>
 
@@ -42,9 +42,9 @@
             class="absolute flex"
             :class="isAppMode ? '-top-0.5 -right-0.5 h-2.5 w-2.5' : '-top-1 -right-1 h-3.5 w-3.5'"
           >
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D3A757] opacity-75"></span>
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D3AF62] opacity-75"></span>
             <span
-              class="relative inline-flex rounded-full bg-[#2C6E49] border border-white text-white font-bold items-center justify-center"
+              class="relative inline-flex rounded-full bg-[#2F7A50] border border-white text-white font-bold items-center justify-center"
               :class="isAppMode ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5 text-[8px]'"
             >
               <span v-if="!isAppMode" class="scale-75">●</span>
@@ -58,7 +58,7 @@
     <transition name="chat-window">
       <div
         v-if="isOpen"
-        class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-2xl overflow-hidden border border-[#ECE7DE] backdrop-blur-md transition-all duration-300"
+        class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-lg overflow-hidden border border-[#E5CEA1] backdrop-blur-md transition-all duration-300"
         :class="[
           isExpanded
             ? 'right-2 bottom-2 sm:right-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[740px] h-[90vh] sm:h-[88vh] max-h-[820px]'
@@ -68,16 +68,16 @@
         ]"
         :style="isAppMode ? chatWindowAppStyle : undefined"
       >
-        <!-- 2.1 顶部栏 (Header) - 深墨绿与暖砂金高奢质感 -->
+        <!-- 2.1 顶部栏 (Header) - 与主系统统一的浅色卡头：白底 + 砂金下描边 -->
         <header
-          class="px-4 py-3 bg-gradient-to-r from-[#142D25] via-[#1E3F35] to-[#18392F] text-white flex items-center justify-between border-b border-[#C59D5F]/30 select-none shadow-sm"
+          class="px-2.5 sm:px-4 py-3 bg-white text-[#1F3326] flex items-center justify-between gap-1.5 sm:gap-2 border-b border-[#E5CEA1] select-none shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)] min-w-0"
         >
-          <!-- 左侧：头像与客服状态 -->
-          <div class="flex items-center space-x-3">
-            <div class="relative">
+          <!-- 左侧：头像与客服状态 (允许收缩，长标题/英文模式下截断省略) -->
+          <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+            <div class="relative shrink-0">
               <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-inner"
-                :class="serviceMode === 'HUMAN' ? 'bg-gradient-to-tr from-amber-600 to-orange-500 text-white' : 'bg-gradient-to-tr from-[#C59D5F] to-[#DFC187] text-[#1E3F35] border border-white/20'"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold shadow-inner"
+                :class="serviceMode === 'HUMAN' ? 'bg-[#E2F4E4] text-[#326445] border border-[#C7DED0]' : 'bg-[#FDF3E0] text-[#7A5F21] border border-[#E5CEA1]'"
               >
                 <el-icon class="text-xl">
                   <Headset v-if="serviceMode === 'HUMAN'" />
@@ -85,57 +85,57 @@
                 </el-icon>
               </div>
               <span
-                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#1E3F35]"
-                :class="serviceMode === 'HUMAN' ? 'bg-amber-400' : 'bg-[#D3A757] animate-pulse'"
+                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                :class="serviceMode === 'HUMAN' ? 'bg-[#DFC08B]' : 'bg-[#D3AF62] animate-pulse'"
               ></span>
             </div>
 
-            <div class="leading-tight">
-              <div class="flex items-center space-x-2">
-                <span class="font-semibold text-sm text-white tracking-wide">
+            <div class="leading-tight min-w-0">
+              <div class="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+                <span class="font-semibold text-sm text-[#1F3326] tracking-wide truncate min-w-0">
                   {{ serviceMode === 'HUMAN' ? $t('chat.headerHumanTitle') : $t('chat.headerTitle') }}
                 </span>
                 <span
-                  class="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                  :class="serviceMode === 'HUMAN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'"
+                  class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 border"
+                  :class="serviceMode === 'HUMAN' ? 'bg-[#FDF3E0] text-[#7A5F21] border-[#E5CEA1]' : 'bg-[#E1F4E4] text-[#2F7A50] border-[#C7DED0]'"
                 >
                   ● {{ serviceMode === 'HUMAN' ? $t('chat.headerHumanConnected') : $t('chat.online') }}
                 </span>
               </div>
-              <p class="text-[11px] text-slate-300 mt-0.5 truncate max-w-[200px]">
+              <p class="text-[11px] text-[#58685D] mt-0.5 truncate max-w-[150px] sm:max-w-[200px]">
                 {{ serviceMode === 'HUMAN' ? (activeHumanAgent?.department || 'Ministry of Trade Care') : $t('chat.headerSubtitle') }}
               </p>
             </div>
           </div>
 
-          <!-- 右侧：核心动作（转人工/切回）与窗口控制按钮 -->
-          <div class="flex items-center space-x-2 text-slate-300">
-            <!-- 模式切换按钮 (醒目独立胶囊) -->
+          <!-- 右侧：核心动作（转人工/切回）与窗口控制按钮 (固定不收缩，保证X始终可见可点) -->
+          <div class="flex items-center space-x-1 sm:space-x-2 text-[#58685D] shrink-0">
+            <!-- 模式切换按钮 (醒目独立胶囊；小屏仅显示图标避免挤压关闭键) -->
             <button
               v-if="serviceMode === 'AI'"
               type="button"
-              class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
+              class="px-2 sm:px-2.5 py-1.5 bg-[#FDF3E0] hover:bg-[#F2E3C6] text-[#7A5F21] border border-[#E5CEA1] rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
               :title="$t('chat.transferHuman')"
               @click="triggerHumanHandoff('USER_HEADER_CLICK')"
             >
               <el-icon><Headset /></el-icon>
-              <span>{{ $t('chat.transferHuman') }}</span>
+              <span class="hidden md:inline">{{ $t('chat.transferHuman') }}</span>
             </button>
             <button
               v-else
               type="button"
-              class="px-2.5 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-sky-200 border border-blue-400/40 rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
+              class="px-2 sm:px-2.5 py-1.5 bg-[#E2F4E4] hover:bg-[#C7E0CE] text-[#326445] border border-[#C7DED0] rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
               :title="$t('chat.switchAi')"
               @click="switchToAiMode"
             >
               <el-icon><ChatDotRound /></el-icon>
-              <span>{{ $t('chat.switchAi') }}</span>
+              <span class="hidden md:inline">{{ $t('chat.switchAi') }}</span>
             </button>
 
             <!-- 清空历史记录 -->
             <button
               type="button"
-              class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-slate-300 hover:text-white transition cursor-pointer"
+              class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center hover:bg-[#F3F8F4] text-[#58685D] hover:text-[#326445] transition cursor-pointer"
               :title="$t('chat.clearHistory')"
               @click="clearHistoryConfirm"
             >
@@ -145,7 +145,7 @@
             <!-- 窗口大小缩放 (大屏显示) -->
             <button
               type="button"
-              class="w-8 h-8 rounded-lg items-center justify-center hover:bg-white/10 text-slate-300 hover:text-white transition hidden sm:flex cursor-pointer"
+              class="w-8 h-8 rounded-lg shrink-0 items-center justify-center hover:bg-[#F3F8F4] text-[#58685D] hover:text-[#326445] transition hidden sm:flex cursor-pointer"
               :title="isExpanded ? $t('chat.restoreWindow') : $t('chat.expandWindow')"
               @click="isExpanded = !isExpanded"
             >
@@ -155,7 +155,7 @@
             <!-- 关闭/最小化窗口 -->
             <button
               type="button"
-              class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-slate-300 hover:text-red-300 transition cursor-pointer"
+              class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center hover:bg-[#FBEAE9] text-[#58685D] hover:text-[#C04442] transition cursor-pointer"
               :title="$t('chat.closeWindow')"
               @click="closeWindow"
             >
@@ -167,27 +167,27 @@
         <!-- 2.2 消息对话滚动视窗 -->
         <div
           ref="messagesContainerRef"
-          class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8F7F3]"
+          class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8FBF8]"
         >
           <!-- 欢迎卡片与热门业务推荐 (深墨绿+暖砂金高质感) -->
-          <div class="p-4 rounded-xl bg-white border border-[#ECE7DE] shadow-xs space-y-3">
+          <div class="p-4 rounded-lg bg-white border border-[#D9E5DB] shadow-xs space-y-3">
             <div class="flex items-start space-x-3">
-              <div class="w-8 h-8 rounded-lg bg-[#1E3F35] text-[#C59D5F] border border-[#C59D5F]/30 flex items-center justify-center shrink-0 shadow-xs">
+              <div class="w-8 h-8 rounded-lg bg-[#326445] text-[#D3AF62] border border-[#D3AF62]/30 flex items-center justify-center shrink-0 shadow-xs">
                 <el-icon class="text-base"><ChatDotRound /></el-icon>
               </div>
               <div class="flex-1">
-                <h4 class="font-bold text-[#18231E] text-xs sm:text-sm">
+                <h4 class="font-bold text-[#1F3326] text-xs sm:text-sm">
                   {{ $t('chat.welcomeTitle') }}
                 </h4>
-                <p class="text-xs text-[#5E6862] mt-1 leading-relaxed">
+                <p class="text-xs text-[#58685D] mt-1 leading-relaxed">
                   {{ $t('chat.welcomeDesc') }}
                 </p>
               </div>
             </div>
 
             <!-- 热门业务常见问题快捷标签 (跟随系统语言动态切换) -->
-            <div class="pt-2 border-t border-[#F4EFE6]">
-              <span class="text-xs font-semibold text-[#18231E] block mb-2">
+            <div class="pt-2 border-t border-[#E9F1EB]">
+              <span class="text-xs font-semibold text-[#1F3326] block mb-2">
                 {{ $t('chat.faqTitle') }}
               </span>
               <div class="flex flex-wrap gap-2">
@@ -195,10 +195,10 @@
                   v-for="(item, idx) in currentPrompts"
                   :key="idx"
                   type="button"
-                  class="px-3 py-1.5 bg-[#FAF8F4] hover:bg-[#FAF5ED] hover:text-[#1E3F35] hover:border-[#C59D5F] text-[#5E6862] border border-[#ECE7DE] rounded-lg text-xs transition duration-150 cursor-pointer text-left"
+                  class="px-3 py-1.5 bg-[#F3F8F4] hover:bg-[#FDF3E0] hover:text-[#326445] hover:border-[#D3AF62] text-[#58685D] border border-[#D9E5DB] rounded-lg text-xs transition duration-150 cursor-pointer text-left"
                   @click="handleQuickQuestion(item.question)"
                 >
-                  <span class="text-[#C59D5F] mr-1 font-bold">#{{ item.tag }}</span>
+                  <span class="text-[#D3AF62] mr-1 font-bold">#{{ item.tag }}</span>
                   <span>{{ item.question }}</span>
                 </button>
               </div>
@@ -216,13 +216,13 @@
               v-if="msg.role === 'user'"
               class="flex justify-end items-start space-x-2.5"
             >
-              <div class="max-w-[82%] rounded-2xl rounded-tr-xs bg-gradient-to-r from-[#1E3F35] to-[#2B5448] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
+              <div class="max-w-[82%] rounded-lg rounded-tr-xs bg-gradient-to-r from-[#326445] to-[#2F5B44] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
                 {{ msg.content }}
-                <div class="text-[10px] text-[#C8D7D2] text-right mt-1 font-mono">
+                <div class="text-[10px] text-[#C7DED0] text-right mt-1 font-mono">
                   {{ formatTime(msg.timestamp) }}
                 </div>
               </div>
-              <div class="w-8 h-8 rounded-full bg-[#FAF5ED] text-[#1E3F35] flex items-center justify-center shrink-0 font-bold text-xs border border-[#C59D5F]/30 shadow-2xs">
+              <div class="w-8 h-8 rounded-full bg-[#FDF3E0] text-[#326445] flex items-center justify-center shrink-0 font-bold text-xs border border-[#D3AF62]/30 shadow-2xs">
                 {{ (currentUserContext.name || '我').slice(0, 1) }}
               </div>
             </div>
@@ -232,25 +232,25 @@
               v-else-if="msg.role === 'assistant'"
               class="flex justify-start items-start space-x-2.5"
             >
-              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1E3F35] to-[#2B5448] text-[#C59D5F] border border-[#C59D5F]/30 flex items-center justify-center shrink-0 shadow-xs text-sm">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#326445] to-[#2F5B44] text-[#D3AF62] border border-[#D3AF62]/30 flex items-center justify-center shrink-0 shadow-xs text-sm">
                 <el-icon><ChatDotRound /></el-icon>
               </div>
 
               <div class="max-w-[88%] space-y-2">
                 <!-- AI 气泡主体 (干净排版) -->
-                <div class="bg-white rounded-2xl rounded-tl-xs p-4 border border-slate-200/90 shadow-xs text-[13px] text-slate-800 space-y-3">
+                <div class="bg-white rounded-lg rounded-tl-xs p-4 border border-[#D9E5DB]/90 shadow-xs text-[13px] text-[#1F3326] space-y-3">
                   <!-- 正文回答 -->
-                  <div class="leading-relaxed whitespace-pre-wrap break-words text-slate-800">
+                  <div class="leading-relaxed whitespace-pre-wrap break-words text-[#1F3326]">
                     {{ msg.content }}
                   </div>
 
                   <!-- 政策依据与出处展示 -->
                   <div
                     v-if="msg.sources && msg.sources.length > 0"
-                    class="pt-3 border-t border-slate-100 space-y-2"
+                    class="pt-3 border-t border-[#E9F1EB] space-y-2"
                   >
-                    <div class="flex items-center text-xs font-semibold text-slate-700">
-                      <el-icon class="text-blue-600 mr-1"><DocumentCopy /></el-icon>
+                    <div class="flex items-center text-xs font-semibold text-[#43554B]">
+                      <el-icon class="text-[#326445] mr-1"><DocumentCopy /></el-icon>
                       <span>{{ $t('chat.sourcesTitle') }} ({{ msg.sources.length }}{{ $t('chat.items') }})：</span>
                     </div>
 
@@ -259,26 +259,26 @@
                       <div
                         v-for="source in msg.sources"
                         :key="source.id"
-                        class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 hover:border-blue-300 transition duration-150 flex flex-col space-y-1"
+                        class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/80 hover:border-[#AECBB8] transition duration-150 flex flex-col space-y-1"
                       >
                         <div class="flex items-start justify-between gap-2">
                           <span
-                            class="font-medium text-xs text-blue-900 hover:underline cursor-pointer"
+                            class="font-medium text-xs text-[#1F3326] hover:underline cursor-pointer"
                             @click="viewSourceDetail(source)"
                           >
                             {{ source.title }}
                           </span>
-                          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-100/70 text-blue-700 shrink-0">
+                          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#E1F4E4]/70 text-[#2A5440] shrink-0">
                             {{ source.score }}%
                           </span>
                         </div>
-                        <div class="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                        <div class="flex items-center justify-between text-[11px] text-[#58685D] pt-0.5">
                           <span class="truncate max-w-[260px]">
                             {{ source.docNumber }} · {{ source.clause }}
                           </span>
                           <button
                             type="button"
-                            class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center text-[11px] cursor-pointer"
+                            class="text-[#326445] hover:text-[#24483A] font-medium inline-flex items-center text-[11px] cursor-pointer"
                             @click="viewSourceDetail(source)"
                           >
                             <span>{{ $t('chat.viewClause') }}</span>
@@ -292,15 +292,15 @@
                   <!-- 追问建议 -->
                   <div
                     v-if="msg.suggestQuestions && msg.suggestQuestions.length > 0"
-                    class="pt-2 border-t border-slate-100"
+                    class="pt-2 border-t border-[#E9F1EB]"
                   >
-                    <span class="text-xs text-slate-500 block mb-1.5">💡 {{ $t('chat.suggestTitle') }}</span>
+                    <span class="text-xs text-[#58685D] block mb-1.5">💡 {{ $t('chat.suggestTitle') }}</span>
                     <div class="flex flex-wrap gap-1.5">
                       <button
                         v-for="(sq, sIdx) in msg.suggestQuestions"
                         :key="sIdx"
                         type="button"
-                        class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 rounded-md text-xs transition cursor-pointer text-left"
+                        class="px-2.5 py-1 bg-[#E9F1EB] hover:bg-[#EFF5F1] hover:text-[#2A5440] text-[#43554B] rounded-md text-xs transition cursor-pointer text-left"
                         @click="handleQuickQuestion(sq)"
                       >
                         {{ sq }}
@@ -309,13 +309,13 @@
                   </div>
 
                   <!-- 消息反馈与转人工动作栏 -->
-                  <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs text-slate-500">
+                  <div class="flex items-center justify-between pt-2.5 border-t border-[#E9F1EB] text-xs text-[#58685D]">
                     <div class="flex items-center space-x-3">
-                      <span class="text-slate-400">{{ $t('chat.rateAnswer') }}</span>
+                      <span class="text-[#8A9A8F]">{{ $t('chat.rateAnswer') }}</span>
                       <button
                         type="button"
-                        class="hover:text-blue-600 transition flex items-center space-x-1 cursor-pointer"
-                        :class="msg.feedback === 'like' ? 'text-blue-600 font-semibold' : ''"
+                        class="hover:text-[#326445] transition flex items-center space-x-1 cursor-pointer"
+                        :class="msg.feedback === 'like' ? 'text-[#326445] font-semibold' : ''"
                         @click="handleFeedback(msg, 'like')"
                         :title="$t('chat.helpful')"
                       >
@@ -323,8 +323,8 @@
                       </button>
                       <button
                         type="button"
-                        class="hover:text-rose-600 transition flex items-center space-x-1 cursor-pointer"
-                        :class="msg.feedback === 'dislike' ? 'text-rose-600 font-semibold' : ''"
+                        class="hover:text-[#C04442] transition flex items-center space-x-1 cursor-pointer"
+                        :class="msg.feedback === 'dislike' ? 'text-[#C04442] font-semibold' : ''"
                         @click="handleFeedback(msg, 'dislike')"
                         :title="$t('chat.unhelpful')"
                       >
@@ -335,7 +335,7 @@
                     <!-- 转人工快捷按钮 -->
                     <button
                       type="button"
-                      class="text-amber-600 hover:text-amber-700 font-medium inline-flex items-center space-x-1 cursor-pointer"
+                      class="text-[#C9A13B] hover:text-[#7A5F21] font-medium inline-flex items-center space-x-1 cursor-pointer"
                       @click="triggerHumanHandoff('MESSAGE_ACTION_CLICK', msg)"
                     >
                       <el-icon><Headset /></el-icon>
@@ -351,7 +351,7 @@
               v-else-if="msg.role === 'human_agent'"
               class="flex justify-start items-start space-x-2.5"
             >
-              <div class="w-8 h-8 rounded-full overflow-hidden bg-amber-500 text-white shrink-0 shadow-xs border border-amber-300">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-[#D3AF62] text-white shrink-0 shadow-xs border border-[#E5CEA1]">
                 <img
                   v-if="msg.agent?.avatar"
                   :src="msg.agent.avatar"
@@ -364,17 +364,17 @@
               </div>
 
               <div class="max-w-[88%] space-y-1.5">
-                <div class="flex items-center space-x-2 text-xs text-slate-500">
-                  <span class="font-semibold text-slate-800">{{ msg.agent?.name || 'Customer Agent' }}</span>
-                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono">
+                <div class="flex items-center space-x-2 text-xs text-[#58685D]">
+                  <span class="font-semibold text-[#1F3326]">{{ msg.agent?.name || 'Customer Agent' }}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-[#FDF3E0] text-[#6B5321] font-mono">
                     {{ $t('chat.ticketNo') }}: {{ msg.agent?.badgeNo || 'CS-8092' }}
                   </span>
-                  <span class="text-[10px] text-emerald-600 font-medium">● {{ $t('chat.online') }}</span>
+                  <span class="text-[10px] text-[#2F7A50] font-medium">● {{ $t('chat.online') }}</span>
                 </div>
 
-                <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl rounded-tl-xs p-4 shadow-xs text-[13px] text-slate-800 leading-relaxed whitespace-pre-wrap break-words">
+                <div class="bg-[#FDF3E0]/80 border border-[#F2E3C6]/80 rounded-lg rounded-tl-xs p-4 shadow-xs text-[13px] text-[#1F3326] leading-relaxed whitespace-pre-wrap break-words">
                   {{ msg.content }}
-                  <div class="text-[10px] text-slate-400 text-right mt-1.5 font-mono">
+                  <div class="text-[10px] text-[#8A9A8F] text-right mt-1.5 font-mono">
                     {{ formatTime(msg.timestamp) }}
                   </div>
                 </div>
@@ -384,16 +384,16 @@
             <!-- 4. 会话上下文同步完成提示卡片 -->
             <div
               v-else-if="msg.role === 'system'"
-              class="my-2 p-3 rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/90 text-center text-xs text-amber-900 space-y-1.5 shadow-2xs"
+              class="my-2 p-3 rounded-lg bg-gradient-to-r from-[#FDF3E0] via-[#FDF3E0] to-[#FDF3E0] border border-[#F2E3C6]/90 text-center text-xs text-[#5A4718] space-y-1.5 shadow-2xs"
             >
-              <div class="flex items-center justify-center space-x-1 font-semibold text-amber-800">
-                <el-icon class="text-amber-600"><CircleCheck /></el-icon>
+              <div class="flex items-center justify-center space-x-1 font-semibold text-[#6B5321]">
+                <el-icon class="text-[#C9A13B]"><CircleCheck /></el-icon>
                 <span>{{ $t('chat.humanBanner') }}</span>
               </div>
-              <p class="text-xs text-slate-600">
+              <p class="text-xs text-[#58685D]">
                 {{ msg.content }}
               </p>
-              <div v-if="msg.ticketNo" class="inline-block px-2.5 py-0.5 rounded bg-white text-slate-700 font-mono text-[11px] border border-amber-200">
+              <div v-if="msg.ticketNo" class="inline-block px-2.5 py-0.5 rounded bg-white text-[#43554B] font-mono text-[11px] border border-[#F2E3C6]">
                 {{ $t('chat.ticketNo') }}: {{ msg.ticketNo }}
               </div>
             </div>
@@ -402,14 +402,14 @@
           <!-- 加载中动效 (正在组织解答...) -->
           <div
             v-if="isThinking"
-            class="flex items-center space-x-2.5 text-slate-500 text-xs py-2"
+            class="flex items-center space-x-2.5 text-[#58685D] text-xs py-2"
           >
-            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-[#326445] text-white flex items-center justify-center shrink-0">
               <el-icon class="is-loading text-base"><Loading /></el-icon>
             </div>
-            <div class="bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs flex items-center space-x-2">
-              <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-              <span class="text-xs text-slate-600">
+            <div class="bg-white px-3.5 py-2 rounded-lg border border-[#D9E5DB] shadow-2xs flex items-center space-x-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#5C8A6B] animate-ping"></span>
+              <span class="text-xs text-[#58685D]">
                 {{ thinkingText }}
               </span>
             </div>
@@ -419,23 +419,23 @@
         <!-- 2.3 人工客服模式下的状态操作条 -->
         <div
           v-if="serviceMode === 'HUMAN'"
-          class="bg-amber-50/90 px-4 py-2 border-t border-amber-200/70 flex items-center justify-between text-xs"
+          class="bg-[#FDF3E0]/90 px-4 py-2 border-t border-[#F2E3C6]/70 flex items-center justify-between text-xs"
         >
-          <div class="flex items-center space-x-2 text-amber-900">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div class="flex items-center space-x-2 text-[#5A4718]">
+            <span class="w-2 h-2 rounded-full bg-[#3E9B68] animate-pulse"></span>
             <span>{{ $t('chat.humanServing') }}</span>
           </div>
           <div class="flex items-center space-x-2">
             <button
               type="button"
-              class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-md text-xs transition cursor-pointer"
+              class="px-2.5 py-1 bg-white hover:bg-[#E9F1EB] text-[#43554B] border border-[#C9DBCE] rounded-md text-xs transition cursor-pointer"
               @click="openSatisfactionDialog"
             >
               {{ $t('chat.serviceRating') }}
             </button>
             <button
               type="button"
-              class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-medium transition cursor-pointer"
+              class="px-2.5 py-1 bg-[#C9A13B] hover:bg-[#7A5F21] text-white rounded-md text-xs font-medium transition cursor-pointer"
               @click="endHumanService"
             >
               {{ $t('chat.endHuman') }}
@@ -444,8 +444,8 @@
         </div>
 
         <!-- 2.4 底部输入区域 (一体化卡片，宽松舒展) -->
-        <footer class="p-3.5 bg-white border-t border-[#ECE7DE]">
-          <div class="relative bg-[#FAF8F4] border border-[#ECE7DE] rounded-xl p-2.5 focus-within:border-[#C59D5F] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#C59D5F]/15 transition-all duration-200">
+        <footer class="p-3.5 bg-white border-t border-[#D9E5DB]">
+          <div class="relative bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-2.5 focus-within:border-[#D3AF62] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#D3AF62]/15 transition-all duration-200">
             <el-input
               ref="inputRef"
               v-model="inputQuery"
@@ -459,14 +459,14 @@
             />
 
             <!-- 输入框底部工具与操作栏 -->
-            <div class="flex items-center justify-between pt-2 border-t border-[#ECE7DE]/60 mt-1">
-              <div class="flex items-center space-x-3 text-[11px] text-[#8C958F]">
+            <div class="flex items-center justify-between pt-2 border-t border-[#D9E5DB]/60 mt-1">
+              <div class="flex items-center space-x-3 text-[11px] text-[#8A9A8F]">
                 <span>
                   {{ $t('chat.enterToSend') }}
                 </span>
                 <span
                   v-if="serviceMode === 'AI'"
-                  class="text-[#C59D5F] hover:underline cursor-pointer hidden sm:inline font-medium"
+                  class="text-[#D3AF62] hover:underline cursor-pointer hidden sm:inline font-medium"
                   @click="triggerHumanHandoff('USER_FOOTER_CLICK')"
                 >
                   {{ $t('chat.needHumanTip') }}
@@ -478,8 +478,8 @@
                 type="button"
                 class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
                 :class="inputQuery.trim() && !isThinking
-                  ? (serviceMode === 'HUMAN' ? 'bg-amber-600 hover:bg-amber-700 active:scale-95' : 'bg-[#1E3F35] hover:bg-[#152E27] active:scale-95')
-                  : 'bg-slate-300 cursor-not-allowed'"
+                  ? (serviceMode === 'HUMAN' ? 'bg-[#C9A13B] hover:bg-[#7A5F21] active:scale-95' : 'bg-[#326445] hover:bg-[#2A5440] active:scale-95')
+                  : 'bg-[#C9DBCE] cursor-not-allowed'"
                 :disabled="!inputQuery.trim() || isThinking"
                 @click="handleSendMessage"
               >
@@ -500,51 +500,51 @@
       :size="isExpanded ? '540px' : '90%'"
       destroy-on-close
     >
-      <div v-if="activeSourceChunk" class="space-y-4 text-xs text-slate-700 p-1">
+      <div v-if="activeSourceChunk" class="space-y-4 text-xs text-[#43554B] p-1">
         <!-- 规章公文样式卡片 -->
-        <div class="p-4 rounded-xl bg-gradient-to-br from-red-50/70 via-amber-50/40 to-white border border-red-200/80 shadow-2xs">
-          <div class="flex items-center space-x-2 text-red-700 font-bold text-xs mb-1.5">
-            <span class="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] font-mono">{{ $t('chat.legalBasis') }}</span>
+        <div class="p-4 rounded-lg bg-gradient-to-br from-[#FBEAE9]/70 via-[#FDF3E0]/40 to-white border border-[#F2D5D4]/80 shadow-2xs">
+          <div class="flex items-center space-x-2 text-[#A93B39] font-bold text-xs mb-1.5">
+            <span class="px-2 py-0.5 bg-[#C04442] text-white rounded text-[10px] font-mono">{{ $t('chat.legalBasis') }}</span>
             <span>{{ activeSourceChunk.docType }}</span>
           </div>
-          <h3 class="text-sm font-bold text-slate-900 leading-snug">
+          <h3 class="text-sm font-bold text-[#1B3123] leading-snug">
             {{ activeSourceChunk.title }}
           </h3>
-          <div class="mt-3 pt-2.5 border-t border-red-100 grid grid-cols-2 gap-2 text-xs text-slate-600">
+          <div class="mt-3 pt-2.5 border-t border-[#F7E3E2] grid grid-cols-2 gap-2 text-xs text-[#58685D]">
             <div>
-              <span class="text-slate-400">{{ $t('chat.docNumber') }}：</span>
+              <span class="text-[#8A9A8F]">{{ $t('chat.docNumber') }}：</span>
               <span class="font-mono font-medium">{{ activeSourceChunk.docNumber }}</span>
             </div>
             <div>
-              <span class="text-slate-400">{{ $t('chat.issuingAgency') }}：</span>
+              <span class="text-[#8A9A8F]">{{ $t('chat.issuingAgency') }}：</span>
               <span>{{ activeSourceChunk.issuingAgency }}</span>
             </div>
             <div>
-              <span class="text-slate-400">{{ $t('chat.publishDate') }}：</span>
+              <span class="text-[#8A9A8F]">{{ $t('chat.publishDate') }}：</span>
               <span class="font-mono">{{ activeSourceChunk.publishDate }}</span>
             </div>
             <div>
-              <span class="text-slate-400">{{ $t('chat.relevance') }}：</span>
-              <span class="font-mono font-semibold text-emerald-600">{{ activeSourceChunk.score }}%</span>
+              <span class="text-[#8A9A8F]">{{ $t('chat.relevance') }}：</span>
+              <span class="font-mono font-semibold text-[#2F7A50]">{{ activeSourceChunk.score }}%</span>
             </div>
           </div>
         </div>
 
         <!-- 条款章节与切片全文 -->
         <div class="space-y-2">
-          <div class="flex items-center space-x-1.5 font-semibold text-slate-900 text-xs">
-            <el-icon class="text-blue-600"><DocumentCopy /></el-icon>
+          <div class="flex items-center space-x-1.5 font-semibold text-[#1B3123] text-xs">
+            <el-icon class="text-[#326445]"><DocumentCopy /></el-icon>
             <span>{{ $t('chat.clauseLabel') }}：{{ activeSourceChunk.clause }}</span>
           </div>
 
-          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl leading-relaxed text-slate-800 whitespace-pre-wrap font-sans text-xs">
+          <div class="p-4 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg leading-relaxed text-[#1F3326] whitespace-pre-wrap font-sans text-xs">
             {{ activeSourceChunk.content }}
           </div>
         </div>
 
         <!-- 效力提示 -->
-        <div class="p-3 rounded-lg bg-sky-50 border border-sky-100 text-xs text-sky-800 flex items-start space-x-2">
-          <el-icon class="text-sky-600 mt-0.5 text-sm shrink-0"><Warning /></el-icon>
+        <div class="p-3 rounded-lg bg-[#EFF5F1] border border-[#E1F4E4] text-xs text-[#24483A] flex items-start space-x-2">
+          <el-icon class="text-[#2F7A50] mt-0.5 text-sm shrink-0"><Warning /></el-icon>
           <div>
             <strong>{{ $t('chat.effectTipTitle') }}</strong>
             {{ $t('chat.effectTipDesc') }}
@@ -561,7 +561,7 @@
       append-to-body
     >
       <div class="space-y-4 text-xs">
-        <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+        <div class="flex items-center space-x-3 p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]">
           <img
             v-if="activeHumanAgent?.avatar"
             :src="activeHumanAgent.avatar"
@@ -569,18 +569,18 @@
             class="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <div class="font-bold text-slate-800">{{ activeHumanAgent?.name }}</div>
-            <div class="text-[11px] text-slate-500 font-mono">{{ $t('chat.ticketNo') }}：{{ activeHumanAgent?.badgeNo }}</div>
+            <div class="font-bold text-[#1F3326]">{{ activeHumanAgent?.name }}</div>
+            <div class="text-[11px] text-[#58685D] font-mono">{{ $t('chat.ticketNo') }}：{{ activeHumanAgent?.badgeNo }}</div>
           </div>
         </div>
 
         <div class="text-center py-2">
-          <span class="block text-slate-600 mb-2">{{ $t('chat.ratingPrompt') }}</span>
-          <el-rate v-model="satisfactionRate" :colors="['#f59e0b', '#f59e0b', '#f59e0b']" />
+          <span class="block text-[#58685D] mb-2">{{ $t('chat.ratingPrompt') }}</span>
+          <el-rate v-model="satisfactionRate" :colors="['#D9B567', '#D9B567', '#D9B567']" />
         </div>
 
         <div>
-          <span class="block text-slate-600 mb-1">{{ $t('chat.commentPlaceholder') }}</span>
+          <span class="block text-[#58685D] mb-1">{{ $t('chat.commentPlaceholder') }}</span>
           <el-input
             v-model="satisfactionComment"
             type="textarea"
