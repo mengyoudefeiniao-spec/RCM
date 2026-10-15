@@ -911,50 +911,50 @@
               :type="activeTask.agentLevel === 'PROVINCE' ? 'danger' : activeTask.agentLevel === 'DISTRICT' ? 'primary' : 'success'"
               effect="dark"
             >
-              {{ activeTask.agentLevelName || '街道代理' }}
+              {{ formatAgentLevel(activeTask) }}
             </el-tag>
           </div>
-          <div class="text-slate-500 font-mono text-[11px]">所属贸易部计划: {{ activeTask.planNo }}</div>
-          <div class="text-slate-500 font-mono text-[11px]">排程月度周期: {{ activeTask.periodMonth }}</div>
+          <div class="text-slate-500 font-mono text-[11px]">{{ isEn ? 'Ministry Plan: ' : '所属贸易部计划: ' }}{{ activeTask.planNo }}</div>
+          <div class="text-slate-500 font-mono text-[11px]">{{ isEn ? 'Scheduled Month: ' : '排程月度周期: ' }}{{ activeTask.periodMonth }}</div>
         </div>
 
         <!-- 刚性算法分配约束提示 -->
         <div class="p-3 bg-blue-50/70 rounded-xl border border-blue-200 text-blue-900 space-y-1">
           <div class="font-bold flex items-center gap-1">
             <el-icon><Check /></el-icon>
-            <span>算法原子分配公式 (严禁手动修改)：</span>
+            <span>{{ isEn ? 'Atomic Allocation Algorithm Formula (Manual Edit Prohibited):' : '算法原子分配公式 (严禁手动修改)：' }}</span>
           </div>
           <div class="font-mono text-[11px] text-blue-800">
-            {{ activeTask.autoAllocatedFormula || `签约户数 ${(activeTask.registeredHouseholds || 0).toLocaleString()} 户 × 4人/户 × 国家月度保供配额指标` }}
+            {{ activeTask.autoAllocatedFormula || (isEn ? `Registered: ${(activeTask.registeredHouseholds || 0).toLocaleString()} households × 4 members × National monthly quota standard` : `签约户数 ${(activeTask.registeredHouseholds || 0).toLocaleString()} 户 × 4人/户 × 国家月度保供配额指标`) }}
           </div>
         </div>
 
         <!-- 受援代理网点信息 -->
         <div class="space-y-2">
-          <span class="font-bold text-slate-700">代理网点基本档案：</span>
+          <span class="font-bold text-slate-700">{{ isEn ? 'Agency Outlet Profile:' : '代理网点基本档案：' }}</span>
           <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
             <div class="flex justify-between">
-              <span class="text-slate-400">网点名称:</span>
-              <span class="font-bold text-slate-800">{{ activeTask.centerName }}</span>
+              <span class="text-slate-400">{{ isEn ? 'Station Name:' : '网点名称:' }}</span>
+              <span class="font-bold text-slate-800">{{ formatTaskCenterName(activeTask.centerName) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">代销编码:</span>
+              <span class="text-slate-400">{{ isEn ? 'Agent Code:' : '代销编码:' }}</span>
               <span class="font-mono text-slate-700">{{ activeTask.agentCenterId }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">负责人:</span>
-              <span class="text-slate-800 font-medium">{{ activeTask.responsiblePerson || activeTask.ownerName }}</span>
+              <span class="text-slate-400">{{ isEn ? 'Manager:' : '负责人:' }}</span>
+              <span class="text-slate-800 font-medium">{{ formatTaskResponsible(activeTask.responsiblePerson || activeTask.ownerName) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">签约户籍户数:</span>
-              <span class="font-mono font-bold text-blue-700">{{ (activeTask.registeredHouseholds || 0).toLocaleString() }} 户</span>
+              <span class="text-slate-400">{{ isEn ? 'Registered Households:' : '签约户籍户数:' }}</span>
+              <span class="font-mono font-bold text-blue-700">{{ (activeTask.registeredHouseholds || 0).toLocaleString() }} {{ $t('warehouse.householdUnit') || '户' }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">覆盖受益人口:</span>
-              <span class="font-mono text-slate-800">{{ (activeTask.coveredCitizens || activeTask.registeredHouseholds * 4 || 0).toLocaleString() }} 人</span>
+              <span class="text-slate-400">{{ isEn ? 'Beneficiaries:' : '覆盖受益人口:' }}</span>
+              <span class="font-mono text-slate-800">{{ (activeTask.coveredCitizens || activeTask.registeredHouseholds * 4 || 0).toLocaleString() }} {{ isEn ? 'people' : '人' }}</span>
             </div>
             <div class="flex justify-between pt-1 border-t border-slate-100">
-              <span class="text-slate-400">国家保供指导总货值:</span>
+              <span class="text-slate-400">{{ isEn ? 'Official Total Price Cap:' : '国家保供指导总货值:' }}</span>
               <span class="font-mono font-bold text-amber-700 text-sm">
                 {{ (activeTask.totalGuideAmountIQD || activeTask.registeredHouseholds * 53800 || 0).toLocaleString() }} IQD
               </span>
@@ -964,7 +964,7 @@
 
         <!-- 物资分配清单与指导价格 -->
         <div class="space-y-2">
-          <span class="font-bold text-slate-700">物资分配清单与国家保供指导价：</span>
+          <span class="font-bold text-slate-700">{{ isEn ? 'Commodity Allocation & Official Price Caps:' : '物资分配清单与国家保供指导价：' }}</span>
           <div class="space-y-2">
             <div
               v-for="item in activeTask.items"
@@ -973,21 +973,21 @@
             >
               <div class="flex items-center justify-between">
                 <div>
-                  <span class="font-bold text-slate-800">{{ item.itemName }}</span>
+                  <span class="font-bold text-slate-800">{{ formatItemName(item.itemName) }}</span>
                   <span class="text-[10px] text-slate-400 font-mono ml-1.5">{{ item.itemCode }}</span>
                 </div>
                 <div class="font-mono font-bold text-slate-900 text-sm">
-                  {{ item.allocatedQtyTon ? item.allocatedQtyTon + ' 吨' : (item.plannedQty?.toLocaleString() + ' ' + item.unit) }}
+                  {{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty?.toLocaleString() + ' ' + item.unit) }}
                 </div>
               </div>
               <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                <span>国家指导限价: {{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD/{{ item.unit }}</span>
-                <span class="text-amber-700 font-bold">指导分项金额: {{ (item.subtotalIQD || 0).toLocaleString() }} IQD</span>
+                <span>{{ isEn ? 'Official Cap: ' : '国家指导限价: ' }}{{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD/{{ item.unit }}</span>
+                <span class="text-amber-700 font-bold">{{ isEn ? 'Subtotal: ' : '指导分项金额: ' }}{{ (item.subtotalIQD || 0).toLocaleString() }} IQD</span>
               </div>
               <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1 border-t border-slate-100">
-                <span>已出库: {{ item.outboundQty?.toLocaleString() }} {{ item.unit }}</span>
-                <span>已签收: {{ item.receivedQty?.toLocaleString() }} {{ item.unit }}</span>
-                <span class="text-emerald-600 font-bold">家庭已领: {{ item.claimedQty?.toLocaleString() }} {{ item.unit }}</span>
+                <span>{{ isEn ? 'Outbound: ' : '已出库: ' }}{{ item.outboundQty?.toLocaleString() }} {{ item.unit }}</span>
+                <span>{{ isEn ? 'Received: ' : '已签收: ' }}{{ item.receivedQty?.toLocaleString() }} {{ item.unit }}</span>
+                <span class="text-emerald-600 font-bold">{{ isEn ? 'Claimed: ' : '家庭已领: ' }}{{ item.claimedQty?.toLocaleString() }} {{ item.unit }}</span>
               </div>
             </div>
           </div>
@@ -995,8 +995,8 @@
 
         <!-- 履约合规提示 -->
         <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-800 space-y-1 text-xs">
-          <div class="font-bold">全链路履约风控与追溯提示：</div>
-          <div>若代理网点实收数量与交付流水不一致，系统将即刻触发 P3 差异预警并阻断该批次异常货物的后续发放流转。</div>
+          <div class="font-bold">{{ isEn ? 'Fulfillment Risk & Traceability Notice:' : '全链路履约风控与追溯提示：' }}</div>
+          <div>{{ isEn ? 'If verified quantities deviate from dispatch manifests, the system triggers a P3 discrepancy alert and halts downstream distribution.' : '若代理网点实收数量与交付流水不一致，系统将即刻触发 P3 差异预警并阻断该批次异常货物的后续发放流转。' }}</div>
         </div>
       </div>
     </el-drawer>
