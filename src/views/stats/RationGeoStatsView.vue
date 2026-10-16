@@ -358,6 +358,7 @@ const legendGradient = computed(() => {
 // ============ 地图 ============
 const mapRef = ref(null);
 let map, geoLayer, warehouseLayer, agentLayer, halabjaMarker;
+let warehouseMarkers = [], agentMarkers = [];
 let isProgrammaticStyleUpdate = false;
 
 const SEQ_STOPS = ['#EAF2EC', '#A8C8B0', '#5E9B74', '#2F7A50', '#1E3A5F'];
@@ -447,28 +448,23 @@ function onMapReady() {
     halabjaMarker.on('click', () => selectProvince(hal.name));
   }
 
-  warehouseLayer = L.layerGroup();
-  agentLayer = L.layerGroup();
+  // 标记只创建一次存入数组，图层组在 applyLayerVisibility 中按需重建，
+  // 避免 clearLayers 导致标记永久丢失（切换图层/筛选后无法恢复）
+  warehouseMarkers = [];
+  agentMarkers = [];
   for (const pt of FACILITY_POINTS) {
-    const target = pt.type === 'warehouse' ? warehouseLayer : agentLayer;
-    if (pt.type === 'warehouse') {
-      const marker = L.circleMarker([pt.lat, pt.lng], {
-        radius: 4,
-        color: '#FFFFFF', weight: 0.8,
-        fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.92
-      });
-      marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
-      marker.on('click', () => selectProvince(pt.province));
-      target.addLayer(marker);
-    } else {
-      const marker = L.circleMarker([pt.lat, pt.lng], {
-        radius: 2.5, stroke: false,
-        fillColor: '#1E3A5F', fillOpacity: 0.7
-      });
-      marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
-      marker.on('click', () => selectProvince(pt.province));
-      target.addLayer(marker);
-    }
+    const isWarehouse = pt.type === 'warehouse';
+    const marker = L.circleMarker([pt.lat, pt.lng], isWarehouse ? {
+      radius: 4,
+      color: '#FFFFFF', weight: 0.8,
+      fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.92
+    } : {
+      radius: 2.5, stroke: false,
+      fillColor: '#1E3A5F', fillOpacity: 0.7
+    });
+    marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
+    marker.on('click', () => selectProvince(pt.province));
+    (isWarehouse ? warehouseMarkers : agentMarkers).push(marker);
   }
   applyLayerVisibility();
 }
@@ -485,19 +481,19 @@ function tooltipHtml(prov) {
 
 function applyLayerVisibility() {
   if (!map) return;
-  const whLayers = [];
+  // 先整体摘除旧图层组，再从标记数组按当前开关/筛选重建，标记本身不销毁
+  map.removeLayer(warehouseLayer);
+  map.removeLayer(agentLayer);
   if (showWarehouseLayer.value) {
-    warehouseLayer.eachLayer(l => {
-      const ok = warehouseFilter.value === 'all'
-        || (warehouseFilter.value === 'vacant' && l.options.fillColor === '#C8A45C')
-        || (warehouseFilter.value === 'assigned' && l.options.fillColor === '#2F7A50');
-      if (ok) whLayers.push(l);
-    });
+    warehouseLayer = L.layerGroup(warehouseMarkers.filter(l =>
+      warehouseFilter.value === 'all'
+      || (warehouseFilter.value === 'vacant' && l.options.fillColor === '#C8A45C')
+      || (warehouseFilter.value === 'assigned' && l.options.fillColor === '#2F7A50')
+    )).addTo(map);
   }
-  warehouseLayer.clearLayers();
-  whLayers.forEach(l => warehouseLayer.addLayer(l));
-  if (showWarehouseLayer.value) warehouseLayer.addTo(map); else map.removeLayer(warehouseLayer);
-  if (showAgentLayer.value) agentLayer.addTo(map); else map.removeLayer(agentLayer);
+  if (showAgentLayer.value) {
+    agentLayer = L.layerGroup(agentMarkers).addTo(map);
+  }
 }
 
 function toggleLayer(type) {
@@ -506,7 +502,16 @@ function toggleLayer(type) {
   applyLayerVisibility();
 }
 
+// 复位视图: 恢复到刚打开页面时的完整初始状态
 function resetView() {
+  selectedProvinceName.value = null;
+  searchProvinceName.value = null;
+  activeMetric.value = 'monthlyQuotaTon';
+  warehouseFilter.value = 'all';
+  showWarehouseLayer.value = true;
+  showAgentLayer.value = false;
+  refreshStyles();
+  applyLayerVisibility();
   map?.flyTo([33.2, 43.6], 6, { duration: 0.6 });
 }
 
