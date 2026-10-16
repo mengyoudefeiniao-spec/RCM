@@ -126,6 +126,51 @@
       </div>
 
       <!-- ======================================================== -->
+      <!-- 3.5 网点经营统计卡片 (发放量 / 库存 / 每日收益) -->
+      <!-- ======================================================== -->
+      <div class="rcm-list-card rcm-stagger-item space-y-3">
+        <!-- 头部：左侧标题与指标说明，右侧网点标识 -->
+        <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2.5">
+          <div class="flex items-center gap-1">
+            <ModuleDescTip
+              :title="$t('mobileAgent.bizStatsTitle')"
+              :desc="$t('mobileAgent.bizStatsDesc')"
+              :badge="$t('mobileAgent.bizStatsBadge')"
+              badge-type="success"
+            />
+          </div>
+          <span class="text-[11px] text-[#8A9A8F] font-medium font-mono">AG-0217#</span>
+        </div>
+
+        <!-- 3 列经营指标 (与下方台账数据保持一致) -->
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <!-- 发放量: 当日核销出库累计 (与台账已发合计一致) -->
+          <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#D9E5DB] text-center space-y-1">
+            <div class="text-base sm:text-lg font-black font-mono text-[#326445] tracking-tight">
+              2,450<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">kg</span>
+            </div>
+            <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsIssued') }}</div>
+          </div>
+
+          <!-- 库存: 台账理论应存余量 -->
+          <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#D9E5DB] text-center space-y-1">
+            <div class="text-base sm:text-lg font-black font-mono text-[#1F3326] tracking-tight">
+              1,250<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">kg</span>
+            </div>
+            <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsStock') }}</div>
+          </div>
+
+          <!-- 每日收益: 当日核销配给折算收益 -->
+          <div class="p-2.5 rounded-lg bg-[#FDF9EF] border border-[#EED9AE] text-center space-y-1">
+            <div class="text-base sm:text-lg font-black font-mono text-[#B8934A] tracking-tight">
+              428,000<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">IQD</span>
+            </div>
+            <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsDailyIncome') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
       <!-- 4. 周期台账核验卡片 (本期库存台账) -->
       <!-- ======================================================== -->
       <div class="rcm-list-card rcm-stagger-item space-y-3.5">
@@ -151,156 +196,149 @@
         <div class="space-y-3" ref="materialsListRef">
           
           <!-- 物料 1: 面粉 -->
-          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2.5 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
+              <!-- 品类名称 -->
+              <span class="font-bold text-sm text-[#1F3326]">
+                {{ $t('mobileAgent.materialFlour') }}
+              </span>
+
               <!-- 状态胶囊：平账 -->
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
                 <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
-
-              <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#1F3326]">
-                {{ $t('mobileAgent.materialFlour') }}
-              </span>
             </div>
 
             <!-- 4 列对账参数 (调拨 / 已发 / 理论 / 实盘) -->
-            <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
+            <div class="grid grid-cols-4 gap-1.5 text-center pt-0.5 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">2,000</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">1,240</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">760</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#326445]">760</div>
-                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[10px] text-[#326445] font-bold font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
           <!-- 物料 2: 大米 (调拨 900 - 已发 720 = 理论 180 = 实盘 180，账实相符) -->
-          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2.5 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
+              <!-- 品类名称 -->
+              <span class="font-bold text-sm text-[#1F3326]">
+                {{ $t('mobileAgent.materialRice') }}
+              </span>
+
               <!-- 状态胶囊：平账 -->
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
                 <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
-
-              <!-- 品类名称 -->
-              <span class="font-bold text-sm text-[#1F3326]">
-                {{ $t('mobileAgent.materialRice') }}
-              </span>
             </div>
 
             <!-- 4 列对账参数 -->
-            <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
+            <div class="grid grid-cols-4 gap-1.5 text-center pt-0.5 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">900</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">720</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">180</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#326445]">180</div>
-                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[10px] text-[#326445] font-bold font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
 
           <!-- 物料 3: 食用油 -->
-          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2 hover:border-[#D3AF62]/60 transition-colors">
+          <div class="p-3 rounded-lg border border-[#D9E5DB] bg-[#F3F9F5] space-y-2.5 hover:border-[#D3AF62]/60 transition-colors">
             <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-[#1F3326]">
+                {{ $t('mobileAgent.materialOil') }}
+              </span>
+
               <span class="rcm-pill-badge rcm-pill-success">
                 <span class="rcm-badge-dot"></span>
                 <span>{{ $t('mobileAgent.matchedStatus') }}</span>
               </span>
-
-              <span class="font-bold text-sm text-[#1F3326]">
-                {{ $t('mobileAgent.materialOil') }}
-              </span>
             </div>
 
-            <div class="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
+            <div class="grid grid-cols-4 gap-1.5 text-center pt-0.5 font-mono">
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">800</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDispatch') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDispatch') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">490</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colDistributed') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colDistributed') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#1F3326]">310</div>
-                <div class="text-[9px] text-[#8A9A8F] font-sans">{{ $t('mobileAgent.colTheory') }}</div>
+                <div class="text-[10px] text-[#8A9A8F] font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colTheory') }}</div>
               </div>
               <div>
                 <div class="text-[13px] font-bold text-[#326445]">310</div>
-                <div class="text-[9px] text-[#326445] font-bold font-sans">{{ $t('mobileAgent.colActual') }}</div>
+                <div class="text-[10px] text-[#326445] font-bold font-sans leading-tight mt-0.5">{{ $t('mobileAgent.colActual') }}</div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ======================================================== -->
-      <!-- 6. 核心保供服务直通车 (和公民APP 1:1 规范对标的功能模块条) -->
-      <!-- ======================================================== -->
-      <div class="rcm-list-card rcm-stagger-item space-y-3 p-4 bg-white rounded-lg border border-[#D9E5DB] shadow-xs">
-        <div class="flex items-center justify-between pb-2.5 border-b border-[#E9F1EB]">
-          <span class="text-xs font-bold text-[#326445] flex items-center gap-1.5">
-            <span class="w-1.5 h-3.5 bg-[#D3AF62] rounded-full"></span>
-            <span>{{ $t('dashboard.quickServices.title') || '代理保供核心服务直通车' }}</span>
-          </span>
-          <span class="text-[11px] text-[#8A9A8F] font-medium">{{ $t('dashboard.quickServices.subtitle') || '网点现场协同' }}</span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3 text-center select-none">
-          <!-- 1. 现场智能核销 (扫码弹窗) -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="handleTriggerScan"
-          >
-            <div class="w-12 h-12 rounded-lg bg-[#E1F4E4] text-[#326445] flex items-center justify-center text-xl border border-[#CFE2D5] shadow-xs">
-              <el-icon><FullScreen /></el-icon>
-            </div>
-            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickScanVerify') }}</span>
+        <!-- 公民统计子面板 -->
+        <div class="pt-3.5 border-t border-[#E9F1EB] space-y-2.5">
+          <div class="text-[11px] font-bold text-[#8A9A8F] uppercase tracking-wide">
+            {{ $t('mobileAgent.citizenStatsTitle') }}
           </div>
 
-          <!-- 2. 物资配给履约 (跳转配给配送) -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToModule('/warehouse')"
-          >
-            <div class="w-12 h-12 rounded-lg bg-[#FDF3E0] text-[#B8934A] flex items-center justify-center text-xl border border-[#EED9AE] shadow-xs">
-              <el-icon><Van /></el-icon>
+          <div class="grid grid-cols-2 gap-2">
+            <!-- 服务辖区公民 -->
+            <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
+              <div class="text-base font-bold text-[#1F3326] font-mono">
+                1,480<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">{{ $t('mobileAgent.unitHousehold') }}</span>
+              </div>
+              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenServedHouseholds') }}</div>
             </div>
-            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickRationDelivery') }}</span>
-          </div>
 
-          <!-- 3. 签约网点档案 (跳转代理档案) -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToModule('/agent')"
-          >
-            <div class="w-12 h-12 rounded-lg bg-[#FDF3E0] text-[#D3AF62] flex items-center justify-center text-xl border border-[#EED9AE] shadow-xs">
-              <el-icon><Shop /></el-icon>
+            <!-- 今日核销公民 -->
+            <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#E4EDE6] text-center space-y-0.5">
+              <div class="text-base font-bold text-[#326445] font-mono">
+                128<span v-if="$t('mobileAgent.unitPerson')" class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">{{ $t('mobileAgent.unitPerson') }}</span>
+              </div>
+              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenVerifiedToday') }}</div>
             </div>
-            <span class="text-[11px] font-medium text-[#43554B] leading-tight">{{ $t('mobileAgent.quickAgentProfile') }}</span>
+
+            <!-- 户均发放 -->
+            <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
+              <div class="text-base font-bold text-[#B8934A] font-mono">
+                25.4<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">kg</span>
+              </div>
+              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenAvgPerHousehold') }}</div>
+            </div>
+
+            <!-- 公民满意度 -->
+            <div class="p-2.5 rounded-lg bg-[#FDF9EF] border border-[#EED9AE] text-center space-y-0.5">
+              <div class="text-base font-bold text-[#B8934A] font-mono">
+                98.2<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">%</span>
+              </div>
+              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenSatisfaction') }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -451,8 +489,6 @@ import {
   Clock,
   WarningFilled,
   UserFilled,
-  Van,
-  Shop,
   Check
 } from '@element-plus/icons-vue';
 import gsap from 'gsap';
@@ -638,15 +674,6 @@ function selectTab(tabKey) {
     }
   } else if (tabKey === 'profile') {
     showProfileDrawer.value = true;
-  }
-}
-
-// 代理快捷功能直达跳转 (保持 Pixel 9 移动端视口一致性)
-function navigateToModule(path) {
-  if (isStandaloneLayout.value) {
-    router.push({ path, query: { ...route.query, layout: 'app', role: 'agent' } });
-  } else {
-    router.push({ path, query: { role: 'agent' } });
   }
 }
 
