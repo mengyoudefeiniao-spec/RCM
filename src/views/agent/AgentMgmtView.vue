@@ -25,11 +25,6 @@
 
         <!-- 顶部快捷操作栏：管理角色仅提供视察和跳转后台管理，代理角色展示四大申报按钮 -->
         <div class="flex flex-wrap items-center gap-2.5">
-          <el-button type="info" plain class="font-bold border-[#C7DED0] text-[#2A5440] bg-[#EFF5F1]/50 hover:bg-[#E1F4E4]" @click="openWorkflowOverview">
-            <el-icon class="mr-1"><Guide /></el-icon>
-            业务全景流转与时序约束 (V1~V5)
-          </el-button>
-
           <template v-if="!isAdmin">
             <el-button type="primary" @click="handleOpenApply()">
               <el-icon class="mr-1"><Plus /></el-icon>
@@ -621,10 +616,10 @@
             <!-- 过滤查询条件工具栏 (需求 3) -->
             <div class="p-3.5 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
               <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">工单编号 / 中心 / 申请人</span>
+                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterKeywordLabel') }}</span>
                 <el-input
                   v-model="appKeyword"
-                  placeholder="搜索工单号/网点/申请人"
+                  :placeholder="$t('agent.receipts.filterKeywordPlaceholder')"
                   clearable
                   size="small"
                   @input="applicationsCurrentPage = 1"
@@ -633,47 +628,47 @@
                 </el-input>
               </div>
               <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">业务申报类型</span>
+                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterTypeLabel') }}</span>
                 <el-select v-model="appTypeFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option label="全部业务类型" value="全部" />
-                  <el-option label="新代理权申请 (25万)" value="GRANT" />
-                  <el-option label="代理权轮替转移 (5万)" value="ROTATION" />
-                  <el-option label="恢复已注销代理权" value="RESTORATION" />
-                  <el-option label="注销代理记录" value="CANCELLATION" />
+                  <el-option :label="$t('agent.receipts.filterTypeAll')" value="全部" />
+                  <el-option :label="$t('agent.receipts.typeGrant')" value="GRANT" />
+                  <el-option :label="$t('agent.receipts.typeRotation')" value="ROTATION" />
+                  <el-option :label="$t('agent.receipts.typeRestoration')" value="RESTORATION" />
+                  <el-option :label="$t('agent.receipts.typeCancellation')" value="CANCELLATION" />
                 </el-select>
               </div>
               <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">支付状态筛选</span>
+                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterPayLabel') }}</span>
                 <el-select v-model="appPayStatusFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option label="全部支付状态" value="全部" />
-                  <el-option label="已电子入库 (已付)" value="PAID" />
-                  <el-option label="待电子支付 (未付)" value="UNPAID" />
-                  <el-option label="免收规费" value="FREE" />
+                  <el-option :label="$t('agent.receipts.filterPayAll')" value="全部" />
+                  <el-option :label="$t('agent.receipts.payPaid')" value="PAID" />
+                  <el-option :label="$t('agent.receipts.payUnpaid')" value="UNPAID" />
+                  <el-option :label="$t('agent.receipts.payFree')" value="FREE" />
                 </el-select>
               </div>
               <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">第 140 号决议属性</span>
+                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterArticleLabel') }}</span>
                 <el-select v-model="appArticle140Filter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option label="全部区域属性" value="全部" />
-                  <el-option label="涉及第140号决议区" value="true" />
-                  <el-option label="常规行政区" value="false" />
+                  <el-option :label="$t('agent.receipts.filterArticleAll')" value="全部" />
+                  <el-option :label="$t('agent.receipts.article140')" value="true" />
+                  <el-option :label="$t('agent.receipts.articleNormal')" value="false" />
                 </el-select>
               </div>
               <div class="flex items-end gap-2">
                 <el-button size="small" type="primary" class="flex-1" @click="applicationsCurrentPage = 1">
                   <el-icon class="mr-1"><Search /></el-icon>
-                  查询
+                  {{ $t('agent.receipts.btnSearch') }}
                 </el-button>
                 <el-button size="small" class="flex-1" @click="handleResetAppFilter">
-                  重置
+                  {{ $t('agent.receipts.btnReset') }}
                 </el-button>
               </div>
             </div>
 
             <!-- 列表信息与精简介绍词 -->
             <div class="flex items-center justify-between text-xs px-1 text-[#58685D]">
-              <span class="text-[11px]">展示国库电子规费支付流水与审批凭据</span>
-              <span class="text-[11px] font-mono">符合条件记录：共 {{ filteredApplications.length }} 笔</span>
+              <span class="text-[11px]">{{ $t('agent.receipts.listIntro') }}</span>
+              <span class="text-[11px] font-mono">{{ $t('agent.receipts.matchCount', { count: filteredApplications.length }) }}</span>
             </div>
 
             <!-- 支付凭据工单表格 -->
@@ -684,50 +679,50 @@
               style="width: 100%"
               class="text-xs"
             >
-              <el-table-column prop="ticketNo" label="申请工单编号" width="180">
+              <el-table-column prop="ticketNo" :label="$t('agent.receipts.colTicketNo')" width="180">
                 <template #default="{ row }">
                   <span class="font-mono font-bold text-[#1F3326]">{{ row.ticketNo }}</span>
                   <div class="text-[10px] text-[#8A9A8F]">{{ row.submitTime }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="typeName" label="申请业务类型" width="180">
+              <el-table-column prop="typeName" :label="$t('agent.receipts.colType')" width="180">
                 <template #default="{ row }">
                   <div class="font-bold text-[#1F3326]">{{ row.typeName }}</div>
                   <div class="text-[10px]" :class="row.isArticle140 ? 'text-[#C9A13B] font-semibold' : 'text-[#8A9A8F]'">
-                    {{ row.isArticle140 ? '● 涉及第140号决议区' : '常规行政区' }}
+                    {{ row.isArticle140 ? $t('agent.receipts.tagArticle140') : $t('agent.receipts.articleNormal') }}
                   </div>
                 </template>
               </el-table-column>
 
-              <el-table-column label="关联配给中心" min-width="190">
+              <el-table-column :label="$t('agent.receipts.colCenter')" min-width="190">
                 <template #default="{ row }">
                   <span class="font-semibold text-[#1F3326]">{{ row.centerName }}</span>
-                  <div class="text-[10px] text-[#8A9A8F]">{{ row.province }} · 品类: {{ row.category }}</div>
+                  <div class="text-[10px] text-[#8A9A8F]">{{ row.province }} · {{ $t('agent.receipts.categoryLabel', { category: row.category }) }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="applicantName" label="申请人 / 受让人" width="140" />
+              <el-table-column prop="applicantName" :label="$t('agent.receipts.colApplicant')" width="140" />
 
-              <el-table-column label="法定规费金额" width="130" align="right">
+              <el-table-column :label="$t('agent.receipts.colFee')" width="130" align="right">
                 <template #default="{ row }">
                   <div v-if="row.feeAmount > 0">
                     <span class="font-mono font-bold text-[#1F3326]">{{ row.feeAmount.toLocaleString() }} IQD</span>
                     <div>
                       <el-tag size="small" :type="row.feePaid ? 'success' : 'warning'" effect="plain">
-                        {{ row.feePaid ? '已电子入库' : '待支付' }}
+                        {{ row.feePaid ? $t('agent.receipts.tagPaid') : $t('agent.receipts.tagUnpaid') }}
                       </el-tag>
                     </div>
                   </div>
-                  <div v-else class="text-[#8A9A8F] text-[11px]">免收规费</div>
+                  <div v-else class="text-[#8A9A8F] text-[11px]">{{ $t('agent.receipts.freeFee') }}</div>
                 </template>
               </el-table-column>
 
-              <el-table-column prop="status" label="审核与业务状态" width="140" align="center">
+              <el-table-column prop="status" :label="$t('agent.receipts.colStatus')" width="140" align="center">
                 <template #default="{ row }">
                   <el-tag
                     size="small"
-                    :type="row.status === '已完成' ? 'success' : (row.status.includes('待') ? 'warning' : 'primary')"
+                    :type="isCompletedStatus(row.status) ? 'success' : (isPendingStatus(row.status) ? 'warning' : 'primary')"
                     effect="light"
                   >
                     {{ row.status }}
@@ -735,15 +730,15 @@
                 </template>
               </el-table-column>
 
-              <el-table-column label="操作" width="140" fixed="right" align="center">
+              <el-table-column :label="$t('agent.receipts.colAction')" width="140" fixed="right" align="center">
                 <template #default="{ row }">
                   <el-button
-                    v-if="!row.feePaid && row.status.includes('支付')"
+                    v-if="!row.feePaid && isPayPendingStatus(row.status)"
                     size="small"
                     type="success"
                     @click="handlePayExistingTicket(row)"
                   >
-                    立即支付
+                    {{ $t('agent.receipts.btnPayNow') }}
                   </el-button>
                   <el-button
                     v-else
@@ -752,7 +747,7 @@
                     link
                     @click="handleViewTicketDetail(row)"
                   >
-                    查看详情
+                    {{ $t('agent.receipts.btnDetail') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -761,7 +756,7 @@
             <!-- 分页控件 -->
             <div class="flex items-center justify-between pt-3 text-xs border-t border-[#E9F1EB]">
               <div class="text-[#8A9A8F] text-[11px]">
-                第 {{ applicationsCurrentPage }} 页 / 共 {{ Math.ceil(filteredApplications.length / applicationsPageSize) || 1 }} 页
+                {{ $t('agent.receipts.pageInfo', { page: applicationsCurrentPage, total: Math.ceil(filteredApplications.length / applicationsPageSize) || 1 }) }}
               </div>
               <el-pagination
                 v-model:current-page="applicationsCurrentPage"
@@ -870,6 +865,11 @@ import { useAuthStore } from '../../stores/auth.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
+
+// 语言无关的工单状态判断（zh/en mock 数据源状态值均可达；ar/ku 回退 en）
+const isCompletedStatus = (status) => /已完成|Completed/i.test(status || '');
+const isPendingStatus = (status) => /待|Pending/i.test(status || '');
+const isPayPendingStatus = (status) => /待电子支付|待支付|Pending/i.test(status || '');
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const isAr = computed(() => locale.value === 'ar');
