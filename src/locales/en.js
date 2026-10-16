@@ -7,6 +7,9 @@ export default {
     "shortTitle": "Ration Card Management"
   },
   "common": {
+    "descTipShow": "Click to view feature description & rules",
+    "descTipClose": "Close description tip",
+    "descModuleRules": "Feature Module Rules",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "submit": "Submit",

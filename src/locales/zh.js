@@ -7,6 +7,9 @@ export default {
     "shortTitle": "Ration Card Management"
   },
   "common": {
+    "descTipShow": "点击查看功能说明与规则",
+    "descTipClose": "关闭说明提示",
+    "descModuleRules": "功能模块规则说明",
     "confirm": "确认",
     "cancel": "取消",
     "submit": "提交",

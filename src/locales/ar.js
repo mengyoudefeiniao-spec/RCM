@@ -7,6 +7,9 @@ export default {
     "shortTitle": "Ration Card Management"
   },
   "common": {
+    "descTipShow": "اضغط لعرض وصف الوظيفة والقواعد",
+    "descTipClose": "إغلاق تلميح الوصف",
+    "descModuleRules": "قواعد الوحدة الوظيفية",
     "confirm": "تأكيد",
     "cancel": "إلغاء",
     "submit": "إرسال",

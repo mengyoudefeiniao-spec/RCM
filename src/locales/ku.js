@@ -7,6 +7,9 @@ export default {
     "shortTitle": "Ration Card Management"
   },
   "common": {
+    "descTipShow": "کرتە بکە بۆ بینینی وەسف و یاساکان",
+    "descTipClose": "داخستنی وەسف",
+    "descModuleRules": "یاساکانی مۆدیوول",
     "confirm": "پەسەندکردن",
     "cancel": "هەڵوەشاندنەوە",
     "submit": "ناردن",

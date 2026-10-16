@@ -30,7 +30,7 @@
           type="button"
           class="desc-tip-btn inline-flex items-center justify-center w-6 h-6 rounded-full text-[#8A9A8F] hover:text-[#326445] hover:bg-[#EFF5F1] active:scale-95 transition-all cursor-pointer select-none shrink-0"
           :class="{ 'text-[#326445] bg-[#E1F4E4]/70 ring-2 ring-[#AECBB8]/40': popoverVisible }"
-          :title="popoverVisible ? '关闭说明提示' : '点击查看功能说明与规则'"
+          :title="popoverVisible ? t('common.descTipClose') : t('common.descTipShow')"
           :aria-expanded="popoverVisible"
         >
           <el-icon :size="15"><InfoFilled /></el-icon>
@@ -57,7 +57,7 @@
             </el-tag>
             <span v-else class="font-bold text-[#1F3326] flex items-center gap-1 text-[11px]">
               <el-icon class="text-[#5C8A6B]" :size="13"><InfoFilled /></el-icon>
-              <span>功能模块规则说明</span>
+              <span>{{ t('common.descModuleRules') }}</span>
             </span>
           </div>
 
@@ -65,7 +65,7 @@
           <button
             type="button"
             class="text-[#8A9A8F] hover:text-[#58685D] p-0.5 rounded hover:bg-[#E9F1EB] transition-colors cursor-pointer shrink-0"
-            title="关闭提示"
+            :title="t('common.descTipClose')"
             @click="popoverVisible = false"
           >
             <el-icon :size="13"><Close /></el-icon>
@@ -89,7 +89,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { InfoFilled, CollectionTag, Close } from '@element-plus/icons-vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   // 完整标题（若包含括号，如 '申请配给卡代理转移 (就近获取与迁居转网)'，将自动拆分）
