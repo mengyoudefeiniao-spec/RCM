@@ -3,10 +3,10 @@
     <!-- 顶部快捷操作栏 -->
     <div
       class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#D9E5DB] gap-2.5"
-      :class="isAppMode ? 'flex flex-col items-start gap-2.5' : 'flex flex-col sm:flex-row sm:items-center justify-between'"
+      :class="isAppMode ? 'flex items-center justify-between gap-2 !p-3' : 'flex flex-col sm:flex-row sm:items-center justify-between'"
     >
-      <div :class="isAppMode ? 'w-full flex items-center justify-between gap-1.5' : 'flex items-center gap-2'">
-        <span class="text-xs font-bold text-[#1F3326]">
+      <div :class="isAppMode ? 'min-w-0 flex items-center gap-2' : 'flex items-center gap-2'">
+        <span class="text-xs font-bold text-[#1F3326]" :class="isAppMode ? 'truncate' : ''">
           {{
             isCitizen
               ? ($t('warehouse.citizenTitle') || '配给管理与履约交付跟进')
@@ -15,11 +15,11 @@
               : ($t('warehouse.agentScheduleCenterTitle') || '月度配给计划与三级代理配额排程中心')
           }}
         </span>
-        <el-tag size="small" type="primary" effect="plain" class="shrink-0">
+        <el-tag v-if="!isAppMode" size="small" type="primary" effect="plain" class="shrink-0">
           {{ isCitizen ? ($t('warehouse.personalMonthlyShare') || '个人月度份额') : ($t('warehouse.threeTierAutoCalculation') || '三级代理自动核算') }}
         </el-tag>
       </div>
-      <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'w-full justify-end' : ''">
+      <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'shrink-0 !flex-nowrap' : ''">
         <!-- 上级代理根据贸易部计划生成自己和下级代理的月度配给计划 (省级/区域/街道三层，按户数自动分配，不能手动分配) -->
         <el-button v-if="!isCitizen" type="success" size="small" @click="openDecomposeDialog">
           <el-icon class="mr-1"><Share /></el-icon>
@@ -29,9 +29,9 @@
           <el-icon class="mr-1"><Plus /></el-icon>
           <span>{{ $t('warehouse.makePlan') || '制定计划' }}</span>
         </el-button>
-        <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
-          {{ $t('common.refresh') || '刷新' }}
+        <el-button size="small" @click="loadData" :title="$t('common.refresh') || '刷新'">
+          <el-icon :class="isAppMode ? '' : 'mr-1'"><Refresh /></el-icon>
+          <span v-if="!isAppMode">{{ $t('common.refresh') || '刷新' }}</span>
         </el-button>
       </div>
     </div>
@@ -39,10 +39,10 @@
     <!-- ======================================================== -->
     <!-- 1. 公民专属视角：显示和自己家庭相关的签约代理网点及每月配给额度 -->
     <!-- ======================================================== -->
-    <div v-if="isCitizen" class="space-y-4" :class="isAppMode ? 'space-y-3' : ''">
+    <div v-if="isCitizen" class="space-y-4" :class="isAppMode ? '!space-y-2.5' : ''">
       <div
         class="bg-gradient-to-r from-[#EFF5F1]/70 via-[#EFF5F1]/40 to-[#F3F8F4] rounded-lg border border-[#C7DED0]/80 shadow-xs"
-        :class="isAppMode ? 'p-3.5 space-y-3' : 'p-5 space-y-4'"
+        :class="isAppMode ? 'p-3.5 space-y-2.5' : 'p-5 space-y-4'"
       >
         <div
           class="flex justify-between gap-3 border-b border-[#E1F4E4]/80 pb-3.5"
@@ -137,13 +137,13 @@
 
         <div
           class="grid gap-3.5"
-          :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'"
+          :class="isAppMode ? 'grid-cols-1 !gap-2.5' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'"
         >
           <div
             v-for="item in citizenQuotaItems"
             :key="item.itemCode"
             class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs hover:shadow-md transition"
-            :class="isAppMode ? 'p-3.5 space-y-2.5' : 'p-4.5 space-y-3'"
+            :class="isAppMode ? 'p-3 space-y-2' : 'p-4.5 space-y-3'"
           >
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
@@ -160,7 +160,7 @@
             <div class="bg-[#F3F8F4] rounded-lg border border-[#E9F1EB] space-y-1" :class="isAppMode ? 'p-2.5' : 'p-3'">
               <span class="text-[11px] text-[#58685D]">{{ $t('warehouse.householdQuotaLabel') || '本户月度核定配额：' }}</span>
               <div class="flex items-baseline gap-1.5">
-                <span class="text-2xl font-bold font-mono text-[#326445]">{{ item.totalHouseholdQuota }}</span>
+                <span class="font-bold font-mono text-[#326445]" :class="isAppMode ? 'text-xl' : 'text-2xl'">{{ item.totalHouseholdQuota }}</span>
                 <span class="text-xs text-[#58685D] font-bold">{{ item.unit }}</span>
               </div>
               <div class="text-[10px] text-[#8A9A8F] flex justify-between pt-1 border-t border-[#D9E5DB]/50">
