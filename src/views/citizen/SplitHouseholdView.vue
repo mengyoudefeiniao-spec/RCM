@@ -20,7 +20,7 @@
       </div>
 
       <!-- 当前家庭配给卡存根概览 -->
-      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-3 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-4'">
         <div>
           <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.currentCardNo') }}</span>
           <span class="font-mono font-bold text-[#7A5F21]">{{ citizenStore.currentFamily.rationCardNo }}</span>
@@ -41,12 +41,12 @@
 
       <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
       <div class="process-card-wrapper relative bg-white rounded-lg border border-[#D9E5DB] overflow-hidden shadow-xs">
-        <div class="flex flex-col lg:flex-row items-stretch">
+        <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
-          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
+          <div class="timeline-rail-aside border-[#D9E5DB] p-0" :class="isAppMode ? '' : 'lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r lg:p-6'">
             <!-- 桌面端侧边栏标题 -->
-            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]">
+            <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
                 <el-icon class="text-[#C9A13B]"><Guide /></el-icon>
                 <span>{{ cleanSplitTitle }}</span>
@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- 节点文本 (仅桌面端显示) -->
-                <div class="node-text-wrapper hidden lg:block">
+                <div class="node-text-wrapper" :class="isAppMode ? 'hidden' : 'hidden lg:block'">
                   <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-[#C9A13B]' : s.step < currentStep ? 'text-[#43554B]' : 'text-[#8A9A8F]'">
                     {{ s.name }}
                   </div>
@@ -91,9 +91,9 @@
           </div>
 
           <!-- 右侧主操作区 (根据页面自适应延展优化，移动端留出左侧内边距避免遮挡半节点) -->
-          <div class="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7 space-y-6">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4 pl-9' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
-            <div class="lg:hidden flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs">
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs" :class="isAppMode ? '' : 'lg:hidden'">
               <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#C9A13B]"></span>
                 <span>{{ $t('common.stepNumber', { step: currentStep }) }}：{{ processSteps[currentStep - 1]?.name }}</span>
@@ -114,7 +114,7 @@
               </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid gap-3" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
               <div
                 v-for="m in currentMembers"
                 :key="m.id"
@@ -158,7 +158,7 @@
               <span class="text-xs text-[#C04442]">* 为法定必需材料</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid gap-4" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'">
               <!-- 材料一：结婚证明或同等效力公文 (必需 ★) -->
               <div class="p-4 rounded-lg border border-[#F2E3C6] bg-[#FDF3E0]/20 space-y-2">
                 <DocumentUploader
@@ -212,7 +212,7 @@
                 <el-tag type="success" size="small">就绪 ✓</el-tag>
               </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[#58685D]">
+              <div class="grid gap-3 text-[#58685D]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'">
                 <div>拟分出成员数：<span class="font-bold text-[#7A5F21]">{{ selectedMemberIds.length }} 人</span></div>
                 <div>婚姻关系材料：<span class="font-bold text-[#2F7A50]">已上传验证 ✓</span></div>
                 <div>独立居住证明：<span class="text-[#58685D]">{{ otherDocUploaded ? '已附辅助公文 ✓' : '免交 / 依户主住所' }}</span></div>
@@ -252,7 +252,7 @@
             </div>
 
             <!-- 摘要核对卡片 -->
-            <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid gap-4 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">原配给卡号：</span>
                 <span class="font-mono font-bold text-[#1F3326]">{{ citizenStore.currentFamily?.rationCardNo }}</span>
@@ -272,7 +272,7 @@
             </div>
 
             <!-- 规费提示 -->
-            <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col justify-between gap-4" :class="isAppMode ? '' : 'sm:flex-row sm:items-center'">
               <div class="space-y-1">
                 <div class="text-xs text-[#8A9A8F]">数字配给卡家庭分立分户与独立建卡行政规费：</div>
                 <div class="text-2xl font-bold font-mono text-[#6FBF92]">
@@ -454,6 +454,11 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const citizenStore = useCitizenStore();
+
+// APP 仿真视口判定：APP 模式下强制移动端布局（与 AppLayout 判定保持一致）
+const isAppMode = computed(() => {
+  return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
+});
 
 function handleGoBack() {
   if (route.query.layout === 'app') {

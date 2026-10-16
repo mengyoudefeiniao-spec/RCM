@@ -20,7 +20,7 @@
         </el-button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid gap-6" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'">
         <!-- 左侧：原户主与死亡公函附件上传 -->
         <div class="space-y-4">
           <div>
@@ -132,6 +132,11 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const citizenStore = useCitizenStore();
+
+// APP 仿真视口判定：APP 模式下强制移动端布局（与 AppLayout 判定保持一致）
+const isAppMode = computed(() => {
+  return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
+});
 
 function handleGoBack() {
   if (route.query.layout === 'app') {

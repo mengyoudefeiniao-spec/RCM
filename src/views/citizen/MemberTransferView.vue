@@ -20,7 +20,7 @@
       </div>
 
       <!-- 当前接收卡家庭概览 (布局弹性优化，适配多语言长文本) -->
-      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-3 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'">
         <div class="min-w-0">
           <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('common.rationCardNo') }} ({{ $t('memberTransfer.receivingCard') }})：</span>
           <span class="font-mono font-bold text-[#326445] truncate block">{{ citizenStore.currentFamily.rationCardNo }}</span>
@@ -41,12 +41,12 @@
 
       <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
       <div class="process-card-wrapper relative bg-white rounded-lg border border-[#D9E5DB] overflow-hidden shadow-xs">
-        <div class="flex flex-col lg:flex-row items-stretch">
+        <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 -->
-          <div class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
+          <div class="timeline-rail-aside border-[#D9E5DB] p-0" :class="isAppMode ? '' : 'lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r lg:p-6'">
             <!-- 桌面端侧边栏标题 -->
-            <div class="hidden lg:flex items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]">
+            <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
                 <el-icon class="text-[#326445]"><Guide /></el-icon>
                 <span>{{ cleanMemberTransferTitle }}</span>
@@ -74,7 +74,7 @@
                   <span v-else class="font-bold text-xs">{{ s.step }}</span>
                 </div>
 
-                <div class="node-text-wrapper hidden lg:block">
+                <div class="node-text-wrapper" :class="isAppMode ? 'hidden' : 'hidden lg:block'">
                   <div class="node-title font-bold text-xs" :class="s.step === currentStep ? 'text-[#326445]' : s.step < currentStep ? 'text-[#43554B]' : 'text-[#8A9A8F]'">
                     {{ s.name }}
                   </div>
@@ -87,9 +87,9 @@
           </div>
 
           <!-- 右侧主操作区 (针对多语言长文本优化内边距与排版) -->
-          <div class="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7 space-y-6">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4 pl-9' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
-            <div class="lg:hidden flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs">
+            <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs" :class="isAppMode ? '' : 'lg:hidden'">
               <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
                 <span>{{ $t('common.stepNumber', { step: currentStep }) }}：{{ processSteps[currentStep - 1]?.name }}</span>
@@ -120,7 +120,7 @@
                 </div>
 
                 <!-- 家庭成员卡片网格 (支持自适应长文本) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div class="grid gap-3" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'">
                   <div
                     v-for="item in familyMemberList"
                     :key="item.nationalId"
@@ -216,8 +216,11 @@
 
                 <!-- 成员详情档案卡片 (针对多语言优化网格列宽与换行) -->
                 <div
-                  class="p-4 rounded-lg border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs"
-                  :class="selectedMember.isUpdatedInSystem ? 'bg-[#F3F8F4] border-[#D9E5DB]' : 'bg-[#FBEAE9]/30 border-[#F2D5D4] opacity-80'"
+                  class="p-4 rounded-lg border grid gap-4 text-xs"
+                  :class="[
+                    isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+                    selectedMember.isUpdatedInSystem ? 'bg-[#F3F8F4] border-[#D9E5DB]' : 'bg-[#FBEAE9]/30 border-[#F2D5D4] opacity-80'
+                  ]"
                 >
                   <div class="min-w-0">
                     <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.headName') }}：</span>
@@ -303,7 +306,7 @@
               <!-- 转移情形单选组 (优化按钮尺寸与自适应多行文本排版) -->
               <div class="space-y-2">
                 <span class="block text-xs font-semibold text-[#43554B]">{{ $t('memberTransfer.transferTypeLabel') }}：</span>
-                <el-radio-group v-model="transferReasonType" class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+                <el-radio-group v-model="transferReasonType" class="w-full grid gap-2.5" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'">
                   <el-radio-button value="wife" class="w-full text-left custom-radio-btn">
                     {{ $t('memberTransfer.typeWife') }}
                   </el-radio-button>
@@ -330,7 +333,7 @@
                     <el-icon><Connection /></el-icon>
                     <span>{{ $t('memberTransfer.wifeMatchTitle') }}</span>
                   </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div class="grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
                     <div>{{ $t('memberTransfer.familyCodeCompare') }}：<span class="font-mono font-bold">{{ selectedMember?.familyCode }} vs {{ currentFamilyCode }}</span> ({{ selectedMember?.familyCode === currentFamilyCode ? $t('memberTransfer.consistent') : $t('memberTransfer.inconsistent') }})</div>
                     <div>{{ $t('memberTransfer.fatherNameCompare') }}：<span class="font-bold">{{ selectedMember?.fatherName }} vs {{ currentHeadFatherName }}</span> ({{ selectedMember?.fatherName !== currentHeadFatherName ? $t('memberTransfer.notSisters') : $t('memberTransfer.sameSister') }})</div>
                   </div>
@@ -345,7 +348,7 @@
                     <el-icon><Connection /></el-icon>
                     <span>{{ $t('memberTransfer.childMatchTitle') }}</span>
                   </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div class="grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
                     <div>{{ $t('memberTransfer.childFamilyCodeCompare') }}：<span class="font-mono font-bold">{{ selectedMember?.familyCode === currentFamilyCode ? $t('memberTransfer.consistent') : $t('memberTransfer.inconsistent') }}</span></div>
                     <div>{{ $t('memberTransfer.childFatherCompare') }}：<span class="font-bold">{{ selectedMember?.fatherName }} vs {{ currentHeadName }}</span> ({{ selectedMember?.fatherName === currentHeadName ? $t('memberTransfer.perfectMatch') : $t('memberTransfer.notMatch') }})</div>
                   </div>
@@ -460,7 +463,7 @@
               </div>
 
               <!-- 申请明细摘要核对卡 -->
-              <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid gap-4 text-xs" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'">
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.movingMember') }}：</span>
                   <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember?.name }} ({{ selectedMember?.nationalId }})</span>
@@ -482,7 +485,7 @@
               </div>
 
               <!-- 规费账单提示 -->
-              <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col justify-between gap-4" :class="isAppMode ? '' : 'sm:flex-row sm:items-center'">
                 <div class="space-y-1">
                   <div class="text-xs text-[#8A9A8F]">{{ $t('memberTransfer.feeLabel') }}</div>
                   <div class="text-2xl font-bold font-mono text-[#6FBF92]">
@@ -644,6 +647,11 @@ const isEn = computed(() => locale.value === 'en');
 const router = useRouter();
 const route = useRoute();
 const citizenStore = useCitizenStore();
+
+// APP 仿真视口判定：APP 模式下强制移动端布局（与 AppLayout 判定保持一致）
+const isAppMode = computed(() => {
+  return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
+});
 
 function handleGoBack() {
   if (route.query.layout === 'app') {
