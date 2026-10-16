@@ -488,7 +488,7 @@ onMounted(() => {
   stopTabListener = onTabMessage('ORDER_PURCHASED', (newOrder) => {
     // 跨标签页收到公民新下的配给订单，自动追加到今日核销台账列表
     newlyAddedOrders.value.unshift({
-      name: newOrder.headName || '公民户主',
+      name: newOrder.headName || t('mobileAgent.defaultHeadName'),
       cardNo: newOrder.cardNo || 'RC-10029381',
       time: new Date().toTimeString().slice(0, 5),
       flour: 10,
