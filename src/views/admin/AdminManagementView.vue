@@ -430,12 +430,18 @@
                   <div class="text-[11px] text-[#8A9A8F]">{{ row.address }}</div>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('admin.actions') || '操作'" width="220" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="150" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="info" plain @click="openMembersDrawer(row)">{{ $t('admin.membersCountBtn', { count: row.memberCount }) }}</el-button>
-                    <el-button size="small" type="primary" plain @click="openEditFamilyDialog(row)">{{ $t('common.edit') || '编辑' }}</el-button>
-                    <el-button size="small" type="danger" plain @click="handleDeleteFamily(row)">{{ $t('common.delete') || '注销' }}</el-button>
+                    <el-tooltip :content="$t('admin.membersCountBtn', { count: row.memberCount })" placement="top">
+                      <el-button size="small" type="info" :icon="User" @click="openMembersDrawer(row)" />
+                    </el-tooltip>
+                    <el-tooltip :content="$t('common.edit') || '编辑'" placement="top">
+                      <el-button size="small" type="primary" :icon="Edit" @click="openEditFamilyDialog(row)" />
+                    </el-tooltip>
+                    <el-tooltip :content="$t('common.delete') || '注销'" placement="top">
+                      <el-button size="small" type="danger" :icon="Delete" @click="handleDeleteFamily(row)" />
+                    </el-tooltip>
                   </div>
                 </template>
               </el-table-column>
@@ -466,7 +472,7 @@
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="agentQuery.code"
-                  placeholder="代理代号 (FA-...)"
+                  :placeholder="$t('admin.agentQueryCode')"
                   style="width: 160px"
                   size="small"
                   clearable
@@ -474,31 +480,31 @@
                 />
                 <el-input
                   v-model="agentQuery.name"
-                  placeholder="网点名称"
+                  :placeholder="$t('admin.agentQueryName')"
                   style="width: 170px"
                   size="small"
                   clearable
                   @keyup.enter="handleAgentSearch"
                 />
                 <!-- 省市筛选 -->
-                <el-select v-model="agentQuery.province" placeholder="所属省市" style="width: 130px" size="small" @change="handleAgentProvinceChange">
-                  <el-option label="全部省市" value="全部" />
+                <el-select v-model="agentQuery.province" :placeholder="$t('admin.allProvinces') || '全部省市'" style="width: 130px" size="small" @change="handleAgentProvinceChange">
+                  <el-option :label="$t('admin.allProvinces') || '全部省市'" value="全部" />
                   <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
                 </el-select>
                 <!-- 中心筛选 -->
-                <el-select v-model="agentQuery.center" placeholder="服务中心/网格" style="width: 170px" size="small" @change="handleAgentSearch">
-                  <el-option label="全部中心" value="全部" />
+                <el-select v-model="agentQuery.center" :placeholder="$t('admin.allCenters') || '全部中心'" style="width: 170px" size="small" @change="handleAgentSearch">
+                  <el-option :label="$t('admin.allCenters') || '全部中心'" value="全部" />
                   <el-option v-for="c in currentAgentCenterOptions" :key="c" :label="c" :value="c" />
                 </el-select>
-                <el-select v-model="agentQuery.status" placeholder="运营状态" style="width: 120px" size="small" @change="handleAgentSearch">
-                  <el-option label="全部状态" value="全部" />
-                  <el-option label="正常营业" value="正常营业" />
-                  <el-option label="停业整顿" value="停业整顿" />
-                  <el-option label="已注销(空置)" value="已注销(空置)" />
-                  <el-option label="吊销资质" value="吊销资质" />
+                <el-select v-model="agentQuery.status" :placeholder="$t('admin.opStatus') || '运营状态'" style="width: 120px" size="small" @change="handleAgentSearch">
+                  <el-option :label="$t('admin.allStatuses') || '全部状态'" value="全部" />
+                  <el-option :label="$t('admin.opStatusNormal')" value="正常营业" />
+                  <el-option :label="$t('admin.opStatusSuspended')" value="停业整顿" />
+                  <el-option :label="$t('admin.opStatusRevoked')" value="已注销(空置)" />
+                  <el-option :label="$t('admin.opStatusLicenseRevoked')" value="吊销资质" />
                 </el-select>
-                <el-button type="primary" size="small" :icon="Search" @click="handleAgentSearch">查询</el-button>
-                <el-button size="small" :icon="Refresh" @click="resetAgentQuery">重置</el-button>
+                <el-button type="primary" size="small" :icon="Search" @click="handleAgentSearch">{{ $t('admin.btnSearch') }}</el-button>
+                <el-button size="small" :icon="Refresh" @click="resetAgentQuery">{{ $t('admin.btnReset') }}</el-button>
               </div>
 
               <!-- 表头快捷操作栏：根据当前用户角色动态融入专属法定职权入口 -->
@@ -506,24 +512,24 @@
                 <!-- 部长专属：设立代理权、统一代理权 -->
                 <template v-if="authStore.isMinisterCenter || authStore.currentRole === 'admin'">
                   <el-button type="success" size="small" :icon="Plus" @click="openEstablishAgencyModal">
-                    设立新代理网点 (部长令)
+                    {{ $t('admin.establishAgency') }}
                   </el-button>
                   <el-button type="primary" plain size="small" @click="openUnifyAgencyModal">
-                    统一代理权规范 (部长令)
+                    {{ $t('admin.unifyAgencyRules') }}
                   </el-button>
                 </template>
 
                 <!-- 行政次长：快速轮替/恢复入口提示 -->
                 <template v-if="authStore.isDeputyMinister">
                   <el-tag type="danger" effect="plain" class="font-bold">
-                    已激活行政次长终审签批席
+                    {{ $t('admin.deputySeatActive') }}
                   </el-tag>
                 </template>
 
                 <!-- 规划总干事：轮替/转移申报通道 -->
                 <template v-if="authStore.isDirectorPlanning">
                   <el-button type="warning" plain size="small" @click="openRotateTransferModal">
-                    轮替与转移审批
+                    {{ $t('admin.rotateTransferApproval') }}
                   </el-button>
                 </template>
               </div>
@@ -541,7 +547,7 @@
                   <div class="font-bold text-[#1F3326]">{{ row.name }}</div>
                   <div class="text-[11px] text-[#8A9A8F]">{{ row.province }} · {{ row.district || row.address }}</div>
                   <div v-if="row.planningConfirmed" class="text-[10px] text-[#2F7A50] font-bold flex items-center gap-0.5 mt-0.5">
-                    <el-icon><Check /></el-icon> 规划跟进司已完成联合调查确认
+                    <el-icon><Check /></el-icon> {{ $t('admin.planningConfirmedNote') }}
                   </div>
                 </template>
               </el-table-column>
@@ -563,104 +569,107 @@
                 <template #default="{ row }">
                   <div class="space-y-0.5">
                     <span class="font-mono font-bold" :class="row.servedHouseholds > 1500 ? 'text-[#C04442]' : 'text-[#43554B]'">
-                      {{ row.servedHouseholds }} 户
+                      {{ row.servedHouseholds }} {{ $t('admin.householdsUnit') }}
                     </span>
                     <div v-if="row.servedHouseholds > 1500" class="text-[10px] text-[#C04442] font-bold">
-                      ⚠ 超1500户红线 (部长待拆分)
+                      {{ $t('admin.over1500Redline') }}
                     </div>
                     <div v-else-if="row.servedHouseholds <= 750" class="text-[10px] text-[#C9A13B] font-medium">
-                      ● ≤750户小型 (允许合并)
+                      {{ $t('admin.under750Small') }}
                     </div>
                   </div>
                 </template>
               </el-table-column>
 
-              <!-- 代理网点专属管辖职权操作列 (直接根据当前角色动态融入操作栏) -->
-              <el-table-column :label="$t('admin.governanceActions') || '专属管辖职权操作'" width="320" fixed="right" align="center">
+              <!-- 代理网点专属管辖职权操作列 (图标化 + 悬停提示，避免长词条挤压布局) -->
+              <el-table-column :label="$t('admin.governanceActions') || '专属管辖职权操作'" width="150" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1 flex-wrap">
                     <!-- 1. 【配给中心部长专属】：拆分大网点 + 授予代理权 -->
                     <template v-if="authStore.isMinisterCenter || authStore.currentRole === 'admin'">
-                      <el-button
-                        v-if="row.servedHouseholds > 1500"
-                        size="small"
-                        type="danger"
-                        @click="handleDirectSplit(row)"
-                      >
-                        拆分大网点
-                      </el-button>
-                      <el-button
-                        size="small"
-                        type="primary"
-                        plain
-                        @click="openGrantAgencyModal(row)"
-                      >
-                        授予代理权
-                      </el-button>
+                      <el-tooltip :content="$t('admin.splitLargeOutlet')" placement="top">
+                        <el-button
+                          v-if="row.servedHouseholds > 1500"
+                          size="small"
+                          type="danger"
+                          :icon="Scissor"
+                          @click="handleDirectSplit(row)"
+                        />
+                      </el-tooltip>
+                      <el-tooltip :content="$t('admin.grantAgency')" placement="top">
+                        <el-button
+                          size="small"
+                          type="primary"
+                          :icon="Stamp"
+                          @click="openGrantAgencyModal(row)"
+                        />
+                      </el-tooltip>
                     </template>
 
                     <!-- 2. 【行政次长专属】：已故轮替终审 + 恢复代理权 -->
                     <template v-if="authStore.isDeputyMinister || authStore.currentRole === 'admin'">
-                      <el-button
-                        size="small"
-                        type="danger"
-                        plain
-                        @click="openDeceasedRotationModal(row)"
-                      >
-                        已故轮替批复
-                      </el-button>
-                      <el-button
-                        v-if="row.status.includes('注销')"
-                        size="small"
-                        type="danger"
-                        @click="handleRestoreWithCheck(row)"
-                      >
-                        核准恢复代理权
-                      </el-button>
+                      <el-tooltip :content="$t('admin.deceasedRotation')" placement="top">
+                        <el-button
+                          size="small"
+                          type="danger"
+                          :icon="ChatDotRound"
+                          @click="openDeceasedRotationModal(row)"
+                        />
+                      </el-tooltip>
+                      <el-tooltip :content="$t('admin.restoreAgency')" placement="top">
+                        <el-button
+                          v-if="row.status.includes('注销')"
+                          size="small"
+                          type="danger"
+                          :icon="RefreshRight"
+                          @click="handleRestoreWithCheck(row)"
+                        />
+                      </el-tooltip>
                     </template>
 
                     <!-- 3. 【规划跟进司总干事专属】：调查确认 + 合并网点 + 处罚 + 注销 -->
                     <template v-if="authStore.isDirectorPlanning || authStore.currentRole === 'admin'">
-                      <el-button
-                        v-if="row.status.includes('注销') && !row.planningConfirmed"
-                        size="small"
-                        type="warning"
-                        @click="handleConfirmPlanning(row)"
-                      >
-                        规划司确认
-                      </el-button>
-                      <el-button
-                        v-if="row.servedHouseholds <= 750 && row.status === '正常营业'"
-                        size="small"
-                        type="warning"
-                        plain
-                        @click="handleMergePrompt(row)"
-                      >
-                        合并网点
-                      </el-button>
-                      <el-button
-                        size="small"
-                        type="danger"
-                        plain
-                        @click="handlePenalizePrompt(row)"
-                      >
-                        行政处罚
-                      </el-button>
-                      <el-button
-                        v-if="row.status === '正常营业'"
-                        size="small"
-                        type="danger"
-                        link
-                        @click="handleCancelAgencyPrompt(row)"
-                      >
-                        注销
-                      </el-button>
+                      <el-tooltip :content="$t('admin.planningConfirm')" placement="top">
+                        <el-button
+                          v-if="row.status.includes('注销') && !row.planningConfirmed"
+                          size="small"
+                          type="warning"
+                          :icon="ScaleToOriginal"
+                          @click="handleConfirmPlanning(row)"
+                        />
+                      </el-tooltip>
+                      <el-tooltip :content="$t('admin.mergeOutlets')" placement="top">
+                        <el-button
+                          v-if="row.servedHouseholds <= 750 && row.status === '正常营业'"
+                          size="small"
+                          type="warning"
+                          :icon="Connection"
+                          @click="handleMergePrompt(row)"
+                        />
+                      </el-tooltip>
+                      <el-tooltip :content="$t('admin.penalize')" placement="top">
+                        <el-button
+                          size="small"
+                          type="danger"
+                          :icon="WarningFilled"
+                          @click="handlePenalizePrompt(row)"
+                        />
+                      </el-tooltip>
+                      <el-tooltip :content="$t('admin.revokeAgency')" placement="top">
+                        <el-button
+                          v-if="row.status === '正常营业'"
+                          size="small"
+                          type="danger"
+                          :icon="CircleClose"
+                          @click="handleCancelAgencyPrompt(row)"
+                        />
+                      </el-tooltip>
                     </template>
 
                     <!-- 通用信息编辑 -->
-                    <el-button size="small" type="primary" link @click="openEditAgentDialog(row)">
-                      编辑
-                    </el-button>
+                    <el-tooltip :content="$t('common.edit') || '编辑'" placement="top">
+                      <el-button size="small" type="primary" :icon="Edit" @click="openEditAgentDialog(row)" />
+                    </el-tooltip>
                   </div>
                 </template>
               </el-table-column>
@@ -691,33 +700,33 @@
               <div class="flex flex-wrap items-center gap-2.5">
                 <el-input
                   v-model="warehouseQuery.keyword"
-                  placeholder="仓库代号/名称/责任人"
+                  :placeholder="$t('admin.warehouseQueryKeyword')"
                   style="width: 190px"
                   size="small"
                   clearable
                   @keyup.enter="handleWarehouseSearch"
                 />
                 <!-- 省市筛选 -->
-                <el-select v-model="warehouseQuery.province" placeholder="所属省市" style="width: 130px" size="small" @change="handleWarehouseProvinceChange">
-                  <el-option label="全部省市" value="全部" />
+                <el-select v-model="warehouseQuery.province" :placeholder="$t('admin.allProvinces') || '全部省市'" style="width: 130px" size="small" @change="handleWarehouseProvinceChange">
+                  <el-option :label="$t('admin.allProvinces') || '全部省市'" value="全部" />
                   <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
                 </el-select>
                 <!-- 中心筛选 -->
-                <el-select v-model="warehouseQuery.center" placeholder="供应中心/枢纽" style="width: 170px" size="small" @change="handleWarehouseSearch">
-                  <el-option label="全部中心" value="全部" />
+                <el-select v-model="warehouseQuery.center" :placeholder="$t('admin.allCenters') || '全部中心'" style="width: 170px" size="small" @change="handleWarehouseSearch">
+                  <el-option :label="$t('admin.allCenters') || '全部中心'" value="全部" />
                   <el-option v-for="c in currentWarehouseCenterOptions" :key="c" :label="c" :value="c" />
                 </el-select>
                 <!-- 类型筛选 -->
-                <el-select v-model="warehouseQuery.type" placeholder="仓库类型" style="width: 130px" size="small" @change="handleWarehouseSearch">
-                  <el-option label="全部类型" value="全部" />
-                  <el-option label="战略储备总仓" value="战略储备总仓" />
-                  <el-option label="区域中心仓" value="区域中心仓" />
-                  <el-option label="枢纽前置仓" value="枢纽前置仓" />
-                  <el-option label="应急保供仓" value="应急保供仓" />
+                <el-select v-model="warehouseQuery.type" :placeholder="$t('admin.whTypeAll')" style="width: 130px" size="small" @change="handleWarehouseSearch">
+                  <el-option :label="$t('admin.whTypeAll')" value="全部" />
+                  <el-option :label="$t('admin.whTypeStrategic')" value="战略储备总仓" />
+                  <el-option :label="$t('admin.whTypeRegional')" value="区域中心仓" />
+                  <el-option :label="$t('admin.whTypeHub')" value="枢纽前置仓" />
+                  <el-option :label="$t('admin.whTypeEmergency')" value="应急保供仓" />
                 </el-select>
 
-                <el-button type="primary" size="small" :icon="Search" @click="handleWarehouseSearch">查询</el-button>
-                <el-button size="small" :icon="Refresh" @click="resetWarehouseQuery">重置</el-button>
+                <el-button type="primary" size="small" :icon="Search" @click="handleWarehouseSearch">{{ $t('admin.btnSearch') }}</el-button>
+                <el-button size="small" :icon="Refresh" @click="resetWarehouseQuery">{{ $t('admin.btnReset') }}</el-button>
               </div>
 
               <div>
@@ -747,12 +756,12 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="核定库容与余量" min-width="220">
+              <el-table-column :label="$t('admin.capacityStockCol')" min-width="220">
                 <template #default="{ row }">
                   <div class="space-y-0.5 text-xs">
                     <div class="flex justify-between font-mono">
-                      <span class="text-[#8A9A8F]">核定: {{ (row.capacity || 0).toLocaleString() }} 吨</span>
-                      <span class="font-bold text-[#1F3326]">在库: {{ (row.currentStock || 0).toLocaleString() }} 吨</span>
+                      <span class="text-[#8A9A8F]">{{ $t('admin.approvedCapacity', { val: (row.capacity || 0).toLocaleString() }) }}</span>
+                      <span class="font-bold text-[#1F3326]">{{ $t('admin.currentStockLabel', { val: (row.currentStock || 0).toLocaleString() }) }}</span>
                     </div>
                     <div class="w-full bg-[#E9F1EB] rounded-full h-1.5 overflow-hidden">
                       <div
@@ -777,11 +786,15 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column :label="$t('admin.actions') || '操作'" width="160" fixed="right" align="center">
+              <el-table-column :label="$t('admin.actions') || '操作'" width="110" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="flex items-center justify-center gap-1.5">
-                    <el-button size="small" type="primary" plain @click="openEditWarehouseDialog(row)">{{ $t('common.edit') || '编辑' }}</el-button>
-                    <el-button size="small" type="danger" plain @click="handleDeleteWarehouse(row)">{{ $t('common.delete') || '删除' }}</el-button>
+                    <el-tooltip :content="$t('common.edit') || '编辑'" placement="top">
+                      <el-button size="small" type="primary" :icon="Edit" @click="openEditWarehouseDialog(row)" />
+                    </el-tooltip>
+                    <el-tooltip :content="$t('common.delete') || '删除'" placement="top">
+                      <el-button size="small" type="danger" :icon="Delete" @click="handleDeleteWarehouse(row)" />
+                    </el-tooltip>
                   </div>
                 </template>
               </el-table-column>
@@ -789,7 +802,7 @@
 
             <!-- 分页 -->
             <div class="p-2.5 bg-[#F3F8F4] border-t border-[#D9E5DB] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#58685D]">
-              <span>共 {{ filteredWarehouses.length }} 处储备仓库</span>
+              <span>{{ $t('admin.warehouseTotalCount', { count: filteredWarehouses.length }) }}</span>
               <el-pagination
                 v-model:current-page="warehousePage"
                 v-model:page-size="warehousePageSize"
@@ -1535,7 +1548,16 @@ import {
   CreditCard,
   UserFilled,
   InfoFilled,
-  CircleCheckFilled
+  CircleCheckFilled,
+  Edit,
+  Delete,
+  Scissor,
+  Stamp,
+  ChatDotRound,
+  ScaleToOriginal,
+  Connection,
+  WarningFilled,
+  CircleClose
 } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 

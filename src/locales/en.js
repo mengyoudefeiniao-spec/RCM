@@ -1713,13 +1713,46 @@ export default {
     "warehouseName": "Reserve Warehouse Name",
     "warehouseType": "Warehouse Type",
     "createWarehouse": "Create Strategic Warehouse",
-    "viewFamilyMembers": "View Family Members",
     "familyMembersDetail": "Registered Family Members Roster",
     "name": "Full Name",
     "relation": "Relation",
     "gender": "Gender",
     "birthDate": "Date of Birth",
-    "nationalId": "National ID"
+    "nationalId": "National ID",
+    "householdsUnit": "HH",
+    "over1500Redline": "⚠ Over 1,500 HH red line (awaiting ministerial split)",
+    "under750Small": "● ≤750 HH small (merge eligible)",
+    "establishAgency": "Establish New Agency (Ministerial Order)",
+    "unifyAgencyRules": "Unify Agency Regulations (Ministerial Order)",
+    "deputySeatActive": "Deputy Minister final-approval seat activated",
+    "rotateTransferApproval": "Rotation & Transfer Approval",
+    "planningConfirmedNote": "Joint survey confirmed by Planning & Follow-up Directorate",
+    "splitLargeOutlet": "Split Large Outlet",
+    "grantAgency": "Grant Agency",
+    "deceasedRotation": "Deceased Rotation Approval",
+    "restoreAgency": "Approve Agency Restoration",
+    "planningConfirm": "Planning Directorate Confirm",
+    "mergeOutlets": "Merge Outlets",
+    "penalize": "Administrative Penalty",
+    "revokeAgency": "Revoke",
+    "agentQueryCode": "Agency Code (FA-...)",
+    "agentQueryName": "Outlet Name",
+    "opStatusNormal": "Operating",
+    "opStatusSuspended": "Suspended for Rectification",
+    "opStatusRevoked": "Revoked (Vacant)",
+    "opStatusLicenseRevoked": "License Revoked",
+    "btnSearch": "Search",
+    "btnReset": "Reset",
+    "warehouseQueryKeyword": "Warehouse code/name/manager",
+    "whTypeAll": "All Types",
+    "whTypeStrategic": "Strategic Reserve Main",
+    "whTypeRegional": "Regional Central Hub",
+    "whTypeHub": "Hub Forward Depot",
+    "whTypeEmergency": "Emergency Supply Depot",
+    "capacityStockCol": "Capacity & Stock",
+    "approvedCapacity": "Approved: {val} t",
+    "currentStockLabel": "In-Stock: {val} t",
+    "warehouseTotalCount": "{count} warehouses in total"
   },
   "memberTransfer": {
     "title": "Apply to Transfer Family Member (Card-to-Card Inward Transfer)",
@@ -2406,7 +2439,7 @@ export default {
     "readingLocal": "Reading local file: {name}...",
     "ocrPassed": "OCR extraction & digital signature verification passed ✓",
     "localOcrSummary": "Local upload completed: [{name}] barcode & seal verified",
-    "uploadSuccess": "File [{name}] uploaded and verified successfully!",
+    "uploadSuccess": "Uploaded & Verified!",
     "loadingTemplate": "Retrieving official template from archive...",
     "loadedDone": "Loaded ✓",
     "templateLoaded": "Official document [{name}] loaded and ready!",
@@ -2423,8 +2456,7 @@ export default {
     "emptyOptional": "Upload supporting proof (Local file or sample)",
     "emptyTip": "Supports PDF, JPG, PNG · Max 15MB · Auto OCR check",
     "btnUploadFile": "Upload",
-    "btnLoadSample": "Sample",
-    "uploadSuccess": "Uploaded & Verified!"
+    "btnLoadSample": "Sample"
   },
   "citizenCard": {
     "cardTitle": "Republic of Iraq · Digital Card",
@@ -2652,11 +2684,44 @@ export default {
     "frozen": "Frozen"
   },
   "dataLabels": {
-    "commodity": { "flour": "Flour", "rice": "Rice", "oil": "Vegetable Oil", "sugar": "Sugar", "milkPowder": "Milk Powder", "salt": "Salt" },
-    "age": { "child": "Ages 0-14", "working": "Ages 15-59", "senior": "Ages 60+" },
-    "family": { "f12": "1-2 members", "f34": "3-4 members", "f56": "5-6 members", "f7p": "7+ members" },
-    "months": { "m5": "May", "m6": "Jun", "m7": "Jul", "m8": "Aug", "m9": "Sep", "m10": "Oct" },
-    "units": { "ton": "t", "kgPersonMonth": "kg/person/mo", "percent": "%", "people": "people", "households": "families", "perKm2": "people/km²", "sites": "sites", "outlets": "outlets", "householdsPerOutlet": "families/outlet" },
+    "commodity": {
+      "flour": "Flour",
+      "rice": "Rice",
+      "oil": "Vegetable Oil",
+      "sugar": "Sugar",
+      "milkPowder": "Milk Powder",
+      "salt": "Salt"
+    },
+    "age": {
+      "child": "Ages 0-14",
+      "working": "Ages 15-59",
+      "senior": "Ages 60+"
+    },
+    "family": {
+      "f12": "1-2 members",
+      "f34": "3-4 members",
+      "f56": "5-6 members",
+      "f7p": "7+ members"
+    },
+    "months": {
+      "m5": "May",
+      "m6": "Jun",
+      "m7": "Jul",
+      "m8": "Aug",
+      "m9": "Sep",
+      "m10": "Oct"
+    },
+    "units": {
+      "ton": "t",
+      "kgPersonMonth": "kg/person/mo",
+      "percent": "%",
+      "people": "people",
+      "households": "families",
+      "perKm2": "people/km²",
+      "sites": "sites",
+      "outlets": "outlets",
+      "householdsPerOutlet": "families/outlet"
+    },
     "pointWarehouse": "{province} Ration Storage Center {seq}",
     "pointAgent": "{province} Agent Outlet {seq}"
   },
@@ -2786,4 +2851,4 @@ export default {
       "complianceRate": "Compliance Rate"
     }
   }
-};
+}

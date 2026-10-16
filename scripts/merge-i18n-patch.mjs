@@ -13,8 +13,10 @@ const patchDir = path.join(root, 'scripts', 'i18n-patch');
 const importLocal = (p) => import(pathToFileURL(p).href);
 const arMod = await importLocal(path.join(root, 'src', 'locales', 'ar.js'));
 const kuMod = await importLocal(path.join(root, 'src', 'locales', 'ku.js'));
+const enMod = await importLocal(path.join(root, 'src', 'locales', 'en.js'));
 const ar = arMod.default;
 const ku = kuMod.default;
+const en = enMod.default;
 
 // 汇总补丁
 function loadPatches(prefix) {
@@ -28,6 +30,7 @@ function loadPatches(prefix) {
 
 const arPatch = loadPatches('ar-part');
 const kuPatch = loadPatches('ku-part');
+const enPatch = loadPatches('en-part');
 
 // 基准：zh 与 ar/ku 的键差异（缺失清单）
 const zhMod = await importLocal(path.join(root, 'src', 'locales', 'zh.js'));
@@ -43,14 +46,18 @@ function flat(o, p = '') {
 const fz = flat(zhMod.default);
 const fa = flat(ar);
 const fk = flat(ku);
+const fe = flat(en);
 const missingAr = Object.keys(fz).filter(k => !(k in fa));
 const missingKu = Object.keys(fz).filter(k => !(k in fk));
+const missingEn = Object.keys(fz).filter(k => !(k in fe));
 
 const unAr = missingAr.filter(k => !(k in arPatch));
 const unKu = missingKu.filter(k => !(k in kuPatch));
-if (unAr.length || unKu.length) {
+const unEn = missingEn.filter(k => !(k in enPatch));
+if (unAr.length || unKu.length || unEn.length) {
   console.error('补丁未覆盖的缺失键 ar:', unAr);
   console.error('补丁未覆盖的缺失键 ku:', unKu);
+  console.error('补丁未覆盖的缺失键 en:', unEn);
   process.exit(1);
 }
 
@@ -66,8 +73,10 @@ function setDeep(obj, keyPath, value) {
 }
 for (const [k, v] of Object.entries(arPatch)) setDeep(ar, k, v);
 for (const [k, v] of Object.entries(kuPatch)) setDeep(ku, k, v);
+for (const [k, v] of Object.entries(enPatch)) setDeep(en, k, v);
 
 // 回写（保留 export default 结构，2 空格缩进）
 writeFileSync(path.join(root, 'src', 'locales', 'ar.js'), 'export default ' + JSON.stringify(ar, null, 2) + '\n', 'utf8');
 writeFileSync(path.join(root, 'src', 'locales', 'ku.js'), 'export default ' + JSON.stringify(ku, null, 2) + '\n', 'utf8');
-console.log(`已合并: ar +${Object.keys(arPatch).length} 键, ku +${Object.keys(kuPatch).length} 键`);
+writeFileSync(path.join(root, 'src', 'locales', 'en.js'), 'export default ' + JSON.stringify(en, null, 2) + '\n', 'utf8');
+console.log(`已合并: ar +${Object.keys(arPatch).length} 键, ku +${Object.keys(kuPatch).length} 键, en +${Object.keys(enPatch).length} 键`);
