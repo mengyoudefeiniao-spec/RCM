@@ -409,7 +409,7 @@
               <span>{{ $t('agentG2B.deliveryWindowLabel') }} <span class="text-[#C04442]">*</span></span>
             </span>
             <span class="text-[11px] text-[#2A5440] font-mono">
-              {{ $t('agentG2B.selectedTimeLabel', { date: form.deliveryDate || $t('agentG2B.notSelectedDate'), slot: form.deliverySlot || $t('agentG2B.notSelectedSlot') }) }}
+              {{ $t('agentG2B.selectedTimeLabel', { date: form.deliveryDate || $t('agentG2B.notSelectedDate'), slot: form.deliverySlot ? formatSlotValue(form.deliverySlot) : $t('agentG2B.notSelectedSlot') }) }}
             </span>
           </div>
 
@@ -589,7 +589,7 @@
           </div>
           <div class="flex justify-between items-center">
             <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrTimeSlotLabel') }}</span>
-            <span class="font-semibold text-[#2A5440]">{{ activeQRRow.timeSlot }}</span>
+            <span class="font-semibold text-[#2A5440]">{{ formatG2BTimeSlot(activeQRRow.timeSlot) }}</span>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrVehicleLabel') }}</span>
@@ -853,6 +853,20 @@ const formatG2BTimeSlot = (slot) => {
     if (slot.includes('午后第三批')) return '14:00 - 16:00 (بەشی پاشنیوەڕۆ)';
   }
   return slot;
+};
+
+// 表单时段 value → 当前语言展示标签 (新建订单默认时间提示用)
+const SLOT_VALUE_KEYS = {
+  '08:00-10:00': 'slot1',
+  '10:00-12:00': 'slot2',
+  '14:00-16:00': 'slot3',
+  '16:00-18:00': 'slot4'
+};
+
+const formatSlotValue = (slot) => {
+  if (!slot) return '';
+  const key = SLOT_VALUE_KEYS[slot];
+  return key ? t(`agentG2B.${key}`) : formatG2BTimeSlot(slot);
 };
 
 const loading = ref(false);
