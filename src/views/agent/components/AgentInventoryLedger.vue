@@ -85,10 +85,10 @@
       </div>
     </div>
 
-    <!-- 可视化图表网格 (APP 视口横向双列并排) -->
-    <div class="grid" :class="isAppMode ? 'grid-cols-2 gap-2.5' : 'grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4'">
+    <!-- 可视化图表网格 (APP 视口上下堆叠、全宽对齐) -->
+    <div class="grid" :class="isAppMode ? 'grid-cols-1 !gap-2.5' : 'grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4'">
       <!-- 图表 1: 各品类称重误差对比 -->
-      <div class="bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs min-w-0 h-full flex flex-col" :class="isAppMode ? 'p-2.5 space-y-2' : 'p-3 sm:p-4 space-y-3'">
+      <div class="bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs min-w-0 h-full flex flex-col" :class="isAppMode ? 'p-3 space-y-2.5' : 'p-3 sm:p-4 space-y-3'">
         <div class="flex items-center justify-between gap-2 border-b border-[#E9F1EB] pb-2">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2 h-2 rounded-full bg-[#326445] shrink-0"></span>
@@ -127,24 +127,23 @@
           <span class="text-[10px] text-[#8A9A8F] font-mono shrink-0">{{ $t('agentInventoryLedger.ledgerListUnit') }}</span>
         </div>
 
-        <div class="pt-1 flex-1" :class="isAppMode ? 'space-y-1.5' : 'space-y-2'">
+        <div class="space-y-2 pt-1 flex-1">
           <div
             v-for="(row, idx) in ledgerRecords"
             :key="idx"
-            class="rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB]/80 min-w-0"
-            :class="isAppMode ? 'p-1.5 space-y-1' : 'p-2 space-y-1.5'"
+            class="p-2 rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB]/80 space-y-1.5 min-w-0"
           >
             <!-- 行 1: 月份 + 盘盈/盘亏 + 差异量 -->
-            <div class="flex items-center justify-between gap-1 min-w-0">
-              <div class="flex items-center min-w-0" :class="isAppMode ? 'gap-0.5' : 'gap-1.5'">
-                <span class="font-mono font-bold text-[#43554B] shrink-0" :class="isAppMode ? 'text-[9px]' : 'text-[10px] sm:text-[11px]'">{{ row.month }}</span>
-                <el-tag size="small" :type="row.type === 'surplus' ? 'success' : 'danger'" effect="plain" class="shrink-0" :class="isAppMode ? 'scale-75 origin-left' : 'scale-90 origin-left'">
+            <div class="flex items-center justify-between gap-1.5 min-w-0">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-[10px] sm:text-[11px] font-mono font-bold text-[#43554B] shrink-0">{{ row.month }}</span>
+                <el-tag size="small" :type="row.type === 'surplus' ? 'success' : 'danger'" effect="plain" class="scale-90 origin-left shrink-0">
                   {{ row.type === 'surplus' ? $t('agentInventoryLedger.typeSurplus') : $t('agentInventoryLedger.typeShortage') }}
                 </el-tag>
               </div>
               <span
-                class="font-mono font-bold shrink-0"
-                :class="[row.type === 'surplus' ? 'text-[#2F5B44]' : 'text-[#C04442]', isAppMode ? 'text-[9px]' : 'text-[10px] sm:text-xs']"
+                class="font-mono font-bold text-[10px] sm:text-xs shrink-0"
+                :class="row.type === 'surplus' ? 'text-[#2F5B44]' : 'text-[#C04442]'"
               >{{ row.amountText }} {{ $t('agentInventoryLedger.kgUnit') }}</span>
             </div>
             <!-- 行 2: 损耗归因 (允许换行，不再截断) -->
