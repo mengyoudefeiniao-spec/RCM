@@ -301,8 +301,10 @@ const multiLangStores = {
   }
 };
 
-multiLangStores.ar = multiLangStores.en;
-multiLangStores.ku = multiLangStores.en;
+// ar/ku 独立深拷贝：避免与 en 共享同一引用造成跨语言演示数据互相污染
+// （ar/ku 演示数据暂回退英文文案；状态标识如 status:'正常' 属业务逻辑标识，由视图层 t() 转译）
+multiLangStores.ar = JSON.parse(JSON.stringify(multiLangStores.en));
+multiLangStores.ku = JSON.parse(JSON.stringify(multiLangStores.en));
 
 export function getActiveLang(config) {
   if (config && config.headers && config.headers['Accept-Language']) {
