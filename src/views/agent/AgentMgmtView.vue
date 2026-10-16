@@ -260,7 +260,7 @@
                     </el-tag>
                     <el-tag
                       size="small"
-                      :type="row.status.includes('正常') ? 'success' : 'danger'"
+                      :type="isNormalAgentStatus(row.status) ? 'success' : 'danger'"
                       effect="light"
                     >
                       {{ formatAgentStatus(row.status) }}
@@ -476,7 +476,7 @@
                 <template #default="{ row }">
                   <el-tag
                     size="small"
-                    :type="row.status.includes('正常') ? 'success' : 'danger'"
+                    :type="isNormalAgentStatus(row.status) ? 'success' : 'danger'"
                     effect="light"
                   >
                     {{ formatAgentStatus(row.status) }}
@@ -870,6 +870,8 @@ const route = useRoute();
 const isCompletedStatus = (status) => /已完成|Completed/i.test(status || '');
 const isPendingStatus = (status) => /待|Pending/i.test(status || '');
 const isPayPendingStatus = (status) => /待电子支付|待支付|Pending/i.test(status || '');
+// 网点营业状态（zh「正常」/ en Active·Operational·Assigned）
+const isNormalAgentStatus = (status) => /正常|Active|Operational|Assigned/i.test(status || '');
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const isAr = computed(() => locale.value === 'ar');
@@ -1036,10 +1038,10 @@ const formatAgentStatus = (st) => {
   if (!st) return '';
   const s = String(st).trim();
   if (s.includes('正常') || s.includes('Active') || s.includes('Operational') || s.includes('Assigned')) {
-    return t('agent.statusNormal') || (isEn.value ? 'Normal Operation' : isAr.value ? 'تشغيل عادي' : isKu.value ? 'Çalak' : '正常营业');
+    return t('agent.statusNormal') || (isEn.value ? 'Normal' : isAr.value ? 'تشغيل عادي' : isKu.value ? 'Çalak' : '正常营业');
   }
   if (s.includes('注销') || s.includes('Cancelled') || s.includes('Revoked') || s.includes('Deregistered')) {
-    return t('agent.statusCancelled') || (isEn.value ? 'Cancelled (Pending Rotation)' : isAr.value ? 'ملغى' : isKu.value ? 'Hatiye betalkirin' : '已注销');
+    return t('agent.statusCancelled') || (isEn.value ? 'Cancelled' : isAr.value ? 'ملغى' : isKu.value ? 'Hatiye betalkirin' : '已注销');
   }
   if (s.includes('容量') || s.includes('Capacity')) {
     return isEn.value ? 'Capacity Warning' : isAr.value ? 'تحذير السعة' : isKu.value ? 'هۆشداری بارستایی' : '容量预警';
