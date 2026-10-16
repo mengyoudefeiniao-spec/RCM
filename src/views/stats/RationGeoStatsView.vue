@@ -449,19 +449,21 @@ function onMapReady() {
   }
 
   // 标记只创建一次存入数组，图层组在 applyLayerVisibility 中按需重建，
-  // 避免 clearLayers 导致标记永久丢失（切换图层/筛选后无法恢复）
+  // 避免 clearLayers 导致标记永久丢失（切换图层/筛选后无法恢复）。
+  // 点位使用 Canvas 渲染器，避免数百个 SVG 节点导致图层切换/筛选卡顿
+  const pointRenderer = L.canvas({ padding: 0.3 });
   warehouseMarkers = [];
   agentMarkers = [];
   for (const pt of FACILITY_POINTS) {
     const isWarehouse = pt.type === 'warehouse';
-    const marker = L.circleMarker([pt.lat, pt.lng], isWarehouse ? {
+    const marker = L.circleMarker([pt.lat, pt.lng], Object.assign(isWarehouse ? {
       radius: 4,
       color: '#FFFFFF', weight: 0.8,
       fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.92
     } : {
       radius: 2.5, stroke: false,
       fillColor: '#1E3A5F', fillOpacity: 0.7
-    });
+    }, { renderer: pointRenderer }));
     marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
     marker.on('click', () => selectProvince(pt.province));
     (isWarehouse ? warehouseMarkers : agentMarkers).push(marker);
@@ -481,9 +483,10 @@ function tooltipHtml(prov) {
 
 function applyLayerVisibility() {
   if (!map) return;
-  // 先整体摘除旧图层组，再从标记数组按当前开关/筛选重建，标记本身不销毁
-  map.removeLayer(warehouseLayer);
-  map.removeLayer(agentLayer);
+  // 先整体摘除旧图层组，再从标记数组按当前开关/筛选重建，标记本身不销毁。
+  // 注意: 首次调用时图层组还未创建，必须判空，否则 Leaflet removeLayer(undefined) 会抛异常
+  if (warehouseLayer) map.removeLayer(warehouseLayer);
+  if (agentLayer) map.removeLayer(agentLayer);
   if (showWarehouseLayer.value) {
     warehouseLayer = L.layerGroup(warehouseMarkers.filter(l =>
       warehouseFilter.value === 'all'
