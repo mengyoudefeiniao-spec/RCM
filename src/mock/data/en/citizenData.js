@@ -7,7 +7,7 @@ export const MOCK_FAMILIES = [
     district: 'Karkh 1st Ration Center (#04)',
     headName: 'Ahmed Hassan Saleh',
     phone: '07701234567',
-    memberCount: 5,
+    memberCount: 4,
     status: 'Active',
     freezeReason: '',
     agentId: 'FA-00128',
@@ -75,20 +75,6 @@ export const MOCK_FAMILIES = [
         phone: '07709876544',
         residenceInfo: 'No. 14, Mansour St, Karkh District, Baghdad',
         monthlyIncome: 1200000,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      },
-      {
-        id: 'M-005',
-        name: 'Youssef Ahmed Hassan',
-        nationalId: '201282910485',
-        familyCode: 'FAM-BAG-08832',
-        relation: 'Child',
-        birthDate: '2012-08-18',
-        gender: 'Male',
-        status: 'Active',
-        residenceInfo: 'No. 14, Mansour St, Karkh District, Baghdad',
-        monthlyIncome: 0,
         isUpdatedInSystem: true,
         faceVerified: true
       }

@@ -114,7 +114,7 @@ export const MOCK_FAMILIES_ADMIN = [
     headName: "Ahmed Hassan Saleh",
     headNationalId: "IQ-1980-0419-8271",
     category: "Standard Assistance",
-    memberCount: 5,
+    memberCount: 4,
     address: "No. 14, Mansour St, Karkh District, Baghdad",
     registeredDate: "2024-01-15",
     adminBranch: "Karkh 1st Food Supply Branch",
@@ -154,15 +154,6 @@ export const MOCK_FAMILIES_ADMIN = [
         nationalId: "IQ-2010-0218-3382",
         birthDate: "2010-02-18",
         gender: "Female",
-        isFrozen: false
-      },
-      {
-        id: "m-05",
-        name: "Youssef Ahmed Hassan",
-        relation: "Child",
-        nationalId: "IQ-2015-0909-1120",
-        birthDate: "2015-09-09",
-        gender: "Male",
         isFrozen: false
       }
     ]

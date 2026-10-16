@@ -1116,7 +1116,7 @@ function handleBirthDateChange() {
 function openAddMemberDialog() {
   addMemberStep.value = 1;
   const isEnglish = locale.value === 'en';
-  newMemberForm.name = isEnglish ? 'Youssef Ahmed Hassan' : '优素福·艾哈迈德·哈桑';
+  newMemberForm.name = isEnglish ? 'Omar Ahmed Hassan' : '奥马尔·艾哈迈德·哈桑';
   newMemberForm.nationalId = '201982910488';
   newMemberForm.birthDate = '2019-05-15';
   newMemberForm.gender = isEnglish ? 'Male' : '男';

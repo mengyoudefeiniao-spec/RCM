@@ -91,7 +91,7 @@ export const MOCK_FAMILIES_ADMIN = [
     headName: '艾哈迈德·哈桑·萨利赫',
     headNationalId: 'IQ-1980-0419-8271',
     category: '普通保障家庭',
-    memberCount: 5,
+    memberCount: 4,
     address: '巴格达省卡尔赫区曼苏尔街区14号院',
     registeredDate: '2024-01-15',
     adminBranch: '卡尔赫第一粮食供应分部',
@@ -100,8 +100,7 @@ export const MOCK_FAMILIES_ADMIN = [
       { id: 'm-01', name: '艾哈迈德·哈桑·萨利赫', relation: '户主', nationalId: 'IQ-1980-0419-8271', birthDate: '1980-04-19', gender: '男', isFrozen: false },
       { id: 'm-02', name: '法蒂玛·扎赫拉·侯赛因', relation: '配偶', nationalId: 'IQ-1984-0712-9921', birthDate: '1984-07-12', gender: '女', isFrozen: false },
       { id: 'm-03', name: '扎伊德·艾哈迈德·萨利赫', relation: '长子', nationalId: 'IQ-2006-1103-4412', birthDate: '2006-11-03', gender: '男', isFrozen: false },
-      { id: 'm-04', name: '玛利亚姆·艾哈迈德·萨利赫', relation: '次女', nationalId: 'IQ-2010-0218-3382', birthDate: '2010-02-18', gender: '女', isFrozen: false },
-      { id: 'm-05', name: '优素福·艾哈迈德·萨利赫', relation: '幼子', nationalId: 'IQ-2015-0909-1120', birthDate: '2015-09-09', gender: '男', isFrozen: false }
+      { id: 'm-04', name: '玛利亚姆·艾哈迈德·萨利赫', relation: '次女', nationalId: 'IQ-2010-0218-3382', birthDate: '2010-02-18', gender: '女', isFrozen: false }
     ]
   },
   {
