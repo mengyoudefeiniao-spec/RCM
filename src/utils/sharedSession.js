@@ -395,7 +395,17 @@ export function addSharedOrder(orderData, langOverride) {
     ...orderData
   };
 
-  orders.unshift(newOrder);
+  // 幂等去重：同一订单 (orderId/ticketNo/pickupCode 任一命中) 只保留一份，
+  // 已存在则原位覆盖更新，避免调用方与 mock adapter 双写产生幽灵订单
+  const dupIdx = orders.findIndex((o) => !o ? false :
+    (newOrder.orderId && (o.orderId === newOrder.orderId || o.id === newOrder.orderId)) ||
+    (newOrder.ticketNo && o.ticketNo === newOrder.ticketNo) ||
+    (newOrder.pickupCode && o.pickupCode === newOrder.pickupCode));
+  if (dupIdx >= 0) {
+    orders.splice(dupIdx, 1, newOrder);
+  } else {
+    orders.unshift(newOrder);
+  }
 
   try {
     localStorage.setItem(storageKey, JSON.stringify(orders));

@@ -777,7 +777,6 @@ import {
   getCitizenPurchaseOrders,
   purchaseRationItems
 } from '../../../api/citizen.js';
-import { addSharedOrder } from '../../../utils/sharedSession.js';
 import { onTabMessage } from '../../../utils/crossTabBus.js';
 import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymentDialog.vue';
 import {
@@ -1226,16 +1225,9 @@ async function handlePaymentSuccess(payResult) {
 
     const res = await purchaseRationItems(payload);
 
-    // 跨标签页数据同步与广播：代理网点APP与政府端实时收到新配给订单
-    addSharedOrder({
-      cardNo: quotaInfo.cardNo,
-      headName: quotaInfo.headName,
-      items: activeSelectedSummary.value,
-      deliveryType: deliveryType.value,
-      deliveryAddress: deliveryAddress.value,
-      amount: finalTotalPayAmount.value,
-      agentName: quotaInfo.agentName
-    });
+    // 订单持久化由 mock adapter 统一完成 (citizenPurchaseOrdersStore + addSharedOrder
+    // + broadcastTabMessage ORDER_PURCHASED)；此处不再重复写入共享池，
+    // 否则会产生一条无 orderId 的重复订单 (三端各多出一条幽灵订单)
 
     ElMessage.success(res.message || (isEnNow() ? 'Ration order placed and electronic payment completed successfully!' : '配给品下单成功并完成电子缴费！'));
 
