@@ -82,9 +82,9 @@
 </template>
 
 <script setup>
-import { isEnNow } from '../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { DataAnalysis, Checked, Refresh, Lock, Operation, Cellphone } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
@@ -96,6 +96,7 @@ import P1P5VerificationDrawer from '../warehouse/components/P1P5VerificationDraw
 
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
 const dashboardMode = ref('overview'); // 默认展示现代中东高端政务风格看板
 const selectedTimeRange = ref('quarter');
 const refreshing = ref(false);
@@ -139,28 +140,24 @@ const isAdminRole = computed(() => authStore.isAdmin);
 const roleTitle = computed(() => {
   switch (authStore.currentRole) {
     case 'minister_center':
-      return '配给中心部长视角';
+      return t('dashboard.roleMinister');
     case 'deputy_minister':
-      return '行政次长视角';
+      return t('dashboard.roleDeputy');
     case 'director_planning':
-      return '规划与跟进司总干事视角';
+      return t('dashboard.roleDirectorPlanning');
     case 'admin':
-      return '管理监督官视角';
+      return t('dashboard.roleAdmin');
     case 'agent':
-      return '配给代理视角';
+      return t('dashboard.roleAgent');
     default:
-      return '业务人员视角';
+      return t('dashboard.roleStaff');
   }
 });
 
 function handleTimeRangeChange(val) {
-  const map = {
-    quarter: '本季度',
-    month: '近30天',
-    week: '近7天',
-    day: '近1天'
-  };
-  ElMessage.success((isEnNow() ? `Switched to the [${map[val] || val}] statistics pivot` : `已切换至【${map[val] || val}】统计数据透视`));
+  // 复用时间范围单选按钮的既有词条 (dashboard.quarter/month/week/day)
+  const pivot = t(`dashboard.${val}`);
+  ElMessage.success(t('dashboard.switchPivot', { pivot }));
 }
 
 async function handleRefresh() {
@@ -171,9 +168,9 @@ async function handleRefresh() {
     } else if (isAdminRole.value) {
       await adminDashboardRef.value?.refresh();
     }
-    ElMessage.success((isEnNow() ? 'Dashboard data refreshed!' : '看板数据已刷新！'));
+    ElMessage.success(t('dashboard.refreshed'));
   } catch (e) {
-    ElMessage.error((isEnNow() ? 'Failed to refresh data' : '刷新数据失败'));
+    ElMessage.error(t('dashboard.refreshFailed'));
   } finally {
     refreshing.value = false;
   }
