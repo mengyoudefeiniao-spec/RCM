@@ -1060,7 +1060,7 @@ export async function mockDispatch(config) {
   if (url.includes('/citizen/ration/quota-balance') && method === 'GET') {
     const cardNo = url.split('/').pop() || 'RC-10029381';
     const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
-    const memberCount = family?.memberCount || family?.members?.length || 5;
+    const memberCount = family?.memberCount || family?.members?.length || 4;
 
     // 计算当月已购数量 (从订单历史汇总)
     const cardOrders = citizenPurchaseOrdersStore.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');

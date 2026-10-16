@@ -18,7 +18,7 @@
           {{ quotaInfo.cardNo || 'RC-10029381' }}
         </span>
         <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono font-bold origin-left">
-          {{ quotaInfo.memberCount || 5 }} {{ $t('citizenPurchase.compactMembers') }}
+          {{ quotaInfo.memberCount || 4 }} {{ $t('citizenPurchase.compactMembers') }}
         </el-tag>
       </div>
 
@@ -905,7 +905,7 @@ const submitting = ref(false);
 const quotaInfo = reactive({
   cardNo: 'RC-10029381',
   headName: '艾哈迈德·哈桑·萨利赫',
-  memberCount: 5,
+  memberCount: 4,
   agentId: 'FA-00128',
   agentName: '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)',
   province: '巴格达省',

@@ -7,7 +7,7 @@ export const MOCK_FAMILIES = [
     district: '卡尔赫第一配给中心 (#04)',
     headName: '艾哈迈德·哈桑·萨利赫',
     phone: '07701234567',
-    memberCount: 5,
+    memberCount: 4,
     status: '正常',
     freezeReason: '',
     agentId: 'FA-00128',
@@ -75,19 +75,6 @@ export const MOCK_FAMILIES = [
         phone: '07709876544',
         residenceInfo: '巴格达市卡尔赫区曼苏尔街区14号',
         monthlyIncome: 1200000,
-        isUpdatedInSystem: true,
-        faceVerified: true
-      },
-      {
-        id: 'M-005',
-        name: '优素福·艾哈迈德·哈桑',
-        nationalId: '201282910485',
-        familyCode: 'FAM-BAG-08832',
-        relation: '子女',
-        birthDate: '2012-08-18',
-        gender: '男',
-        status: '正常',
-        residenceInfo: '巴格达市卡尔赫区曼苏尔街区14号',
         isUpdatedInSystem: true,
         faceVerified: true
       }

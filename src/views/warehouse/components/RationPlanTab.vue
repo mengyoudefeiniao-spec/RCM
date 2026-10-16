@@ -39,29 +39,38 @@
     <!-- ======================================================== -->
     <!-- 1. 公民专属视角：显示和自己家庭相关的签约代理网点及每月配给额度 -->
     <!-- ======================================================== -->
-    <div v-if="isCitizen" class="space-y-4">
-      <div class="bg-gradient-to-r from-[#EFF5F1]/70 via-[#EFF5F1]/40 to-[#F3F8F4] rounded-lg p-5 border border-[#C7DED0]/80 shadow-xs space-y-4">
+    <div v-if="isCitizen" class="space-y-4" :class="isAppMode ? 'space-y-3' : ''">
+      <div
+        class="bg-gradient-to-r from-[#EFF5F1]/70 via-[#EFF5F1]/40 to-[#F3F8F4] rounded-lg border border-[#C7DED0]/80 shadow-xs"
+        :class="isAppMode ? 'p-3.5 space-y-3' : 'p-5 space-y-4'"
+      >
         <div
           class="flex justify-between gap-3 border-b border-[#E1F4E4]/80 pb-3.5"
-          :class="isAppMode ? 'flex-col items-stretch' : 'flex-col sm:flex-row sm:items-center'"
+          :class="isAppMode ? 'flex-col items-stretch gap-2.5 pb-3' : 'flex-col sm:flex-row sm:items-center'"
         >
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[#326445] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+          <div class="flex items-center gap-3" :class="isAppMode ? 'gap-2.5' : ''">
+            <div
+              class="rounded-lg bg-[#326445] text-white flex items-center justify-center font-bold shadow-xs shrink-0"
+              :class="isAppMode ? 'w-9 h-9 text-base' : 'w-10 h-10 text-lg'"
+            >
               <el-icon><Shop /></el-icon>
             </div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="text-sm font-bold text-[#1B3123]">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'gap-1.5' : ''">
+                <h3 class="text-sm font-bold text-[#1B3123]" :class="isAppMode ? 'text-[13px] leading-snug' : ''">
                   {{ citizenFamilyInfo?.agentName || (isEn ? 'Baghdad Karkh No.1 Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)') }}
                 </h3>
                 <el-tag size="small" type="success" effect="dark" class="font-bold">{{ $t('warehouse.contractedAgent') || '签约保供代销站' }}</el-tag>
               </div>
-              <div class="text-[11px] text-[#58685D] flex items-center gap-2 mt-0.5 font-mono flex-wrap">
-                <span>{{ $t('warehouse.agentIdLabel') || '代理站编号' }}: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
-                <span>·</span>
-                <span>{{ $t('warehouse.centerLabel') || '配给中心' }}: {{ citizenFamilyInfo?.district || (isEn ? 'Karkh No.1 Center (#04)' : '卡尔赫第一配给中心 (#04)') }}</span>
-                <span>·</span>
-                <span>{{ $t('warehouse.provinceLabel') || '省份' }}: {{ citizenFamilyInfo?.province || (isEn ? 'Baghdad Governorate' : '巴格达省 (Baghdad)') }}</span>
+              <div
+                class="text-[11px] text-[#58685D] mt-0.5 font-mono"
+                :class="isAppMode ? 'flex flex-col items-start gap-y-0.5 pt-1' : 'flex items-center gap-2 flex-wrap'"
+              >
+                <span class="truncate max-w-full">{{ $t('warehouse.agentIdLabel') || '代理站编号' }}: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
+                <span v-if="!isAppMode">·</span>
+                <span class="truncate max-w-full">{{ $t('warehouse.centerLabel') || '配给中心' }}: {{ citizenFamilyInfo?.district || (isEn ? 'Karkh No.1 Center (#04)' : '卡尔赫第一配给中心 (#04)') }}</span>
+                <span v-if="!isAppMode">·</span>
+                <span class="truncate max-w-full">{{ $t('warehouse.provinceLabel') || '省份' }}: {{ citizenFamilyInfo?.province || (isEn ? 'Baghdad Governorate' : '巴格达省 (Baghdad)') }}</span>
               </div>
             </div>
           </div>
@@ -115,13 +124,13 @@
         </div>
       </div>
 
-      <div class="space-y-3">
-        <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="space-y-3" :class="isAppMode ? 'space-y-2.5' : ''">
+        <div class="flex items-center justify-between flex-wrap gap-2" :class="isAppMode ? 'flex-col items-start gap-1' : ''">
           <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5 uppercase tracking-wider">
             <el-icon class="text-[#326445]"><Goods /></el-icon>
             <span>{{ citizenSelectedMonth }} {{ $t('warehouse.rationDetailsTitle') || '月度家庭口粮配给份额明细' }}</span>
           </h4>
-          <span class="text-[11px] text-[#8A9A8F] font-mono">
+          <span v-if="!isAppMode" class="text-[11px] text-[#8A9A8F] font-mono">
             {{ $t('warehouse.priceStabilizedMechanism') || '国家官方指导平价限价保供机制' }}
           </span>
         </div>
@@ -133,21 +142,22 @@
           <div
             v-for="item in citizenQuotaItems"
             :key="item.itemCode"
-            class="bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs hover:shadow-md transition space-y-3"
+            class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs hover:shadow-md transition"
+            :class="isAppMode ? 'p-3.5 space-y-2.5' : 'p-4.5 space-y-3'"
           >
-            <div class="flex items-start justify-between">
-              <div>
-                <span class="text-sm font-bold text-[#1B3123] block">{{ item.itemName }}</span>
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <span class="text-sm font-bold text-[#1B3123] block" :class="isAppMode ? 'text-[13px]' : ''">{{ item.itemName }}</span>
                 <span class="text-[11px] text-[#8A9A8F]">
                   {{ $t('warehouse.standardPerPersonLabel', { quota: item.standardPerPerson, unit: item.unit }) || `标准: ${item.standardPerPerson} ${item.unit}/人/月` }}
                 </span>
               </div>
-              <el-tag size="small" type="success" effect="plain" class="font-bold">
+              <el-tag size="small" type="success" effect="plain" class="font-bold shrink-0">
                 {{ $t('warehouse.fullyAllocated') || item.status }}
               </el-tag>
             </div>
 
-            <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#E9F1EB] space-y-1">
+            <div class="bg-[#F3F8F4] rounded-lg border border-[#E9F1EB] space-y-1" :class="isAppMode ? 'p-2.5' : 'p-3'">
               <span class="text-[11px] text-[#58685D]">{{ $t('warehouse.householdQuotaLabel') || '本户月度核定配额：' }}</span>
               <div class="flex items-baseline gap-1.5">
                 <span class="text-2xl font-bold font-mono text-[#326445]">{{ item.totalHouseholdQuota }}</span>
@@ -1566,11 +1576,11 @@ const citizenFamilyInfo = computed(() => {
     rationCardNo: 'RC-10029381',
     headName: isEn.value ? 'Ahmed Hassan Saleh' : '艾哈迈德·哈桑·萨利赫',
     phone: '07701234567',
-    memberCount: 5
+    memberCount: 4
   };
 });
 
-const memberCount = computed(() => citizenFamilyInfo.value?.memberCount || 5);
+const memberCount = computed(() => citizenFamilyInfo.value?.memberCount || 4);
 
 const citizenQuotaItems = computed(() => {
   const n = memberCount.value;
