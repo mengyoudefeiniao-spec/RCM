@@ -179,16 +179,71 @@ export function getProvinceStatsByName(name) {
 }
 
 // ============ 省内设施点位 (仓库/代理, 确定性生成) ============
+
+// 射线法: 点是否在环内 (lng/lat)
+function pointInRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if (((yi > lat) !== (yj > lat)) && (lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+// 点是否在 GeoJSON 几何体内 (支持 Polygon / MultiPolygon)
+function pointInGeometry(lng, lat, geometry) {
+  if (!geometry) return false;
+  if (geometry.type === 'Polygon') return geometry.coordinates.some((ring) => pointInRing(lng, lat, ring));
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.some((polygon) => polygon.some((ring) => pointInRing(lng, lat, ring)));
+  }
+  return false;
+}
+
 function buildFacilityPoints() {
+  // 省界多边形索引 (geoName → geometry + bbox)，用于把点位约束在省界内（即伊拉克国境内）
+  const geoIndex = {};
+  for (const f of iraqGeo.features) {
+    const geom = f.geometry;
+    if (!geom || !f.properties || !f.properties.name) continue;
+    let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
+    const rings = geom.type === 'Polygon' ? geom.coordinates : (geom.type === 'MultiPolygon' ? geom.coordinates.flat() : []);
+    rings.forEach((ring) => ring.forEach(([lng, lat]) => {
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }));
+    geoIndex[f.properties.name] = { geometry: geom, minLng, maxLng, minLat, maxLat };
+  }
+
+  // 省内拒绝采样: 在省 bbox 内确定性随机取点直至命中省界多边形 (60 次未命中则回退省会坐标)
+  const sampleInProvince = (geo, rnd, fallbackLat, fallbackLng) => {
+    if (!geo) return { lat: fallbackLat, lng: fallbackLng };
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const lat = geo.minLat + rnd() * (geo.maxLat - geo.minLat);
+      const lng = geo.minLng + rnd() * (geo.maxLng - geo.minLng);
+      if (pointInGeometry(lng, lat, geo.geometry)) {
+        return { lat: Number(lat.toFixed(4)), lng: Number(lng.toFixed(4)) };
+      }
+    }
+    return { lat: fallbackLat, lng: fallbackLng };
+  };
+
   const pts = [];
   let seq = 1;
   for (const p of PROVINCE_STATS) {
     const rnd = mulberry32(hashStr(p.id + '-pts'));
+    const geo = p.geoName ? geoIndex[p.geoName] : null;
+    // 哈拉卜贾省无独立边界 (geoName 为 null): 使用省会坐标微散 (小半径, 省域仅 889km²)
+    const fallbackPos = (fallbackLat, fallbackLng, scale = 0.12) => ({
+      lat: Number((fallbackLat + (rnd() - 0.5) * scale).toFixed(4)),
+      lng: Number((fallbackLng + (rnd() - 0.5) * scale).toFixed(4))
+    });
     const n = Math.min(p.warehouseTotal, 40); // 每省最多 40 个点位, 保证渲染流畅
     for (let i = 0; i < n; i++) {
       const isVacant = i < Math.round(n * (p.warehouseVacant / Math.max(p.warehouseTotal, 1)));
-      const ang = rnd() * Math.PI * 2;
-      const radius = 0.15 + rnd() * 0.85;
+      const pos = geo ? sampleInProvince(geo, rnd, p.lat, p.lng) : fallbackPos(p.lat, p.lng);
       pts.push({
         id: `WH-${p.id}-${String(seq++).padStart(3, '0')}`,
         name: `${p.name}第${i + 1}配给储备中心`,
@@ -197,15 +252,14 @@ function buildFacilityPoints() {
         type: 'warehouse',
         status: isVacant ? 'vacant' : 'assigned',
         households: isVacant ? 0 : 600 + Math.round(rnd() * 800),
-        lat: Number((p.lat + Math.sin(ang) * radius * 0.55).toFixed(4)),
-        lng: Number((p.lng + Math.cos(ang) * radius * 0.8).toFixed(4))
+        lat: pos.lat,
+        lng: pos.lng
       });
     }
     // 代理网点聚合点位 (抽样呈现)
     const agentSample = Math.min(Math.max(Math.round(p.agentCount / 400), 4), 24);
     for (let i = 0; i < agentSample; i++) {
-      const ang = rnd() * Math.PI * 2;
-      const radius = 0.2 + rnd() * 1.1;
+      const pos = geo ? sampleInProvince(geo, rnd, p.lat, p.lng) : fallbackPos(p.lat, p.lng);
       pts.push({
         id: `AGT-${p.id}-${String(i + 1).padStart(3, '0')}`,
         name: `${p.name}代理网点 ${String(i + 1).padStart(2, '0')}`,
@@ -213,8 +267,8 @@ function buildFacilityPoints() {
         province: p.name,
         type: 'agent',
         households: 450 + Math.round(rnd() * 1050),
-        lat: Number((p.lat + Math.sin(ang) * radius * 0.5).toFixed(4)),
-        lng: Number((p.lng + Math.cos(ang) * radius * 0.75).toFixed(4))
+        lat: pos.lat,
+        lng: pos.lng
       });
     }
   }
