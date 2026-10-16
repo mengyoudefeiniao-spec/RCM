@@ -75,46 +75,46 @@
         </button>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 items-center">
         <!-- 移动端可折叠的高级下拉框 -->
         <div
-          class="w-full sm:w-auto flex flex-wrap items-center gap-2"
-          :class="{ 'hidden sm:flex': !showMobileFilter }"
+          class="contents sm:grid sm:grid-cols-2 md:col-span-4 xl:col-span-5 sm:gap-2"
+          :class="showMobileFilter ? '' : 'hidden sm:grid'"
         >
           <!-- 渠道来源 -->
-          <el-select v-model="query.channel" :placeholder="$t('complaint.channelSource')" class="w-full sm:w-[140px]" size="small" @change="handleSearch">
+          <el-select v-model="query.channel" :placeholder="$t('complaint.channelSource')" class="w-full" size="small" @change="handleSearch">
             <el-option v-for="opt in channelOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 诉求类型 -->
-          <el-select v-model="query.type" :placeholder="$t('complaint.appealType')" class="w-full sm:w-[150px]" size="small" @change="handleSearch">
+          <el-select v-model="query.type" :placeholder="$t('complaint.appealType')" class="w-full" size="small" @change="handleSearch">
             <el-option v-for="opt in typeFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 办理状态 -->
-          <el-select v-model="query.status" :placeholder="$t('complaint.handleStatus')" class="w-full sm:w-[120px]" size="small" @change="handleSearch">
+          <el-select v-model="query.status" :placeholder="$t('complaint.handleStatus')" class="w-full" size="small" @change="handleSearch">
             <el-option v-for="opt in statusFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
           <!-- 省市 -->
-          <el-select v-model="query.province" :placeholder="$t('common.province')" class="w-full sm:w-[130px]" size="small" @change="handleProvinceChange">
+          <el-select v-model="query.province" :placeholder="$t('common.province')" class="w-full" size="small" @change="handleProvinceChange">
             <el-option :label="$t('complaint.allProvinces')" value="" />
             <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
           </el-select>
 
           <!-- 中心 -->
-          <el-select v-model="query.center" :placeholder="$t('common.center')" class="w-full sm:w-[150px]" size="small" @change="handleSearch">
+          <el-select v-model="query.center" :placeholder="$t('common.center')" class="w-full md:col-span-2 xl:col-span-1" size="small" @change="handleSearch">
             <el-option :label="$t('complaint.allCenters')" value="" />
             <el-option v-for="c in currentCenterOptions" :key="c" :label="c" :value="c" />
           </el-select>
         </div>
 
-        <!-- 关键词搜索与按钮行 (小屏幕下全宽) -->
-        <div class="flex items-center gap-2 w-full sm:w-auto">
+        <!-- 关键词搜索与按钮行 -->
+        <div class="flex items-center gap-2 md:col-span-4 xl:col-span-3">
           <el-input
             v-model="query.keyword"
             :placeholder="$t('complaint.searchHint')"
-            class="flex-1 sm:w-[200px]"
+            class="flex-1"
             size="small"
             clearable
             @keyup.enter="handleSearch"
@@ -215,18 +215,22 @@
             </template>
           </el-table-column>
 
-        <el-table-column prop="channel" :label="$t('complaint.channelSource')" width="140">
+        <el-table-column prop="channel" :label="$t('complaint.channelSource')" width="118">
           <template #default="{ row }">
-            <el-tag size="small" :type="row.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="font-medium">
-              <el-icon class="mr-1"><ChatDotRound v-if="row.channel.includes('AI')" /><Phone v-else /></el-icon>
-              {{ row.channel }}
-            </el-tag>
+            <el-tooltip :content="row.channel" placement="top">
+              <el-tag size="small" :type="row.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="font-medium">
+                <el-icon class="mr-1"><ChatDotRound v-if="row.channel.includes('AI')" /><Phone v-else /></el-icon>
+                {{ shortChannel(row.channel) }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
-        <el-table-column prop="type" :label="$t('complaint.appealType')" width="160">
+        <el-table-column prop="type" :label="$t('complaint.appealType')" width="120">
           <template #default="{ row }">
-            <el-tag size="small" :type="getTypeTag(row.type)">{{ row.type }}</el-tag>
+            <el-tooltip :content="row.type" placement="top">
+              <el-tag size="small" :type="getTypeTag(row.type)">{{ shortType(row.type) }}</el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -250,32 +254,44 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" :label="$t('complaint.handleStatus')" width="110" align="center">
+        <el-table-column prop="status" :label="$t('complaint.handleStatus')" width="104" align="center">
           <template #default="{ row }">
-            <el-tag
-              size="small"
-              :type="row.status === '已办结' || row.status === 'Resolved' ? 'success' : (row.status === '待分配' || row.status === 'Pending Assignment' ? 'danger' : 'warning')"
-              effect="light"
-            >
-              {{ row.status }}
-            </el-tag>
+            <el-tooltip :content="row.status" placement="top">
+              <el-tag
+                size="small"
+                :type="row.status === '已办结' || row.status === 'Resolved' ? 'success' : (row.status === '待分配' || row.status === 'Pending Assignment' ? 'danger' : 'warning')"
+                effect="light"
+              >
+                {{ shortStatus(row.status) }}
+              </el-tag>
+            </el-tooltip>
           </template>
         </el-table-column>
 
         <el-table-column prop="submittedAt" :label="$t('complaint.registerTime')" width="130" align="center" class-name="font-mono text-[#8A9A8F]" />
 
-        <el-table-column :label="$t('common.action')" width="160" fixed="right" align="center">
+        <el-table-column :label="$t('common.action')" width="96" fixed="right" align="center">
           <template #default="{ row }">
-            <div class="flex items-center justify-center gap-1.5">
-              <el-button size="small" type="primary" plain @click="openDetail(row)">{{ $t('complaint.viewDetail') }}</el-button>
-              <el-button
-                size="small"
-                :type="row.status === '已办结' || row.status === 'Resolved' ? 'info' : 'danger'"
-                :plain="row.status === '已办结' || row.status === 'Resolved'"
-                @click="openHandleModal(row)"
+            <div class="flex items-center justify-center gap-1">
+              <el-tooltip :content="$t('complaint.detailTip')" placement="top">
+                <el-button size="small" type="primary" plain circle @click="openDetail(row)">
+                  <el-icon><View /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip
+                :content="row.status === '已办结' || row.status === 'Resolved' ? $t('complaint.viewHandleTip') : $t('complaint.handleTip')"
+                placement="top"
               >
-                {{ row.status === '已办结' || row.status === 'Resolved' ? $t('complaint.viewHandling') : $t('complaint.handleSupervise') }}
-              </el-button>
+                <el-button
+                  size="small"
+                  circle
+                  :type="row.status === '已办结' || row.status === 'Resolved' ? 'info' : 'danger'"
+                  :plain="row.status === '已办结' || row.status === 'Resolved'"
+                  @click="openHandleModal(row)"
+                >
+                  <el-icon><component :is="row.status === '已办结' || row.status === 'Resolved' ? View : EditPen" /></el-icon>
+                </el-button>
+              </el-tooltip>
             </div>
           </template>
         </el-table-column>
@@ -456,7 +472,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, Refresh, Service, Phone, ChatDotRound } from '@element-plus/icons-vue';
+import { Search, Refresh, Service, Phone, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import { getComplaintList, createComplaintTicket, handleComplaintTicket } from '../../api/complaint.js';
@@ -654,6 +670,28 @@ function getTypeTag(type) {
   if (type.includes('克扣') || type.includes('Weight')) return 'danger';
   if (type.includes('排队') || type.includes('Service')) return 'info';
   return 'primary';
+}
+
+// ===== 表格列短标签 (完整词条放 tooltip 悬停展示) =====
+function shortChannel(ch) {
+  return ch.includes('AI') ? t('complaint.channelAiShort') : t('complaint.channelPhoneShort');
+}
+
+function shortType(ty) {
+  if (ty.includes('收费') || ty.includes('Fee')) return t('complaint.typeOverchargeShort');
+  if (ty.includes('克扣') || ty.includes('Weight')) return t('complaint.typeShortageShort');
+  if (ty.includes('品质') || ty.includes('Quality')) return t('complaint.typeQualityShort');
+  if (ty.includes('排队') || ty.includes('Service')) return t('complaint.typeServiceShort');
+  if (ty.includes('份额') || ty.includes('Quota')) return t('complaint.typeQuotaShort');
+  return ty;
+}
+
+function shortStatus(st) {
+  if (st.includes('待分配') || st.includes('Pending Assignment')) return t('complaint.statusShortPending');
+  if (st.includes('核查中') || st.includes('Under Investigation')) return t('complaint.statusShortInvestigating');
+  if (st.includes('整改中') || st.includes('Rectification')) return t('complaint.statusShortSupervising');
+  if (st.includes('已办结') || st.includes('Resolved')) return t('complaint.statusShortResolved');
+  return st;
 }
 
 async function loadComplaints() {
