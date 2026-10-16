@@ -27,7 +27,7 @@
             <button
               type="button"
               class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[#8A9A8F] hover:text-[#326445] hover:bg-[#EFF5F1] transition-colors cursor-pointer select-none"
-              title="查看材料规范说明"
+              :title="$t('uploader.viewSpecTip')"
             >
               <el-icon :size="12"><InfoFilled /></el-icon>
             </button>
@@ -52,8 +52,8 @@
           {{ categoryBadge }}
         </el-tag>
       </div>
-      <span v-if="issuer" class="text-[10px] text-[#8A9A8F] font-mono truncate max-w-[140px]">
-        {{ $t('uploader.issuer') }} {{ issuer }}
+      <span v-if="issuerText" class="text-[10px] text-[#8A9A8F] font-mono truncate max-w-[140px]">
+        {{ $t('uploader.issuer') }} {{ issuerText }}
       </span>
     </div>
 
@@ -175,18 +175,18 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 text-xs">
             <div>
               <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.issuer') }}</span>
-              <span class="font-bold text-[#1F3326]">{{ issuer }}</span>
+              <span class="font-bold text-[#1F3326]">{{ issuerText }}</span>
             </div>
             <div>
-              <span class="text-[#8A9A8F] block text-[11px]">REF NO:</span>
+              <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.refNoLabel') }}</span>
               <span class="font-mono font-bold text-[#1F3326]">{{ currentFile.referenceNo }}</span>
             </div>
             <div>
-              <span class="text-[#8A9A8F] block text-[11px]">VERIFIED AT:</span>
+              <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.verifiedAtLabel') }}</span>
               <span class="font-mono text-[#1F3326]">2026-03-12 10:30:00</span>
             </div>
             <div>
-              <span class="text-[#8A9A8F] block text-[11px]">STATUS:</span>
+              <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.statusLabel') }}</span>
               <span class="text-[#2F7A50] font-bold">{{ $t('uploader.verifiedBadge') }}</span>
             </div>
           </div>
@@ -206,7 +206,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
@@ -246,11 +246,11 @@ const props = defineProps({
   },
   issuer: {
     type: String,
-    default: '国家部委核准机构'
+    default: ''
   },
   defaultFileName: {
     type: String,
-    default: '官方核定证明文件.pdf'
+    default: ''
   },
   defaultRefNo: {
     type: String,
@@ -258,9 +258,23 @@ const props = defineProps({
   },
   ocrSummary: {
     type: String,
-    default: '防伪条码比对一致，机构公章数字验签属实。'
+    default: ''
   }
 });
+
+// 默认值展示文案按当前语言动态生成
+const issuerText = computed(() => props.issuer || t('uploader.defaultIssuer'));
+const defaultFileLabel = computed(() => props.defaultFileName || t('uploader.defaultFileName'));
+const ocrSummaryText = computed(() => props.ocrSummary || t('uploader.defaultOcrSummary'));
+
+function buildTemplateFile() {
+  return {
+    fileName: defaultFileLabel.value,
+    fileSize: '2.8 MB',
+    referenceNo: props.defaultRefNo,
+    ocrSummary: ocrSummaryText.value
+  };
+}
 
 const emit = defineEmits(['update:modelValue', 'change']);
 
@@ -270,27 +284,13 @@ const uploadProgress = ref(0);
 const uploadStage = ref('');
 const previewModalVisible = ref(false);
 
-const currentFile = ref(
-  props.modelValue
-    ? {
-        fileName: props.defaultFileName,
-        fileSize: '2.8 MB',
-        referenceNo: props.defaultRefNo,
-        ocrSummary: props.ocrSummary
-      }
-    : null
-);
+const currentFile = ref(props.modelValue ? buildTemplateFile() : null);
 
 watch(
   () => props.modelValue,
   (newVal) => {
     if (newVal && !currentFile.value) {
-      currentFile.value = {
-        fileName: props.defaultFileName,
-        fileSize: '2.8 MB',
-        referenceNo: props.defaultRefNo,
-        ocrSummary: props.ocrSummary
-      };
+      currentFile.value = buildTemplateFile();
     } else if (!newVal && currentFile.value) {
       currentFile.value = null;
     }
@@ -307,25 +307,25 @@ function handleLocalFileSelected(e) {
 
   isUploading.value = true;
   uploadProgress.value = 20;
-  uploadStage.value = `正在读取本地文件: ${file.name}...`;
+  uploadStage.value = t('uploader.readingLocal', { name: file.name });
 
   const interval = setInterval(() => {
     uploadProgress.value += 30;
     if (uploadProgress.value >= 90) {
       clearInterval(interval);
-      uploadStage.value = 'OCR提取与数字签名核验通过 ✓';
+      uploadStage.value = t('uploader.ocrPassed');
       setTimeout(() => {
         const fileObj = {
           fileName: file.name,
           fileSize: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
           referenceNo: props.defaultRefNo || `DOC-${Date.now().toString().slice(-6)}`,
-          ocrSummary: `本地上传已完成：【${file.name}】条码与印章核验一致`
+          ocrSummary: t('uploader.localOcrSummary', { name: file.name })
         };
         currentFile.value = fileObj;
         isUploading.value = false;
         emit('update:modelValue', true);
         emit('change', true, fileObj);
-        ElMessage.success(`文件【${file.name}】已成功上传并通过核验！`);
+        ElMessage.success(t('uploader.uploadSuccess', { name: file.name }));
       }, 300);
     }
   }, 100);
@@ -336,23 +336,18 @@ function handleLocalFileSelected(e) {
 function triggerReloadTemplate() {
   isUploading.value = true;
   uploadProgress.value = 30;
-  uploadStage.value = '正在调取官方模板公文库...';
+  uploadStage.value = t('uploader.loadingTemplate');
 
   setTimeout(() => {
     uploadProgress.value = 100;
-    uploadStage.value = '载入完成 ✓';
+    uploadStage.value = t('uploader.loadedDone');
     setTimeout(() => {
-      const fileObj = {
-        fileName: props.defaultFileName,
-        fileSize: '2.8 MB',
-        referenceNo: props.defaultRefNo,
-        ocrSummary: props.ocrSummary
-      };
+      const fileObj = buildTemplateFile();
       currentFile.value = fileObj;
       isUploading.value = false;
       emit('update:modelValue', true);
       emit('change', true, fileObj);
-      ElMessage.success(`官方证明公文【${props.defaultFileName}】已载入并就绪！`);
+      ElMessage.success(t('uploader.templateLoaded', { name: defaultFileLabel.value }));
     }, 200);
   }, 400);
 }
@@ -361,11 +356,11 @@ function handleRemoveFile() {
   currentFile.value = null;
   emit('update:modelValue', false);
   emit('change', false, null);
-  ElMessage.warning('证明附件已成功删除，可重新上传或重载样本');
+  ElMessage.warning(t('uploader.attachmentDeleted'));
 }
 
 function handleDownloadStub() {
-  ElMessage.success('官方公文存根已触发导出下载');
+  ElMessage.success(t('uploader.stubExported'));
   previewModalVisible.value = false;
 }
 </script>

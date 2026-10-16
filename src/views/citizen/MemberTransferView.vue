@@ -44,7 +44,7 @@
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 -->
-          <div class="timeline-rail-aside border-[#D9E5DB] p-0" :class="isAppMode ? '' : 'lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r lg:p-6'">
+          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
             <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
@@ -87,8 +87,22 @@
           </div>
 
           <!-- 右侧主操作区 (针对多语言长文本优化内边距与排版) -->
-          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4 pl-9' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
+            <!-- APP 视口：顶部横向 1-5 步骤条 (适配手机窗口与操作习惯) -->
+            <div v-if="isAppMode" class="flex items-center mb-3 px-1">
+              <template v-for="(s, idx) in processSteps" :key="s.step">
+                <div
+                  class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all"
+                  :class="s.step < currentStep ? 'bg-[#3E9B68] border-[#3E9B68] text-white' : s.step === currentStep ? 'bg-[#326445] border-[#326445] text-white ring-4 ring-[#326445]/15' : 'bg-white border-[#C9DBCE] text-[#8A9A8F]'"
+                >
+                  <el-icon v-if="s.step < currentStep" class="text-xs"><Check /></el-icon>
+                  <span v-else>{{ s.step }}</span>
+                </div>
+                <div v-if="idx < processSteps.length - 1" class="flex-1 h-0.5 mx-1 rounded-full" :class="s.step < currentStep ? 'bg-[#3E9B68]' : 'bg-[#D9E5DB]'"></div>
+              </template>
+            </div>
+
             <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs" :class="isAppMode ? '' : 'lg:hidden'">
               <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
@@ -252,7 +266,7 @@
                   </div>
                   <div class="min-w-0">
                     <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.systemUpdateStatus') }}：</span>
-                    <el-tag :type="selectedMember.isUpdatedInSystem ? 'success' : 'danger'" size="small">
+                    <el-tag :type="selectedMember.isUpdatedInSystem ? 'success' : 'danger'" size="small" class="max-w-full whitespace-normal break-words leading-snug">
                       {{ selectedMember.isUpdatedInSystem ? $t('memberTransfer.updatedPass') : $t('memberTransfer.statusNotUpdated') }}
                     </el-tag>
                   </div>

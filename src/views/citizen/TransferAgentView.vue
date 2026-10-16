@@ -43,7 +43,7 @@
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
-          <div class="timeline-rail-aside border-[#D9E5DB] p-0" :class="isAppMode ? '' : 'lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r lg:p-6'">
+          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
             <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
@@ -90,8 +90,22 @@
           </div>
 
           <!-- 右侧主操作区 -->
-          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4 pl-9' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
+            <!-- APP 视口：顶部横向 1-5 步骤条 (适配手机窗口与操作习惯) -->
+            <div v-if="isAppMode" class="flex items-center mb-3 px-1">
+              <template v-for="(s, idx) in processSteps" :key="s.step">
+                <div
+                  class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all"
+                  :class="s.step < currentStep ? 'bg-[#3E9B68] border-[#3E9B68] text-white' : s.step === currentStep ? 'bg-[#326445] border-[#326445] text-white ring-4 ring-[#326445]/15' : 'bg-white border-[#C9DBCE] text-[#8A9A8F]'"
+                >
+                  <el-icon v-if="s.step < currentStep" class="text-xs"><Check /></el-icon>
+                  <span v-else>{{ s.step }}</span>
+                </div>
+                <div v-if="idx < processSteps.length - 1" class="flex-1 h-0.5 mx-1 rounded-full" :class="s.step < currentStep ? 'bg-[#3E9B68]' : 'bg-[#D9E5DB]'"></div>
+              </template>
+            </div>
+
             <div class="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg text-xs" :class="isAppMode ? '' : 'lg:hidden'">
               <span class="font-bold text-[#1F3326] flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#326445]"></span>
@@ -171,7 +185,7 @@
               <div v-if="selectedCenter" class="grid gap-4 pt-2" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'">
                 <!-- 面粉代理网点选择 -->
                 <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4]/70 border-[#D9E5DB]">
-                  <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]/80">
+                  <div class="flex items-center justify-between flex-wrap gap-1.5 pb-2 border-b border-[#D9E5DB]/80">
                     <span class="text-xs font-bold text-[#5A4718] flex items-center gap-1.5">
                       <span>{{ $t('transfer.flourAgent') }}</span>
                       <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
@@ -183,13 +197,14 @@
                     <div
                       v-for="ag in selectedCenter.flourAgents"
                       :key="ag.id"
-                      class="p-3 rounded-lg border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      class="p-3 rounded-lg border bg-white flex gap-2 text-xs cursor-pointer transition-all"
                       :class="[
+                        isAppMode ? 'flex-col items-stretch' : 'items-center justify-between',
                         selectedFlourAgentId === ag.id ? 'border-[#D3AF62] ring-1 ring-[#D3AF62] shadow-2xs' : 'border-[#D9E5DB] hover:border-[#C9DBCE]',
                         ag.currentHouseholds >= 1500 ? 'opacity-60 bg-[#E9F1EB] cursor-not-allowed' : ''
                       ]"
                     >
-                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500" class="!h-auto items-start [&_.el-radio__label]:whitespace-normal [&_.el-radio__label]:break-words [&_.el-radio__label]:leading-snug">
                         <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
                         <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
@@ -218,7 +233,7 @@
 
                 <!-- 食品代理网点选择 -->
                 <div class="border rounded-lg p-4 space-y-3 bg-[#F3F8F4]/70 border-[#D9E5DB]">
-                  <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]/80">
+                  <div class="flex items-center justify-between flex-wrap gap-1.5 pb-2 border-b border-[#D9E5DB]/80">
                     <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
                       <span>{{ $t('transfer.foodAgent') }}</span>
                       <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
@@ -230,13 +245,14 @@
                     <div
                       v-for="ag in selectedCenter.foodAgents"
                       :key="ag.id"
-                      class="p-3 rounded-lg border bg-white flex items-center justify-between text-xs cursor-pointer transition-all"
+                      class="p-3 rounded-lg border bg-white flex gap-2 text-xs cursor-pointer transition-all"
                       :class="[
+                        isAppMode ? 'flex-col items-stretch' : 'items-center justify-between',
                         selectedFoodAgentId === ag.id ? 'border-[#5C8A6B] ring-1 ring-[#5C8A6B] shadow-2xs' : 'border-[#D9E5DB] hover:border-[#C9DBCE]',
                         ag.currentHouseholds >= 1500 ? 'opacity-60 bg-[#E9F1EB] cursor-not-allowed' : ''
                       ]"
                     >
-                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500">
+                      <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500" class="!h-auto items-start [&_.el-radio__label]:whitespace-normal [&_.el-radio__label]:break-words [&_.el-radio__label]:leading-snug">
                         <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
                         <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>

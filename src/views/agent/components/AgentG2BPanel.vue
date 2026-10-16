@@ -867,7 +867,7 @@ const paymentDialogVisible = ref(false);
 const qrModalVisible = ref(false);
 const activeQRRow = ref(null);
 
-const currentCenterName = '卡尔赫第一配给中心 (曼苏尔)';
+const currentCenterName = computed(() => formatG2BCenterName('卡尔赫第一配给中心 (曼苏尔)'));
 
 // 1. 配给中心（中心仓）实时可用库存数据 (需求 2)
 const centerStock = ref({
@@ -914,7 +914,7 @@ const disabledPastDates = (time) => {
 const form = ref({
   logisticsMode: 'DISPATCH',
   deliveryDate: '2026-10-14',
-  deliverySlot: '08:00 - 10:00 (早间第一批)',
+  deliverySlot: '08:00-10:00',
   deliveryVehicleNo: 'BAG-TRK-7841',
   flourQty: 5000,
   riceQty: 2500,
@@ -977,7 +977,7 @@ const openCreateModal = () => {
   form.value = {
     logisticsMode: 'DISPATCH',
     deliveryDate: '2026-10-14',
-    deliverySlot: '08:00 - 10:00 (早间第一批)',
+    deliverySlot: '08:00-10:00',
     deliveryVehicleNo: 'BAG-TRK-7841',
     flourQty: Math.min(5000, maxAllowed.value.flour),
     riceQty: Math.min(2500, maxAllowed.value.rice),

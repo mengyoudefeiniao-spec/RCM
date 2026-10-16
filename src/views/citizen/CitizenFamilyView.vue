@@ -677,8 +677,8 @@
     <!-- 活体人脸动作核验弹窗 (添加新成员生物识别) -->
     <FaceLivenessVerifyDialog
       v-model="newMemberFaceDialogVisible"
-      title="新登记家庭成员活体人脸动作核验"
-      :target-name="newMemberForm.name || '待登记成员'"
+      :title="$t('citizen.faceLivenessTitle')"
+      :target-name="newMemberForm.name || $t('citizen.pendingMember')"
       :target-national-id="newMemberForm.nationalId || '198004198271'"
       @success="handleNewMemberFaceSuccess"
     />
