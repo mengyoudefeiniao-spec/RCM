@@ -95,7 +95,7 @@ export default {
     "langSwitch": "Language"
   },
   "roles": {
-    "ministerCenter": "Manage of Ration Centers",
+    "ministerCenter": "Manager of Ration Centers",
     "deputyMinister": "Deputy Minister for Administration",
     "directorPlanning": "Director General of Planning & Follow-up",
     "admin": "Ration Administration Directorate",
@@ -2465,8 +2465,8 @@ export default {
     "familyMembers": "Family Members",
     "unitPerson": "Members",
     "personsUnit": "Members",
-    "registerNewMember": "+ Member",
-    "registerMember": "+ Member",
+    "registerNewMember": "Member",
+    "registerMember": "Member",
     "relationHead": "Head",
     "relationSpouse": "Spouse",
     "relationChild": "Child",
