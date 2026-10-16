@@ -1583,7 +1583,16 @@ const citizenFamilyInfo = computed(() => {
   };
 });
 
-const memberCount = computed(() => citizenFamilyInfo.value?.memberCount || 4);
+// 家庭配给额度按有效纳保成员数计算 (冻结成员不计入，语言无关正则兼容 zh/en 状态值)
+const memberCount = computed(() => {
+  const info = citizenFamilyInfo.value;
+  const members = info?.members;
+  if (Array.isArray(members) && members.length > 0) {
+    const active = members.filter((m) => m && !/冻结|Frozen/i.test(m.status || '')).length;
+    if (active > 0) return active;
+  }
+  return info?.memberCount || 4;
+});
 
 const citizenQuotaItems = computed(() => {
   const n = memberCount.value;

@@ -320,6 +320,12 @@ function syncFamilyAcrossPools(family) {
   });
 }
 
+// 有效纳保成员数：冻结 (zh 已冻结/冻结 / en Frozen) 成员不计入家庭配给额度
+function getActiveMemberCount(family) {
+  if (!family || !Array.isArray(family.members)) return 0;
+  return family.members.filter((m) => !m || !/冻结|Frozen/i.test(m.status || '')).length;
+}
+
 export function getActiveLang(config) {
   if (config && config.headers && config.headers['Accept-Language']) {
     const l = config.headers['Accept-Language'];
@@ -1079,7 +1085,8 @@ export async function mockDispatch(config) {
     const cardNo = url.split('/').pop() || 'RC-10029381';
     // 与家庭档案 GET 接口同源：优先读跨标签页共享存储 (含页面刷新后持久化的成员数)，再回退语言内存池
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
-    const memberCount = family?.memberCount || family?.members?.length || 4;
+    // 家庭额度按有效纳保成员数计算 (冻结成员不计入额度)
+    const memberCount = getActiveMemberCount(family) || family?.memberCount || family?.members?.length || 4;
 
     // 计算当月已购数量 (从订单历史汇总)
     const cardOrders = citizenPurchaseOrdersStore.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
@@ -1212,7 +1219,8 @@ export async function mockDispatch(config) {
     // 校验限额逻辑（全流程演示模式：rcm_demo_active 激活时暂时跳过超限校验，保证 02 阶段演示链路可完整重复走通）
     const isDemoSession = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_demo_active') === 'true';
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
-    const memberCount = family?.memberCount || 5;
+    // 下单限额校验同样按有效纳保成员数计算 (冻结成员不计入额度)
+    const memberCount = getActiveMemberCount(family) || family?.memberCount || 5;
 
     // 限额上限字典
     const maxLimitMap = {
