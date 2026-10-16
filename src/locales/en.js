@@ -92,7 +92,7 @@ export default {
     "langSwitch": "Language"
   },
   "roles": {
-    "ministerCenter": "Minister of Ration Centers",
+    "ministerCenter": "Manage of Ration Centers",
     "deputyMinister": "Deputy Minister for Administration",
     "directorPlanning": "Director General of Planning & Follow-up",
     "admin": "Ration Administration Directorate",

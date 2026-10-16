@@ -15,7 +15,7 @@
           </template>
           <template #extra>
             <el-tag :type="authStore.isMinisterCenter ? 'primary' : authStore.isDeputyMinister ? 'danger' : 'warning'" effect="dark" size="small" class="font-bold ml-1">
-              {{ authStore.userProfile?.title || $t('common.adminFallback') }}
+              {{ currentRoleTitle }}
             </el-tag>
           </template>
         </ModuleDescTip>
@@ -317,7 +317,7 @@
             <div class="flex items-center justify-between font-bold text-[#7A5F21]">
               <span class="flex items-center gap-1.5">
                 <el-icon><Stamp /></el-icon>
-                <span>{{ $t('review.stage2Title', { title: authStore.userProfile?.title || $t('common.branchManager') }) }}</span>
+                <span>{{ $t('review.stage2Title', { title: currentRoleTitle || $t('common.branchManager') }) }}</span>
               </span>
               <span v-if="reviewStore.selectedTicket.managerDecidedAt" class="font-normal" :class="isDecisionApproved(reviewStore.selectedTicket.managerDecision) ? 'text-[#2F7A50]' : 'text-[#C04442]'">
                 {{ $t('review.stage2Result', { decision: reviewStore.selectedTicket.managerDecision, time: reviewStore.selectedTicket.managerDecidedAt }) }}
@@ -378,6 +378,22 @@ import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 const { t, locale } = useI18n();
 const reviewStore = useReviewStore();
 const authStore = useAuthStore();
+
+// 当前登录角色头衔（按角色键动态转译；userProfile.title 为登录时固化的文案，切语言不刷新）
+const currentRoleTitle = computed(() => {
+  switch (authStore.currentRole) {
+    case 'minister_center':
+      return t('roles.ministerCenter');
+    case 'deputy_minister':
+      return t('roles.deputyMinister');
+    case 'director_planning':
+      return t('roles.directorPlanning');
+    case 'admin':
+      return t('roles.admin');
+    default:
+      return authStore.userProfile?.title || t('common.adminFallback');
+  }
+});
 
 // 移动端视图控制：针对 Google Pixel 9 (412x924px) 优化待审列表与工单详情切换
 const mobileTab = ref('list'); // 'list' | 'detail'
