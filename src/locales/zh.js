@@ -1910,6 +1910,7 @@ export default {
     "statusPendingDelivery": "待配送"
   },
   "agentOrders": {
+    "stationSlot": "代销站仓位 {slot}",
     "citizenSignedNote": "公民现场验货已签署",
     "settledPaidFee": "已结自付规费",
     "stockRemaining": "结存",

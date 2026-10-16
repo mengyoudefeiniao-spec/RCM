@@ -1756,6 +1756,7 @@ export default {
     "statusPendingDelivery": "چاوەڕوانی گەیاندنە"
   },
   "agentOrders": {
+    "stationSlot": "کۆگای نوێنەری {slot}",
     "citizenSignedNote": "لەلایەن هاووڵاتی بە ئەلیکترۆنی واژۆکرا دوای پشکنینی مەیدانی",
     "settledPaidFee": "ڕسووماتی دراو",
     "stockRemaining": "ماوە",

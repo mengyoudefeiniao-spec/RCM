@@ -1910,6 +1910,7 @@ export default {
     "statusPendingDelivery": "Pending Delivery"
   },
   "agentOrders": {
+    "stationSlot": "Station Depot {slot}",
     "citizenSignedNote": "Digitally signed by citizen upon on-site verification",
     "settledPaidFee": "Settled Citizen Fee",
     "stockRemaining": "Remaining",

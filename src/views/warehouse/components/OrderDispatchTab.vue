@@ -248,15 +248,15 @@
             </div>
           </div>
 
-          <!-- 若已派单，展示车队指派信息微条 -->
+          <!-- 若已派单，展示车队指派信息微条 (允许换行，避免英文长词条被截断) -->
           <div
             v-if="order.dispatchInfo && order.dispatchInfo.deliveryPerson"
-            class="p-2 rounded-lg bg-[#EFF5F1]/70 border border-[#E1F4E4] text-[11px] text-[#24483A] flex items-center justify-between gap-1"
+            class="p-2 rounded-lg bg-[#EFF5F1]/70 border border-[#E1F4E4] text-[11px] text-[#24483A] flex items-start justify-between gap-2"
           >
-            <div class="flex items-center gap-1.5 truncate">
+            <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
               <span>🚚</span>
-              <span class="font-bold truncate">{{ formatDeliveryPerson(order.dispatchInfo.deliveryPerson) }}</span>
-              <span class="font-mono text-[#2F7A50] truncate">[{{ order.dispatchInfo.vehicleNo }}]</span>
+              <span class="font-bold">{{ formatDeliveryPerson(order.dispatchInfo.deliveryPerson) }}</span>
+              <span class="font-mono text-[#2F7A50]">[{{ formatVehicleNo(order.dispatchInfo.vehicleNo) }}]</span>
             </div>
             <span class="font-mono font-semibold shrink-0 text-[#2F5B44] text-[10px] sm:text-[11px]">{{ formatEstimatedTime(order.dispatchInfo.estimatedTime) }}</span>
           </div>
@@ -941,6 +941,13 @@ function formatDeliveryPerson(person) {
     if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'سەمیر قاسم (ساردکەرەوە)';
   }
   return person;
+}
+
+function formatVehicleNo(vehicleNo) {
+  if (!vehicleNo) return '';
+  // 备货就绪场景的仓位标识（历史数据含中文「代销站仓位 A-02」）按当前语言转译
+  if (/代销站仓位|A-02/.test(vehicleNo)) return t('agentOrders.stationSlot', { slot: 'A-02' });
+  return vehicleNo;
 }
 
 function formatEstimatedTime(time) {

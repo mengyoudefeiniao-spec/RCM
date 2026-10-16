@@ -1756,6 +1756,7 @@ export default {
     "statusPendingDelivery": "بانتظار جدولة التوصيل"
   },
   "agentOrders": {
+    "stationSlot": "مخزن الوكالة {slot}",
     "citizenSignedNote": "تم توقيع المواطن إلكترونياً بعد المعاينة الميدانية",
     "settledPaidFee": "الرسوم المسددة",
     "stockRemaining": "المتبقي",
