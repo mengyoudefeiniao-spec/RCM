@@ -1078,10 +1078,12 @@ export async function mockDispatch(config) {
       });
     });
 
+    // 商品名与每人配给标准与「家庭代理 · 月度家庭口粮配给份额明细」口径严格一致
+    // (面粉 9kg/人 · 大米 3kg/人 · 油 1L/人 · 糖 1kg/人，见 quotaStandards / RationPlanTab)
     const quotaList = [
       {
         itemCode: 'FLOUR-WHT-02',
-        itemName: isEn ? 'Strategic Reserve Wheat Flour' : '战略储备优质小麦面粉',
+        itemName: isEn ? 'Premium Flour' : '特级面粉',
         category: '面粉',
         unit: 'kg',
         standardPerPerson: 9,
@@ -1097,7 +1099,7 @@ export async function mockDispatch(config) {
       },
       {
         itemCode: 'RICE-BAS-01',
-        itemName: isEn ? 'Grade-1 Long Grain Rice' : '一级进口长粒大米',
+        itemName: isEn ? 'Premium Rice' : '精制大米',
         category: '大米',
         unit: 'kg',
         standardPerPerson: 3,
@@ -1113,7 +1115,7 @@ export async function mockDispatch(config) {
       },
       {
         itemCode: 'OIL-SUN-03',
-        itemName: isEn ? 'Refined Cooking Sunflower Oil' : '精炼强化维生素食用油',
+        itemName: isEn ? 'Edible Vegetable Oil' : '食用植物油',
         category: '食用油',
         unit: 'L',
         standardPerPerson: 1,
@@ -1129,13 +1131,13 @@ export async function mockDispatch(config) {
       },
       {
         itemCode: 'SUGAR-WHT-04',
-        itemName: isEn ? 'National Reserve Refined Sugar' : '国家战略保供精制白糖',
+        itemName: isEn ? 'Refined White Sugar' : '纯精白糖',
         category: '白糖',
         unit: 'kg',
-        standardPerPerson: 2,
-        totalHouseholdQuota: memberCount * 2,
+        standardPerPerson: 1,
+        totalHouseholdQuota: memberCount * 1,
         consumedQuota: consumedMap['SUGAR-WHT-04'],
-        remainingQuota: Math.max(0, memberCount * 2 - consumedMap['SUGAR-WHT-04']),
+        remainingQuota: Math.max(0, memberCount * 1 - consumedMap['SUGAR-WHT-04']),
         guidePriceIQD: 500,
         marketPriceIQD: 2000,
         subsidyIQD: 1500,
