@@ -1,5 +1,5 @@
 <template>
-  <div class="ration-plan-tab space-y-5">
+  <div class="ration-plan-tab" :class="isAppMode ? '!space-y-2.5' : 'space-y-5'">
     <!-- 顶部快捷操作栏 -->
     <div
       class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#D9E5DB] gap-2.5"
@@ -124,11 +124,14 @@
         </div>
       </div>
 
-      <div class="space-y-3" :class="isAppMode ? 'space-y-2.5' : ''">
+      <div class="space-y-3" :class="isAppMode ? '!space-y-2' : ''">
         <div class="flex items-center justify-between flex-wrap gap-2" :class="isAppMode ? 'flex-col items-start gap-1' : ''">
-          <h4 class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5 uppercase tracking-wider">
+          <h4
+            class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5"
+            :class="isAppMode ? 'text-[11px] tracking-normal' : 'uppercase tracking-wider'"
+          >
             <el-icon class="text-[#326445]"><Goods /></el-icon>
-            <span>{{ citizenSelectedMonth }} {{ $t('warehouse.rationDetailsTitle') || '月度家庭口粮配给份额明细' }}</span>
+            <span class="min-w-0" :class="isAppMode ? 'truncate' : ''">{{ citizenSelectedMonth }} {{ $t('warehouse.rationDetailsTitle') || '月度家庭口粮配给份额明细' }}</span>
           </h4>
           <span v-if="!isAppMode" class="text-[11px] text-[#8A9A8F] font-mono">
             {{ $t('warehouse.priceStabilizedMechanism') || '国家官方指导平价限价保供机制' }}
@@ -137,7 +140,7 @@
 
         <div
           class="grid gap-3.5"
-          :class="isAppMode ? 'grid-cols-1 !gap-2.5' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'"
+          :class="isAppMode ? 'grid-cols-1 !gap-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'"
         >
           <div
             v-for="item in citizenQuotaItems"
