@@ -1048,12 +1048,21 @@ onMounted(() => {
   });
 
   crossTabUnsubs.push(unsubVerified, unsubUpdated);
+
+  // 家庭档案变更（添加/移除成员、分户、转移等）时同步刷新家庭配给额度
+  // （mock 层添加成员后 memberCount 与额度已重算，此处仅负责同标签页内即时刷新）
+  window.addEventListener('rcm-family-updated', handleFamilyUpdated);
 });
 
 onUnmounted(() => {
   if (clockTimer) clearInterval(clockTimer);
   crossTabUnsubs.forEach((fn) => fn && fn());
+  window.removeEventListener('rcm-family-updated', handleFamilyUpdated);
 });
+
+function handleFamilyUpdated() {
+  loadQuotaData();
+}
 
 function startLiveClock() {
   clockTimer = setInterval(() => {

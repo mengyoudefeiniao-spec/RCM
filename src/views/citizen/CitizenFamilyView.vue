@@ -303,7 +303,6 @@
           </ModuleDescTip>
           <!-- 添加新成员 -->
           <el-button type="primary" size="small" class="font-bold shadow-xs shrink-0" @click="openAddMemberDialog">
-            <el-icon class="mr-1"><Plus /></el-icon>
             {{ $t('citizen.addNewMember') }}
           </el-button>
         </div>
