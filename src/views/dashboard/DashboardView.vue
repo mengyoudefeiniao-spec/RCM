@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
@@ -120,6 +120,13 @@ watch(
     }
   }
 );
+
+// 看板模式切换后回到页面顶部 (如下滑主页点击"进入业务大盘"后直达综合看板顶部)
+watch(dashboardMode, async () => {
+  await nextTick();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  document.querySelector('main')?.scrollTo?.({ top: 0, behavior: 'auto' });
+});
 
 // 保持移动端原生全局底栏常驻显示，各端协同呈现
 onMounted(() => {
