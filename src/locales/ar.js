@@ -242,6 +242,10 @@ export default {
     "msgRegisterSuccessFallback": "تم التسجيل بنجاح! تم إصدار بطاقة تموينية إلكترونية جديدة",
     "msgRegisterFail": "فشل إرسال طلب التسجيل",
     "api": {
+      "ocrProvince": "محافظة بغداد",
+      "ocrDistrict": "قاطع الكرخ (الكرخ)",
+      "ocrInvalidHeadName": "صباح نوري",
+      "ocrInvalidDistrict": "منطقة المنصور",
       "ocrInvalidStatus": "ملغاة",
       "ocrValidStatus": "صالحة ومسجلة",
       "ocrInvalidNotice": "فشل التحقق: تم إلغاء سجل هذه البطاقة الورقية في النظام التاريخي مع خطر تكرار البطاقات، ويُحظر طلب بطاقة جديدة.",

@@ -449,9 +449,9 @@ export async function mockDispatch(config) {
     if (data.mockInvalid) {
       return createResponse({
         paperCardNo: 'IQ-P-1988-001928',
-        headName: '萨巴赫·努里',
-        province: '巴格达省',
-        district: '曼苏尔区',
+        headName: rt('ocrInvalidHeadName'),
+        province: rt('ocrProvince'),
+        district: rt('ocrInvalidDistrict'),
         memberCount: 0,
         isValid: false,
         validationStatus: rt('ocrInvalidStatus'),
@@ -462,8 +462,8 @@ export async function mockDispatch(config) {
     return createResponse({
       paperCardNo: 'IQ-P-1994-082194',
       headName: data.headName || i18n.global.t('register.defaultUserName'),
-      province: '巴格达省',
-      district: '卡尔赫区 (Al-Karkh)',
+      province: rt('ocrProvince'),
+      district: rt('ocrDistrict'),
       memberCount: 5,
       issueYear: '1994',
       branchCode: 'BAG-KARKH-01',

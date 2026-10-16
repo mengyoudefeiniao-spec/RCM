@@ -242,6 +242,10 @@ export default {
     "msgRegisterSuccessFallback": "تۆمارکردن سەرکەوتوو بوو! کارتی ئەلیکترۆنی نوێ دروستکرا",
     "msgRegisterFail": "ناردنی تۆمار سەرکەوتوو نەبوو",
     "api": {
+      "ocrProvince": "پارێزگای بەغدا",
+      "ocrDistrict": "قەزای کەرخ (کەرخ)",
+      "ocrInvalidHeadName": "ساباح نوری",
+      "ocrInvalidDistrict": "قەزای مەنسوور",
       "ocrInvalidStatus": "هەڵوەشاوە",
       "ocrValidStatus": "دروست و تۆمارکراو",
       "ocrInvalidNotice": "پشکنین سەرکەوتوو نەبوو: تۆماری ئەم کارتە لە سیستەمی مێژووی هەڵوەشراوە و مەترسی دووبارەبوونی هەیە، داواکاری کارتی نوێ قەدەغەیە.",
@@ -2305,7 +2309,19 @@ export default {
     "btnSwitchOverview": "گۆڕین بۆ پانێڵی ستراتیژی نیشتمانی (دیمەنی حکومی)",
     "toastOrderReceived": "[هاوکاری لە نێوان تابەکان] داواکاری نوێ گەیشت بۆ خاڵ",
     "toastCitizenClaimed": "بە ئۆنلاین داواکرا!",
-    "toastSwitchOverview": "گوازرایەوە بۆ پانێڵی ستراتیژی گشتی سەهمەتی نیشتمانی"
+    "toastSwitchOverview": "گوازرایەوە بۆ پانێڵی ستراتیژی گشتی سەهمەتی نیشتمانی",
+    "bizStatsTitle": "ئامارەكانی كاری خاڵ",
+    "bizStatsBadge": "ئاماری ڕاستەوخۆ",
+    "bizStatsDesc": "پوختەی ڕاستەوخۆی نیشاندەرە سەرەكییەكانی خاڵ: بڕی دابەشكراو کۆی ئەمڕۆیە، کۆگا باڵانسی تیۆری تۆمارە، و داهاتی ڕۆژانە داهاتی مەزەندەكراوی ئەمڕۆیە.",
+    "bizStatsIssued": "دابەشكراو",
+    "bizStatsStock": "کۆگا",
+    "bizStatsDailyIncome": "داهاتی ڕۆژانە",
+    "citizenStatsTitle": "ئاماری هاووڵاتییان",
+    "citizenServedHouseholds": "هاووڵاتییانی خزمەتگوزاری",
+    "citizenVerifiedToday": "ئەمڕۆ پشتڕاستكراو",
+    "citizenAvgPerHousehold": "تێکڕای ماڵ",
+    "citizenSatisfaction": "ڕەزامەندی",
+    "unitPerson": ""
   },
   "dashboardOverview": {
     "serviceTag": "خزمەتگوزارییەکانی پاڵپشتی خۆراک",

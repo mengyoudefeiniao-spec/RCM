@@ -243,6 +243,10 @@ export default {
     "msgRegisterSuccessFallback": "Registration successful! A new e-ration card has been issued",
     "msgRegisterFail": "Registration submission failed",
     "api": {
+      "ocrProvince": "Baghdad Province",
+      "ocrDistrict": "Al-Karkh District",
+      "ocrInvalidHeadName": "Sabah Nouri",
+      "ocrInvalidDistrict": "Al-Mansour District",
       "ocrInvalidStatus": "Revoked",
       "ocrValidStatus": "Valid & Enrolled",
       "ocrInvalidNotice": "Verification failed: this paper card stub has been revoked in the historical system with duplicate-card risk; a new card is prohibited.",

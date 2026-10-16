@@ -243,6 +243,10 @@ export default {
     "msgRegisterSuccessFallback": "注册成功！已为您签发新电子配给卡",
     "msgRegisterFail": "注册建档提交失败",
     "api": {
+      "ocrProvince": "巴格达省",
+      "ocrDistrict": "卡尔赫区 (Al-Karkh)",
+      "ocrInvalidHeadName": "萨巴赫·努里",
+      "ocrInvalidDistrict": "曼苏尔区",
       "ocrInvalidStatus": "已注销失效",
       "ocrValidStatus": "有效在册",
       "ocrInvalidNotice": "核验未通过：该纸质配给卡存根已于历史系统完成注销注记，存在重卡风险，禁止申领新卡。",
