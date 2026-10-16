@@ -306,6 +306,20 @@ const multiLangStores = {
 multiLangStores.ar = JSON.parse(JSON.stringify(multiLangStores.en));
 multiLangStores.ku = JSON.parse(JSON.stringify(multiLangStores.en));
 
+// 家庭成员/人数变更后同步所有语言内存池：
+// 家庭档案 GET 接口优先读跨标签页共享存储，而 quota-balance 等按当前语言内存池
+// 读取——若只更新其中一处，会造成「家庭代理 5 人 / 配给购买 4 人」的额度分裂
+function syncFamilyAcrossPools(family) {
+  if (!family || !family.rationCardNo) return;
+  Object.values(multiLangStores).forEach((stores) => {
+    const target = (stores.familiesStore || []).find((f) => f.rationCardNo === family.rationCardNo);
+    if (target && target !== family) {
+      target.members = family.members;
+      target.memberCount = family.memberCount;
+    }
+  });
+}
+
 export function getActiveLang(config) {
   if (config && config.headers && config.headers['Accept-Language']) {
     const l = config.headers['Accept-Language'];
@@ -574,6 +588,7 @@ export async function mockDispatch(config) {
     family.members.push(newMember);
     family.memberCount = family.members.length;
     updateSharedFamily(family.rationCardNo, { members: family.members, memberCount: family.memberCount });
+    syncFamilyAcrossPools(family);
 
     // 同步更新管理员配给卡管理中的对应配给卡记录 (覆盖所有语言内存池)
     Object.values(multiLangStores).forEach((stores) => {
@@ -732,6 +747,8 @@ export async function mockDispatch(config) {
       // 从原家庭剔除分立成员
       family.members = family.members.filter((m) => !memberIds.includes(m.id));
       family.memberCount = family.members.length;
+      updateSharedFamily(family.rationCardNo, { members: family.members, memberCount: family.memberCount });
+      syncFamilyAcrossPools(family);
       familiesStore.unshift(splitFamily);
 
       return createResponse({
@@ -1003,6 +1020,7 @@ export async function mockDispatch(config) {
       currentFamily.members.push(newMember);
       currentFamily.memberCount = currentFamily.members.length;
       updateSharedFamily(currentFamily.rationCardNo, { members: currentFamily.members, memberCount: currentFamily.memberCount });
+      syncFamilyAcrossPools(currentFamily);
 
       // 从候选池移除
       transferableMembersStore = transferableMembersStore.filter((m) => m.nationalId !== member.nationalId); activeStores.transferableMembersStore = transferableMembersStore;
@@ -1059,7 +1077,8 @@ export async function mockDispatch(config) {
   // 1. 查询家庭当月核定配额与剩余额度 (GET)
   if (url.includes('/citizen/ration/quota-balance') && method === 'GET') {
     const cardNo = url.split('/').pop() || 'RC-10029381';
-    const family = familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    // 与家庭档案 GET 接口同源：优先读跨标签页共享存储 (含页面刷新后持久化的成员数)，再回退语言内存池
+    const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
     const memberCount = family?.memberCount || family?.members?.length || 4;
 
     // 计算当月已购数量 (从订单历史汇总)

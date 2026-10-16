@@ -1590,7 +1590,7 @@ const citizenQuotaItems = computed(() => {
   return [
     {
       itemCode: 'RICE-02',
-      itemName: isEn.value ? 'Premium Long Grain Rice' : '精制大米 (Rice)',
+      itemName: isEn.value ? 'Premium Rice' : '精制大米',
       standardPerPerson: 3.0,
       totalHouseholdQuota: (3.0 * n).toFixed(1),
       guidePriceIQD: 1000,
@@ -1599,7 +1599,7 @@ const citizenQuotaItems = computed(() => {
     },
     {
       itemCode: 'FLOUR-01',
-      itemName: isEn.value ? 'Wheat Flour (Grade A)' : '特级面粉 (Flour)',
+      itemName: isEn.value ? 'Premium Flour' : '特级面粉',
       standardPerPerson: 9.0,
       totalHouseholdQuota: (9.0 * n).toFixed(1),
       guidePriceIQD: 750,
@@ -1608,7 +1608,7 @@ const citizenQuotaItems = computed(() => {
     },
     {
       itemCode: 'OIL-03',
-      itemName: isEn.value ? 'Vegetable Cooking Oil' : '食用植物油 (Oil)',
+      itemName: isEn.value ? 'Edible Vegetable Oil' : '食用植物油',
       standardPerPerson: 1.0,
       totalHouseholdQuota: (1.0 * n).toFixed(1),
       guidePriceIQD: 2500,
@@ -1617,7 +1617,7 @@ const citizenQuotaItems = computed(() => {
     },
     {
       itemCode: 'SUGAR-04',
-      itemName: isEn.value ? 'Refined White Sugar' : '纯精白糖 (Sugar)',
+      itemName: isEn.value ? 'Refined White Sugar' : '纯精白糖',
       standardPerPerson: 1.0,
       totalHouseholdQuota: (1.0 * n).toFixed(1),
       guidePriceIQD: 1200,
