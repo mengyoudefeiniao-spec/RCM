@@ -426,9 +426,11 @@
                 </template>
               </el-table-column>
 
-              <el-table-column prop="agentType" :label="$t('agent.colCategory')" width="110">
+              <el-table-column prop="agentType" :label="$t('agent.colCategory')" width="104">
                 <template #default="{ row }">
-                  <el-tag size="small" type="info" effect="plain">{{ formatCategory(row.agentType) }}</el-tag>
+                  <el-tooltip :content="formatCategory(row.agentType)" placement="top">
+                    <el-tag size="small" type="info" effect="plain">{{ formatCategoryShort(row.agentType) }}</el-tag>
+                  </el-tooltip>
                 </template>
               </el-table-column>
 
@@ -484,56 +486,48 @@
                 </template>
               </el-table-column>
 
-              <!-- 操作列：管理角色支持监管与查看，代理商支持轮替转移/注销 -->
-              <el-table-column :label="$t('agent.colActions')" width="180" fixed="right" align="center">
+              <!-- 操作列：管理角色支持监管与查看，代理商支持轮替转移/注销 (图标按钮 + tooltip) -->
+              <el-table-column :label="$t('agent.colActions')" width="104" fixed="right" align="center">
                 <template #default="{ row }">
-                  <div v-if="isAdmin" class="text-[#8A9A8F] text-[11px] flex items-center justify-center gap-2">
-                    <el-button size="small" type="primary" link @click="$router.push('/admin')">
-                      {{ $t('agent.actionLegalSupervision') }}
-                    </el-button>
-                    <el-button size="small" type="info" link @click="openWorkflowOverview">
-                      {{ $t('agent.actionComplianceTrace') }}
-                    </el-button>
+                  <div v-if="isAdmin" class="flex items-center justify-center gap-1">
+                    <el-tooltip :content="$t('agent.actionLegalSupervision')" placement="top">
+                      <el-button size="small" type="primary" plain circle @click="$router.push('/admin')">
+                        <el-icon><View /></el-icon>
+                      </el-button>
+                    </el-tooltip>
+                    <el-tooltip :content="$t('agent.actionComplianceTrace')" placement="top">
+                      <el-button size="small" type="info" plain circle @click="openWorkflowOverview">
+                        <el-icon><Compass /></el-icon>
+                      </el-button>
+                    </el-tooltip>
                   </div>
-                  <div v-else class="flex items-center justify-center gap-1.5 flex-wrap">
+                  <div v-else class="flex items-center justify-center gap-1">
                     <!-- 正常营业状态：支持轮替或注销 -->
                     <template v-if="row.isCurrentActive || row.status === '正常营业'">
-                      <el-button
-                        size="small"
-                        type="warning"
-                        link
-                        @click="handleOpenRotation(row.centerId)"
-                      >
-                        {{ $t('agent.actionHandleRotation') }}
-                      </el-button>
-                      <el-button
-                        size="small"
-                        type="danger"
-                        link
-                        @click="handleOpenCancellation(row)"
-                      >
-                        {{ $t('agent.actionHandleCancellation') }}
-                      </el-button>
+                      <el-tooltip :content="$t('agent.actionHandleRotation')" placement="top">
+                        <el-button size="small" type="warning" plain circle @click="handleOpenRotation(row.centerId)">
+                          <el-icon><Switch /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+                      <el-tooltip :content="$t('agent.actionHandleCancellation')" placement="top">
+                        <el-button size="small" type="danger" plain circle @click="handleOpenCancellation(row)">
+                          <el-icon><CircleClose /></el-icon>
+                        </el-button>
+                      </el-tooltip>
                     </template>
 
                     <!-- 已注销状态：支持恢复或重新申请 -->
                     <template v-else>
-                      <el-button
-                        size="small"
-                        type="primary"
-                        link
-                        @click="handleOpenRestoration(row.centerId)"
-                      >
-                        {{ $t('agent.actionHandleRestoration') }}
-                      </el-button>
-                      <el-button
-                        size="small"
-                        type="success"
-                        link
-                        @click="handleOpenApply(row.centerId)"
-                      >
-                        {{ $t('agent.actionHandleReapply') }}
-                      </el-button>
+                      <el-tooltip :content="$t('agent.actionHandleRestoration')" placement="top">
+                        <el-button size="small" type="primary" plain circle @click="handleOpenRestoration(row.centerId)">
+                          <el-icon><RefreshRight /></el-icon>
+                        </el-button>
+                      </el-tooltip>
+                      <el-tooltip :content="$t('agent.actionHandleReapply')" placement="top">
+                        <el-button size="small" type="success" plain circle @click="handleOpenApply(row.centerId)">
+                          <el-icon><Plus /></el-icon>
+                        </el-button>
+                      </el-tooltip>
                     </template>
                   </div>
                 </template>
@@ -686,11 +680,13 @@
                 </template>
               </el-table-column>
 
-              <el-table-column prop="typeName" :label="$t('agent.receipts.colType')" width="180">
+              <el-table-column prop="typeName" :label="$t('agent.receipts.colType')" width="150">
                 <template #default="{ row }">
-                  <div class="font-bold text-[#1F3326]">{{ row.typeName }}</div>
+                  <el-tooltip :content="row.typeName" placement="top">
+                    <div class="font-bold text-[#1F3326] truncate">{{ formatReceiptTypeShort(row.typeName) }}</div>
+                  </el-tooltip>
                   <div class="text-[10px]" :class="row.isArticle140 ? 'text-[#C9A13B] font-semibold' : 'text-[#8A9A8F]'">
-                    {{ row.isArticle140 ? $t('agent.receipts.tagArticle140') : $t('agent.receipts.articleNormal') }}
+                    {{ row.isArticle140 ? $t('agent.receipts.tagArticle140Short') : $t('agent.receipts.articleNormalShort') }}
                   </div>
                 </template>
               </el-table-column>
@@ -730,25 +726,22 @@
                 </template>
               </el-table-column>
 
-              <el-table-column :label="$t('agent.receipts.colAction')" width="140" fixed="right" align="center">
+              <el-table-column :label="$t('agent.receipts.colAction')" width="88" fixed="right" align="center">
                 <template #default="{ row }">
-                  <el-button
+                  <el-tooltip
                     v-if="!row.feePaid && isPayPendingStatus(row.status)"
-                    size="small"
-                    type="success"
-                    @click="handlePayExistingTicket(row)"
+                    :content="$t('agent.receipts.btnPayNow')"
+                    placement="top"
                   >
-                    {{ $t('agent.receipts.btnPayNow') }}
-                  </el-button>
-                  <el-button
-                    v-else
-                    size="small"
-                    type="primary"
-                    link
-                    @click="handleViewTicketDetail(row)"
-                  >
-                    {{ $t('agent.receipts.btnDetail') }}
-                  </el-button>
+                    <el-button size="small" type="success" circle @click="handlePayExistingTicket(row)">
+                      <el-icon><Money /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip v-else :content="$t('agent.receipts.btnDetail')" placement="top">
+                    <el-button size="small" type="primary" plain circle @click="handleViewTicketDetail(row)">
+                      <el-icon><View /></el-icon>
+                    </el-button>
+                  </el-tooltip>
                 </template>
               </el-table-column>
             </el-table>
@@ -1010,6 +1003,18 @@ const formatBranchName = (branch) => {
   return branch;
 };
 
+// 品类短标签 (完整词条 tooltip 展示)
+const formatCategoryShort = (cat) => {
+  const full = formatCategory(cat);
+  if (full.includes('综合') || full.includes('General')) return t('agent.catComprehensiveShort');
+  if (full.includes('食品') || full.includes('Food')) return t('agent.catFoodShort');
+  if (full.includes('面粉') || full.includes('Flour')) return t('agent.catFlourShort');
+  return full;
+};
+
+// 支付凭据类型短名 (去掉费用后缀，全称 tooltip 展示)
+const formatReceiptTypeShort = (name) => (name ? String(name).replace(/\s*[(（].*?[)）]\s*$/, '') : '');
+
 const formatCategory = (cat) => {
   if (!cat) return '';
   if (cat.includes('综合') || cat.toLowerCase().includes('compre') || cat.toLowerCase().includes('general')) {
@@ -1092,7 +1097,10 @@ import {
   Van,
   FullScreen,
   DataAnalysis,
-  Connection
+  Connection,
+  View,
+  CircleClose,
+  Money
 } from '@element-plus/icons-vue';
 
 // 响应式数据

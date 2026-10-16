@@ -5,13 +5,13 @@
       class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 gap-2.5 text-xs"
       :class="isAppMode ? 'flex flex-col space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between'"
     >
-      <div class="flex flex-wrap items-center gap-2.5 flex-1" :class="isAppMode ? 'w-full flex-col items-stretch' : ''">
+      <div class="grid gap-2.5 flex-1 items-center" :class="isAppMode ? 'grid-cols-1' : 'sm:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto]'">
         <el-input
           v-model="searchKeyword"
           :placeholder="$t('agentG2B.searchPlaceholder')"
           clearable
           size="small"
-          :style="isAppMode ? 'width: 100%' : 'width: 240px'"
+          class="w-full"
           @input="handleFilter"
         >
           <template #prefix><el-icon><Search /></el-icon></template>
@@ -21,7 +21,7 @@
           <el-select
             v-model="statusFilter"
             size="small"
-            :style="isAppMode ? 'width: 100%' : 'width: 170px'"
+            class="w-full"
             @change="handleFilter"
           >
             <el-option :label="$t('agentG2B.filterUnfinished')" value="UNFINISHED" />
@@ -218,36 +218,44 @@
         </template>
       </el-table-column>
 
-      <el-table-column :label="$t('agentG2B.colTotalAmount')" width="160" align="right">
+      <el-table-column :label="$t('agentG2B.colTotalAmount')" width="130" align="right">
         <template #default="{ row }">
           <div class="font-mono font-bold text-[#1B3123] text-sm">
             {{ row.totalAmount.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">IQD</span>
           </div>
           <div class="mt-1">
-            <el-tag size="small" :type="row.payStatus === 'PAID' ? 'success' : 'danger'" effect="plain">
-              {{ row.payStatus === 'PAID' ? $t('agentG2B.payStatusPaid') : $t('agentG2B.payStatusPending') }}
-            </el-tag>
+            <el-tooltip :content="row.payStatus === 'PAID' ? $t('agentG2B.payStatusPaid') : $t('agentG2B.payStatusPending')" placement="top">
+              <el-tag size="small" :type="row.payStatus === 'PAID' ? 'success' : 'danger'" effect="plain">
+                {{ row.payStatus === 'PAID' ? $t('agentG2B.payStatusPaidShort') : $t('agentG2B.payStatusPendingShort') }}
+              </el-tag>
+            </el-tooltip>
           </div>
           <div v-if="row.payTime" class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.payTime.slice(5) }}</div>
         </template>
       </el-table-column>
 
-      <el-table-column :label="$t('agentG2B.colStatusTask')" width="160" align="center">
+      <el-table-column :label="$t('agentG2B.colStatusTask')" width="130" align="center">
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING_PAYMENT'">
-            <el-tag size="small" type="danger" effect="light">{{ $t('agentG2B.statusPendingPaymentTag') }}</el-tag>
-            <div class="text-[10px] text-[#C04442] mt-0.5">{{ $t('agentG2B.statusPendingPaymentDesc') }}</div>
+            <el-tooltip :content="$t('agentG2B.statusPendingPaymentTag') + ' · ' + $t('agentG2B.statusPendingPaymentDesc')" placement="top">
+              <el-tag size="small" type="danger" effect="light">{{ $t('agentG2B.statusShortPending') }}</el-tag>
+            </el-tooltip>
           </div>
           <div v-else-if="row.status === 'PAID_WMS_PICKING'">
-            <el-tag size="small" type="primary" effect="dark">{{ $t('agentG2B.statusPaidPickingTag') }}</el-tag>
+            <el-tooltip :content="$t('agentG2B.statusPaidPickingTag')" placement="top">
+              <el-tag size="small" type="primary" effect="dark">{{ $t('agentG2B.statusShortPicking') }}</el-tag>
+            </el-tooltip>
             <div class="text-[10px] text-[#8A9A8F] font-mono mt-0.5">{{ row.wmsTaskId }}</div>
           </div>
           <div v-else-if="row.status === 'IN_TRANSIT'">
-            <el-tag size="small" type="warning" effect="dark">{{ $t('agentG2B.statusInTransitTag') }}</el-tag>
-            <div class="text-[10px] text-[#2F7A50] font-mono mt-0.5">{{ $t('agentG2B.statusPickupCode', { code: row.pickupVoucherCode }) }}</div>
+            <el-tooltip :content="$t('agentG2B.statusInTransitTag') + ' · ' + $t('agentG2B.statusPickupCode', { code: row.pickupVoucherCode })" placement="top">
+              <el-tag size="small" type="warning" effect="dark">{{ $t('agentG2B.statusShortInTransit') }}</el-tag>
+            </el-tooltip>
           </div>
           <div v-else>
-            <el-tag size="small" type="success" effect="dark">{{ $t('agentG2B.statusCompletedTag') }}</el-tag>
+            <el-tooltip :content="$t('agentG2B.statusCompletedTag')" placement="top">
+              <el-tag size="small" type="success" effect="dark">{{ $t('agentG2B.statusShortCompleted') }}</el-tag>
+            </el-tooltip>
             <div class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.completedAt?.slice(5) }}</div>
           </div>
         </template>
@@ -268,38 +276,27 @@
         </template>
       </el-table-column>
 
-      <!-- 操作栏提供二维码展示 -->
-      <el-table-column :label="$t('agent.colActions')" width="180" fixed="right" align="center">
+      <!-- 操作栏提供二维码展示 (图标按钮 + tooltip) -->
+      <el-table-column :label="$t('agent.colActions')" width="104" fixed="right" align="center">
         <template #default="{ row }">
-          <div class="flex items-center justify-center gap-1.5 flex-wrap">
-            <el-button
-              v-if="row.status === 'PENDING_PAYMENT'"
-              type="primary"
-              size="small"
-              @click="handlePayOrder(row)"
-            >
-              {{ $t('agentG2B.btnPayElectronic') }}
-            </el-button>
+          <div class="flex items-center justify-center gap-1">
+            <el-tooltip v-if="row.status === 'PENDING_PAYMENT'" :content="$t('agentG2B.btnPayElectronic')" placement="top">
+              <el-button type="primary" size="small" circle @click="handlePayOrder(row)">
+                <el-icon><Money /></el-icon>
+              </el-button>
+            </el-tooltip>
 
-            <el-button
-              v-if="row.payStatus === 'PAID'"
-              size="small"
-              type="success"
-              plain
-              @click="showOrderQRCode(row)"
-            >
-              <el-icon class="mr-1"><FullScreen /></el-icon>
-              {{ $t('agentG2B.btnPickupQR') }}
-            </el-button>
+            <el-tooltip v-if="row.payStatus === 'PAID'" :content="$t('agentG2B.btnPickupQR')" placement="top">
+              <el-button size="small" type="success" plain circle @click="showOrderQRCode(row)">
+                <el-icon><FullScreen /></el-icon>
+              </el-button>
+            </el-tooltip>
 
-            <el-button
-              size="small"
-              type="primary"
-              link
-              @click="viewOrderDetail(row)"
-            >
-              {{ $t('agentG2B.btnDetail') }}
-            </el-button>
+            <el-tooltip :content="$t('agentG2B.btnDetail')" placement="top">
+              <el-button size="small" type="primary" plain circle @click="viewOrderDetail(row)">
+                <el-icon><View /></el-icon>
+              </el-button>
+            </el-tooltip>
           </div>
         </template>
       </el-table-column>
@@ -757,7 +754,9 @@ import {
   Van,
   Box,
   Location,
-  Tickets
+  Tickets,
+  View,
+  Money
 } from '@element-plus/icons-vue';
 import { getG2BPurchaseOrders, createG2BPurchaseOrder } from '../../../api/agent.js';
 import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymentDialog.vue';
