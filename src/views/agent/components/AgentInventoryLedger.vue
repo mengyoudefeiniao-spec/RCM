@@ -1,13 +1,13 @@
 <template>
-  <div class="agent-inventory-ledger" :class="isAppMode ? 'space-y-2.5' : 'space-y-4 text-xs'">
+  <div class="agent-inventory-ledger" :class="isAppMode ? 'space-y-3' : 'space-y-4 text-xs'">
     <!-- 指标卡片行 (针对 Pixel 9 412px 视口微调内边距与字体阶梯) -->
-    <div class="grid" :class="isAppMode ? 'grid-cols-2 gap-2' : 'grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4'">
-      <div class="p-2 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1 min-w-0">
-        <div class="flex items-center justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
-          <span class="truncate min-w-0">{{ $t('agentInventoryLedger.bookInventory') }}</span>
+    <div class="grid" :class="isAppMode ? 'grid-cols-2 gap-2.5' : 'grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4'">
+      <div class="p-2.5 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1.5 min-w-0">
+        <div class="flex items-start justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
+          <span class="leading-tight min-w-0">{{ $t('agentInventoryLedger.bookInventory') }}</span>
           <span class="shrink-0">🏦</span>
         </div>
-        <div class="text-xs sm:text-xl font-bold font-mono text-[#1B3123] truncate">
+        <div class="text-sm sm:text-xl font-bold font-mono text-[#1B3123] truncate">
           132,500 <span class="text-[9px] sm:text-xs font-normal">KG/L</span>
         </div>
         <div class="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
@@ -16,12 +16,12 @@
         </div>
       </div>
 
-      <div class="p-2 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1 min-w-0">
-        <div class="flex items-center justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
-          <span class="truncate min-w-0">{{ $t('agentInventoryLedger.weighingErrorRate') }}</span>
+      <div class="p-2.5 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1.5 min-w-0">
+        <div class="flex items-start justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
+          <span class="leading-tight min-w-0">{{ $t('agentInventoryLedger.weighingErrorRate') }}</span>
           <span class="shrink-0">⚖️</span>
         </div>
-        <div class="text-xs sm:text-xl font-bold font-mono text-[#7A5F21] truncate">
+        <div class="text-sm sm:text-xl font-bold font-mono text-[#7A5F21] truncate">
           ±0.38%
         </div>
         <div class="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
@@ -30,12 +30,12 @@
         </div>
       </div>
 
-      <div class="p-2 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1 min-w-0">
-        <div class="flex items-center justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
-          <span class="truncate min-w-0">{{ $t('agentInventoryLedger.totalShortage') }}</span>
+      <div class="p-2.5 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1.5 min-w-0">
+        <div class="flex items-start justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
+          <span class="leading-tight min-w-0">{{ $t('agentInventoryLedger.totalShortage') }}</span>
           <span class="shrink-0">📉</span>
         </div>
-        <div class="text-xs sm:text-xl font-bold font-mono text-[#C04442] truncate">
+        <div class="text-sm sm:text-xl font-bold font-mono text-[#C04442] truncate">
           -1,860 <span class="text-[9px] sm:text-xs font-normal">KG</span>
         </div>
         <div class="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
@@ -44,12 +44,12 @@
         </div>
       </div>
 
-      <div class="p-2 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1 min-w-0">
-        <div class="flex items-center justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
-          <span class="truncate min-w-0">{{ $t('agentInventoryLedger.totalSurplus') }}</span>
+      <div class="p-2.5 sm:p-3.5 bg-white rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-1.5 min-w-0">
+        <div class="flex items-start justify-between gap-1 text-[#58685D] text-[10px] sm:text-[11px]">
+          <span class="leading-tight min-w-0">{{ $t('agentInventoryLedger.totalSurplus') }}</span>
           <span class="shrink-0">📈</span>
         </div>
-        <div class="text-xs sm:text-xl font-bold font-mono text-[#2F5B44] truncate">
+        <div class="text-sm sm:text-xl font-bold font-mono text-[#2F5B44] truncate">
           +420 <span class="text-[9px] sm:text-xs font-normal">KG</span>
         </div>
         <div class="flex items-center justify-between gap-1 text-[9px] sm:text-[10px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
@@ -59,10 +59,36 @@
       </div>
     </div>
 
+    <!-- 公民服务统计 (新增模块: 网点服务的公民侧核心指标) -->
+    <div class="bg-white p-2.5 sm:p-3.5 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-2.5">
+      <div class="flex items-center gap-2 border-b border-[#E9F1EB] pb-2">
+        <span class="w-2 h-2 rounded-full bg-[#C9A13B] shrink-0"></span>
+        <h3 class="text-xs sm:text-sm font-bold text-[#1F3326] truncate min-w-0">{{ $t('agentInventoryLedger.citizenStatsTitle') }}</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div class="p-2 rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB] space-y-0.5 min-w-0">
+          <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-tight">{{ $t('agentInventoryLedger.citizenFamilies') }}</div>
+          <div class="text-sm sm:text-base font-bold font-mono text-[#1B3123]">1,860 <span class="text-[9px] font-normal">{{ $t('agentInventoryLedger.familiesUnit') }}</span></div>
+        </div>
+        <div class="p-2 rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB] space-y-0.5 min-w-0">
+          <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-tight">{{ $t('agentInventoryLedger.citizenClaims') }}</div>
+          <div class="text-sm sm:text-base font-bold font-mono text-[#2A5440]">2,140 <span class="text-[9px] font-normal">{{ $t('agentInventoryLedger.claimsUnit') }}</span></div>
+        </div>
+        <div class="p-2 rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB] space-y-0.5 min-w-0">
+          <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-tight">{{ $t('agentInventoryLedger.citizenBioRate') }}</div>
+          <div class="text-sm sm:text-base font-bold font-mono text-[#2F5B44]">99.2%</div>
+        </div>
+        <div class="p-2 rounded-lg bg-[#F3F8F4]/60 border border-[#E9F1EB] space-y-0.5 min-w-0">
+          <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-tight">{{ $t('agentInventoryLedger.citizenAvgFreq') }}</div>
+          <div class="text-sm sm:text-base font-bold font-mono text-[#7A5F21]">3.2 <span class="text-[9px] font-normal">{{ $t('agentInventoryLedger.freqUnit') }}</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- 可视化图表网格 -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
       <!-- 图表 1: 各品类称重误差对比 -->
-      <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3 min-w-0">
+      <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3 min-w-0 h-full flex flex-col">
         <div class="flex items-center justify-between gap-2 border-b border-[#E9F1EB] pb-2">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2 h-2 rounded-full bg-[#326445] shrink-0"></span>
@@ -71,7 +97,7 @@
           <span class="text-[10px] text-[#8A9A8F] font-mono shrink-0">{{ $t('agentInventoryLedger.weighingChartUnit') }}</span>
         </div>
 
-        <div class="space-y-2.5 pt-1">
+        <div class="space-y-2.5 pt-1 flex-1">
           <div v-for="item in weighingData" :key="item.name" class="space-y-1 text-xs bg-[#F3F8F4]/60 p-2 rounded-lg border border-[#E9F1EB]/80">
             <div class="flex items-center justify-between gap-2 text-[#43554B]">
               <span class="font-bold text-[#1F3326] text-[11px] sm:text-xs leading-tight truncate min-w-0">{{ item.name }}</span>
@@ -92,7 +118,7 @@
       </div>
 
       <!-- 图表 2: 近月盘盈盘亏台账 (损耗归因追溯) -->
-      <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3 min-w-0">
+      <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs space-y-3 min-w-0 h-full flex flex-col">
         <div class="flex items-center justify-between gap-2 border-b border-[#E9F1EB] pb-2">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-2 h-2 rounded-full bg-[#2F7A50] shrink-0"></span>
@@ -101,7 +127,7 @@
           <span class="text-[10px] text-[#8A9A8F] font-mono shrink-0">{{ $t('agentInventoryLedger.ledgerListUnit') }}</span>
         </div>
 
-        <div class="space-y-2 pt-1">
+        <div class="space-y-2 pt-1 flex-1">
           <div
             v-for="(row, idx) in ledgerRecords"
             :key="idx"
@@ -120,10 +146,11 @@
                 :class="row.type === 'surplus' ? 'text-[#2F5B44]' : 'text-[#C04442]'"
               >{{ row.amountText }} {{ $t('agentInventoryLedger.kgUnit') }}</span>
             </div>
-            <!-- 行 2: 损耗归因 + 处理状态 -->
-            <div class="flex items-center justify-between gap-1.5 min-w-0">
-              <span class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-snug truncate min-w-0">🏷️ {{ row.cause }}</span>
-              <el-tag size="small" type="info" effect="plain" class="scale-90 shrink-0">{{ $t(`agentInventoryLedger.${row.status}`) }}</el-tag>
+            <!-- 行 2: 损耗归因 (允许换行，不再截断) -->
+            <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-snug min-w-0">🏷️ {{ row.cause }}</div>
+            <!-- 行 3: 处理状态 -->
+            <div>
+              <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left">{{ $t(`agentInventoryLedger.${row.status}`) }}</el-tag>
             </div>
           </div>
         </div>

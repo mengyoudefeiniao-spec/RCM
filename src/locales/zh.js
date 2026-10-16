@@ -2278,6 +2278,14 @@ export default {
     "tenThousandUnit": "万"
   },
   "agentInventoryLedger": {
+    "citizenStatsTitle": "公民服务统计",
+    "citizenFamilies": "在册服务家庭",
+    "familiesUnit": "户",
+    "citizenClaims": "本月核销人次",
+    "claimsUnit": "人次",
+    "citizenBioRate": "生物核验通过率",
+    "citizenAvgFreq": "户均月领取",
+    "freqUnit": "次/户",
     "bookInventory": "台账账面库存总量",
     "registeredCategories": "在册品类:",
     "categoriesUnit": "类",
