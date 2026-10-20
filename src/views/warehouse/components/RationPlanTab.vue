@@ -48,34 +48,46 @@
           class="flex justify-between gap-3 border-b border-[#E1F4E4]/80 pb-3.5"
           :class="isAppMode ? 'flex-col items-stretch gap-2.5 pb-3' : 'flex-col sm:flex-row sm:items-center'"
         >
-          <div class="flex items-center gap-3" :class="isAppMode ? 'gap-2.5' : ''">
-            <div
-              class="rounded-lg bg-[#326445] text-white flex items-center justify-center font-bold shadow-xs shrink-0"
-              :class="isAppMode ? 'w-9 h-9 text-base' : 'w-10 h-10 text-lg'"
-            >
-              <el-icon><Shop /></el-icon>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'gap-1.5' : ''">
-                <h3 class="text-sm font-bold text-[#1B3123]" :class="isAppMode ? 'text-[13px] leading-snug' : ''">
-                  {{ citizenFamilyInfo?.agentName || (isEn ? 'Baghdad Karkh No.1 Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)') }}
-                </h3>
-                <el-tag size="small" type="success" effect="dark" class="font-bold">{{ $t('warehouse.contractedAgent') || '签约保供代销站' }}</el-tag>
-              </div>
+          <div class="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <div class="flex min-w-0 items-center gap-3" :class="isAppMode ? 'gap-2.5' : ''">
               <div
-                class="text-[11px] text-[#58685D] mt-0.5 font-mono"
-                :class="isAppMode ? 'flex flex-col items-start gap-y-0.5 pt-1' : 'flex items-center gap-2 flex-wrap'"
+                class="rounded-lg bg-[#326445] text-white flex items-center justify-center font-bold shadow-xs shrink-0"
+                :class="isAppMode ? 'w-9 h-9 text-base' : 'w-10 h-10 text-lg'"
               >
-                <span class="truncate max-w-full">{{ $t('warehouse.agentIdLabel') || '代理站编号' }}: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
-                <span v-if="!isAppMode">·</span>
-                <span class="truncate max-w-full">{{ $t('warehouse.centerLabel') || '配给中心' }}: {{ citizenFamilyInfo?.district || (isEn ? 'Karkh No.1 Center (#04)' : '卡尔赫第一配给中心 (#04)') }}</span>
-                <span v-if="!isAppMode">·</span>
-                <span class="truncate max-w-full">{{ $t('warehouse.provinceLabel') || '省份' }}: {{ citizenFamilyInfo?.province || (isEn ? 'Baghdad Governorate' : '巴格达省 (Baghdad)') }}</span>
+                <el-icon><Shop /></el-icon>
               </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'gap-1.5' : ''">
+                  <h3 class="text-sm font-bold text-[#1B3123]" :class="isAppMode ? 'text-[13px] leading-snug' : ''">
+                    {{ citizenFamilyInfo?.agentName || (isEn ? 'Baghdad Karkh No.1 Station (Mohammed Jabbar)' : '巴格达卡尔赫第一代销站 (穆罕默德·贾巴尔)') }}
+                  </h3>
+                  <el-tag size="small" type="success" effect="dark" class="font-bold">{{ $t('warehouse.contractedAgent') || '签约保供代销站' }}</el-tag>
+                </div>
+                <div
+                  class="text-[11px] text-[#58685D] mt-0.5 font-mono"
+                  :class="isAppMode ? 'flex flex-col items-start gap-y-0.5 pt-1' : 'flex items-center gap-2 flex-wrap'"
+                >
+                  <span class="truncate max-w-full">{{ $t('warehouse.agentIdLabel') || '代理站编号' }}: {{ citizenFamilyInfo?.agentId || 'FA-00128' }}</span>
+                  <span v-if="!isAppMode">·</span>
+                  <span class="truncate max-w-full">{{ $t('warehouse.centerLabel') || '配给中心' }}: {{ citizenFamilyInfo?.district || (isEn ? 'Karkh No.1 Center (#04)' : '卡尔赫第一配给中心 (#04)') }}</span>
+                  <span v-if="!isAppMode">·</span>
+                  <span class="truncate max-w-full">{{ $t('warehouse.provinceLabel') || '省份' }}: {{ citizenFamilyInfo?.province || (isEn ? 'Baghdad Governorate' : '巴格达省 (Baghdad)') }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="isCitizen && (!props.showCitizenMonthSelector || props.showAgentTransferAction)" class="flex shrink-0 items-center gap-1.5">
+              <el-tooltip v-if="!props.showCitizenMonthSelector" :content="$t('warehouse.navigateAgent')" placement="top">
+                <el-button size="small" plain circle class="!size-8" :aria-label="$t('warehouse.navigateAgent')" @click="mapDialogOpen = true">
+                  <el-icon><Location /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-button v-if="props.showAgentTransferAction" size="small" type="primary" plain class="!h-8 !px-2 !text-[11px]" @click="emit('request-agent-transfer')">
+                <el-icon class="me-1"><Switch /></el-icon>{{ $t('citizenCard.applyAgentTransfer') }}
+              </el-button>
             </div>
           </div>
 
-          <div class="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:shrink-0">
+          <div v-if="props.showCitizenMonthSelector" class="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:shrink-0">
             <div class="flex min-w-0 flex-1 items-center justify-start gap-1.5 sm:flex-none">
               <span class="text-[11px] text-[#58685D] whitespace-nowrap">{{ $t('warehouse.periodLabel') || '配给月份' }}:</span>
               <el-date-picker
@@ -1260,11 +1272,13 @@ import { useI18n } from 'vue-i18n';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { unitLabel } from '../../../utils/dataLabels.js';
-import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled, Location } from '@element-plus/icons-vue';
+import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled, Location, Switch } from '@element-plus/icons-vue';
 
-const emit = defineEmits(['go-purchase']);
+const emit = defineEmits(['go-purchase', 'request-agent-transfer']);
 const props = defineProps({
-  showCitizenQuotaDetails: { type: Boolean, default: true }
+  showCitizenQuotaDetails: { type: Boolean, default: true },
+  showCitizenMonthSelector: { type: Boolean, default: true },
+  showAgentTransferAction: { type: Boolean, default: false }
 });
 const mapDialogOpen = ref(false);
 const agentMapElement = ref(null);
