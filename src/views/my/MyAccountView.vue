@@ -46,21 +46,45 @@
       </div>
     </template>
 
-    <section v-if="isCitizen || currentTab === 'notifications'" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm">
-      <div class="flex items-center justify-between gap-2 mb-3">
-        <div class="flex items-center gap-2">
-          <span class="relative"><el-icon class="text-[#326445]"><Bell /></el-icon><span v-if="unreadCount" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500" /></span>
-          <h2 class="font-bold">{{ $t('my.notificationCenter') }}</h2>
-          <span v-if="unreadCount" class="rounded-full bg-[#FDF3E0] px-2 py-0.5 text-xs text-[#7A5F21]">{{ $t('my.unreadCount', { count: unreadCount }) }}</span>
+    <section v-if="isCitizen" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <el-icon class="shrink-0 text-[#326445]"><DocumentChecked /></el-icon>
+          <div class="min-w-0">
+            <h2 class="font-bold">{{ $t('my.applicationHistory') }}</h2>
+            <p class="mt-0.5 text-xs text-[#8A9A8F]">{{ $t('my.applicationHistorySubtitle') }}</p>
+          </div>
         </div>
-        <div class="flex items-center gap-1"><el-button size="small" text @click="enableDeviceAlerts">{{ $t('my.enableAlerts') }}</el-button><el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button></div>
+      </div>
+      <div v-if="applicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.noApplicationHistory') }}</div>
+      <article v-for="record in applicationRecords" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-semibold text-[#1F3326]">{{ $t(`my.applicationTypes.${record.sourceCode}`) }}</h3>
+          <el-tag size="small" :type="applicationStatusType(record)">{{ $t(`my.applicationStatuses.${applicationStatusKey(record)}`) }}</el-tag>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8A9A8F]">
+          <span>{{ $t('my.applicationNumber') }} <bdi dir="ltr" class="font-mono">{{ record.id }}</bdi></span>
+          <span dir="ltr">{{ formatDate(record.submittedAt) }}</span>
+        </div>
+        <p class="text-xs leading-relaxed text-[#58685D] break-words">{{ applicationResult(record) }}</p>
+      </article>
+    </section>
+
+    <section v-if="isCitizen || currentTab === 'notifications'" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <el-icon class="shrink-0 text-[#326445]"><Bell /></el-icon>
+          <h2 class="font-bold">{{ $t('my.notificationCenter') }}</h2>
+          <span v-if="unreadCount" class="inline-flex min-w-6 h-6 items-center justify-center rounded-full bg-[#FDF3E0] px-1.5 text-xs font-bold text-[#7A5F21]" :aria-label="$t('my.unreadCount', { count: unreadCount })">{{ unreadCount }}</span>
+        </div>
+        <el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button>
       </div>
       <div v-if="notifications.length === 0" class="py-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noNotifications') }}</div>
       <div v-for="item in notifications" :key="item.id" class="border-t border-[#E9F1EB] py-3 first:border-t-0">
-        <button type="button" class="w-full text-start flex items-start gap-3" @click="openNotification(item)">
+        <button type="button" class="w-full text-start flex items-start gap-3 rounded-lg p-2 -mx-2 hover:bg-[#F8FAF8] transition-colors" @click="openNotification(item)">
           <span class="mt-1 size-2 shrink-0 rounded-full" :class="item.read ? 'bg-[#D9E5DB]' : 'bg-[#C9A13B]'" />
           <span class="min-w-0 flex-1">
-            <span class="flex items-center justify-between gap-2"><span class="font-semibold text-sm">{{ $t(`my.notice.${role}.${item.type}.title`) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
+            <span class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5"><span class="font-semibold text-sm">{{ $t(`my.notice.${role}.${item.type}.title`) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
             <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ item.flow ? $t('my.materialRequestBody', { flow: $t(`my.materialFlow.${item.flow}`) }) : $t(`my.notice.${role}.${item.type}.body`) }}</span>
             <span v-if="item.materialStatus === 'submitted'" class="block mt-1 text-xs text-[#326445]">{{ $t('my.materialSubmitted') }}</span>
             <span class="block mt-1 text-xs font-semibold text-[#326445]">{{ $t('my.viewRelated') }}</span>
@@ -151,17 +175,20 @@ import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
+import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
 import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl } from '../../stores/myNotifications.js';
+import { getSharedTickets } from '../../utils/sharedSession.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const citizenStore = useCitizenStore();
 const notificationStore = useMyNotificationsStore();
 const role = computed(() => authStore.currentRole);
 const isCitizen = computed(() => role.value === 'citizen');
@@ -172,6 +199,7 @@ const outlets = ref([]);
 const couriers = ref([]);
 const notifications = computed(() => notificationStore.items);
 const unreadCount = computed(() => notificationStore.unreadCount);
+const applicationRecords = ref([]);
 const currentTab = ref(['notifications', 'outlets', 'couriers'].includes(route.query.tab) ? route.query.tab : 'notifications');
 const agentTabs = [
   { key: 'notifications', icon: Bell },
@@ -194,8 +222,9 @@ const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPas
 
 async function loadData() {
   try {
-    const [account] = await Promise.all([getMyProfile(), notificationStore.refresh()]);
+    const [account] = await Promise.all([getMyProfile(), notificationStore.refresh(), isCitizen.value ? citizenStore.fetchFamilies() : Promise.resolve()]);
     profile.value = account;
+    if (isCitizen.value) refreshApplicationHistory();
     if (!isCitizen.value) {
       const [agent, sites, people] = await Promise.all([getAgentProfile(), getMyAgentCenters(), getMyCouriers()]);
       agentProfile.value = agent;
@@ -205,6 +234,44 @@ async function loadData() {
   } catch {
     ElMessage.error(t('my.loadFailed'));
   }
+}
+
+const applicationSourceCodes = new Set(['TRF', 'TRM', 'SPL', 'HED', 'UNF']);
+function getApplicationSourceCode(ticket) {
+  if (applicationSourceCodes.has(ticket.sourceCode)) return ticket.sourceCode;
+  const source = `${ticket.source || ''} ${ticket.categoryType || ''} ${ticket.appType || ''}`.toLowerCase();
+  if (/成员.*转移|member transfer|member entry/.test(source)) return 'TRM';
+  if (/代理.*转移|agent transfer|transfer agent/.test(source)) return 'TRF';
+  if (/分户|split household/.test(source)) return 'SPL';
+  if (/变更户主|change head/.test(source)) return 'HED';
+  if (/解冻|unfreeze/.test(source)) return 'UNF';
+  return '';
+}
+
+function refreshApplicationHistory() {
+  const cardNo = citizenStore.currentFamily?.rationCardNo || authStore.userProfile?.cardNo || 'RC-10029381';
+  applicationRecords.value = getSharedTickets()
+    .map((ticket) => ({ ...ticket, sourceCode: getApplicationSourceCode(ticket) }))
+    .filter((ticket) => ticket.sourceCode && ticket.cardNo === cardNo)
+    .sort((a, b) => new Date(String(b.submittedAt || '').replace(' ', 'T')) - new Date(String(a.submittedAt || '').replace(' ', 'T')));
+}
+
+function applicationStatusKey(record) {
+  const value = `${record.status || ''} ${record.managerDecision || ''}`.toLowerCase();
+  if (/reject|denied|驳回|未通过|不予|مرفوض|رفض|پەسەند نەکرا/.test(value)) return 'rejected';
+  if (/approv|passed|通过|核准|生效|تمت الموافقة|مقبول|پەسەندکرا/.test(value)) return 'approved';
+  if (/pending|待|review|审核中|قيد|انتظار|پشکنین/.test(value)) return 'pending';
+  return 'pending';
+}
+
+function applicationStatusType(record) {
+  return { approved: 'success', pending: 'warning', rejected: 'danger' }[applicationStatusKey(record)];
+}
+
+function applicationResult(record) {
+  const status = applicationStatusKey(record);
+  if (locale.value === 'ar' || locale.value === 'ckb') return t(`my.applicationStatuses.${status}`);
+  return record.managerNotes || record.auditNotes || record.managerOpinion || record.staffOpinion || t(`my.applicationStatuses.${status}`);
 }
 
 function formatDate(value) {
@@ -249,11 +316,6 @@ async function onFaceVerified(payload) {
   } catch {
     contactDialogOpen.value = true;
   }
-}
-
-async function enableDeviceAlerts() {
-  const enabled = await notificationStore.enableDeviceNotifications();
-  ElMessage[enabled ? 'success' : 'warning'](t(enabled ? 'my.alertsEnabled' : 'my.alertsUnavailable'));
 }
 
 async function selectTab(key) {
@@ -373,9 +435,13 @@ async function handleLogout() {
 
 onMounted(async () => {
   await loadData();
+  window.addEventListener('storage', refreshApplicationHistory);
   if (route.query.tab === 'outlets' || route.query.tab === 'couriers') await selectTab(route.query.tab);
 });
 watch(role, loadData);
 watch(() => route.query.tab, (tab) => { if (agentTabs.some(item => item.key === tab)) selectTab(tab); });
-onBeforeUnmount(() => clearInterval(smsTimer));
+onBeforeUnmount(() => {
+  clearInterval(smsTimer);
+  window.removeEventListener('storage', refreshApplicationHistory);
+});
 </script>

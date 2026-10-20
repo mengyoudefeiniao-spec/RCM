@@ -258,6 +258,7 @@ export function addSharedTicket(ticketPayload) {
   const idSuffix = String(Date.now()).slice(-4);
   const newTicket = {
     id: ticketPayload.id || `REV-${(ticketPayload.sourceCode || 'SUB').toUpperCase()}-${idSuffix}`,
+    sourceCode: ticketPayload.sourceCode || '',
     source: ticketPayload.source || (isEn ? 'Online Application' : '业务申办'),
     categoryType: ticketPayload.categoryType || (isEn ? 'Online Citizen Self-Service Application' : '在线公民自主申办'),
     appType: ticketPayload.appType || ticketPayload.source || (isEn ? 'Ration Service Application' : '配给申办业务公文'),
@@ -267,20 +268,28 @@ export function addSharedTicket(ticketPayload) {
     province: ticketPayload.province || (isEn ? 'Baghdad Governorate' : '巴格达省'),
     center: ticketPayload.center || (isEn ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
     reason: ticketPayload.reason || (isEn ? 'Citizen submitted a statutory application via mobile APP with identity documents attached.' : '公民通过移动 APP 提交法定业务申请，已附带身份证明材料。'),
-    status: isEn ? 'Pending Staff Review' : '待分部初审',
+    status: ticketPayload.applicationStatus === 'approved'
+      ? (isEn ? 'Approved' : '已审批通过')
+      : ticketPayload.status || (isEn ? 'Pending Staff Review' : '待分部初审'),
     submittedAt: getCurrentFormattedTime(),
     staffOpinion: '',
     staffName: '',
     staffReviewedAt: '',
-    managerDecision: isEn ? 'Pending' : '待决',
-    managerNotes: '',
+    managerDecision: ticketPayload.applicationStatus === 'approved' ? (isEn ? 'Approved' : '已通过') : (isEn ? 'Pending' : '待决'),
+    managerNotes: ticketPayload.applicationResult || '',
     attachments: ticketPayload.attachments || [
       { name: isEn ? 'Unified_National_Card_Legal_Registry_Certificate_DOC-2026.pdf' : '统一国家卡与法定户口登记证明_DOC-2026.pdf', type: 'required', verified: true }
     ],
     payload: ticketPayload.payload || {}
   };
 
-  currentList.unshift(newTicket);
+  const existingIndex = currentList.findIndex((ticket) => ticket.id === newTicket.id);
+  if (existingIndex >= 0) {
+    currentList.splice(existingIndex, 1, { ...currentList[existingIndex], ...newTicket });
+    currentList.unshift(currentList.splice(existingIndex, 1)[0]);
+  } else {
+    currentList.unshift(newTicket);
+  }
 
   try {
     localStorage.setItem(storageKey, JSON.stringify(currentList));
@@ -307,7 +316,7 @@ function safeBroadcast(type, payload) {
 
 export function updateSharedTicket(ticketId, updates) {
   // 与 Families 一致：同步更新所有语言副本，保证跨语言状态一致
-  const langs = ['zh', 'en'];
+  const langs = ['zh', 'en', 'ar', 'ku'];
   let currentResult = null;
   const currentLang = getActiveLanguage();
 

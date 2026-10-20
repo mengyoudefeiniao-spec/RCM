@@ -887,8 +887,11 @@ async function handlePaymentSuccess(paymentInfo) {
 
     // 跨标签页共享与广播新成员转移公文
     addSharedTicket({
-      source: '家庭成员关系转移公文',
+      id: res.ticketId,
       sourceCode: 'TRM',
+      applicationStatus: res.autoApproved ? 'approved' : 'pending',
+      applicationResult: res.autoApproved ? res.message : '',
+      source: '家庭成员关系转移公文',
       categoryType: '成员户籍转移',
       appType: '跨户成员合并/转移',
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',

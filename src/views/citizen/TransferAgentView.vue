@@ -844,8 +844,11 @@ async function handlePaymentSuccess(paymentInfo) {
 
     // 跨标签页数据同步与广播：政府端工作台将实时收到该申办公文
     addSharedTicket({
-      source: '申请代理转移',
+      id: res.ticketId,
       sourceCode: 'TRF',
+      applicationStatus: res.autoApproved ? 'approved' : 'pending',
+      applicationResult: res.autoApproved ? res.message : '',
+      source: '申请代理转移',
       appType: `配给代理转移 (${payload.fromProvince} ➔ ${payload.toProvince})`,
       cardNo: payload.cardNo,
       applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫',

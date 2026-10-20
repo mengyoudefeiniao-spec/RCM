@@ -599,6 +599,20 @@ async function handlePaymentSuccess(paymentInfo) {
 
     splitResult.value = res;
     currentStep.value = 5;
+    if (res.passed) {
+      addSharedTicket({
+        sourceCode: 'SPL',
+        applicationStatus: 'approved',
+        applicationResult: res.message || '',
+        source: '申请分户',
+        appType: '公民分户申请',
+        cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
+        applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
+        targetMemberName: `${selectedMemberIds.value.length} 名家庭成员`,
+        reason: res.reason || '提交家庭分户申请',
+        payload: { memberIds: selectedMemberIds.value, newCardNo: res.newCardNo || '' }
+      });
+    }
     await citizenStore.fetchFamilies();
 
     if (res.passed) {
@@ -617,7 +631,7 @@ async function handlePaymentSuccess(paymentInfo) {
 async function handleTransferToElectronicReview() {
   reviewSubmitting.value = true;
   try {
-    await citizenStore.submitSplitReview({
+    const res = await citizenStore.submitSplitReview({
       currentCardNo: citizenStore.currentFamily?.rationCardNo,
       memberIds: selectedMemberIds.value,
       reason: splitResult.value?.reason || '系统自动判别未通过，转交分部门人员手动审核'
@@ -625,8 +639,9 @@ async function handleTransferToElectronicReview() {
 
     // 跨标签页共享与广播新公文
     addSharedTicket({
-      source: '分户申请公文',
+      id: res.ticketId,
       sourceCode: 'SPL',
+      source: '分户申请公文',
       categoryType: '分户与配给卡拆分',
       appType: '公民分户申请',
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',

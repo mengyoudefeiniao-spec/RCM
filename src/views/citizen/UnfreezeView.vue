@@ -398,8 +398,9 @@ async function handlePaymentSuccess(paymentInfo) {
 
     // 跨标签页共享与广播新解冻公文
     addSharedTicket({
-      source: '配给卡解冻复核申请',
+      id: res.ticketId,
       sourceCode: 'UNF',
+      source: '配给卡解冻复核申请',
       categoryType: '异常状态解除类',
       appType: '配给卡解冻公文',
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',

@@ -217,8 +217,9 @@ async function handlePaymentSuccess(paymentInfo) {
 
     // 跨标签页数据同步与广播：政府端工作台将实时收到该申办公文
     addSharedTicket({
-      source: '变更户主',
+      id: res.ticketId,
       sourceCode: 'HED',
+      source: '变更户主',
       appType: '法定户主更替申办 (继承轮替)',
       cardNo: citizenStore.currentFamily?.rationCardNo,
       applicantName: currentCandidateName.value || '艾哈迈德·哈桑·萨利赫',

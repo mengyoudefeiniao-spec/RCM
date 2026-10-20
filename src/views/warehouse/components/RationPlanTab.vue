@@ -75,6 +75,11 @@
             </div>
           </div>
 
+          <el-button v-if="isCitizen" size="small" plain class="shrink-0" @click="openAgentNavigation">
+            <el-icon class="me-1"><Location /></el-icon>
+            <span>{{ $t('warehouse.navigateAgent') }}</span>
+          </el-button>
+
           <!-- 配给月份周期：APP 视口内独占一行并靠左排列，日期控件远离右边界，弹层不再越界 -->
           <div
             class="flex items-center gap-2 min-w-0 justify-start"
@@ -124,7 +129,7 @@
         </div>
       </div>
 
-      <div v-if="showCitizenQuotaDetails" class="space-y-3" :class="isAppMode ? '!space-y-2' : ''">
+      <div v-if="props.showCitizenQuotaDetails" class="space-y-3" :class="isAppMode ? '!space-y-2' : ''">
         <div class="flex items-center justify-between flex-wrap gap-2" :class="isAppMode ? 'flex-col items-start gap-1' : ''">
           <h4
             class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5"
@@ -1229,10 +1234,10 @@ import {
   getAgentAllocationTasks,
   decomposePlanToAgents
 } from '../../../api/warehouse.js';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { unitLabel } from '../../../utils/dataLabels.js';
-import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled } from '@element-plus/icons-vue';
+import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled, Location } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['go-purchase']);
 const props = defineProps({
@@ -1604,6 +1609,23 @@ const memberCount = computed(() => {
   }
   return info?.memberCount || 4;
 });
+
+async function openAgentNavigation() {
+  const location = [citizenFamilyInfo.value?.agentAddress, citizenFamilyInfo.value?.agentName, citizenFamilyInfo.value?.district, citizenFamilyInfo.value?.province]
+    .filter(Boolean)
+    .join(', ');
+  try {
+    await ElMessageBox.confirm(
+      t('warehouse.navigationConfirm', { location }),
+      t('warehouse.navigationTitle'),
+      { confirmButtonText: t('warehouse.openNavigation'), cancelButtonText: t('common.cancel'), type: 'info' }
+    );
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } catch {
+    // The dialog was dismissed.
+  }
+}
 
 const citizenQuotaItems = computed(() => {
   const n = memberCount.value;
