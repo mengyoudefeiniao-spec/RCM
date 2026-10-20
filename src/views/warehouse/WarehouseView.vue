@@ -48,42 +48,42 @@
         <!-- 仓储执行与库存台账：供管理人员、代理端按职责使用 -->
         <el-tab-pane v-if="isAdmin" name="inboundOutbound">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><Box /></el-icon><span class="font-bold">{{ $t('warehouse.inboundOutbound') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Box /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.inboundOutbound') }}</span></div>
           </template>
           <div class="py-4"><InboundOutboundTab /></div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isAdmin || isAgent" name="inventoryLedger">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><DataAnalysis /></el-icon><span class="font-bold">{{ $t('warehouse.inventoryLedger') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><DataAnalysis /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.inventoryLedger') }}</span></div>
           </template>
           <div class="py-4"><MultiDimInventoryTab /></div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isAdmin || isAgent" name="deliveryVerification">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><Van /></el-icon><span class="font-bold">{{ $t('warehouse.deliveryVerification') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Van /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.deliveryVerification') }}</span></div>
           </template>
           <div class="py-4"><DeliveryVerificationTab /></div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isAgent" name="citizenClaim">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><ShoppingCart /></el-icon><span class="font-bold">{{ $t('warehouse.citizenClaim') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><ShoppingCart /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.citizenClaim') }}</span></div>
           </template>
           <div class="py-4"><CitizenClaimTab /></div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isAdmin" name="traceability">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><Connection /></el-icon><span class="font-bold">{{ $t('warehouse.traceability') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Connection /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.traceability') }}</span></div>
           </template>
           <div class="py-4"><TraceabilityAnalysisTab /></div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isAdmin" name="securityAudit">
           <template #label>
-            <div class="flex items-center gap-1.5 py-1"><el-icon><Lock /></el-icon><span class="font-bold">{{ $t('warehouse.securityAudit') }}</span></div>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Lock /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.securityAudit') }}</span></div>
           </template>
           <div class="py-4"><SecurityAuditTab /></div>
         </el-tab-pane>
@@ -173,5 +173,19 @@ function refreshAll() {
   font-size: 13px;
   padding: 0 16px;
   height: 44px;
+}
+
+.warehouse-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgb(201 161 59 / 45%);
+  border-radius: 4px;
+  background: linear-gradient(135deg, #fff9e8, #f7e8bd);
+  color: #8a6818;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  padding: 0 4px;
 }
 </style>
