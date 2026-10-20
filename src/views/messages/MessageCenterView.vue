@@ -42,18 +42,20 @@
 
     <el-dialog v-model="composeVisible" :title="t('mail.newMessage')" width="min(1000px, 96vw)" top="4vh" @opened="focusEditor">
       <div class="compose-form max-h-[78vh] overflow-y-auto">
-        <div class="mb-3 flex items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.category') }}</span><el-select v-model="draft.category" class="!w-56"><el-option value="admin" :label="t('mail.admin')"/><el-option value="system" :label="t('mail.system')"/></el-select></div>
-        <div class="mb-3 flex flex-wrap items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.to') }}</span><el-select v-model="draft.recipientType" class="!w-64" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select></div>
-        <div v-if="['citizens','agents'].includes(draft.recipientType)" class="mb-3 grid grid-cols-1 gap-3 border-b border-[#EDF0EE] pb-4 md:grid-cols-3">
-          <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.province || region.name"/></el-select></el-form-item>
-          <el-form-item :label="t('mail.agent')" class="!mb-0"><el-select v-model="draft.agentId" class="w-full" :placeholder="t('mail.chooseAgent')" @change="changeAgent"><el-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id" :label="agent.name"/></el-select></el-form-item>
-          <el-form-item :label="t('mail.rationSite')" class="!mb-0"><el-select v-model="draft.siteId" class="w-full" :placeholder="t('mail.chooseSite')" @change="loadFamilies"><el-option v-for="site in siteOptions" :key="site.id" :value="site.id" :label="site.storeName || site.centerName || site.name"/></el-select></el-form-item>
-          <el-form-item v-if="draft.recipientType === 'citizens'" :label="t('mail.selectRecipients')" class="!mb-0 md:col-span-3"><el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.chooseUsers')"><el-option v-for="family in familyOptions" :key="family.rationCardNo" :value="family.rationCardNo" :label="family.headName + ' · ' + family.rationCardNo"/></el-select><el-checkbox v-model="draft.allAtSite" class="mt-2" @change="toggleAllFamilies">{{ t('mail.allAtSite') }}</el-checkbox></el-form-item>
-          <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 md:col-span-3"><el-tag v-if="draft.siteId" class="me-2">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseAgent') }}</span></el-form-item>
+        <div class="compose-row"><label class="compose-label">{{ t('mail.category') }}</label><el-select v-model="draft.category" class="compose-control"><el-option value="admin" :label="t('mail.admin')"/><el-option value="system" :label="t('mail.system')"/></el-select></div>
+        <div class="compose-row"><label class="compose-label">{{ t('mail.to') }}</label><el-select v-model="draft.recipientType" class="compose-control" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select></div>
+        <div v-if="['citizens','agents'].includes(draft.recipientType)" class="recipient-fields">
+          <el-form label-position="top" class="recipient-grid">
+            <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.province || region.name"/></el-select></el-form-item>
+            <el-form-item :label="t('mail.agent')" class="!mb-0"><el-select v-model="draft.agentId" class="w-full" :placeholder="t('mail.chooseAgent')" @change="changeAgent"><el-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id" :label="agent.name"/></el-select></el-form-item>
+            <el-form-item :label="t('mail.rationSite')" class="!mb-0"><el-select v-model="draft.siteId" class="w-full" :placeholder="t('mail.chooseSite')" @change="loadFamilies"><el-option v-for="site in siteOptions" :key="site.id" :value="site.id" :label="site.storeName || site.centerName || site.name"/></el-select></el-form-item>
+            <el-form-item v-if="draft.recipientType === 'citizens'" :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.chooseUsers')"><el-option v-for="family in familyOptions" :key="family.rationCardNo" :value="family.rationCardNo" :label="family.headName + ' · ' + family.rationCardNo"/></el-select><el-checkbox v-model="draft.allAtSite" class="mt-2" @change="toggleAllFamilies">{{ t('mail.allAtSite') }}</el-checkbox></el-form-item>
+            <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><div class="flex min-h-8 items-center gap-2"><el-tag v-if="draft.siteId">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseAgent') }}</span></div></el-form-item>
+          </el-form>
         </div>
-        <div class="mb-3 flex items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.subject') }}</span><el-input v-model="draft.subject" maxlength="160" show-word-limit/></div>
+        <div class="compose-row"><label class="compose-label">{{ t('mail.subject') }}</label><el-input v-model="draft.subject" maxlength="160" show-word-limit class="compose-control"/></div>
         <div class="rich-toolbar flex flex-wrap items-center gap-1 border-x border-t border-[#DFE7E1] bg-[#F7F9F7] p-2">
-          <el-tooltip v-for="tool in editorTools" :key="tool.command" :content="t('mail.' + tool.label)"><el-button size="small" text @click="formatText(tool.command)"><el-icon><component :is="tool.icon"/></el-icon></el-button></el-tooltip>
+          <el-tooltip v-for="tool in editorTools" :key="tool.command" :content="t('mail.' + tool.label)"><el-button size="small" text class="editor-tool" :aria-label="t('mail.' + tool.label)" @click="formatText(tool.command)"><span v-if="tool.glyph" class="editor-glyph" :class="tool.glyphClass">{{ tool.glyph }}</span><el-icon v-else><component :is="tool.icon"/></el-icon></el-button></el-tooltip>
         </div>
         <div ref="editor" class="rich-editor min-h-64 border border-[#DFE7E1] px-4 py-3 text-sm leading-7 outline-none" contenteditable="true" role="textbox" aria-multiline="true" :data-placeholder="t('mail.richTextHint')" @input="updateDraftBody" @paste="pastePlainText" />
         <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -89,7 +91,7 @@ const familyOptions = computed(() => families.value);
 const selectedAgentLabel = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.name || '');
 const selectedSiteLabel = computed(() => siteOptions.value.find((item) => item.id === draft.value.siteId)?.storeName || siteOptions.value.find((item) => item.id === draft.value.siteId)?.name || '');
 const filteredItems = computed(() => items.value.filter((item) => !search.value || [item.subject, item.sender, item.bodyText, item.recipientLabel].some((value) => String(value || '').toLowerCase().includes(search.value.toLowerCase()))));
-const editorTools = [{ command: 'bold', icon: 'Bold', label: 'bold' }, { command: 'italic', icon: 'Italic', label: 'italic' }, { command: 'underline', icon: 'Underline', label: 'underline' }, { command: 'insertUnorderedList', icon: 'List', label: 'bulletList' }, { command: 'insertOrderedList', icon: 'Sort', label: 'numberedList' }, { command: 'formatBlock:h2', icon: 'Heading', label: 'heading' }, { command: 'removeFormat', icon: 'CircleClose', label: 'clearFormat' }];
+const editorTools = [{ command: 'bold', glyph: 'B', glyphClass: 'font-bold', label: 'bold' }, { command: 'italic', glyph: 'I', glyphClass: 'italic', label: 'italic' }, { command: 'underline', glyph: 'U', glyphClass: 'underline', label: 'underline' }, { command: 'insertUnorderedList', icon: 'List', label: 'bulletList' }, { command: 'insertOrderedList', icon: 'Sort', label: 'numberedList' }, { command: 'formatBlock:h2', icon: 'Document', label: 'heading' }, { command: 'removeFormat', icon: 'CircleClose', label: 'clearFormat' }];
 
 function titleOf(item) { return item.subjectKey ? t(item.subjectKey) : item.subject || ''; }
 function previewText(item) { return item.bodyText || item.body || item.subjectKey && t(item.bodyKey) || ''; }
@@ -179,6 +181,17 @@ onMounted(async () => { await load(); loadTree().catch(() => {}); });
 
 <style scoped>
 .mail-grid { display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(100vh - 190px); }
+.compose-row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: .75rem; margin-bottom: .75rem; border-bottom: 1px solid #edf0ee; padding-bottom: .75rem; }
+.compose-label { color: #526258; font-size: .875rem; font-weight: 500; line-height: 1.25rem; }
+.compose-control { width: min(100%, 24rem); }
+.recipient-fields { margin-bottom: .75rem; border-bottom: 1px solid #edf0ee; padding-bottom: 1rem; }
+.recipient-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem 1rem; }
+.recipient-grid :deep(.el-form-item__label) { color: #526258; font-size: .875rem; font-weight: 500; line-height: 1.25rem; padding-bottom: .375rem; }
+.recipient-grid :deep(.el-input__wrapper), .recipient-grid :deep(.el-select__wrapper), .compose-form :deep(.el-input__wrapper), .compose-form :deep(.el-select__wrapper) { min-height: 2.5rem; }
+.recipient-users { grid-column: 1 / -1; }
+.editor-tool { min-width: 2rem; font-size: 1rem; }
+.editor-glyph { display: inline-block; min-width: 1rem; text-align: center; }
+.compose-form { color: #34473a; font-size: .875rem; }
 .mail-list { min-height: 280px; }
 .mail-reader { min-height: 320px; }
 .rich-editor:empty::before { color: #9aa69e; content: attr(data-placeholder); pointer-events: none; }
@@ -188,4 +201,5 @@ onMounted(async () => { await load(); loadTree().catch(() => {}); });
 .mail-content :deep(blockquote) { border-inline-start: 3px solid #b6c8bb; margin: .75rem 0; padding-inline-start: 1rem; color: #66756b; }
 .mail-content :deep(a) { color: #2f7650; text-decoration: underline; }
 @media (min-width: 1024px) { .mail-grid { grid-template-columns: 210px 330px minmax(0, 1fr); } .mail-list,.mail-reader { min-height: calc(100vh - 190px); } }
+@media (max-width: 640px) { .recipient-grid { grid-template-columns: minmax(0, 1fr); } .recipient-users { grid-column: auto; } .compose-row { grid-template-columns: 4.5rem minmax(0, 1fr); } }
 </style>
