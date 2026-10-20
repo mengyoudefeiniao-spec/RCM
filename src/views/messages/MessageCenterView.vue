@@ -40,8 +40,8 @@
       </main>
     </div>
 
-    <el-dialog v-model="composeVisible" :title="t('mail.newMessage')" width="min(1180px, 97vw)" top="2vh" class="compose-dialog" @opened="focusEditor">
-      <div class="compose-form compose-canvas max-h-[88vh] overflow-y-auto">
+    <el-dialog v-model="composeVisible" :title="t('mail.newMessage')" width="min(1180px, 97vw)" top="5vh" class="compose-dialog" modal-class="notification-compose-overlay" @opened="focusEditor">
+      <div class="compose-form compose-canvas">
         <div class="compose-actions">
           <div class="flex flex-wrap items-center gap-2">
             <el-button type="primary" :loading="sending" @click="sendDraft"><el-icon><Promotion/></el-icon>{{ t('mail.send') }}</el-button>
@@ -51,7 +51,7 @@
           </div>
           <el-select v-model="draft.category" class="!w-48" :aria-label="t('mail.category')"><el-option value="admin" :label="t('mail.admin')"/><el-option value="system" :label="t('mail.system')"/></el-select>
         </div>
-        <div class="compose-row recipient-line"><label class="compose-label">{{ t('mail.to') }}</label><el-select v-model="draft.recipientType" class="compose-control" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select><span class="compose-hint">{{ t('mail.category') }}: {{ t('mail.' + draft.category) }}</span></div>
+        <div class="compose-row recipient-line"><label class="compose-label">{{ t('mail.to') }}</label><el-select v-model="draft.recipientType" class="compose-control" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select></div>
         <div v-if="['citizens','agents'].includes(draft.recipientType)" class="recipient-fields">
           <el-form label-position="top" class="recipient-grid">
             <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.province || region.name"/></el-select></el-form-item>
@@ -62,11 +62,11 @@
           </el-form>
         </div>
         <div class="compose-row subject-line"><label class="compose-label">{{ t('mail.subject') }}</label><el-input v-model="draft.subject" maxlength="160" :placeholder="t('mail.subjectPlaceholder')" show-word-limit class="compose-control"/></div>
-        <div class="attachment-row"><el-button text @click="fileInput?.click()"><el-icon><Paperclip/></el-icon>{{ t('mail.attach') }}</el-button><span class="compose-hint">{{ t('mail.attachmentLimit') }}</span><input ref="fileInput" class="hidden" type="file" multiple @change="addFiles"/><div class="flex flex-wrap gap-2"><el-tag v-for="(file,index) in draft.attachments" :key="file.name + file.size" closable @close="draft.attachments.splice(index,1)">{{ file.name }} · {{ formatSize(file.size) }}</el-tag></div></div>
+        <div class="attachment-row"><el-button text @click="fileInput?.click()"><el-icon><Paperclip/></el-icon>{{ t('mail.attach') }}</el-button><span class="compose-hint">{{ t('mail.attachmentLimit') }}</span><input ref="fileInput" class="hidden" type="file" multiple @change="addFiles"/><div class="attachment-files"><el-tag v-for="(file,index) in draft.attachments" :key="file.name + file.size" closable @close="draft.attachments.splice(index,1)"><span class="attachment-filename">{{ file.name }}</span> · {{ formatSize(file.size) }}</el-tag></div></div>
         <div class="rich-toolbar flex flex-wrap items-center gap-1 border-x border-t border-[#DFE7E1] bg-[#F7F9F7] p-2">
           <el-tooltip v-for="tool in editorTools" :key="tool.command" :content="t('mail.' + tool.label)"><el-button size="small" text class="editor-tool" :aria-label="t('mail.' + tool.label)" @click="formatText(tool.command)"><span v-if="tool.glyph" class="editor-glyph" :class="tool.glyphClass">{{ tool.glyph }}</span><el-icon v-else><component :is="tool.icon"/></el-icon></el-button></el-tooltip>
         </div>
-        <div ref="editor" class="rich-editor min-h-[22rem] border border-[#DFE7E1] px-5 py-4 text-sm leading-7 outline-none" contenteditable="true" role="textbox" aria-multiline="true" :data-placeholder="t('mail.richTextHint')" @input="updateDraftBody" @paste="pastePlainText" />
+        <div ref="editor" class="rich-editor border border-[#DFE7E1] px-5 py-3 text-sm leading-7 outline-none" contenteditable="true" role="textbox" aria-multiline="true" :data-placeholder="t('mail.richTextHint')" @input="updateDraftBody" @paste="pastePlainText" />
       </div>
     </el-dialog>
     <el-dialog v-model="previewVisible" :title="t('mail.preview')" width="min(900px, 94vw)" append-to-body>
@@ -210,22 +210,30 @@ onMounted(async () => { await load(); loadTree().catch(() => {}); });
 
 <style scoped>
 .mail-grid { display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(100vh - 190px); }
-.compose-row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: .75rem; margin-bottom: .75rem; border-bottom: 1px solid #edf0ee; padding-bottom: .75rem; }
-.compose-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: -.5rem 0 .75rem; border-bottom: 1px solid #e8ede9; padding-bottom: .875rem; }
-.recipient-line .compose-hint { margin-inline-start: auto; }
-.attachment-row { display: flex; min-height: 2.75rem; flex-wrap: wrap; align-items: center; gap: .75rem; border-bottom: 1px solid #edf0ee; padding: .25rem 0 .625rem; }
-.compose-canvas { padding: .25rem .125rem; }
-.compose-dialog :deep(.el-dialog__body) { padding-top: .5rem; }
+:global(.notification-compose-overlay .compose-dialog) { --compose-inset: clamp(24px, 5dvh, 48px); display: flex; flex-direction: column; height: min(720px, calc(100dvh - 2 * var(--compose-inset))); margin: var(--compose-inset) auto; }
+:global(.notification-compose-overlay .compose-dialog .el-dialog__header) { flex-shrink: 0; }
+:global(.notification-compose-overlay .compose-dialog .el-dialog__body) { flex: 1; min-height: 0; overflow: hidden; padding-top: .5rem; }
+.compose-row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: .75rem; margin-bottom: .5rem; border-bottom: 1px solid #edf0ee; padding-bottom: .5rem; }
+.compose-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; border-bottom: 1px solid #e8ede9; padding-bottom: .5rem; }
+.attachment-row { display: flex; min-height: 2.5rem; align-items: center; gap: .5rem; padding-bottom: .375rem; }
+.attachment-files { display: flex; flex: 1; min-width: 0; gap: .5rem; overflow-x: auto; }
+.attachment-files :deep(.el-tag) { flex-shrink: 0; }
+.attachment-filename { display: inline-block; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.compose-canvas { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: .25rem .125rem; }
+.compose-canvas > :not(.rich-editor) { flex-shrink: 0; }
+.compose-canvas > .rich-editor { flex: 1; min-height: 100px; overflow-y: auto; }
 .compose-label { color: #526258; font-size: .875rem; font-weight: 500; line-height: 1.25rem; }
 .compose-control { width: min(100%, 24rem); }
-.recipient-fields { margin-bottom: .75rem; border-bottom: 1px solid #edf0ee; padding-bottom: 1rem; }
+.recipient-fields { margin-bottom: .5rem; border-bottom: 1px solid #edf0ee; padding-bottom: .5rem; }
 .recipient-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem 1rem; }
 .recipient-grid :deep(.el-form-item__label) { color: #526258; font-size: .875rem; font-weight: 500; line-height: 1.25rem; padding-bottom: .375rem; }
-.recipient-grid :deep(.el-input__wrapper), .recipient-grid :deep(.el-select__wrapper), .compose-form :deep(.el-input__wrapper), .compose-form :deep(.el-select__wrapper) { min-height: 2.5rem; }
+.compose-form :deep(.el-input__wrapper), .compose-form :deep(.el-select__wrapper) { min-height: 2.125rem; }
+.subject-line .compose-control { width: 100%; }
 .recipient-users { grid-column: 1 / -1; }
 .editor-tool { min-width: 2rem; font-size: 1rem; }
 .editor-tool :deep(.el-icon) { font-size: 1rem; }
-.rich-toolbar { min-height: 3rem; }
+.rich-toolbar { min-height: 2.5rem; padding-block: .25rem; }
+.rich-toolbar :deep(.el-button + .el-button) { margin-inline-start: 0; }
 .editor-glyph { display: inline-block; min-width: 1rem; text-align: center; }
 .editor-glyph.align-left { text-align: start; }
 .editor-glyph.align-center { text-align: center; }
@@ -240,5 +248,7 @@ onMounted(async () => { await load(); loadTree().catch(() => {}); });
 .mail-content :deep(blockquote) { border-inline-start: 3px solid #b6c8bb; margin: .75rem 0; padding-inline-start: 1rem; color: #66756b; }
 .mail-content :deep(a) { color: #2f7650; text-decoration: underline; }
 @media (min-width: 1024px) { .mail-grid { grid-template-columns: 210px 330px minmax(0, 1fr); } .mail-list,.mail-reader { min-height: calc(100vh - 190px); } }
-@media (max-width: 640px) { .recipient-grid { grid-template-columns: minmax(0, 1fr); } .recipient-users { grid-column: auto; } .compose-row { grid-template-columns: 4.5rem minmax(0, 1fr); } .compose-actions { align-items: stretch; flex-direction: column; } .compose-actions > .el-select { width: 100%; } .recipient-line .compose-hint { margin-inline-start: 5.25rem; } }
+@media (min-width: 1024px) { .recipient-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .recipient-users { grid-column: auto; } .recipient-users :deep(.el-checkbox) { margin-top: .125rem; } }
+@media (max-width: 640px), (max-height: 560px) { :global(.notification-compose-overlay .compose-dialog .el-dialog__body) { max-height: none !important; overflow-y: auto !important; } .compose-canvas { height: auto; min-height: 100%; } .compose-canvas > .rich-editor { flex: none; min-height: 160px; max-height: 240px; } }
+@media (max-width: 640px) { .recipient-grid { grid-template-columns: minmax(0, 1fr); } .recipient-users { grid-column: auto; } .compose-row { grid-template-columns: 4.5rem minmax(0, 1fr); } .compose-actions { align-items: stretch; flex-direction: column; } .compose-actions > .el-select { width: 100%; } .attachment-row { flex-wrap: wrap; } .attachment-files { flex-basis: 100%; } }
 </style>
