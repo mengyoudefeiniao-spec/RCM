@@ -365,6 +365,7 @@ import { ElMessage } from 'element-plus';
 import BiometricVerifyDialog from './BiometricVerifyDialog.vue';
 import RemoteVerifyDialog from './RemoteVerifyDialog.vue';
 import { demoSubStep, setDemoStep } from '../../utils/demoState.js';
+import { readRegistrationImage, saveRegistrationArchive } from '../../utils/memberRegistration.js';
 import {
   Document,
   Edit,
@@ -393,6 +394,9 @@ watch(() => props.modelValue, (val) => {
   if (val) {
     // 弹窗打开时重置状态
     currentStep.value = 0;
+    registrationMaterials.value = {};
+    biometricPassed.value = false;
+    remotePassed.value = false;
     if (props.demoMode) {
       setDemoStep('step1_2');
     }
@@ -410,6 +414,7 @@ const hasUploadedPhoto = ref(false);
 const ocrExtracted = ref(false);
 const isValidCard = ref(false);
 const validationNotice = ref('');
+const registrationMaterials = ref({});
 
 const ocrData = reactive({
   paperCardNo: '',
@@ -428,11 +433,14 @@ function triggerPhotoCapture() {
   }
 }
 
-function handleFileChange(event) {
+async function handleFileChange(event) {
   const file = event.target.files?.[0];
-  if (file || true) {
-    // 用户拍照或选图后，立即默认自动执行 OCR 解析与存根校验，无需再次点击
-    executeAutoOcrProcess(false);
+  if (!file) return;
+  try {
+    registrationMaterials.value.paperCardImage = await readRegistrationImage(file);
+    await executeAutoOcrProcess(false);
+  } catch {
+    ElMessage.error(t('memberRegistration.imageReadFailed'));
   }
 }
 
@@ -450,7 +458,7 @@ async function executeAutoOcrProcess(mockInvalid = false) {
   validationNotice.value = '';
 
   try {
-    const res = await ocrScanPaperCard({ mockInvalid });
+    const res = await ocrScanPaperCard({ mockInvalid, paperCardImage: registrationMaterials.value.paperCardImage });
     Object.assign(ocrData, res);
     ocrExtracted.value = true;
     isValidCard.value = !!res.isValid;
@@ -599,8 +607,15 @@ const biometricPassed = ref(false);
 const remotePassed = ref(false);
 const registering = ref(false);
 
-function onBiometricSuccess() {
+function onBiometricSuccess(payload) {
   biometricPassed.value = true;
+  registrationMaterials.value = {
+    ...registrationMaterials.value,
+    faceImage: payload?.faceImage || '',
+    identityFrontImage: payload?.identityFrontImage || '',
+    identityBackImage: payload?.identityBackImage || '',
+    verifiedAt: payload?.verifiedAt || new Date().toISOString()
+  };
   ElMessage.success(t('register.msgBiometricDone'));
 }
 
@@ -612,11 +627,28 @@ function onRemoteSuccess() {
 async function handleCompleteRegistration() {
   registering.value = true;
   try {
+    const materials = {
+      ...registrationMaterials.value,
+      nationalId: registerForm.nationalId,
+      paperCardNo: registerForm.paperCardNo,
+      registeredAt: new Date().toISOString(),
+      biometricVerified: biometricPassed.value,
+      identityInfo: { name: registerForm.headName, nationalId: registerForm.nationalId, phone: registerForm.phone }
+    };
     const res = await registerCitizen({
       ...registerForm,
       biometricVerified: biometricPassed.value,
-      remoteVerified: remotePassed.value
+      remoteVerified: remotePassed.value,
+      registrationMaterials: materials
     });
+
+    if (import.meta.env.VITE_APP_MOCK_MODE === 'true') {
+      try {
+        await saveRegistrationArchive({ ...materials, cardNo: res.cardNo });
+      } catch {
+        ElMessage.warning(t('memberRegistration.archiveSaveFailed'));
+      }
+    }
 
     ElMessage.success(res.message || t('register.msgRegisterSuccessFallback'));
 

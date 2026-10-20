@@ -81,7 +81,7 @@
                   <span class="w-2 h-2 rounded-full bg-[#3E9B68] animate-pulse"></span>
                   {{ $t('admin.syncedWithCitizenApp') || '与公民APP家庭成员实时联通' }}
                 </span>
-                <span class="text-[#8A9A8F] font-mono text-[11px]">RC-10029381</span>
+                <span class="text-[#8A9A8F] font-mono text-[11px]">{{ currentCardFamily?.cardNo || currentCardFamily?.rationCardNo || '—' }}</span>
               </div>
             </div>
 
@@ -135,7 +135,7 @@
               </div>
 
               <!-- 配给卡数据表格 (自适应占比优化) -->
-              <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs">
+              <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs card-ledger-table" @row-click="openCardMembersDrawer">
                 <el-table-column prop="cardNo" :label="$t('admin.cardNo') || '配给卡号'" width="160" fixed>
                   <template #default="{ row }">
                     <span class="font-mono font-bold text-[#326445]">{{ row.cardNo }}</span>
@@ -186,7 +186,7 @@
                           type="info"
                           plain
                           class="hover:scale-110 transition-transform shadow-2xs"
-                          @click="openCardMembersDrawer(row)"
+                          @click.stop="openCardMembersDrawer(row)"
                         >
                           <el-icon><User /></el-icon>
                         </el-button>
@@ -204,7 +204,7 @@
                           type="danger"
                           plain
                           class="hover:scale-110 transition-transform shadow-2xs"
-                          @click="openMemberFreezeDialog(row)"
+                          @click.stop="openMemberFreezeDialog(row)"
                         >
                           <el-icon><Lock /></el-icon>
                         </el-button>
@@ -218,7 +218,7 @@
                           type="warning"
                           plain
                           class="hover:scale-110 transition-transform shadow-2xs"
-                          @click="handleReissueCard(row)"
+                          @click.stop="handleReissueCard(row)"
                         >
                           <el-icon class="rtl-mirror-icon"><RefreshRight /></el-icon>
                         </el-button>
@@ -252,11 +252,11 @@
                   </div>
                   <div>
                     <div class="font-bold text-[#1F3326] text-sm flex items-center gap-2">
-                      <span>{{ formatHeadName(currentCardFamily?.headName || '艾哈迈德·哈桑·萨利赫') }}</span>
+                      <span>{{ formatHeadName(currentCardFamily?.headName) || '—' }}</span>
                       <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">
-                        {{ currentCardFamily?.rationCardNo || currentCardFamily?.cardNo || 'RC-10029381' }}
+                        {{ currentCardFamily?.cardNo || currentCardFamily?.rationCardNo || '—' }}
                       </el-tag>
-                      <span class="text-xs font-normal text-[#58685D] font-mono">({{ currentCardFamily?.familyCode || 'FAM-BAG-08832' }})</span>
+                      <span v-if="currentCardFamily?.familyCode" class="text-xs font-normal text-[#58685D] font-mono">({{ currentCardFamily.familyCode }})</span>
                     </div>
                     <div class="text-[11px] text-[#58685D] mt-0.5">
                       {{ $t('admin.linkedAgentBranch') || '所属定点分部' }}: {{ formatDistrict(currentCardFamily?.district) }} · {{ formatProvince(currentCardFamily?.province) }}
@@ -331,8 +331,9 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column :label="$t('admin.actions') || '操作'" width="90" align="center" fixed="right">
+                <el-table-column :label="$t('admin.actions') || '操作'" width="150" align="center" fixed="right">
                   <template #default="{ row }">
+                    <el-button size="small" type="primary" link @click="viewMemberRegistration(row)">{{ $t('memberRegistration.view') }}</el-button>
                     <el-button
                       size="small"
                       :type="row.status === '已冻结' || row.status === 'Frozen' ? 'success' : 'danger'"
@@ -1229,6 +1230,11 @@
         <el-button type="primary" :loading="warehouseSaving" @click="saveWarehouse">确认提交</el-button>
       </template>
     </el-dialog>
+    <MemberRegistrationDialog
+      v-model="memberRegistrationVisible"
+      :member="selectedRegistrationMember"
+      :family="currentCardFamily"
+    />
   </div>
 </template>
 
@@ -1241,6 +1247,7 @@ import { localizeFreezeReason, resolveFreezeReasonCode } from '../../utils/freez
 import { useAuthStore } from '../../stores/auth.js';
 import ReconciliationTab from './components/ReconciliationTab.vue';
 import OfficialRegulationsTab from './components/OfficialRegulationsTab.vue';
+import MemberRegistrationDialog from './components/MemberRegistrationDialog.vue';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
@@ -1341,17 +1348,11 @@ function formatMemberGender(gender) {
 }
 
 function openCardMembersDrawer(row) {
-  const matchedCard = cardsList.value.find(c => c.cardNo === row.cardNo);
-  const matchedFam = familiesList.value.find(f => f.cardNo === row.cardNo || f.familyCode === row.familyCode);
-  const memList = (matchedCard?.members && matchedCard.members.length > 0)
-    ? matchedCard.members
-    : ((matchedFam?.members && matchedFam.members.length > 0) ? matchedFam.members : (row.members || []));
-  selectedFamilyForMembers.value = {
-    familyCode: matchedFam?.familyCode || row.familyCode || row.cardNo,
-    headName: formatHeadName(row.headName),
-    members: memList
-  };
-  membersDialogVisible.value = true;
+  selectedCardNo.value = row.cardNo;
+  memberPage.value = 1;
+  memberRegistrationVisible.value = false;
+  selectedRegistrationMember.value = null;
+  cardViewMode.value = 'members';
 }
 
 const currentRoleTitle = computed(() => {
@@ -1409,7 +1410,7 @@ function openMemberFreezeDialog(row) {
 }
 
 function openMemberFreezeDialogFromMember(memberRow) {
-  const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
+  const currentCard = cardsList.value.find(c => c.cardNo === currentCardFamily.value?.cardNo);
   selectedCardForFreeze.value = currentCard;
   selectedMemberToFreeze.value = memberRow;
   freezeForm.reasonType = resolveFreezeReasonCode(memberRow.freezeReason) || memberRow.freezeReason || 'commercial';
@@ -1656,18 +1657,23 @@ const paginatedCards = computed(() => {
 // 1.1 在册家庭成员清单（与公民端移动视口 Family Members 1:1 镜像联动）
 // ----------------------------------------------------
 const cardViewMode = ref('cards'); // 'cards' | 'members'
+const selectedCardNo = ref('');
+const memberRegistrationVisible = ref(false);
+const selectedRegistrationMember = ref(null);
 const memberPage = ref(1);
 const memberPageSize = ref(10);
 
 const currentCardFamily = computed(() => {
-  const currentCard = cardsList.value.find(c => c.cardNo === 'RC-10029381') || cardsList.value[0];
-  const matchedFam = familiesList.value.find(f => f.cardNo === (currentCard?.cardNo || 'RC-10029381'));
-  return matchedFam || currentCard || null;
+  const currentCard = cardsList.value.find(c => c.cardNo === selectedCardNo.value) || cardsList.value[0];
+  if (!currentCard) return null;
+  const matchedFam = familiesList.value.find(f => (f.cardNo || f.rationCardNo) === currentCard.cardNo);
+  return { ...matchedFam, ...currentCard, familyCode: matchedFam?.familyCode || currentCard.familyCode };
 });
 
 const currentFamilyMembers = computed(() => {
-  const targetCard = cardsList.value.find(c => c.cardNo === 'RC-10029381');
-  const targetFam = familiesList.value.find(f => f.cardNo === 'RC-10029381');
+  const cardNo = currentCardFamily.value?.cardNo;
+  const targetCard = cardsList.value.find(c => c.cardNo === cardNo);
+  const targetFam = familiesList.value.find(f => (f.cardNo || f.rationCardNo) === cardNo);
   if (targetCard && targetCard.members && targetCard.members.length > 0) {
     return targetCard.members;
   }
@@ -1676,6 +1682,11 @@ const currentFamilyMembers = computed(() => {
   }
   return [];
 });
+
+function viewMemberRegistration(member) {
+  selectedRegistrationMember.value = { ...member, name: formatMemberName(member.name), relation: formatMemberRelation(member.relation), gender: formatMemberGender(member.gender) };
+  memberRegistrationVisible.value = true;
+}
 
 const paginatedMembers = computed(() => {
   const start = (memberPage.value - 1) * memberPageSize.value;
@@ -2509,6 +2520,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.card-ledger-table :deep(.el-table__row) {
+  cursor: pointer;
+}
 /* ========================================================
  * ht.iq 官方绿色系 UI 风格定制
  * ======================================================== */

@@ -215,6 +215,13 @@ const displayName = computed(() => props.userName || t('register.defaultUserName
 const visible = ref(props.modelValue);
 watch(() => props.modelValue, (val) => {
   visible.value = val;
+  if (val) {
+    faceCaptured.value = false;
+    faceImage.value = '';
+    cardFrontCaptured.value = false;
+    cardBackCaptured.value = false;
+    verificationPassed.value = false;
+  }
   if (val && props.demoMode) {
     // 演示模式下不自动就绪：引导用户依次完成 3 项验证（人脸/卡正面/卡芯片）
   }
@@ -293,7 +300,7 @@ async function handleExecuteVerify() {
     setTimeout(() => {
       visible.value = false;
       emit('update:modelValue', false);
-      emit('success', res);
+      emit('success', { ...res, faceImage: faceImage.value, verifiedAt: new Date().toISOString() });
     }, 600);
   } catch (e) {
     ElMessage.error(t('register.bio.msgVerifyFail'));
