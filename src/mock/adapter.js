@@ -1,6 +1,7 @@
 // 中文测试数据源
 import { i18n } from '../locales/index.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
+import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -593,12 +594,26 @@ export async function mockDispatch(config) {
       if (!profile.permissionCodes.includes(requiredCode)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
     }
     const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
-    if (url.endsWith('/messages/inbox') && method === 'GET') return createResponse(messages.filter((item) => item.audience?.includes(currentRole)).map((item) => ({ ...item, read: (item.readBy || []).includes(currentRole) })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    if (url.endsWith('/messages/recipients/tree') && method === 'GET') return createResponse(MOCK_AGENT_HIERARCHY_TREE);
+    const attachmentMatch = url.match(/\/messages\/attachments\/([^/?]+)/);
+    if (attachmentMatch && method === 'GET') return createResponse(await getMockMessageAttachment(decodeURIComponent(attachmentMatch[1])));
+    if (url.endsWith('/messages/inbox') && method === 'GET') {
+      const userProfile = profile;
+      const identity = [userProfile.id, userProfile.username, userProfile.cardNo, userProfile.rationCardNo, userProfile.agentCode].filter(Boolean).map(String);
+      const inbox = messages.filter((item) => item.audience?.includes(currentRole) && (!item.recipientIds?.length || item.recipientIds.some((id) => identity.includes(String(id)) || (currentRole === 'agent' && id === 'FA-00128'))));
+      return createResponse(inbox.map((item) => ({ ...item, read: (item.readBy || []).includes(currentRole) })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    }
     if (url.endsWith('/messages/sent') && method === 'GET') return createResponse(messages.filter((item) => item.senderRole === currentRole).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     if (url.endsWith('/messages') && method === 'POST') {
       if (!Array.isArray(profile.permissionCodes) && !['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const isMultipart = typeof FormData !== 'undefined' && data instanceof FormData;
+      const messageData = isMultipart ? Object.fromEntries([...data.entries()].filter(([key]) => key !== 'attachments')) : { ...data };
+      if (typeof messageData.recipientIds === 'string') { try { messageData.recipientIds = JSON.parse(messageData.recipientIds); } catch { messageData.recipientIds = []; } }
+      const recipientType = messageData.recipientType || messageData.recipient || 'everyone';
       const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], everyone: ['citizen', 'agent', 'admin', 'minister_center', 'deputy_minister', 'director_planning'] };
-      const next = { ...data, id: `msg-${crypto.randomUUID()}`, senderRole: currentRole, sender: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', audience: audienceMap[data.recipient] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
+      const files = isMultipart ? data.getAll('attachments') : [];
+      const attachments = await Promise.all(files.filter((file) => file instanceof File).map(async (file) => ({ id: await saveMockMessageAttachment(file), name: file.name, size: file.size, type: file.type })));
+      const next = { ...messageData, recipientType, attachments, id: `msg-${crypto.randomUUID()}`, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
       messages.unshift(next); writeCenter('messages', messages); return createResponse(next);
     }
     const readMatch = url.match(/\/messages\/([^/?]+)\/read$/);

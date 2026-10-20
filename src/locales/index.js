@@ -15,6 +15,7 @@ import myMessages from './my.js';
 import agentDeliveryMessages from './agentDelivery.js';
 import adminCenterMessages from './adminCenter.js';
 import systemExtras from './systemExtras.js';
+import mailCenterMessages from './mailCenter.js';
 
 // ku/kmr is Kurmanji (Latin script); the existing Arabic-script catalog is Sorani.
 // sdh is recorded here for future catalogs, but is not offered without translations.
@@ -40,10 +41,10 @@ export const i18n = createI18n({
   locale: savedLang,
   fallbackLocale: 'zh',
   messages: {
-    zh: { ...zh, my: myMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh },
-    en: { ...en, my: myMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en },
-    ar: { ...ar, my: myMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar },
-    ckb: { ...ckb, my: myMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb }
+    zh: { ...zh, my: myMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh, ...mailCenterMessages.zh },
+    en: { ...en, my: myMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en, ...mailCenterMessages.en },
+    ar: { ...ar, my: myMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar, ...mailCenterMessages.ar },
+    ckb: { ...ckb, my: myMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb, ...mailCenterMessages.ckb }
   }
 });
 

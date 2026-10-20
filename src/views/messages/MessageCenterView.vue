@@ -1,54 +1,191 @@
 <template>
-  <section class="mx-auto max-w-[1320px] space-y-4 p-3 sm:p-5">
-    <div class="rounded-xl border border-[#C7E0CE] bg-white p-5 shadow-sm"><h1 class="text-xl font-bold text-[#24483A]">{{ t('messages.title') }}</h1><p class="mt-1 text-sm text-[#68796E]">{{ t('messages.subtitle') }}</p></div>
-    <el-tabs v-model="tab" class="rounded-xl border border-[#D9E5DB] bg-white px-4 pt-2 shadow-sm" @tab-change="load">
-      <el-tab-pane :label="t('messages.inbox')" name="inbox"/><el-tab-pane v-if="canSend" :label="t('messages.compose')" name="compose"/><el-tab-pane v-if="canSend" :label="t('messages.sent')" name="sent"/>
-      <div v-if="tab === 'compose'" class="max-w-3xl py-4">
-        <el-form :model="form" label-position="top">
-          <el-form-item :label="t('messages.category')"><el-select v-model="form.category" class="w-full"><el-option value="admin" :label="t('messages.admin')"/><el-option value="system" :label="t('messages.system')"/></el-select></el-form-item>
-          <el-form-item :label="t('messages.recipient')"><el-select v-model="form.recipient" class="w-full"><el-option value="citizens" :label="t('messages.allCitizens')"/><el-option value="agents" :label="t('messages.allAgents')"/><el-option value="web" :label="t('messages.allWebUsers')"/><el-option value="everyone" :label="t('messages.everyone')"/></el-select></el-form-item>
-          <el-form-item :label="t('messages.subject')"><el-input v-model="form.subject" maxlength="120" show-word-limit/></el-form-item>
-          <el-form-item :label="t('messages.body')"><el-input v-model="form.body" type="textarea" :rows="6" maxlength="4000" show-word-limit/></el-form-item>
-          <el-button type="primary" :loading="sending" @click="submit">{{ t('messages.send') }}</el-button>
-        </el-form>
+  <section class="mail-shell p-2 sm:p-4">
+    <div class="mail-toolbar flex flex-wrap items-center justify-between gap-3 rounded-t-xl border border-[#DCE5DF] bg-white px-4 py-3">
+      <div class="flex items-center gap-3"><h1 class="text-lg font-bold text-[#24372C]">{{ t('mail.title') }}</h1><el-tag v-if="messageStore.unreadCount" size="small" round>{{ t('mail.unreadCount', { count: messageStore.unreadCount }) }}</el-tag></div>
+      <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"/><el-button circle :title="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
+    </div>
+
+    <div class="mail-grid overflow-hidden rounded-b-xl border-x border-b border-[#DCE5DF] bg-white">
+      <aside class="mail-folders border-b border-[#E7ECE8] bg-[#F7F9F7] p-3 lg:border-b-0 lg:border-e">
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#819087]">{{ t('mail.title') }}</div>
+        <button v-for="folder in folders" :key="folder.id" type="button" class="mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm transition-colors" :class="activeFolder === folder.id ? 'bg-[#E6F1E9] font-semibold text-[#28563B]' : 'text-[#526258] hover:bg-[#EDF2EE]'" @click="switchFolder(folder.id)">
+          <el-icon><component :is="folder.icon" /></el-icon><span class="flex-1">{{ t('mail.' + folder.id) }}</span><span v-if="folder.id === 'inbox' && messageStore.unreadCount" class="text-xs font-bold">{{ messageStore.unreadCount }}</span>
+        </button>
+      </aside>
+
+      <div class="mail-list border-b border-[#E7ECE8] lg:border-b-0 lg:border-e">
+        <div v-if="loading" class="p-4"><el-skeleton :rows="5" animated /></div>
+        <div v-else-if="filteredItems.length" class="max-h-[calc(100vh-230px)] overflow-y-auto">
+          <button v-for="item in filteredItems" :key="item.id" type="button" class="w-full border-b border-[#EEF1EF] px-4 py-3.5 text-start transition-colors hover:bg-[#F6F9F6]" :class="selected?.id === item.id ? 'bg-[#F0F6F1]' : ''" @click="selectMessage(item)">
+            <div class="flex items-start justify-between gap-2"><div class="min-w-0 truncate text-sm" :class="!item.read && activeFolder === 'inbox' ? 'font-bold text-[#24372C]' : 'font-medium text-[#46584D]'">{{ activeFolder === 'sent' ? t('mail.to') + ': ' + recipientSummary(item) : item.sender }}</div><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
+            <div class="mt-1 flex items-center gap-2"><span class="min-w-0 flex-1 truncate text-sm text-[#53635A]">{{ titleOf(item) || t('mail.emptyBody') }}</span><span v-if="item.attachments?.length" class="text-[#819087]" :title="t('mail.attachments')"><el-icon><Paperclip /></el-icon></span><span v-if="!item.read && activeFolder === 'inbox'" class="h-2 w-2 shrink-0 rounded-full bg-[#3D8A58]"/></div>
+            <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
+          </button>
+        </div>
+        <el-empty v-else :description="t('mail.noMail')" :image-size="76" />
       </div>
-      <div v-else class="py-4">
-        <el-table :data="items" v-loading="loading" row-key="id" @row-click="openDetail">
-          <el-table-column :label="t('messages.category')" width="175"><template #default="{ row }">{{ categoryLabel(row) }}</template></el-table-column>
-          <el-table-column :label="t('messages.subject')" min-width="220"><template #default="{ row }"><span :class="!row.read && tab === 'inbox' ? 'font-bold text-[#24483A]' : ''">{{ titleOf(row) }}</span><el-tag v-if="!row.read && tab === 'inbox'" class="ms-2" size="small" type="danger">{{ t('messages.unread') }}</el-tag></template></el-table-column>
-          <el-table-column :label="t('messages.sender')" prop="sender" min-width="140"/><el-table-column :label="t('messages.sentAt')" min-width="170"><template #default="{ row }">{{ formatTime(row.createdAt) }}</template></el-table-column>
-          <el-table-column :label="t('common.actions')" width="130"><template #default="{ row }"><el-button link type="primary" @click.stop="openDetail(row)">{{ t('common.detail') }}</el-button></template></el-table-column>
-          <template #empty><el-empty :description="t('messages.empty')"/></template>
-        </el-table>
+
+      <main class="mail-reader min-w-0 p-4 sm:p-6">
+        <template v-if="selected">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDEA] pb-4">
+            <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && activeFolder === 'inbox'" size="small" type="success">{{ t('mail.unread') }}</el-tag></div>
+            <div class="flex items-center gap-2"><el-button v-if="canSend && activeFolder === 'inbox'" size="small" @click="replyTo(selected)"><el-icon><Promotion /></el-icon>{{ t('mail.reply') }}</el-button></div>
+          </div>
+          <h2 class="mb-5 break-words text-xl font-bold leading-8 text-[#26382D]">{{ titleOf(selected) }}</h2>
+          <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]"><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.from') }}:</b>{{ selected.sender }}</span><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.to') }}:</b>{{ recipientSummary(selected) }}</span><span>{{ fullDate(selected.createdAt) }}</span></div>
+          <article class="mail-content min-h-24 break-words text-sm leading-7 text-[#34473A]" v-html="safeBody(selected)" />
+          <div v-if="selected.attachments?.length" class="mt-8 border-t border-[#E8EDEA] pt-4"><h3 class="mb-3 text-sm font-semibold text-[#43564A]">{{ t('mail.attachments') }} ({{ selected.attachments.length }})</h3><div class="flex flex-wrap gap-2"><button v-for="attachment in selected.attachments" :key="attachment.id" type="button" class="flex max-w-full items-center gap-2 rounded-lg border border-[#DCE5DF] px-3 py-2 text-start text-sm hover:bg-[#F5F8F5]" @click="downloadAttachment(attachment)"><el-icon class="shrink-0 text-[#548163]"><Paperclip /></el-icon><span class="max-w-64 truncate">{{ attachment.name }}</span><span class="shrink-0 text-xs text-[#86938B]">{{ formatSize(attachment.size) }}</span><el-icon class="shrink-0"><Download /></el-icon></button></div></div>
+        </template>
+        <div v-else class="flex min-h-[300px] items-center justify-center text-sm text-[#8A9890]">{{ t('mail.selectMail') }}</div>
+      </main>
+    </div>
+
+    <el-dialog v-model="composeVisible" :title="t('mail.newMessage')" width="min(1000px, 96vw)" top="4vh" @opened="focusEditor">
+      <div class="compose-form max-h-[78vh] overflow-y-auto">
+        <div class="mb-3 flex items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.category') }}</span><el-select v-model="draft.category" class="!w-56"><el-option value="admin" :label="t('mail.admin')"/><el-option value="system" :label="t('mail.system')"/></el-select></div>
+        <div class="mb-3 flex flex-wrap items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.to') }}</span><el-select v-model="draft.recipientType" class="!w-64" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select></div>
+        <div v-if="['citizens','agents'].includes(draft.recipientType)" class="mb-3 grid grid-cols-1 gap-3 border-b border-[#EDF0EE] pb-4 md:grid-cols-3">
+          <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.province || region.name"/></el-select></el-form-item>
+          <el-form-item :label="t('mail.agent')" class="!mb-0"><el-select v-model="draft.agentId" class="w-full" :placeholder="t('mail.chooseAgent')" @change="changeAgent"><el-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id" :label="agent.name"/></el-select></el-form-item>
+          <el-form-item :label="t('mail.rationSite')" class="!mb-0"><el-select v-model="draft.siteId" class="w-full" :placeholder="t('mail.chooseSite')" @change="loadFamilies"><el-option v-for="site in siteOptions" :key="site.id" :value="site.id" :label="site.storeName || site.centerName || site.name"/></el-select></el-form-item>
+          <el-form-item v-if="draft.recipientType === 'citizens'" :label="t('mail.selectRecipients')" class="!mb-0 md:col-span-3"><el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.chooseUsers')"><el-option v-for="family in familyOptions" :key="family.rationCardNo" :value="family.rationCardNo" :label="family.headName + ' · ' + family.rationCardNo"/></el-select><el-checkbox v-model="draft.allAtSite" class="mt-2" @change="toggleAllFamilies">{{ t('mail.allAtSite') }}</el-checkbox></el-form-item>
+          <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 md:col-span-3"><el-tag v-if="draft.siteId" class="me-2">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseAgent') }}</span></el-form-item>
+        </div>
+        <div class="mb-3 flex items-center gap-2 border-b border-[#EDF0EE] pb-3"><span class="w-20 shrink-0 text-sm text-[#76847B]">{{ t('mail.subject') }}</span><el-input v-model="draft.subject" maxlength="160" show-word-limit/></div>
+        <div class="rich-toolbar flex flex-wrap items-center gap-1 border-x border-t border-[#DFE7E1] bg-[#F7F9F7] p-2">
+          <el-tooltip v-for="tool in editorTools" :key="tool.command" :content="t('mail.' + tool.label)"><el-button size="small" text @click="formatText(tool.command)"><el-icon><component :is="tool.icon"/></el-icon></el-button></el-tooltip>
+        </div>
+        <div ref="editor" class="rich-editor min-h-64 border border-[#DFE7E1] px-4 py-3 text-sm leading-7 outline-none" contenteditable="true" role="textbox" aria-multiline="true" :data-placeholder="t('mail.richTextHint')" @input="updateDraftBody" @paste="pastePlainText" />
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2"><el-button size="small" @click="fileInput?.click()"><el-icon><Paperclip/></el-icon>{{ t('mail.attach') }}</el-button><span class="text-xs text-[#859189]">{{ t('mail.attachments') }} · 10 MB</span><input ref="fileInput" class="hidden" type="file" multiple @change="addFiles"/></div>
+          <div class="flex flex-wrap gap-2"><el-tag v-for="(file,index) in draft.attachments" :key="file.name + file.size" closable @close="draft.attachments.splice(index,1)">{{ file.name }} · {{ formatSize(file.size) }}</el-tag></div>
+        </div>
       </div>
-    </el-tabs>
-    <el-dialog v-model="detailVisible" :title="t('messages.detail')" width="min(620px, 94vw)">
-      <template v-if="selected"><div class="space-y-4"><div class="flex flex-wrap gap-2"><el-tag>{{ categoryLabel(selected) }}</el-tag><el-tag v-if="selected.read" type="success">{{ t('messages.read') }}</el-tag></div><h2 class="text-lg font-bold text-[#24483A]">{{ titleOf(selected) }}</h2><p class="whitespace-pre-wrap leading-7 text-[#46584D]">{{ bodyOf(selected) }}</p><div class="border-t pt-3 text-xs text-[#829087]">{{ selected.sender }} · {{ formatTime(selected.createdAt) }}</div></div></template>
-      <template #footer><el-button @click="detailVisible = false">{{ t('messages.close') }}</el-button><el-button type="primary" @click="goRecord">{{ t('messages.viewDetails') }}</el-button></template>
+      <template #footer><div class="flex items-center justify-between"><el-button @click="composeVisible = false">{{ t('mail.discard') }}</el-button><el-button type="primary" :loading="sending" @click="sendDraft"><el-icon><Promotion/></el-icon>{{ t('mail.send') }}</el-button></div></template>
     </el-dialog>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { getMessages, sendMessage } from '../../api/adminCenter.js';
+import { getAgentFamilies, getAgentHierarchyTree } from '../../api/agent.js';
+import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
-const { t } = useI18n(), route = useRoute(), router = useRouter(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
-const tab = ref('inbox'), items = ref([]), loading = ref(false), sending = ref(false), selected = ref(null), detailVisible = ref(false);
-const form = ref({ category: 'admin', recipient: 'citizens', subject: '', body: '' });
+
+const { t } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
+const activeFolder = ref('inbox'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), sending = ref(false);
+const recipientTree = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
+const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
 const canSend = computed(() => authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('messages.send'));
-function titleOf(item) { return item.subjectKey ? t(item.subjectKey) : item.subject; }
-function bodyOf(item) { return item.bodyKey ? t(item.bodyKey) : item.body; }
-function categoryLabel(item) { return t(item.category === 'system' ? 'messages.system' : 'messages.admin'); }
-function formatTime(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'; }
-async function load() { if (tab.value === 'compose') return; loading.value = true; try { items.value = await getMessages(tab.value); if (tab.value === 'inbox') { messageStore.inbox = items.value; } } finally { loading.value = false; } }
-async function openDetail(item) { selected.value = item; detailVisible.value = true; if (tab.value === 'inbox' && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
-function goRecord() { if (!selected.value) return; const id = selected.value.id; detailVisible.value = false; router.push({ path: '/messages', query: { detail: id } }); }
-async function submit() { if (!form.value.subject.trim() || !form.value.body.trim()) { ElMessage.warning(t('messages.required')); return; } sending.value = true; try { await sendMessage({ ...form.value, subject: form.value.subject.trim(), body: form.value.body.trim() }); ElMessage.success(t('messages.sentSuccess')); form.value = { category: 'admin', recipient: 'citizens', subject: '', body: '' }; tab.value = 'sent'; await load(); } finally { sending.value = false; } }
-watch(() => route.query.detail, async (id) => { if (!id) return; await load(); const found = items.value.find((item) => item.id === id); if (found) openDetail(found); }, { immediate: true });
-onMounted(load);
+const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : [])]);
+const regionOptions = computed(() => recipientTree.value);
+const agentOptions = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || []);
+const siteOptions = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.children || []);
+const familyOptions = computed(() => families.value);
+const selectedAgentLabel = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.name || '');
+const selectedSiteLabel = computed(() => siteOptions.value.find((item) => item.id === draft.value.siteId)?.storeName || siteOptions.value.find((item) => item.id === draft.value.siteId)?.name || '');
+const filteredItems = computed(() => items.value.filter((item) => !search.value || [item.subject, item.sender, item.bodyText, item.recipientLabel].some((value) => String(value || '').toLowerCase().includes(search.value.toLowerCase()))));
+const editorTools = [{ command: 'bold', icon: 'Bold', label: 'bold' }, { command: 'italic', icon: 'Italic', label: 'italic' }, { command: 'underline', icon: 'Underline', label: 'underline' }, { command: 'insertUnorderedList', icon: 'List', label: 'bulletList' }, { command: 'insertOrderedList', icon: 'Sort', label: 'numberedList' }, { command: 'formatBlock:h2', icon: 'Heading', label: 'heading' }, { command: 'removeFormat', icon: 'CircleClose', label: 'clearFormat' }];
+
+function titleOf(item) { return item.subjectKey ? t(item.subjectKey) : item.subject || ''; }
+function previewText(item) { return item.bodyText || item.body || item.subjectKey && t(item.bodyKey) || ''; }
+function safeBody(item) {
+  const html = item.bodyHtml || (item.bodyKey ? `<p>${t(item.bodyKey)}</p>` : item.body ? `<p>${item.body}</p>` : '');
+  return sanitizeHtml(html);
+}
+function categoryLabel(item) { return t(item.category === 'system' ? 'mail.system' : 'mail.admin'); }
+function recipientSummary(item) { return item.recipientLabel || (item.recipientType ? t('mail.' + item.recipientType) : t('mail.everyone')); }
+function shortDate(value) { return value ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(value)) : ''; }
+function fullDate(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : ''; }
+function formatSize(size = 0) { return size < 1024 * 1024 ? `${Math.max(1, Math.round(size / 1024))} KB` : `${(size / (1024 * 1024)).toFixed(1)} MB`; }
+function sanitizeHtml(html) {
+  const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  const allowed = new Set(['P','BR','B','STRONG','I','EM','U','UL','OL','LI','BLOCKQUOTE','H2','H3','A']);
+  const walk = (node) => [...node.children].forEach((child) => {
+    if (['SCRIPT','STYLE','IFRAME','OBJECT','SVG','MATH'].includes(child.tagName)) { child.remove(); return; }
+    walk(child);
+    if (!allowed.has(child.tagName)) { child.replaceWith(...child.childNodes); return; }
+    [...child.attributes].forEach((attribute) => {
+      if (child.tagName !== 'A' || !['href','title'].includes(attribute.name.toLowerCase())) child.removeAttribute(attribute.name);
+      else if (attribute.name.toLowerCase() === 'href' && !/^(https?:|mailto:)/i.test(attribute.value)) child.removeAttribute(attribute.name);
+    });
+    if (child.tagName === 'A') { child.setAttribute('target','_blank'); child.setAttribute('rel','noopener noreferrer'); }
+  });
+  walk(parsed.body);
+  return parsed.body.innerHTML;
+}
+async function load() { loading.value = true; try { items.value = await getMessages(activeFolder.value); if (activeFolder.value === 'inbox') messageStore.inbox = items.value; if (selected.value) selected.value = items.value.find((item) => item.id === selected.value.id) || null; } finally { loading.value = false; } }
+async function switchFolder(folder) { activeFolder.value = folder; selected.value = null; await load(); }
+async function selectMessage(item) { selected.value = item; if (activeFolder.value === 'inbox' && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
+async function loadTree() { recipientsLoading.value = true; try { recipientTree.value = await getMessageRecipientTree(); } finally { recipientsLoading.value = false; } }
+function openCompose() { draft.value = { category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] }; composeVisible.value = true; if (!recipientTree.value.length) loadTree(); }
+function resetTarget() { Object.assign(draft.value, { regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false }); families.value = []; }
+function changeRegion() { draft.value.agentId = ''; draft.value.siteId = ''; draft.value.recipientIds = []; families.value = []; }
+function changeAgent() { draft.value.siteId = ''; draft.value.recipientIds = []; families.value = []; }
+async function loadFamilies() {
+  draft.value.recipientIds = []; families.value = [];
+  if (!draft.value.siteId) return;
+  const familyRows = await getAgentFamilies(draft.value.siteId);
+  const site = siteOptions.value.find((item) => item.id === draft.value.siteId);
+  families.value = familyRows.map((family) => ({ ...family, siteId: draft.value.siteId, siteName: site?.storeName || site?.name }));
+}
+function toggleAllFamilies(enabled) { draft.value.recipientIds = enabled ? families.value.map((item) => item.rationCardNo) : []; }
+function focusEditor() { nextTick(() => { if (editor.value) { editor.value.innerHTML = draft.value.bodyHtml || ''; editor.value.focus(); } }); }
+function formatText(command) { editor.value?.focus(); const [action, value] = command.split(':'); document.execCommand(action, false, value); updateDraftBody(); }
+function updateDraftBody() { if (editor.value) draft.value.bodyHtml = editor.value.innerHTML; }
+function pastePlainText(event) { event.preventDefault(); const plain = event.clipboardData?.getData('text/plain') || ''; document.execCommand('insertText', false, plain); updateDraftBody(); }
+function addFiles(event) {
+  const selectedFiles = [...(event.target.files || [])];
+  selectedFiles.forEach((file) => {
+    if (file.size > 10 * 1024 * 1024) { ElMessage.warning(t('mail.attachmentTooLarge')); return; }
+    if (!draft.value.attachments.some((current) => current.name === file.name && current.size === file.size)) draft.value.attachments.push(file);
+  });
+  event.target.value = '';
+}
+function recipientPayload() {
+  let recipientIds = draft.value.recipientIds;
+  let recipientLabel = '';
+  if (draft.value.recipientType === 'agents') {
+    recipientIds = draft.value.siteId ? [draft.value.siteId] : draft.value.agentId ? [draft.value.agentId] : [];
+    recipientLabel = draft.value.siteId ? selectedSiteLabel.value : selectedAgentLabel.value;
+  } else if (draft.value.recipientType === 'citizens') {
+    recipientLabel = selectedSiteLabel.value;
+    if (draft.value.allAtSite) recipientIds = families.value.map((family) => family.rationCardNo);
+  } else recipientLabel = t('mail.' + draft.value.recipientType);
+  return { recipientIds, recipientLabel };
+}
+async function sendDraft() {
+  const cleanHtml = sanitizeHtml(draft.value.bodyHtml);
+  const probe = document.createElement('div'); probe.innerHTML = cleanHtml;
+  const bodyText = probe.textContent.trim();
+  const { recipientIds, recipientLabel } = recipientPayload();
+  if (!draft.value.subject.trim() || !bodyText) { ElMessage.warning(t('mail.subjectRequired')); return; }
+  if (['citizens','agents'].includes(draft.value.recipientType) && !recipientIds.length) { ElMessage.warning(t('mail.recipientsRequired')); return; }
+  sending.value = true;
+  try {
+    await sendMessage({ category: draft.value.category, recipientType: draft.value.recipientType, regionId: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId, recipientIds, recipientLabel, subject: draft.value.subject.trim(), bodyHtml: cleanHtml, bodyText, attachments: draft.value.attachments });
+    ElMessage.success(t('mail.sentSuccess')); composeVisible.value = false; await switchFolder('sent');
+  } finally { sending.value = false; }
+}
+function replyTo(item) { openCompose(); draft.value.recipientType = 'web'; draft.value.subject = `${t('mail.reply')}: ${titleOf(item)}`; }
+async function downloadAttachment(attachment) { const result = await getMessageAttachment(attachment.id); if (!result?.dataUrl) return; const link = document.createElement('a'); link.href = result.dataUrl; link.download = result.name || attachment.name; link.click(); URL.revokeObjectURL(link.href); }
+watch(() => route.query.detail, async (id) => { if (!id) return; activeFolder.value = 'inbox'; await load(); const found = items.value.find((item) => item.id === id); if (found) selectMessage(found); }, { immediate: true });
+onMounted(async () => { await load(); loadTree().catch(() => {}); });
 </script>
+
+<style scoped>
+.mail-grid { display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(100vh - 190px); }
+.mail-list { min-height: 280px; }
+.mail-reader { min-height: 320px; }
+.rich-editor:empty::before { color: #9aa69e; content: attr(data-placeholder); pointer-events: none; }
+.mail-content :deep(p) { margin: 0 0 .75rem; }
+.mail-content :deep(ul) { list-style: disc; padding-inline-start: 1.5rem; }
+.mail-content :deep(ol) { list-style: decimal; padding-inline-start: 1.5rem; }
+.mail-content :deep(blockquote) { border-inline-start: 3px solid #b6c8bb; margin: .75rem 0; padding-inline-start: 1rem; color: #66756b; }
+.mail-content :deep(a) { color: #2f7650; text-decoration: underline; }
+@media (min-width: 1024px) { .mail-grid { grid-template-columns: 210px 330px minmax(0, 1fr); } .mail-list,.mail-reader { min-height: calc(100vh - 190px); } }
+</style>

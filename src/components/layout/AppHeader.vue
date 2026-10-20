@@ -200,13 +200,13 @@
       <div v-if="messageStore.inbox.length" class="max-h-[55vh] space-y-2 overflow-y-auto">
         <button v-for="item in messageStore.inbox" :key="item.id" type="button" class="w-full rounded-lg border p-3 text-start transition-colors hover:bg-[#F4F8F4]" :class="item.read ? 'border-[#E5ECE7]' : 'border-[#C7E0CE] bg-[#F5FAF5]'" @click="previewMessage(item)">
           <div class="flex items-center justify-between gap-2"><span class="font-semibold text-[#24483A]">{{ item.subjectKey ? $t(item.subjectKey) : item.subject }}</span><span v-if="!item.read" class="h-2 w-2 shrink-0 rounded-full bg-[#C04442]"></span></div>
-          <p class="mt-1 line-clamp-2 text-sm text-[#68796E]">{{ item.bodyKey ? $t(item.bodyKey) : item.body }}</p>
+          <p class="mt-1 line-clamp-2 text-sm text-[#68796E]">{{ item.bodyKey ? $t(item.bodyKey) : (item.bodyText || item.body || '') }}</p>
         </button>
       </div>
       <el-empty v-else :description="$t('messages.empty')" />
     </el-dialog>
     <el-dialog v-model="messageVisible" :title="$t('messages.detail')" width="min(520px, 94vw)">
-      <template v-if="selectedMessage"><el-tag>{{ $t(selectedMessage.category === 'system' ? 'messages.system' : 'messages.admin') }}</el-tag><h3 class="my-4 text-lg font-bold">{{ selectedMessage.subjectKey ? $t(selectedMessage.subjectKey) : selectedMessage.subject }}</h3><p class="whitespace-pre-wrap leading-7">{{ selectedMessage.bodyKey ? $t(selectedMessage.bodyKey) : selectedMessage.body }}</p></template>
+      <template v-if="selectedMessage"><el-tag>{{ $t(selectedMessage.category === 'system' ? 'messages.system' : 'messages.admin') }}</el-tag><h3 class="my-4 text-lg font-bold">{{ selectedMessage.subjectKey ? $t(selectedMessage.subjectKey) : selectedMessage.subject }}</h3><p class="whitespace-pre-wrap leading-7">{{ selectedMessage.bodyKey ? $t(selectedMessage.bodyKey) : (selectedMessage.bodyText || selectedMessage.body || '') }}</p></template>
       <template #footer><el-button @click="messageVisible = false">{{ $t('messages.close') }}</el-button><el-button type="primary" @click="viewMessageDetails">{{ $t('messages.viewDetails') }}</el-button></template>
     </el-dialog>
   </header>
