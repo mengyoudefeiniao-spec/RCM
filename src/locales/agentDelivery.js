@@ -15,6 +15,8 @@ export default {
     centerInfo: '配给中心信息', outletInfo: '所属代理站', centerCode: '中心编号',
     centerAddress: '网点地址', centerPhone: '网点电话', centerHouseholds: '服务家庭',
     centerCapacity: '配给上限', activeCenter: '服务中', noCenter: '暂无配给中心信息',
+    switchCenter: '切换中心', stockUnavailable: '暂无该中心库存数据',
+    demoSecondCenterName: '哈奈根第一配给中心', demoSecondOutletName: '哈奈根第一边境综合代销保供站', demoSecondAddress: '哈奈根市中心老城区粮库路12号',
     demoOrders: {
       '1001': { recipient: '艾哈迈德·哈桑·萨利赫', address: '巴格达省卡尔赫区海法街88号 3号楼201', notes: '家中老人行动不便，送达前请电话联系' },
       '1002': { recipient: '法蒂玛·扎赫拉·侯赛因', address: '巴格达卡尔赫第一代销站（自提）', notes: '预计下午下班后来取' },
@@ -36,6 +38,8 @@ export default {
     centerInfo: 'Ration center information', outletInfo: 'Agent outlet', centerCode: 'Center ID',
     centerAddress: 'Outlet address', centerPhone: 'Outlet phone', centerHouseholds: 'Households served',
     centerCapacity: 'Capacity', activeCenter: 'In service', noCenter: 'No ration center information',
+    switchCenter: 'Switch center', stockUnavailable: 'No stock data for this center',
+    demoSecondCenterName: 'Khanaqin 1st Ration Center', demoSecondOutletName: 'Khanaqin 1st Border Supply Station', demoSecondAddress: '12 Granary Road, Old Town, Khanaqin',
     demoOrders: {
       '1001': { recipient: 'Ahmed Hassan Saleh', address: 'Building 3, Apt 201, Haifa St 88, Karkh, Baghdad', notes: 'Please call before arrival; an elderly family member needs assistance' },
       '1002': { recipient: 'Fatima Zahra Hussein', address: 'Baghdad Karkh 1st Station (Self-Pickup)', notes: 'Will pick up after work in the afternoon' },
@@ -57,6 +61,8 @@ export default {
     centerInfo: 'معلومات مركز التموين', outletInfo: 'منفذ الوكيل', centerCode: 'رمز المركز',
     centerAddress: 'عنوان المنفذ', centerPhone: 'هاتف المنفذ', centerHouseholds: 'الأسر المخدومة',
     centerCapacity: 'الحد الأقصى', activeCenter: 'قيد الخدمة', noCenter: 'لا تتوفر معلومات عن مركز التموين',
+    switchCenter: 'تبديل المركز', stockUnavailable: 'لا تتوفر بيانات المخزون لهذا المركز',
+    demoSecondCenterName: 'مركز خانقين الأول للتموين', demoSecondOutletName: 'منفذ خانقين الأول للإمداد الحدودي', demoSecondAddress: 'شارع المخازن ١٢، البلدة القديمة، خانقين',
     demoOrders: {
       '1001': { recipient: 'أحمد حسن صالح', address: 'بناية ٣، شقة ٢٠١، شارع حيفا ٨٨، الكرخ، بغداد', notes: 'يرجى الاتصال قبل الوصول لأن أحد كبار السن يحتاج إلى المساعدة' },
       '1002': { recipient: 'فاطمة الزهراء حسين', address: 'منفذ الكرخ الأول ببغداد (استلام شخصي)', notes: 'سأستلم الطلب بعد العمل مساءً' },
@@ -78,6 +84,8 @@ export default {
     centerInfo: 'زانیاری ناوەندی بەشەخۆراک', outletInfo: 'بنکەی بریکار', centerCode: 'کۆدی ناوەند',
     centerAddress: 'ناونیشانی بنکە', centerPhone: 'تەلەفۆنی بنکە', centerHouseholds: 'خێزانە خزمەتکراوەکان',
     centerCapacity: 'سنووری توانای کار', activeCenter: 'لە خزمەتدایە', noCenter: 'زانیاری ناوەندی بەشەخۆراک نییە',
+    switchCenter: 'گۆڕینی ناوەند', stockUnavailable: 'زانیاری کۆگای ئەم ناوەندە بەردەست نییە',
+    demoSecondCenterName: 'ناوەندی یەکەمی بەشەخۆراکی خانەقین', demoSecondOutletName: 'بنکەی یەکەمی دابینکردنی سنووری خانەقین', demoSecondAddress: 'شەقامی کۆگا ١٢، گەڕەکی کۆن، خانەقین',
     demoOrders: {
       '1001': { recipient: 'ئەحمەد حەسەن ساڵح', address: 'بینا ٣، شووقە ٢٠١، شەقامی حەیفا ٨٨، کەرخ، بەغدا', notes: 'تکایە پێش گەیشتن پەیوەندی بکەن؛ ئەندامێکی بەساڵاچوو پێویستی بە یارمەتییە' },
       '1002': { recipient: 'فاتمە زەهرا حوسێن', address: 'بنکەی یەکەمی کەرخ لە بەغدا (وەرگرتنی کەسی)', notes: 'دوای کار لە ئێوارەدا وەریدەگرم' },

@@ -356,25 +356,25 @@
             <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
               <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemFlourTitle') }}</div>
               <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
-                {{ centerStock.flour.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">KG</span>
+                {{ stockText(centerStock.flour) }} <span v-if="centerStock.flour != null" class="text-[10px] font-normal text-[#58685D]">KG</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemFlourLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ centerStock.flour == null ? $t('agentDelivery.stockUnavailable') : $t('agentG2B.itemFlourLoc') }}</div>
             </div>
 
             <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
               <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemRiceTitle') }}</div>
               <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
-                {{ centerStock.rice.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">KG</span>
+                {{ stockText(centerStock.rice) }} <span v-if="centerStock.rice != null" class="text-[10px] font-normal text-[#58685D]">KG</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemRiceLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ centerStock.rice == null ? $t('agentDelivery.stockUnavailable') : $t('agentG2B.itemRiceLoc') }}</div>
             </div>
 
             <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
               <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemOilTitle') }}</div>
               <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
-                {{ centerStock.oil.toLocaleString() }} <span class="text-[10px] font-normal text-[#58685D]">L</span>
+                {{ stockText(centerStock.oil) }} <span v-if="centerStock.oil != null" class="text-[10px] font-normal text-[#58685D]">L</span>
               </div>
-              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ $t('agentG2B.itemOilLoc') }}</div>
+              <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ centerStock.oil == null ? $t('agentDelivery.stockUnavailable') : $t('agentG2B.itemOilLoc') }}</div>
             </div>
           </div>
         </div>
@@ -465,7 +465,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.flour.toLocaleString(), unit: 'KG' }) }}</span>
-                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.flour.toLocaleString(), unit: 'KG' }) }}</span>
+                  <span v-if="centerStock.flour != null" class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.flour.toLocaleString(), unit: 'KG' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.flour.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
@@ -492,7 +492,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.rice.toLocaleString(), unit: 'KG' }) }}</span>
-                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.rice.toLocaleString(), unit: 'KG' }) }}</span>
+                  <span v-if="centerStock.rice != null" class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.rice.toLocaleString(), unit: 'KG' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.rice.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
@@ -519,7 +519,7 @@
                 </div>
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.oil.toLocaleString(), unit: 'L' }) }}</span>
-                  <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.oil.toLocaleString(), unit: 'L' }) }}</span>
+                  <span v-if="centerStock.oil != null" class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.oil.toLocaleString(), unit: 'L' }) }}</span>
                   <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.oil.toLocaleString(), unit: 'L' }) }}
                   </el-tag>
@@ -734,7 +734,7 @@
 
 <script setup>
 import { isEnNow } from '../../../utils/langHint.js';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -757,6 +757,10 @@ import {
 import { getG2BPurchaseOrders, createG2BPurchaseOrder } from '../../../api/agent.js';
 import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymentDialog.vue';
 
+const props = defineProps({
+  selectedCenter: { type: Object, required: true },
+  selectedCenterName: { type: String, required: true }
+});
 const { t, locale } = useI18n();
 const route = useRoute();
 const isEn = computed(() => locale.value === 'en');
@@ -876,17 +880,16 @@ const paymentDialogVisible = ref(false);
 const qrModalVisible = ref(false);
 const activeQRRow = ref(null);
 
-const currentCenterName = computed(() => formatG2BCenterName('卡尔赫第一配给中心 (曼苏尔)'));
+const currentCenterName = computed(() => props.selectedCenterName);
 
 // 1. 配给中心（中心仓）实时可用库存数据 (需求 2)
-const centerStock = ref({
-  flour: 92400, // 卡尔赫战略储备仓
-  rice: 184500, // 国家第一储备粮库
-  oil: 34100 // 液体储罐温控库
-});
+const centerStock = computed(() => props.selectedCenter.id === 'FA-00128'
+  ? { flour: 92400, rice: 184500, oil: 34100 }
+  : { flour: null, rice: null, oil: null });
+const stockText = (value) => value == null ? '—' : value.toLocaleString();
 
 // 2. 代理辖区签约户数与标准配额安全冗余 (1.2倍冗余系数，硬上限1500户)
-const householdsCount = ref(1120);
+const householdsCount = computed(() => Number(props.selectedCenter.householdsCount || 0));
 const safetyFactor = 1.2;
 
 // 各品类户均基础配额 (单户每月公斤/升数)
@@ -905,9 +908,9 @@ const agentQuotaLimits = computed(() => ({
 
 // 双重硬约束上限：既不能超过代理户数额度限制，也不能超过中心仓实时库存 (需求 2)
 const maxAllowed = computed(() => ({
-  flour: Math.min(agentQuotaLimits.value.flour, centerStock.value.flour),
-  rice: Math.min(agentQuotaLimits.value.rice, centerStock.value.rice),
-  oil: Math.min(agentQuotaLimits.value.oil, centerStock.value.oil)
+  flour: centerStock.value.flour == null ? agentQuotaLimits.value.flour : Math.min(agentQuotaLimits.value.flour, centerStock.value.flour),
+  rice: centerStock.value.rice == null ? agentQuotaLimits.value.rice : Math.min(agentQuotaLimits.value.rice, centerStock.value.rice),
+  oil: centerStock.value.oil == null ? agentQuotaLimits.value.oil : Math.min(agentQuotaLimits.value.oil, centerStock.value.oil)
 }));
 
 // 待提交采购单暂存数据
@@ -938,11 +941,12 @@ const calculatedTotalAmount = computed(() => {
 
 // 核心修复：兼容 Axios 响应拦截器解包或未解包格式 (需求 3)
 const loadOrders = async () => {
+  const requestedAgentId = props.selectedCenter.id;
   loading.value = true;
   try {
-    const res = await getG2BPurchaseOrders();
+    const res = await getG2BPurchaseOrders({ agentId: requestedAgentId });
     const list = Array.isArray(res) ? res : (res?.data || []);
-    orders.value = list;
+    if (props.selectedCenter.id === requestedAgentId) orders.value = list.filter((item) => item.agentId === requestedAgentId);
   } catch (error) {
     ElMessage.error(t('agentG2B.loadOrdersError') || (isEnNow() ? 'Failed to load purchase orders' : '加载采购订单失败'));
   } finally {
@@ -952,7 +956,7 @@ const loadOrders = async () => {
 
 // 列表过滤逻辑：默认显示未完成的采购记录 (需求 3)
 const filteredOrders = computed(() => {
-  let list = [...orders.value];
+  let list = orders.value.filter((item) => item.agentId === props.selectedCenter.id);
 
   if (statusFilter.value === 'UNFINISHED') {
     // 默认显示未完成：非 COMPLETED
@@ -1038,8 +1042,8 @@ const handleProceedToPayment = () => {
   pendingOrderNo.value = `ORD-${Date.now().toString().slice(-8)}`;
 
   pendingPayload.value = {
-    agentId: 'FA-00128',
-    centerId: '101',
+    agentId: props.selectedCenter.id,
+    centerId: props.selectedCenter.centerId,
     logisticsMode: form.value.logisticsMode,
     timeSlot: compositeTimeSlot,
     deliveryVehicleNo: form.value.deliveryVehicleNo,
@@ -1123,6 +1127,11 @@ const viewOrderDetail = (row) => {
 };
 
 onMounted(() => {
+  loadOrders();
+});
+watch(() => props.selectedCenter.id, () => {
+  orders.value = [];
+  currentPage.value = 1;
   loadOrders();
 });
 </script>

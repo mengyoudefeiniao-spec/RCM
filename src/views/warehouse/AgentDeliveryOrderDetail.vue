@@ -1,5 +1,5 @@
 <template>
-  <main class="mx-auto w-full max-w-5xl space-y-4 p-3 sm:p-6 text-start">
+  <main class="mx-auto w-full max-w-7xl space-y-4 p-3 sm:p-6 text-start">
     <button type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-[#2F6D49]" @click="goBack">
       <el-icon class="rtl:scale-x-[-1]"><ArrowLeft /></el-icon>
       {{ $t('agentDelivery.backToOrders') }}
@@ -16,6 +16,19 @@
             </div>
             <div class="rounded-full bg-[#E9F3EB] px-3 py-1 text-xs font-semibold text-[#276141]">{{ statusLabel }}</div>
           </div>
+          <div class="mt-4 grid gap-3 border-t border-[#E5EEE7] pt-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto]">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span class="font-semibold text-[#183B28]">{{ localizedField('recipient', order.headName) }}</span>
+                <bdi dir="ltr" class="font-mono text-[#526A59]">{{ order.phone || '—' }}</bdi>
+              </div>
+              <p class="mt-1 break-words text-[#526A59]">{{ localizedField('address', order.deliveryAddress) }}</p>
+            </div>
+            <div class="text-xs text-[#718277] sm:text-end">
+              <span class="block">{{ $t('agentDelivery.householdSize') }}</span>
+              <bdi dir="ltr" class="mt-1 block font-mono font-bold text-[#183B28]">{{ order.memberCount ?? '—' }}</bdi>
+            </div>
+          </div>
           <div v-if="priority.rank <= 1" class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#FFF1E8] p-3 text-sm font-bold text-[#A53A2D]">
             <span>{{ $t(priority.rank === 0 ? 'agentDelivery.priorityOverdue' : 'agentDelivery.prioritySoon') }}</span>
             <bdi v-if="priority.dueAt" dir="ltr">{{ formatDate(priority.dueAt) }}</bdi>
@@ -26,26 +39,14 @@
           </div>
         </section>
 
-        <div class="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm sm:p-6">
-            <h2 class="mb-3 font-bold text-[#183B28]">{{ $t('agentDelivery.mapTitle') }}</h2>
-            <div ref="mapElement" dir="ltr" class="h-64 w-full overflow-hidden rounded-lg bg-[#E9F1EB] sm:h-80" />
-            <p class="mt-2 text-xs text-[#607368]">{{ $t(hasExactLocation ? 'agentDelivery.exactLocation' : hasLocation ? 'agentDelivery.approximateLocation' : 'agentDelivery.mapUnavailable') }}</p>
-            <p v-if="hasExactLocation" class="mt-1 text-xs text-[#607368]">{{ $t('agentDelivery.coordinates') }}: <bdi dir="ltr">{{ mapPosition.lat.toFixed(5) }}, {{ mapPosition.lng.toFixed(5) }}</bdi></p>
-          </section>
-
-          <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm sm:p-6">
-            <h2 class="mb-4 font-bold text-[#183B28]">{{ $t('agentDelivery.recipient') }}</h2>
-            <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">
-              <dt class="text-[#718277]">{{ $t('agentDelivery.recipient') }}</dt><dd class="font-semibold">{{ localizedField('recipient', order.headName) }}</dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.contactPhone') }}</dt><dd><bdi dir="ltr">{{ order.phone || '—' }}</bdi></dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.rationCard') }}</dt><dd><bdi dir="ltr">{{ order.cardNo || '—' }}</bdi></dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.householdSize') }}</dt><dd><bdi dir="ltr">{{ order.memberCount ?? '—' }}</bdi></dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.deliveryAddress') }}</dt><dd class="break-words">{{ localizedField('address', order.deliveryAddress) }}</dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.orderNotes') }}</dt><dd class="break-words">{{ localizedField('notes', order.notes) }}</dd>
-            </dl>
-          </section>
-        </div>
+        <section class="rounded-xl border border-[#D9E5DB] bg-white p-2 shadow-sm sm:p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 sm:px-1">
+            <h2 class="font-bold text-[#183B28]">{{ $t('agentDelivery.mapTitle') }}</h2>
+            <span class="text-xs text-[#607368]">{{ $t(hasExactLocation ? 'agentDelivery.exactLocation' : hasLocation ? 'agentDelivery.approximateLocation' : 'agentDelivery.mapUnavailable') }}</span>
+          </div>
+          <div ref="mapElement" dir="ltr" class="h-[54vh] min-h-[360px] w-full overflow-hidden rounded-lg bg-[#E9F1EB] sm:h-[64vh] lg:h-[68vh] lg:max-h-[760px]" />
+          <p v-if="hasExactLocation" class="px-2 pt-2 text-xs text-[#607368]">{{ $t('agentDelivery.coordinates') }}: <bdi dir="ltr">{{ mapPosition.lat.toFixed(5) }}, {{ mapPosition.lng.toFixed(5) }}</bdi></p>
+        </section>
 
         <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm sm:p-6">
           <h2 class="mb-4 font-bold text-[#183B28]">{{ $t('agentDelivery.orderItems') }}</h2>
@@ -55,6 +56,8 @@
             </div>
           </div>
           <dl class="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 border-t border-[#E5EEE7] pt-4 text-sm">
+            <dt class="text-[#718277]">{{ $t('agentDelivery.rationCard') }}</dt><dd><bdi dir="ltr">{{ order.cardNo || '—' }}</bdi></dd>
+            <dt class="text-[#718277]">{{ $t('agentDelivery.orderNotes') }}</dt><dd class="break-words">{{ localizedField('notes', order.notes) }}</dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.orderTime') }}</dt><dd><bdi dir="ltr">{{ order.createdAt || '—' }}</bdi></dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.deliveryMethod') }}</dt><dd>{{ $t(order.deliveryType === 'HOME_DELIVERY' ? 'agentOrders.typeDelivery' : 'agentOrders.typePickup') }}</dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.paymentAmount') }}</dt><dd><bdi dir="ltr">{{ Number(order.selfPayAmount || 0).toLocaleString() }} IQD</bdi></dd>
