@@ -554,7 +554,7 @@
         <!-- ======================================================== -->
         <!-- TAB 2: 代理订单记录 (集中采购订货流水) -->
         <!-- ======================================================== -->
-        <el-tab-pane name="g2bOrders">
+        <el-tab-pane name="g2bOrders" lazy>
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Van /></el-icon>
@@ -563,14 +563,14 @@
             </div>
           </template>
           <div class="py-4">
-            <AgentG2BPanel />
+            <AgentOrdersView />
           </div>
         </el-tab-pane>
 
         <!-- ======================================================== -->
         <!-- TAB 3: 代理订单统计分析 (根据代理订单统计分析生成图表) -->
         <!-- ======================================================== -->
-        <el-tab-pane name="orderAnalytics">
+        <el-tab-pane name="orderAnalytics" lazy>
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><DataAnalysis /></el-icon>
@@ -1077,7 +1077,7 @@ import AgentApplyModal from './components/AgentApplyModal.vue';
 import AgentRotationModal from './components/AgentRotationModal.vue';
 import AgentRestorationModal from './components/AgentRestorationModal.vue';
 import AgentCancellationModal from './components/AgentCancellationModal.vue';
-import AgentG2BPanel from './components/AgentG2BPanel.vue';
+import AgentOrdersView from './AgentOrdersView.vue';
 import AgentInventoryLedger from './components/AgentInventoryLedger.vue';
 import AgentWorkflowOverviewDrawer from './components/AgentWorkflowOverviewDrawer.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
