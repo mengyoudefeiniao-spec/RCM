@@ -270,6 +270,13 @@ export function getAgentCitizenOrders(params) {
   });
 }
 
+export function getAgentCitizenOrder(orderId) {
+  return request({
+    url: `/agent/citizen-orders/${encodeURIComponent(orderId)}`,
+    method: 'GET'
+  });
+}
+
 /**
  * 24. 代理端安排配送或标记备货就绪 (POST)
  * 针对送货上门分配派送员和车辆出车，针对到店自提标记网点备货就绪

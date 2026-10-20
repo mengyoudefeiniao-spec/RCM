@@ -5,8 +5,8 @@
     <!-- ======================================================== -->
     <div class="bg-[#F3F8F4] p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/80 space-y-3">
       <!-- 搜索、履约类型筛选与扫码交货大按钮 (自适应 APP 移动端视口) -->
-      <div :class="isAppMode ? 'space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5'">
-        <div :class="isAppMode ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-1'">
+      <div class="grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] items-center">
+        <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-2 min-w-0">
           <el-input
             v-model="searchKeyword"
             :placeholder="$t('agentOrders.searchPlaceholder')"
@@ -23,7 +23,8 @@
           <el-select
             v-model="deliveryTypeFilter"
             size="small"
-            class="w-28 sm:w-32 shrink-0"
+            class="w-32 sm:w-40 shrink-0"
+            :aria-label="$t('agentDelivery.filterType')"
             @change="loadOrders"
           >
             <el-option :label="$t('agentOrders.typeAll')" value="ALL" />
@@ -32,13 +33,12 @@
           </el-select>
         </div>
 
-        <div :class="isAppMode ? 'grid grid-cols-2 gap-2 pt-0.5' : 'flex items-center justify-between sm:justify-end gap-2 shrink-0'">
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
           <!-- 阶段 4 核心：扫码核验交货按钮 (高亮翠绿) -->
           <el-button
             type="success"
             size="small"
-            class="font-bold shadow-xs px-3 bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white flex items-center justify-center gap-1.5 rounded-lg !m-0"
-            :class="isAppMode ? '!h-8 !w-full' : ''"
+            class="!h-9 !w-full font-bold shadow-xs px-3 bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white flex items-center justify-center gap-1.5 rounded-lg !m-0"
             @click="openScanVerifyModal()"
           >
             <el-icon class="text-base"><Camera /></el-icon>
@@ -48,14 +48,19 @@
           <el-button
             size="small"
             :loading="loading"
-            class="!m-0 rounded-lg"
-            :class="isAppMode ? '!h-8 !w-full flex items-center justify-center' : ''"
+            class="!m-0 rounded-lg !h-9 !w-full flex items-center justify-center"
+            :aria-label="$t('agentDelivery.refreshList')"
             @click="loadOrders"
           >
             <el-icon class="me-1"><Refresh /></el-icon>
             <span>{{ $t('common.refresh') }}</span>
           </el-button>
         </div>
+      </div>
+
+      <div v-if="urgentCount" class="flex items-center gap-2 rounded-lg bg-[#FFF1E8] px-3 py-2 text-xs font-semibold text-[#A53A2D]" role="status">
+        <span class="h-2 w-2 rounded-full bg-[#D34B3F] shrink-0" />
+        {{ $t('agentDelivery.priorityCount', { count: urgentCount }) }}
       </div>
 
       <!-- 状态筛选药丸横向滑动条 (针对手机端触控优化) -->
@@ -160,6 +165,10 @@
           :key="order.orderId"
           class="bg-white border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5"
           :class="isAppMode ? 'p-3 rounded-lg' : 'p-4 rounded-lg'"
+          role="button"
+          tabindex="0"
+          @click="openOrderDetails(order)"
+          @keydown.enter.self="openOrderDetails(order)"
         >
           <!-- 卡片头部：订单单号与状态标签 (移动端优雅排列) -->
           <div class="flex items-center justify-between gap-1.5 border-b border-[#E9F1EB] pb-2">
@@ -195,6 +204,11 @@
             </div>
           </div>
 
+          <div v-if="priorityFor(order).rank <= 1" class="flex items-center justify-between gap-2 rounded-md bg-[#FFF1E8] px-2 py-1.5 text-[11px] font-bold text-[#A53A2D]">
+            <span>{{ $t(priorityFor(order).rank === 0 ? 'agentDelivery.priorityOverdue' : 'agentDelivery.prioritySoon') }}</span>
+            <bdi v-if="priorityFor(order).dueAt" dir="ltr" class="font-mono">{{ formatDeadline(priorityFor(order).dueAt) }}</bdi>
+          </div>
+
           <!-- 户主核心信息 (极简化提炼，支持一键复制电话) -->
           <div class="space-y-1.5 text-xs">
             <div class="flex items-center justify-between text-[#43554B] gap-1">
@@ -204,7 +218,7 @@
               </div>
               <div class="flex items-center gap-1 text-[#58685D] font-mono shrink-0">
                 <bdi dir="ltr" class="text-[11px]">{{ order.phone }}</bdi>
-                <el-button size="small" text class="p-0.5" @click="copyText(order.phone)">
+                <el-button size="small" text class="p-0.5" @click.stop="copyText(order.phone)">
                   <el-icon class="text-xs text-[#326445]"><CopyDocument /></el-icon>
                 </el-button>
               </div>
@@ -241,7 +255,7 @@
                 <span class="font-mono font-bold text-[#1F3326] bg-white px-1.5 py-0.5 rounded border border-[#D9E5DB] text-xs">
                   {{ order.pickupCode }}
                 </span>
-                <el-button size="small" text class="p-0.5" @click="copyText(order.pickupCode)">
+                <el-button size="small" text class="p-0.5" @click.stop="copyText(order.pickupCode)">
                   <el-icon class="text-xs text-[#58685D]"><CopyDocument /></el-icon>
                 </el-button>
               </div>
@@ -263,13 +277,16 @@
 
           <!-- 卡片底部操作大按钮 (极简触控交互) -->
           <div class="pt-1">
+            <button type="button" class="mb-2 w-full text-start text-xs font-semibold text-[#2F7A50] underline underline-offset-2" @click.stop="openOrderDetails(order)">
+              {{ $t('agentDelivery.details') }}
+            </button>
             <!-- 送货上门 待处理 -> 安排配送 -->
             <el-button
               v-if="order.deliveryType === 'HOME_DELIVERY' && (order.status === 'PENDING_DELIVERY' || order.status === 'PAID')"
               type="primary"
               class="w-full font-bold shadow-xs rounded-lg !h-8 sm:!h-9 text-xs"
               data-demo-target="btn-dispatch"
-              @click="openDispatchModal(order)"
+              @click.stop="openDispatchModal(order)"
             >
               <el-icon class="me-1"><Van /></el-icon>
               {{ $t('agentOrders.dispatchBtn') }}
@@ -280,7 +297,7 @@
               v-else-if="order.deliveryType === 'PICKUP' && (order.status === 'PENDING_PICKUP' || order.status === 'PAID')"
               type="warning"
               class="w-full font-bold shadow-xs rounded-lg !h-8 sm:!h-9 text-xs"
-              @click="handleMarkReady(order)"
+              @click.stop="handleMarkReady(order)"
             >
               <el-icon class="me-1"><CircleCheck /></el-icon>
               {{ $t('agentOrders.readyPickupBtn') }}
@@ -291,7 +308,7 @@
               v-else-if="order.status === 'DISPATCHED'"
               type="success"
               class="w-full font-bold shadow-xs rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
-              @click="openScanVerifyModal(order)"
+              @click.stop="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
               <span>{{ isAppMode ? $t('orderClaim.scanVerifyBtn') : ($t('orderClaim.scanVerifyBtn') + '（' + ($t('agentOrders.deliveryPhotoVerify') || '送达拍照核验') + '）') }}</span>
@@ -302,7 +319,7 @@
               v-else-if="order.status === 'READY_FOR_PICKUP'"
               type="success"
               class="w-full font-bold shadow-xs rounded-lg bg-[#C9A13B] hover:bg-[#7A5F21] border-none text-white flex items-center justify-center gap-1 !h-8 sm:!h-9 text-xs"
-              @click="openScanVerifyModal(order)"
+              @click.stop="openScanVerifyModal(order)"
             >
               <el-icon><Camera /></el-icon>
               <span>{{ isAppMode ? $t('orderClaim.scanVerifyBtn') : ($t('orderClaim.scanVerifyBtn') + '（' + ($t('agentOrders.pickupPhotoVerify') || '到店拍照核验') + '）') }}</span>
@@ -801,12 +818,13 @@
 <script setup>
 import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const route = useRoute();
+const router = useRouter();
 const isAppMode = computed(() => {
   return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
 });
@@ -832,6 +850,7 @@ import {
 import { onTabMessage } from '@/utils/crossTabBus';
 import { getMyCouriers } from '@/api/my';
 import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoState.js';
+import { deliveryPriority, sortDeliveryOrders } from '@/utils/deliveryPriority';
 
 const { t, locale } = useI18n();
 const authStore = useAuthStore();
@@ -1007,6 +1026,14 @@ watch(locale, () => {
 // 数据状态
 const loading = ref(false);
 const orders = ref([]);
+const priorityNow = ref(Date.now());
+let priorityTimer;
+const priorityFor = (order) => deliveryPriority(order, priorityNow.value);
+const urgentCount = computed(() => orders.value.filter((order) => priorityFor(order).rank <= 1).length);
+const formatDeadline = (timestamp) => new Intl.DateTimeFormat(locale.value === 'zh' ? 'zh-CN' : locale.value === 'ckb' ? 'ckb-IQ' : locale.value === 'ar' ? 'ar-IQ' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }).format(timestamp);
+function openOrderDetails(order) {
+  router.push({ name: 'AgentDeliveryOrderDetail', params: { orderId: order.orderId }, query: { role: 'agent', layout: isAppMode.value ? 'app' : 'web' } });
+}
 const searchKeyword = ref('');
 const statusFilter = ref('ALL');
 const deliveryTypeFilter = ref('ALL');
@@ -1360,7 +1387,7 @@ const filteredOrders = computed(() => {
     );
   }
 
-  return list;
+  return sortDeliveryOrders(list, priorityNow.value);
 });
 
 function setStatusFilter(st) {
@@ -1489,6 +1516,7 @@ const crossTabUnsubs = [];
 
 onMounted(() => {
   loadOrders();
+  priorityTimer = window.setInterval(() => { priorityNow.value = Date.now(); }, 60_000);
 
   // 全流程演示 04 阶段：URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点）
   if (route.query.demo === 'true') {
@@ -1509,6 +1537,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.clearInterval(priorityTimer);
   stopCamera();
   crossTabUnsubs.forEach((fn) => fn && fn());
 });

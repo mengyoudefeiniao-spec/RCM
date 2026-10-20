@@ -3268,6 +3268,19 @@ export async function mockDispatch(config) {
   }
 
   // 5.13.2 代理端查询公民购买配给订单列表 (GET)
+  const citizenOrderDetailMatch = url.match(/\/agent\/citizen-orders\/([^/?]+)$/);
+  if (citizenOrderDetailMatch && method === 'GET') {
+    const orderId = decodeURIComponent(citizenOrderDetailMatch[1]);
+    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
+    const order = [...sharedOrders, ...(citizenPurchaseOrdersStore || [])].find((item) => item.orderId === orderId || item.id === orderId);
+    if (!order) return createResponse({}, 404, i18n.global.t('agentDelivery.orderNotFound'));
+    const demoPositions = {
+      'PO-20261013-1001': { lat: 33.3277, lng: 44.3674, accuracy: 'approximate' },
+      'PO-20261013-1003': { lat: 33.3094, lng: 44.3377, accuracy: 'approximate' }
+    };
+    return createResponse({ ...order, deliveryLocation: order.deliveryLocation || demoPositions[orderId] || null });
+  }
+
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
     const map = new Map();

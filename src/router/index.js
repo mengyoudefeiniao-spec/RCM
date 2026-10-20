@@ -113,6 +113,12 @@ const routes = [
         meta: { title: '配给管理', roles: ['admin', 'agent', 'citizen'] }
       },
       {
+        path: 'warehouse/delivery/:orderId',
+        name: 'AgentDeliveryOrderDetail',
+        component: () => import('../views/warehouse/AgentDeliveryOrderDetail.vue'),
+        meta: { titleKey: 'agentDelivery.detailTitle', roles: ['agent'] }
+      },
+      {
         path: 'agent',
         name: 'AgentMgmt',
         component: () => import('../views/agent/AgentMgmtView.vue'),

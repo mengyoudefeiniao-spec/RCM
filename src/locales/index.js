@@ -12,6 +12,7 @@ import en from './en.js';
 import ar from './ar.js';
 import ckb from './ku.js';
 import myMessages from './my.js';
+import agentDeliveryMessages from './agentDelivery.js';
 
 // ku/kmr is Kurmanji (Latin script); the existing Arabic-script catalog is Sorani.
 // sdh is recorded here for future catalogs, but is not offered without translations.
@@ -37,10 +38,10 @@ export const i18n = createI18n({
   locale: savedLang,
   fallbackLocale: 'zh',
   messages: {
-    zh: { ...zh, my: myMessages.zh },
-    en: { ...en, my: myMessages.en },
-    ar: { ...ar, my: myMessages.ar },
-    ckb: { ...ckb, my: myMessages.ckb }
+    zh: { ...zh, my: myMessages.zh, agentDelivery: agentDeliveryMessages.zh },
+    en: { ...en, my: myMessages.en, agentDelivery: agentDeliveryMessages.en },
+    ar: { ...ar, my: myMessages.ar, agentDelivery: agentDeliveryMessages.ar },
+    ckb: { ...ckb, my: myMessages.ckb, agentDelivery: agentDeliveryMessages.ckb }
   }
 });
 

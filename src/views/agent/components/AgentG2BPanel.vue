@@ -1,11 +1,8 @@
 <template>
   <div class="agent-g2b-panel" :class="isAppMode ? 'space-y-3' : 'space-y-4'">
     <!-- 筛选工具栏与新建采购按钮 -->
-    <div
-      class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 gap-2.5 text-xs"
-      :class="isAppMode ? 'flex flex-col space-y-2' : 'flex flex-col sm:flex-row items-stretch sm:items-center justify-between'"
-    >
-      <div class="grid gap-2.5 flex-1 items-center" :class="isAppMode ? 'grid-cols-1' : 'sm:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto]'">
+    <div class="grid gap-2.5 rounded-lg border border-[#D9E5DB]/80 bg-[#F3F8F4] p-3 text-xs sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div class="grid min-w-0 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <el-input
           v-model="searchKeyword"
           :placeholder="$t('agentG2B.searchPlaceholder')"
@@ -17,11 +14,12 @@
           <template #prefix><el-icon><Search /></el-icon></template>
         </el-input>
 
-        <div :class="isAppMode ? 'grid grid-cols-2 gap-2 w-full' : 'contents'">
+        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <el-select
             v-model="statusFilter"
             size="small"
             class="w-full"
+            :aria-label="$t('agentDelivery.filterStatus')"
             @change="handleFilter"
           >
             <el-option :label="$t('agentG2B.filterUnfinished')" value="UNFINISHED" />
@@ -32,9 +30,8 @@
             <el-option :label="$t('agentG2B.filterCompleted')" value="COMPLETED" />
           </el-select>
 
-          <el-button size="small" type="primary" plain :class="isAppMode ? 'w-full' : ''" @click="loadOrders">
-            <el-icon class="me-1"><Refresh /></el-icon>
-            {{ $t('common.refresh') }}
+          <el-button size="small" type="primary" plain class="!m-0 !h-8 !w-9" :aria-label="$t('agentDelivery.refreshList')" :title="$t('agentDelivery.refreshList')" @click="loadOrders">
+            <el-icon><Refresh /></el-icon>
           </el-button>
         </div>
       </div>
@@ -43,8 +40,7 @@
       <el-button
         type="primary"
         size="small"
-        class="font-bold shadow-xs shrink-0"
-        :class="isAppMode ? 'w-full' : ''"
+        class="!m-0 !h-8 w-full shrink-0 font-bold shadow-xs sm:w-auto"
         @click="openCreateModal"
       >
         <el-icon class="me-1"><Plus /></el-icon>
