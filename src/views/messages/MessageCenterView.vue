@@ -2,34 +2,37 @@
   <section class="mail-shell p-2 sm:p-4">
     <div class="mail-toolbar flex flex-wrap items-center justify-between gap-3 rounded-t-xl border border-[#DCE5DF] bg-white px-4 py-3">
       <div class="flex items-center gap-3"><h1 class="text-lg font-bold text-[#24372C]">{{ t('mail.title') }}</h1><el-tag v-if="messageStore.unreadCount" size="small" round>{{ t('mail.unreadCount', { count: messageStore.unreadCount }) }}</el-tag></div>
-      <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"/><el-button circle :title="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
+      <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" :aria-label="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"><template #prefix><el-icon><Search /></el-icon></template></el-input><el-button circle :title="t('mail.refresh')" :aria-label="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
     </div>
 
     <div class="mail-grid overflow-hidden rounded-b-xl border-x border-b border-[#DCE5DF] bg-white">
-      <aside class="mail-folders border-b border-[#E7ECE8] bg-[#F7F9F7] p-3 lg:border-b-0 lg:border-e">
-        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#819087]">{{ t('mail.title') }}</div>
-        <button v-for="folder in folders" :key="folder.id" type="button" class="mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm transition-colors" :class="activeFolder === folder.id ? 'bg-[#E6F1E9] font-semibold text-[#28563B]' : 'text-[#526258] hover:bg-[#EDF2EE]'" @click="switchFolder(folder.id)">
-          <el-icon><component :is="folder.icon" /></el-icon><span class="flex-1">{{ t('mail.' + folder.id) }}</span><span v-if="folder.id === 'inbox' && messageStore.unreadCount" class="text-xs font-bold">{{ messageStore.unreadCount }}</span>
+      <aside class="mail-folders" :aria-label="t('mail.title')">
+        <button v-for="folder in folders" :key="folder.id" type="button" class="folder-button" :class="{ 'is-active': activeFolder === folder.id }" :aria-current="activeFolder === folder.id ? 'page' : undefined" @click="switchFolder(folder.id)">
+          <el-icon><component :is="folder.icon" /></el-icon><span class="flex-1">{{ t('mail.' + folder.id) }}</span><span v-if="folder.id === 'inbox' && receivedUnreadCount" class="folder-count">{{ receivedUnreadCount }}</span><span v-if="folder.id === 'favorites' && favoriteCount" class="folder-count">{{ favoriteCount }}</span>
         </button>
       </aside>
 
-      <div class="mail-list border-b border-[#E7ECE8] lg:border-b-0 lg:border-e">
+      <div class="mail-list">
+        <div class="mail-list-heading"><h2>{{ t('mail.' + activeFolder) }}</h2><span>{{ t('mail.totalCount', { count: filteredItems.length }) }}</span></div>
         <div v-if="loading" class="p-4"><el-skeleton :rows="5" animated /></div>
-        <div v-else-if="filteredItems.length" class="max-h-[calc(100vh-230px)] overflow-y-auto">
-          <button v-for="item in filteredItems" :key="item.id" type="button" class="w-full border-b border-[#EEF1EF] px-4 py-3.5 text-start transition-colors hover:bg-[#F6F9F6]" :class="selected?.id === item.id ? 'bg-[#F0F6F1]' : ''" @click="selectMessage(item)">
-            <div class="flex items-start justify-between gap-2"><div class="min-w-0 truncate text-sm" :class="!item.read && activeFolder === 'inbox' ? 'font-bold text-[#24372C]' : 'font-medium text-[#46584D]'">{{ activeFolder === 'sent' ? t('mail.to') + ': ' + recipientSummary(item) : item.sender }}</div><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
-            <div class="mt-1 flex items-center gap-2"><span class="min-w-0 flex-1 truncate text-sm text-[#53635A]">{{ titleOf(item) || t('mail.emptyBody') }}</span><span v-if="item.attachments?.length" class="text-[#819087]" :title="t('mail.attachments')"><el-icon><Paperclip /></el-icon></span><span v-if="!item.read && activeFolder === 'inbox'" class="h-2 w-2 shrink-0 rounded-full bg-[#3D8A58]"/></div>
-            <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
-          </button>
+        <div v-else-if="filteredItems.length" class="mail-list-items">
+          <div v-for="item in filteredItems" :key="item.id" class="notification-item" :class="{ 'is-selected': selected?.id === item.id }">
+            <button type="button" class="notification-content" :aria-pressed="selected?.id === item.id" @click="selectMessage(item)">
+              <div class="flex min-w-0 items-center justify-between gap-2"><span class="min-w-0 truncate text-xs text-[#75837A]">{{ isIncoming(item) ? item.sender : t('mail.to') + ': ' + recipientSummary(item) }}</span><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
+              <div class="mt-1.5 flex items-center gap-2"><span v-if="!item.read && isIncoming(item)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3D8A58]" :title="t('mail.unread')"/><span class="min-w-0 flex-1 truncate text-sm" :class="!item.read && isIncoming(item) ? 'font-semibold text-[#24372C]' : 'font-medium text-[#53635A]'">{{ titleOf(item) || t('mail.emptyBody') }}</span><el-icon v-if="item.attachments?.length" class="shrink-0 text-[#819087]" :title="t('mail.attachments')"><Paperclip /></el-icon></div>
+              <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
+            </button>
+            <button type="button" class="favorite-toggle" :class="{ 'is-favorite': item.favorite }" :disabled="favoritePending.includes(item.id)" :aria-pressed="!!item.favorite" :title="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" :aria-label="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" @click.stop="toggleFavorite(item)"><el-icon><component :is="item.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon></button>
+          </div>
         </div>
-        <el-empty v-else :description="t('mail.noMail')" :image-size="76" />
+        <el-empty v-else :description="search ? t('mail.noResults') : t(activeFolder === 'favorites' ? 'mail.noFavorites' : 'mail.noMail')" :image-size="76" />
       </div>
 
       <main class="mail-reader min-w-0 p-4 sm:p-6">
         <template v-if="selected">
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDEA] pb-4">
-            <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && activeFolder === 'inbox'" size="small" type="success">{{ t('mail.unread') }}</el-tag></div>
-            <div class="flex items-center gap-2"><el-button v-if="canSend && activeFolder === 'inbox'" size="small" @click="replyTo(selected)"><el-icon><Promotion /></el-icon>{{ t('mail.reply') }}</el-button></div>
+            <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && isIncoming(selected)" size="small" type="success">{{ t('mail.unread') }}</el-tag></div>
+            <div class="flex flex-wrap items-center gap-2"><el-button size="small" :loading="favoritePending.includes(selected.id)" :type="selected.favorite ? 'primary' : 'default'" :plain="selected.favorite" :aria-pressed="!!selected.favorite" @click="toggleFavorite(selected)"><el-icon><component :is="selected.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon>{{ t(selected.favorite ? 'mail.removeFavorite' : 'mail.addFavorite') }}</el-button><el-button v-if="canSend && isIncoming(selected)" size="small" @click="replyTo(selected)"><el-icon><Promotion /></el-icon>{{ t('mail.reply') }}</el-button></div>
           </div>
           <h2 class="mb-5 break-words text-xl font-bold leading-8 text-[#26382D]">{{ titleOf(selected) }}</h2>
           <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]"><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.from') }}:</b>{{ selected.sender }}</span><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.to') }}:</b>{{ recipientSummary(selected) }}</span><span>{{ fullDate(selected.createdAt) }}</span></div>
@@ -82,24 +85,27 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { getAgentFamilies, getAgentHierarchyTree } from '../../api/agent.js';
-import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage } from '../../api/adminCenter.js';
+import { getAgentFamilies } from '../../api/agent.js';
+import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage, setMessageFavorite } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
 
-const { t } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
+const { t, locale } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
 const activeFolder = ref('inbox'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
 const recipientTree = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
+const favoriteCount = ref(0), favoritePending = ref([]);
+const receivedUnreadCount = computed(() => messageStore.inbox.filter((item) => !item.read && !item.favorite).length);
+let loadVersion = 0;
 const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
 const canSend = computed(() => authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('messages.send'));
-const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : [])]);
+const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), { id: 'favorites', icon: 'FolderChecked' }]);
 const regionOptions = computed(() => recipientTree.value);
 const agentOptions = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || []);
 const siteOptions = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.children || []);
 const familyOptions = computed(() => families.value);
 const selectedAgentLabel = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.name || '');
 const selectedSiteLabel = computed(() => siteOptions.value.find((item) => item.id === draft.value.siteId)?.storeName || siteOptions.value.find((item) => item.id === draft.value.siteId)?.name || '');
-const filteredItems = computed(() => items.value.filter((item) => !search.value || [item.subject, item.sender, item.bodyText, item.recipientLabel].some((value) => String(value || '').toLowerCase().includes(search.value.toLowerCase()))));
+const filteredItems = computed(() => items.value.filter((item) => (activeFolder.value === 'favorites' ? item.favorite : !item.favorite) && (!search.value.trim() || [titleOf(item), item.sender, previewText(item), recipientSummary(item)].some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(search.value.trim().toLocaleLowerCase(locale.value))))));
 const previewHtml = computed(() => sanitizeHtml(draft.value.bodyHtml));
 const editorTools = [{ command: 'undo', icon: 'Back', label: 'undo' }, { command: 'redo', icon: 'Right', label: 'redo' }, { command: 'bold', glyph: 'B', glyphClass: 'font-bold', label: 'bold' }, { command: 'italic', glyph: 'I', glyphClass: 'italic', label: 'italic' }, { command: 'underline', glyph: 'U', glyphClass: 'underline', label: 'underline' }, { command: 'strikeThrough', glyph: 'S', glyphClass: 'line-through', label: 'strikeThrough' }, { command: 'insertUnorderedList', icon: 'List', label: 'bulletList' }, { command: 'insertOrderedList', icon: 'Sort', label: 'numberedList' }, { command: 'formatBlock:h2', icon: 'Document', label: 'heading' }, { command: 'justifyLeft', glyph: '≡', glyphClass: 'align-left', label: 'alignLeft' }, { command: 'justifyCenter', glyph: '≡', glyphClass: 'align-center', label: 'alignCenter' }, { command: 'justifyRight', glyph: '≡', glyphClass: 'align-right', label: 'alignRight' }, { command: 'createLink', icon: 'Link', label: 'link' }, { command: 'removeFormat', icon: 'CircleClose', label: 'clearFormat' }];
 
@@ -111,8 +117,8 @@ function safeBody(item) {
 }
 function categoryLabel(item) { return t(item.category === 'system' ? 'mail.system' : 'mail.admin'); }
 function recipientSummary(item) { return item.recipientLabel || (item.recipientType ? t('mail.' + item.recipientType) : t('mail.everyone')); }
-function shortDate(value) { return value ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(value)) : ''; }
-function fullDate(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : ''; }
+function shortDate(value) { return value ? new Intl.DateTimeFormat(locale.value, { month: 'short', day: 'numeric' }).format(new Date(value)) : ''; }
+function fullDate(value) { return value ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : ''; }
 function formatSize(size = 0) { return size < 1024 * 1024 ? `${Math.max(1, Math.round(size / 1024))} KB` : `${(size / (1024 * 1024)).toFixed(1)} MB`; }
 function sanitizeHtml(html) {
   const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
@@ -130,9 +136,36 @@ function sanitizeHtml(html) {
   walk(parsed.body);
   return parsed.body.innerHTML;
 }
-async function load() { loading.value = true; try { items.value = await getMessages(activeFolder.value); if (activeFolder.value === 'inbox') messageStore.inbox = items.value; if (selected.value) selected.value = items.value.find((item) => item.id === selected.value.id) || null; } finally { loading.value = false; } }
+async function load() {
+  const version = ++loadVersion, folder = activeFolder.value;
+  loading.value = true;
+  try {
+    const [rows, favorites] = await Promise.all([getMessages(folder), folder === 'favorites' ? Promise.resolve(null) : getMessages('favorites')]);
+    if (version !== loadVersion) return;
+    items.value = rows;
+    favoriteCount.value = (favorites || rows).length;
+    if (folder === 'inbox') messageStore.inbox = rows;
+    if (selected.value) selected.value = filteredItems.value.find((item) => item.id === selected.value.id) || null;
+  } finally { if (version === loadVersion) loading.value = false; }
+}
 async function switchFolder(folder) { activeFolder.value = folder; selected.value = null; await load(); }
-async function selectMessage(item) { selected.value = item; if (activeFolder.value === 'inbox' && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
+function isIncoming(item) { return item.sourceFolder ? item.sourceFolder === 'inbox' : activeFolder.value !== 'sent'; }
+async function selectMessage(item) { selected.value = item; if (isIncoming(item) && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
+async function toggleFavorite(item) {
+  if (favoritePending.value.includes(item.id)) return;
+  favoritePending.value.push(item.id);
+  try {
+    const favorite = !item.favorite;
+    await setMessageFavorite(item.id, favorite);
+    item.favorite = favorite;
+    const inboxItem = messageStore.inbox.find((entry) => entry.id === item.id);
+    if (inboxItem) inboxItem.favorite = favorite;
+    favoriteCount.value = Math.max(0, favoriteCount.value + (favorite ? 1 : -1));
+    if (selected.value?.id === item.id) selected.value = null;
+    await load();
+    ElMessage.success(t(favorite ? 'mail.favoriteAdded' : 'mail.favoriteRemoved'));
+  } finally { favoritePending.value = favoritePending.value.filter((id) => id !== item.id); }
+}
 async function loadTree() { recipientsLoading.value = true; try { recipientTree.value = await getMessageRecipientTree(); } finally { recipientsLoading.value = false; } }
 function openCompose() {
   let saved = {};
@@ -204,12 +237,42 @@ async function sendDraft() {
 }
 function replyTo(item) { openCompose(); draft.value.recipientType = 'web'; draft.value.subject = `${t('mail.reply')}: ${titleOf(item)}`; }
 async function downloadAttachment(attachment) { const result = await getMessageAttachment(attachment.id); if (!result?.dataUrl) return; const link = document.createElement('a'); link.href = result.dataUrl; link.download = result.name || attachment.name; link.click(); URL.revokeObjectURL(link.href); }
-watch(() => route.query.detail, async (id) => { if (!id) return; activeFolder.value = 'inbox'; await load(); const found = items.value.find((item) => item.id === id); if (found) selectMessage(found); }, { immediate: true });
-onMounted(async () => { await load(); loadTree().catch(() => {}); });
+async function revealMessage(id) {
+  const inbox = await getMessages('inbox');
+  messageStore.inbox = inbox;
+  const found = inbox.find((item) => item.id === id);
+  if (!found) return;
+  search.value = '';
+  await switchFolder(found.favorite ? 'favorites' : 'inbox');
+  const detail = items.value.find((item) => item.id === id);
+  if (detail) await selectMessage(detail);
+}
+watch(() => route.query.detail, (id) => { if (id) revealMessage(Array.isArray(id) ? id[0] : id); });
+onMounted(async () => { if (route.query.detail) await revealMessage(String(route.query.detail)); else await load(); if (canSend.value) loadTree().catch(() => {}); });
 </script>
 
 <style scoped>
-.mail-grid { display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(100vh - 190px); }
+.mail-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+.mail-folders { display: flex; gap: .375rem; overflow-x: auto; border-bottom: 1px solid #e7ece8; background: #f7f9f7; padding: .75rem; }
+.folder-button { display: flex; flex-shrink: 0; align-items: center; gap: .625rem; border-radius: .5rem; padding: .75rem; text-align: start; font-size: .875rem; color: #526258; transition: background-color .15s; }
+.folder-button:hover { background: #edf2ee; }
+.folder-button.is-active { background: #e6f1e9; color: #28563b; font-weight: 600; }
+.folder-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.375rem; border-radius: .375rem; background: #e3ebe5; padding-inline: .25rem; font-size: .75rem; }
+.mail-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-bottom: 1px solid #e7ece8; }
+.mail-list-heading { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; gap: .5rem; min-height: 3.25rem; border-bottom: 1px solid #e7ece8; padding: .75rem 1rem; }
+.mail-list-heading h2 { color: #43564a; font-size: .875rem; font-weight: 600; }
+.mail-list-heading > span { color: #839087; font-size: .75rem; }
+.mail-list-items { flex: 1; min-height: 0; max-height: 320px; overflow-y: auto; }
+.notification-item { display: grid; grid-template-columns: minmax(0, 1fr) 2rem; gap: .25rem; border-bottom: 1px solid #eef1ef; border-inline-start: 3px solid transparent; padding: .25rem .625rem; padding-inline-start: calc(1rem - 3px); }
+.notification-item:hover { background: #f6f9f6; }
+.notification-item.is-selected { border-inline-start-color: #609272; background: #eef5f0; }
+.notification-content { display: block; min-width: 0; padding-block: .75rem; text-align: start; }
+.favorite-toggle { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; margin-top: .375rem; border-radius: .375rem; color: #86968c; font-size: 1rem; }
+.favorite-toggle:hover { background: #e5eee7; color: #356e49; }
+.favorite-toggle.is-favorite { background: #e6f1e9; color: #356e49; }
+.favorite-toggle:disabled { cursor: wait; opacity: .5; }
+.folder-button:focus-visible, .notification-content:focus-visible, .favorite-toggle:focus-visible { outline: 2px solid #548163; outline-offset: -2px; }
+.mail-reader { min-width: 0; min-height: 320px; overflow-y: auto; }
 :global(.notification-compose-overlay .compose-dialog) { --compose-inset: clamp(24px, 5dvh, 48px); display: flex; flex-direction: column; height: min(720px, calc(100dvh - 2 * var(--compose-inset))); margin: var(--compose-inset) auto; }
 :global(.notification-compose-overlay .compose-dialog .el-dialog__header) { flex-shrink: 0; }
 :global(.notification-compose-overlay .compose-dialog .el-dialog__body) { flex: 1; min-height: 0; overflow: hidden; padding-top: .5rem; }
@@ -239,15 +302,14 @@ onMounted(async () => { await load(); loadTree().catch(() => {}); });
 .editor-glyph.align-center { text-align: center; }
 .editor-glyph.align-right { text-align: end; }
 .compose-form { color: #34473a; font-size: .875rem; }
-.mail-list { min-height: 280px; }
-.mail-reader { min-height: 320px; }
 .rich-editor:empty::before { color: #9aa69e; content: attr(data-placeholder); pointer-events: none; }
 .mail-content :deep(p) { margin: 0 0 .75rem; }
 .mail-content :deep(ul) { list-style: disc; padding-inline-start: 1.5rem; }
 .mail-content :deep(ol) { list-style: decimal; padding-inline-start: 1.5rem; }
 .mail-content :deep(blockquote) { border-inline-start: 3px solid #b6c8bb; margin: .75rem 0; padding-inline-start: 1rem; color: #66756b; }
 .mail-content :deep(a) { color: #2f7650; text-decoration: underline; }
-@media (min-width: 1024px) { .mail-grid { grid-template-columns: 210px 330px minmax(0, 1fr); } .mail-list,.mail-reader { min-height: calc(100vh - 190px); } }
+@media (min-width: 768px) { .mail-grid { grid-template-columns: minmax(260px, 34%) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: clamp(440px, calc(100dvh - 208px), 900px); } .mail-folders { grid-column: 1 / -1; } .mail-list { border-bottom: 0; border-inline-end: 1px solid #e7ece8; } .mail-list-items { max-height: none; } .mail-reader { min-height: 0; } }
+@media (min-width: 1024px) { .mail-grid { grid-template-columns: 184px minmax(280px, 320px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); } .mail-folders { display: block; grid-column: auto; border-bottom: 0; border-inline-end: 1px solid #e7ece8; } .folder-button { width: 100%; margin-bottom: .375rem; } }
 @media (min-width: 1024px) { .recipient-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .recipient-users { grid-column: auto; } .recipient-users :deep(.el-checkbox) { margin-top: .125rem; } }
 @media (max-width: 640px), (max-height: 560px) { :global(.notification-compose-overlay .compose-dialog .el-dialog__body) { max-height: none !important; overflow-y: auto !important; } .compose-canvas { height: auto; min-height: 100%; } .compose-canvas > .rich-editor { flex: none; min-height: 160px; max-height: 240px; } }
 @media (max-width: 640px) { .recipient-grid { grid-template-columns: minmax(0, 1fr); } .recipient-users { grid-column: auto; } .compose-row { grid-template-columns: 4.5rem minmax(0, 1fr); } .compose-actions { align-items: stretch; flex-direction: column; } .compose-actions > .el-select { width: 100%; } .attachment-row { flex-wrap: wrap; } .attachment-files { flex-basis: 100%; } }

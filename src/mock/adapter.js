@@ -590,20 +590,33 @@ export async function mockDispatch(config) {
   if (url.includes('/messages') && !url.includes('/me/')) {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
     if (Array.isArray(profile.permissionCodes)) {
-      const requiredCode = method === 'POST' ? 'messages.send' : 'messages.view';
+      const requiredCode = method === 'POST' && url.endsWith('/messages') ? 'messages.send' : 'messages.view';
       if (!profile.permissionCodes.includes(requiredCode)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
     }
     const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
+    const userKey = String(profile.id || profile.username || currentRole);
+    const identity = [profile.id, profile.username, profile.cardNo, profile.rationCardNo, profile.agentCode].filter(Boolean).map(String);
+    const isReceived = (item) => item.audience?.includes(currentRole) && (!item.recipientIds?.length || item.recipientIds.some((id) => identity.includes(String(id)) || (currentRole === 'agent' && id === 'FA-00128')));
+    const isSent = (item) => item.senderId ? item.senderId === userKey : item.senderRole === currentRole;
+    const presentMessage = (item, sourceFolder = isReceived(item) ? 'inbox' : 'sent') => ({ ...item, sourceFolder, read: (item.readBy || []).includes(currentRole), favorite: (item.favoriteBy || []).includes(userKey) });
+    const newestFirst = (rows) => rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     if (url.endsWith('/messages/recipients/tree') && method === 'GET') return createResponse(MOCK_AGENT_HIERARCHY_TREE);
     const attachmentMatch = url.match(/\/messages\/attachments\/([^/?]+)/);
     if (attachmentMatch && method === 'GET') return createResponse(await getMockMessageAttachment(decodeURIComponent(attachmentMatch[1])));
     if (url.endsWith('/messages/inbox') && method === 'GET') {
-      const userProfile = profile;
-      const identity = [userProfile.id, userProfile.username, userProfile.cardNo, userProfile.rationCardNo, userProfile.agentCode].filter(Boolean).map(String);
-      const inbox = messages.filter((item) => item.audience?.includes(currentRole) && (!item.recipientIds?.length || item.recipientIds.some((id) => identity.includes(String(id)) || (currentRole === 'agent' && id === 'FA-00128'))));
-      return createResponse(inbox.map((item) => ({ ...item, read: (item.readBy || []).includes(currentRole) })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+      return createResponse(newestFirst(messages.filter(isReceived).map((item) => presentMessage(item, 'inbox'))));
     }
-    if (url.endsWith('/messages/sent') && method === 'GET') return createResponse(messages.filter((item) => item.senderRole === currentRole).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    if (url.endsWith('/messages/sent') && method === 'GET') return createResponse(newestFirst(messages.filter(isSent).map((item) => presentMessage(item, 'sent'))));
+    if (url.endsWith('/messages/favorites') && method === 'GET') return createResponse(newestFirst(messages.filter((item) => (isReceived(item) || isSent(item)) && (item.favoriteBy || []).includes(userKey)).map((item) => presentMessage(item))));
+    const favoriteMatch = url.match(/\/messages\/([^/?]+)\/favorite$/);
+    if (favoriteMatch && method === 'PUT') {
+      const item = messages.find((entry) => entry.id === decodeURIComponent(favoriteMatch[1]));
+      if (!item || (!isReceived(item) && !isSent(item))) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      if (typeof data.favorite !== 'boolean') return createResponse({}, 400, i18n.global.t('api.businessError'));
+      item.favoriteBy = data.favorite ? [...new Set([...(item.favoriteBy || []), userKey])] : (item.favoriteBy || []).filter((key) => key !== userKey);
+      writeCenter('messages', messages);
+      return createResponse(presentMessage(item));
+    }
     if (url.endsWith('/messages') && method === 'POST') {
       if (!Array.isArray(profile.permissionCodes) && !['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
       const isMultipart = typeof FormData !== 'undefined' && data instanceof FormData;
@@ -613,13 +626,14 @@ export async function mockDispatch(config) {
       const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], everyone: ['citizen', 'agent', 'admin', 'minister_center', 'deputy_minister', 'director_planning'] };
       const files = isMultipart ? data.getAll('attachments') : [];
       const attachments = await Promise.all(files.filter((file) => file instanceof File).map(async (file) => ({ id: await saveMockMessageAttachment(file), name: file.name, size: file.size, type: file.type })));
-      const next = { ...messageData, recipientType, attachments, id: `msg-${crypto.randomUUID()}`, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
+      const next = { ...messageData, recipientType, attachments, id: `msg-${crypto.randomUUID()}`, senderId: userKey, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
       messages.unshift(next); writeCenter('messages', messages); return createResponse(next);
     }
     const readMatch = url.match(/\/messages\/([^/?]+)\/read$/);
     if (readMatch && method === 'POST') {
       const item = messages.find((entry) => entry.id === decodeURIComponent(readMatch[1]));
-      if (item) { item.readBy = [...new Set([...(item.readBy || []), currentRole])]; writeCenter('messages', messages); }
+      if (!item || !isReceived(item)) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      item.readBy = [...new Set([...(item.readBy || []), currentRole])]; writeCenter('messages', messages);
       return createResponse({ success: true });
     }
   }

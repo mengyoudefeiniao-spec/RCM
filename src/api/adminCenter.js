@@ -4,6 +4,7 @@ export const getSystemRecords = (section) => request({ url: `/admin/system/${sec
 export const saveSystemRecord = (section, data) => request({ url: `/admin/system/${section}`, method: 'POST', data });
 export const deleteSystemRecord = (section, id, data = {}) => request({ url: `/admin/system/${section}/${encodeURIComponent(id)}`, method: 'DELETE', data });
 export const getMessages = (box = 'inbox') => request({ url: `/messages/${box}`, method: 'GET' });
+export const setMessageFavorite = (id, favorite) => request({ url: `/messages/${encodeURIComponent(id)}/favorite`, method: 'PUT', data: { favorite } });
 export const getMessageRecipientTree = () => request({ url: '/messages/recipients/tree', method: 'GET' });
 export const sendMessage = (data) => {
   const form = new FormData();
