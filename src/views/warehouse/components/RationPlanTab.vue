@@ -124,7 +124,7 @@
         </div>
       </div>
 
-      <div class="space-y-3" :class="isAppMode ? '!space-y-2' : ''">
+      <div v-if="showCitizenQuotaDetails" class="space-y-3" :class="isAppMode ? '!space-y-2' : ''">
         <div class="flex items-center justify-between flex-wrap gap-2" :class="isAppMode ? 'flex-col items-start gap-1' : ''">
           <h4
             class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5"
@@ -1235,6 +1235,9 @@ import { unitLabel } from '../../../utils/dataLabels.js';
 import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['go-purchase']);
+const props = defineProps({
+  showCitizenQuotaDetails: { type: Boolean, default: true }
+});
 
 const route = useRoute();
 const { t, locale } = useI18n();

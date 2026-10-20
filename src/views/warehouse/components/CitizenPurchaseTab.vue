@@ -1,46 +1,32 @@
 <template>
   <div ref="processContainerRef" class="citizen-purchase-tab space-y-4">
-    <!-- ======================================================== -->
-    <!-- 1. 优化点3：极简户主信息胶囊栏 (释放 APP 移动端首屏宝贵空间) -->
-    <!-- ======================================================== -->
-    <div class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1B3123] via-[#12241A] to-[#1B3123] text-white rounded-lg px-3.5 py-2.5 shadow-xs border border-[#1F3326] flex flex-wrap items-center justify-between gap-2 text-xs">
-      <!-- 左侧：户主、卡号与人数徽章 -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <div class="w-6 h-6 rounded-lg bg-[#326445]/80 flex items-center justify-center text-white shrink-0">
-          <el-icon :size="13"><UserFilled /></el-icon>
-        </div>
-        <div class="flex items-center gap-1.5 font-bold">
-          <span>{{ quotaInfo.headName || '艾哈迈德·哈桑' }}</span>
-          <span class="text-[#8A9A8F] font-normal">({{ $t('citizenPurchase.compactHead') }})</span>
-        </div>
-        <span class="text-[#58685D] font-mono">·</span>
-        <span class="font-mono text-[#AECBB8] font-bold tracking-tight">
-          {{ quotaInfo.cardNo || 'RC-10029381' }}
-        </span>
-        <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono font-bold origin-left rtl:origin-right">
-          {{ quotaInfo.memberCount || 4 }} {{ $t('citizenPurchase.compactMembers') }}
-        </el-tag>
+    <!-- 本月配额摘要：用实际剩余额度替代户主信息栏 -->
+    <section class="rounded-lg border border-[#C7DED0] bg-gradient-to-r rtl:bg-gradient-to-l from-[#EFF5F1] to-white p-3.5 shadow-xs" aria-labelledby="monthly-quota-title">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <h3 id="monthly-quota-title" class="text-sm font-bold text-[#1B3123] flex items-center gap-1.5">
+          <el-icon class="text-[#326445]"><GoodsFilled /></el-icon>
+          {{ $t('citizenPurchase.monthlyQuotaTitle') }}
+        </h3>
+        <span class="text-xs font-mono font-bold text-[#326445]">{{ displayQuotaPeriod }}</span>
       </div>
-
-      <!-- 右侧：签约网点与快速刷新 -->
-      <div class="flex items-center gap-2 ms-auto text-[11px] text-[#C9DBCE]">
-        <div class="hidden sm:flex items-center gap-1 text-[#C9DBCE]">
-          <el-icon class="text-[#DFC08B]"><Shop /></el-icon>
-          <span class="truncate max-w-[190px]">{{ quotaInfo.agentName || '卡尔赫第一代销站' }}</span>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-white px-2.5 py-2">
+          <div class="text-[11px] font-semibold text-[#43554B] truncate">{{ formatItemName(item.itemName) }}</div>
+          <div class="mt-1 flex items-baseline gap-1 text-xs">
+            <span class="font-mono font-bold text-[#2F7A50]">{{ item.remainingQuota }}</span>
+            <span class="text-[#8A9A8F]">/ {{ item.totalHouseholdQuota }} {{ item.unit }}</span>
+          </div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('citizenPurchase.remainingOfTotal') }}</div>
         </div>
-        <span class="hidden sm:inline text-[#58685D] font-mono">·</span>
-        <span class="font-mono text-[#E5CEA1] text-[10px]">{{ displayQuotaPeriod }}</span>
+      </div>
+      <div class="flex justify-end mt-2">
         <el-tooltip :content="$t('citizenPurchase.refreshTooltip')" placement="top">
-          <button
-            type="button"
-            class="text-[#8A9A8F] hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
-            @click="loadQuotaData"
-          >
+          <button type="button" class="text-[#326445] hover:text-[#1B3123] transition-colors cursor-pointer p-1 rounded-md hover:bg-[#E1F4E4]" @click="loadQuotaData">
             <el-icon :size="14"><Refresh /></el-icon>
           </button>
         </el-tooltip>
       </div>
-    </div>
+    </section>
 
     <!-- ======================================================== -->
     <!-- 2. 优化点2：拆分为 3 步流程导航指示器 (选购 -> 配送 -> 付款) -->
