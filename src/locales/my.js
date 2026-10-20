@@ -29,6 +29,14 @@ export default {
     currentPasswordWrong: '当前密码不正确', invalidCredentials: '账号或密码不正确',
     passwordChanged: '密码已修改', logout: '退出登录', logoutSuccess: '已安全退出登录',
     loadFailed: '加载账户资料失败', saveFailed: '保存失败，请重试',
+    enableAlerts: '开启手机提醒', alertsEnabled: '已开启手机消息提醒', alertsUnavailable: '浏览器未允许消息提醒',
+    supplementTitle: '补充申请材料', materialRequestBody: '「{flow}」申请需要补充证明材料。',
+    chooseMaterial: '选择补充文件', materialFileHint: '支持 PDF、JPG、PNG，最大 10 MB',
+    invalidMaterialFile: '请上传 10 MB 以内的 PDF、JPG 或 PNG 文件', submitSupplement: '提交补充材料', materialSubmitted: '补充材料已提交',
+    materialFlow: { 'transfer-agent': '申请代理转移', 'member-transfer': '申请成员转移', 'split-household': '申请分户', 'change-head': '变更户主', unfreeze: '申请解冻' },
+    verifyPhoneChange: '修改手机号需人脸验证', faceRequired: '请先完成人脸验证再修改手机号',
+    smsCode: '短信验证码', sendSms: '发送验证码', smsSent: '验证码已发送至当前手机号',
+    demoSmsCode: '演示验证码：{code}', invalidSmsCode: '短信验证码无效或已过期', smsWait: '请稍后再发送验证码',
     notice: {
       citizen: {
         review: { title: '审核结果', body: '您的配给业务申请已有新的审核结果，请查看办理进度。' },
@@ -40,7 +48,9 @@ export default {
         review: { title: '审核结果', body: '代理业务申请已更新审核状态，请查看办理记录。' },
         stock: { title: '库存告警', body: '部分配给商品库存低于预警线，请及时补货。' },
         delivery: { title: '配送通知', body: '有新的配送任务等待网点确认。' },
-        system: { title: '系统通知', body: '请保持配送人员和网点联系信息为最新状态。' }
+        system: { title: '系统通知', body: '请保持配送人员和网点联系信息为最新状态。' },
+        outlet: { title: '网点信息更新', body: '代理网点有新的或更新的信息，请查看。' },
+        courier: { title: '配送人员更新', body: '配送人员资料已更新，请查看。' }
       }
     }
   },
@@ -73,6 +83,14 @@ export default {
     currentPasswordWrong: 'Current password is incorrect', invalidCredentials: 'Invalid username or password',
     passwordChanged: 'Password changed', logout: 'Log out', logoutSuccess: 'Signed out securely',
     loadFailed: 'Could not load account details', saveFailed: 'Could not save; please try again',
+    enableAlerts: 'Enable phone alerts', alertsEnabled: 'Phone alerts enabled', alertsUnavailable: 'Browser notifications are not allowed',
+    supplementTitle: 'Submit additional documents', materialRequestBody: 'The {flow} request needs supporting documents.',
+    chooseMaterial: 'Choose a document', materialFileHint: 'PDF, JPG or PNG; up to 10 MB',
+    invalidMaterialFile: 'Upload a PDF, JPG or PNG file under 10 MB', submitSupplement: 'Submit document', materialSubmitted: 'Document submitted',
+    materialFlow: { 'transfer-agent': 'agent transfer', 'member-transfer': 'member transfer', 'split-household': 'household split', 'change-head': 'change of household head', unfreeze: 'card unfreeze' },
+    verifyPhoneChange: 'Face verification for phone change', faceRequired: 'Complete face verification before changing your phone number',
+    smsCode: 'SMS verification code', sendSms: 'Send code', smsSent: 'Code sent to your current phone',
+    demoSmsCode: 'Demo code: {code}', invalidSmsCode: 'SMS code is invalid or expired', smsWait: 'Please wait before sending another code',
     notice: {
       citizen: {
         review: { title: 'Review result', body: 'A ration service request has a new review result. Check its progress.' },
@@ -84,7 +102,9 @@ export default {
         review: { title: 'Review result', body: 'An agent application has a new review status. Check your records.' },
         stock: { title: 'Stock alert', body: 'Some ration items are below the stock threshold. Please replenish them.' },
         delivery: { title: 'Delivery notice', body: 'A new delivery task is awaiting outlet confirmation.' },
-        system: { title: 'System notice', body: 'Keep courier and outlet contact details up to date.' }
+        system: { title: 'System notice', body: 'Keep courier and outlet contact details up to date.' },
+        outlet: { title: 'Outlet update', body: 'New or updated outlet information is available.' },
+        courier: { title: 'Courier update', body: 'Courier information has been updated.' }
       }
     }
   },
@@ -117,6 +137,14 @@ export default {
     currentPasswordWrong: 'كلمة المرور الحالية غير صحيحة', invalidCredentials: 'اسم المستخدم أو كلمة المرور غير صحيحة',
     passwordChanged: 'تغيرت كلمة المرور', logout: 'تسجيل الخروج', logoutSuccess: 'تم تسجيل الخروج بأمان',
     loadFailed: 'تعذر تحميل بيانات الحساب', saveFailed: 'تعذر الحفظ، حاول مرة أخرى',
+    enableAlerts: 'تفعيل تنبيهات الهاتف', alertsEnabled: 'تم تفعيل تنبيهات الهاتف', alertsUnavailable: 'المتصفح لا يسمح بالإشعارات',
+    supplementTitle: 'تقديم مستندات إضافية', materialRequestBody: 'يحتاج طلب «{flow}» إلى مستندات داعمة إضافية.',
+    chooseMaterial: 'اختر مستنداً', materialFileHint: 'PDF أو JPG أو PNG، حتى 10 ميغابايت',
+    invalidMaterialFile: 'ارفع ملف PDF أو JPG أو PNG لا يتجاوز 10 ميغابايت', submitSupplement: 'تقديم المستند', materialSubmitted: 'تم تقديم المستند',
+    materialFlow: { 'transfer-agent': 'نقل الوكيل', 'member-transfer': 'نقل فرد', 'split-household': 'تقسيم الأسرة', 'change-head': 'تغيير رب الأسرة', unfreeze: 'رفع التجميد' },
+    verifyPhoneChange: 'التحقق بالوجه لتغيير رقم الهاتف', faceRequired: 'أكمل التحقق بالوجه قبل تغيير رقم الهاتف',
+    smsCode: 'رمز التحقق عبر الرسائل', sendSms: 'إرسال الرمز', smsSent: 'أُرسل الرمز إلى هاتفك الحالي',
+    demoSmsCode: 'رمز العرض التجريبي: {code}', invalidSmsCode: 'رمز الرسالة غير صحيح أو انتهت صلاحيته', smsWait: 'يرجى الانتظار قبل إرسال رمز جديد',
     notice: {
       citizen: {
         review: { title: 'نتيجة التدقيق', body: 'صدرت نتيجة جديدة لتدقيق طلبك التمويني. راجع حالة المعاملة.' },
@@ -128,7 +156,9 @@ export default {
         review: { title: 'نتيجة التدقيق', body: 'تغيرت حالة تدقيق طلب الوكالة. راجع سجل المعاملات.' },
         stock: { title: 'تنبيه المخزون', body: 'انخفض مخزون بعض المواد التموينية دون الحد المحدد. يرجى إعادة التزويد.' },
         delivery: { title: 'إشعار التوصيل', body: 'هناك مهمة توصيل جديدة تنتظر تأكيد المنفذ.' },
-        system: { title: 'إشعار النظام', body: 'حافظ على تحديث بيانات اتصال المنفذ ومندوبي التوصيل.' }
+        system: { title: 'إشعار النظام', body: 'حافظ على تحديث بيانات اتصال المنفذ ومندوبي التوصيل.' },
+        outlet: { title: 'تحديث المنفذ', body: 'تتوفر معلومات جديدة أو محدثة عن المنفذ.' },
+        courier: { title: 'تحديث المندوبين', body: 'تم تحديث بيانات مندوب التوصيل.' }
       }
     }
   },
@@ -161,6 +191,14 @@ export default {
     currentPasswordWrong: 'وشەی نهێنی ئێستا هەڵەیە', invalidCredentials: 'ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە',
     passwordChanged: 'وشەی نهێنی گۆڕدرا', logout: 'دەرچوون', logoutSuccess: 'بە سەلامەتی دەرچوویت',
     loadFailed: 'بارکردنی زانیاری هەژمار سەرکەوتوو نەبوو', saveFailed: 'پاشەکەوتکردن سەرکەوتوو نەبوو؛ دووبارە هەوڵ بدە',
+    enableAlerts: 'چالاککردنی ئاگاداریی مۆبایل', alertsEnabled: 'ئاگاداریی مۆبایل چالاککرا', alertsUnavailable: 'وێبگەڕ ڕێگە بە ئاگادارکردنەوە نادات',
+    supplementTitle: 'پێشکەشکردنی بەڵگەنامەی زیادە', materialRequestBody: 'داواکاریی «{flow}» پێویستی بە بەڵگەنامەی پشتگیری زیاترە.',
+    chooseMaterial: 'بەڵگەنامەیەک هەڵبژێرە', materialFileHint: 'PDF یان JPG یان PNG؛ تا ١٠ مێگابایت',
+    invalidMaterialFile: 'فایلی PDF یان JPG یان PNG کە لە ١٠ مێگابایت کەمترە باربکە', submitSupplement: 'پێشکەشکردنی بەڵگەنامە', materialSubmitted: 'بەڵگەنامە پێشکەشکرا',
+    materialFlow: { 'transfer-agent': 'گواستنەوەی بریکار', 'member-transfer': 'گواستنەوەی ئەندام', 'split-household': 'دابەشکردنی خێزان', 'change-head': 'گۆڕینی سەرۆکی خێزان', unfreeze: 'هەڵوەشاندنەوەی بەستن' },
+    verifyPhoneChange: 'پشتڕاستکردنەوەی ڕووخسار بۆ گۆڕینی تەلەفۆن', faceRequired: 'پێش گۆڕینی ژمارەی تەلەفۆن ڕووخسار پشتڕاست بکەرەوە',
+    smsCode: 'کۆدی پشتڕاستکردنەوەی SMS', sendSms: 'ناردنی کۆد', smsSent: 'کۆد بۆ ژمارەی ئێستات نێردرا',
+    demoSmsCode: 'کۆدی نیشاندان: {code}', invalidSmsCode: 'کۆدی SMS هەڵەیە یان کاتی بەسەرچووە', smsWait: 'تکایە پێش ناردنی کۆدی نوێ چاوەڕێ بکە',
     notice: {
       citizen: {
         review: { title: 'ئەنجامی وردبینی', body: 'ئەنجامێکی نوێ بۆ وردبینی داواکاریی بەشەخۆراکەکەت دەرچووە. دۆخی داواکارییەکە ببینە.' },
@@ -172,7 +210,9 @@ export default {
         review: { title: 'ئەنجامی وردبینی', body: 'دۆخی وردبینی داواکاریی بریکاری نوێکرایەوە. تۆمارەکان ببینە.' },
         stock: { title: 'هۆشداری کۆگا', body: 'بڕی هەندێک کەلوپەلی بەشەخۆراک لە سنووری هۆشداری کەمترە. تکایە پڕی بکەرەوە.' },
         delivery: { title: 'ئاگادارکردنەوەی گەیاندن', body: 'ئەرکی گەیاندنی نوێ چاوەڕوانی پشتڕاستکردنەوەی بنکەیە.' },
-        system: { title: 'ئاگادارکردنەوەی سیستەم', body: 'زانیاری پەیوەندی بنکە و گەیەنەران بە نوێیی بهێڵەرەوە.' }
+        system: { title: 'ئاگادارکردنەوەی سیستەم', body: 'زانیاری پەیوەندی بنکە و گەیەنەران بە نوێیی بهێڵەرەوە.' },
+        outlet: { title: 'نوێکردنەوەی بنکە', body: 'زانیاری نوێ یان نوێکراوەی بنکە بەردەستە.' },
+        courier: { title: 'نوێکردنەوەی گەیەنەر', body: 'زانیاری گەیەنەر نوێکرایەوە.' }
       }
     }
   }

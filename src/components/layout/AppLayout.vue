@@ -63,13 +63,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/auth.js';
+import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import AppHeader from './AppHeader.vue';
 import AppMobileNav from './AppMobileNav.vue';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
+const myNotifications = useMyNotificationsStore();
+watch(() => authStore.currentRole, (role) => myNotifications.start(role), { immediate: true });
+onBeforeUnmount(() => myNotifications.stop());
 
 const isAppMode = computed(() => {
   if (route.query.layout === 'app') {

@@ -1,5 +1,6 @@
 <template>
   <div class="transfer-agent-view space-y-4 sm:space-y-6">
+    <SupplementMaterialsPanel />
     <div class="bg-white rounded-lg p-4 sm:p-6 border border-[#D9E5DB]/80 shadow-xs space-y-4 sm:space-y-6">
       <!-- 顶部标题与返回导航 -->
       <div class="flex items-start sm:items-center justify-between gap-4 border-b border-[#E9F1EB] pb-4">
@@ -547,6 +548,7 @@ import { useCitizenStore } from '../../stores/citizen.js';
 import { getTransferOptions, submitTransferAgent } from '../../api/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import SupplementMaterialsPanel from '../../components/citizen/SupplementMaterialsPanel.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import {

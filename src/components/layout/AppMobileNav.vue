@@ -47,7 +47,7 @@
         class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
         :class="$route.path === '/my' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
-        <el-icon :size="20"><UserFilled /></el-icon>
+        <span class="relative"><el-icon :size="20"><UserFilled /></el-icon><span v-if="myNotifications.unreadCount" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500 ring-2 ring-white" /></span>
         <span>{{ $t('my.nav') }}</span>
       </router-link>
     </template>
@@ -100,7 +100,7 @@
         class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
         :class="$route.path === '/my' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
-        <el-icon :size="20"><UserFilled /></el-icon>
+        <span class="relative"><el-icon :size="20"><UserFilled /></el-icon><span v-if="myNotifications.unreadCount" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500 ring-2 ring-white" /></span>
         <span>{{ $t('my.nav') }}</span>
       </router-link>
     </template>
@@ -178,6 +178,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { useReviewStore } from '../../stores/review.js';
+import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import {
   DataAnalysis,
   User,
@@ -197,6 +198,7 @@ import {
 const route = useRoute();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
+const myNotifications = useMyNotificationsStore();
 
 // 与 AppLayout 保持完全一致的三级判定：URL query 优先，其次会话记忆兜底，
 // 防止应用内路由丢失 layout=app 参数后底部导航误降级为 fixed 悬浮遮挡内容

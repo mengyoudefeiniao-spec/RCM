@@ -35,45 +35,25 @@
     </template>
 
     <template v-else>
-      <div class="grid grid-cols-4 gap-1 rounded-xl bg-[#EFF5F1] p-1.5">
+      <div class="grid grid-cols-3 gap-1 rounded-xl bg-[#EFF5F1] p-1.5">
         <button v-for="tab in agentTabs" :key="tab.key" type="button"
           class="min-w-0 rounded-lg px-1 py-2 text-xs sm:text-sm transition-colors flex flex-col items-center gap-1"
           :class="currentTab === tab.key ? 'bg-white text-[#326445] font-bold shadow-sm' : 'text-[#58685D]'"
-          @click="currentTab = tab.key">
-          <el-icon :size="18"><component :is="tab.icon" /></el-icon>
+          @click="selectTab(tab.key)">
+          <span class="relative"><el-icon :size="18"><component :is="tab.icon" /></el-icon><span v-if="notificationStore.hasUnread(tab.key)" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500 ring-2 ring-white" /></span>
           <span class="truncate max-w-full">{{ $t(`my.${tab.key}`) }}</span>
         </button>
       </div>
-
-      <section v-if="currentTab === 'overview'" class="space-y-4">
-        <div class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm">
-          <h2 class="font-bold mb-4">{{ $t('my.todayOverview') }}</h2>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div><div class="text-xl font-bold text-[#326445]">{{ outlets.length }}</div><div class="text-xs text-[#58685D]">{{ $t('my.outletCount') }}</div></div>
-            <div><div class="text-xl font-bold text-[#326445]">{{ couriers.length }}</div><div class="text-xs text-[#58685D]">{{ $t('my.courierCount') }}</div></div>
-            <div><div class="text-xl font-bold text-[#C9A13B]">{{ unreadCount }}</div><div class="text-xs text-[#58685D]">{{ $t('my.unread') }}</div></div>
-          </div>
-        </div>
-        <div class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm space-y-3">
-          <h2 class="font-bold">{{ $t('my.pendingItems') }}</h2>
-          <button type="button" class="w-full text-start flex items-center justify-between gap-3 border-b border-[#E9F1EB] pb-3 text-sm" @click="currentTab = 'notifications'">
-            <span>{{ $t('my.pendingStock') }}</span><el-icon class="rtl-mirror-icon"><ArrowRight /></el-icon>
-          </button>
-          <button type="button" class="w-full text-start flex items-center justify-between gap-3 text-sm" @click="currentTab = 'notifications'">
-            <span>{{ $t('my.pendingDelivery') }}</span><el-icon class="rtl-mirror-icon"><ArrowRight /></el-icon>
-          </button>
-        </div>
-      </section>
     </template>
 
     <section v-if="isCitizen || currentTab === 'notifications'" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm">
       <div class="flex items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
-          <el-icon class="text-[#326445]"><Bell /></el-icon>
+          <span class="relative"><el-icon class="text-[#326445]"><Bell /></el-icon><span v-if="unreadCount" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500" /></span>
           <h2 class="font-bold">{{ $t('my.notificationCenter') }}</h2>
           <span v-if="unreadCount" class="rounded-full bg-[#FDF3E0] px-2 py-0.5 text-xs text-[#7A5F21]">{{ $t('my.unreadCount', { count: unreadCount }) }}</span>
         </div>
-        <el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button>
+        <div class="flex items-center gap-1"><el-button size="small" text @click="enableDeviceAlerts">{{ $t('my.enableAlerts') }}</el-button><el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button></div>
       </div>
       <div v-if="notifications.length === 0" class="py-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noNotifications') }}</div>
       <div v-for="item in notifications" :key="item.id" class="border-t border-[#E9F1EB] py-3 first:border-t-0">
@@ -81,7 +61,8 @@
           <span class="mt-1 size-2 shrink-0 rounded-full" :class="item.read ? 'bg-[#D9E5DB]' : 'bg-[#C9A13B]'" />
           <span class="min-w-0 flex-1">
             <span class="flex items-center justify-between gap-2"><span class="font-semibold text-sm">{{ $t(`my.notice.${role}.${item.type}.title`) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
-            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ $t(`my.notice.${role}.${item.type}.body`) }}</span>
+            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ item.flow ? $t('my.materialRequestBody', { flow: $t(`my.materialFlow.${item.flow}`) }) : $t(`my.notice.${role}.${item.type}.body`) }}</span>
+            <span v-if="item.materialStatus === 'submitted'" class="block mt-1 text-xs text-[#326445]">{{ $t('my.materialSubmitted') }}</span>
             <span class="block mt-1 text-xs font-semibold text-[#326445]">{{ $t('my.viewRelated') }}</span>
           </span>
           <el-icon class="rtl-mirror-icon mt-1 text-[#58685D]"><ArrowRight /></el-icon>
@@ -128,6 +109,17 @@
       <template #footer><el-button @click="contactDialogOpen = false">{{ $t('common.cancel') }}</el-button><el-button type="primary" :loading="saving" @click="saveContact">{{ $t('my.saveContact') }}</el-button></template>
     </el-dialog>
 
+    <FaceLivenessVerifyDialog
+      v-if="isCitizen"
+      v-model="faceDialogOpen"
+      :title="$t('my.verifyPhoneChange')"
+      :target-name="displayName"
+      :target-national-id="authStore.userProfile?.cardNo || ''"
+      :allow-quick-pass="false"
+      @success="onFaceVerified"
+      @cancel="contactDialogOpen = true"
+    />
+
     <el-dialog v-model="courierDialogOpen" :title="$t(courierForm.id ? 'my.editCourier' : 'my.addCourier')" width="min(92vw, 440px)" append-to-body>
       <el-form label-position="top" @submit.prevent="saveCourier">
         <el-form-item :label="$t('my.courierName')"><el-input v-model.trim="courierForm.name" /></el-form-item>
@@ -143,6 +135,10 @@
         <el-form-item :label="$t('my.currentPassword')"><el-input v-model="passwordForm.currentPassword" type="password" show-password autocomplete="current-password" /></el-form-item>
         <el-form-item :label="$t('my.newPassword')"><el-input v-model="passwordForm.newPassword" type="password" show-password autocomplete="new-password" /></el-form-item>
         <el-form-item :label="$t('my.confirmPassword')"><el-input v-model="passwordForm.confirmPassword" type="password" show-password autocomplete="new-password" /></el-form-item>
+        <el-form-item v-if="isCitizen" :label="$t('my.smsCode')">
+          <div class="flex w-full gap-2"><el-input v-model.trim="passwordForm.smsCode" maxlength="6" inputmode="numeric" dir="ltr" /><el-button :disabled="smsCountdown > 0" @click="sendPasswordSms">{{ smsCountdown ? `${smsCountdown}s` : $t('my.sendSms') }}</el-button></div>
+          <span v-if="demoSmsCode" class="text-xs text-[#326445]">{{ $t('my.demoSmsCode', { code: demoSmsCode }) }}</span>
+        </el-form-item>
         <div class="text-xs text-[#8A9A8F]">{{ $t('my.passwordHint') }}</div>
       </el-form>
       <template #footer><el-button @click="passwordDialogOpen = false">{{ $t('common.cancel') }}</el-button><el-button type="primary" :loading="saving" @click="savePassword">{{ $t('my.changePassword') }}</el-button></template>
@@ -151,19 +147,22 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, DataAnalysis, Shop } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
-import { getMyProfile, updateMyProfile, changeMyPassword, getMyNotifications, markMyNotificationsRead, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier } from '../../api/my.js';
+import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier } from '../../api/my.js';
+import { useMyNotificationsStore, notificationUrl } from '../../stores/myNotifications.js';
+import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const notificationStore = useMyNotificationsStore();
 const role = computed(() => authStore.currentRole);
 const isCitizen = computed(() => role.value === 'citizen');
 const isAppMode = computed(() => route.query.layout === 'app' || sessionStorage.getItem('rcm_layout_mode') === 'app');
@@ -171,11 +170,11 @@ const profile = ref({ email: '', phone: '', address: '' });
 const agentProfile = ref(null);
 const outlets = ref([]);
 const couriers = ref([]);
-const notifications = ref([]);
-const unreadCount = computed(() => notifications.value.filter(item => !item.read).length);
-const currentTab = ref('overview');
+const notifications = computed(() => notificationStore.items);
+const unreadCount = computed(() => notificationStore.unreadCount);
+const currentTab = ref(['notifications', 'outlets', 'couriers'].includes(route.query.tab) ? route.query.tab : 'notifications');
 const agentTabs = [
-  { key: 'overview', icon: DataAnalysis }, { key: 'notifications', icon: Bell },
+  { key: 'notifications', icon: Bell },
   { key: 'outlets', icon: Shop }, { key: 'couriers', icon: User }
 ];
 const demoIdentity = computed(() => ['usr-cit-01', 'usr-002', 'usr-agt-01', 'usr-003'].includes(authStore.userProfile?.id));
@@ -183,16 +182,20 @@ const displayName = computed(() => demoIdentity.value ? t(isCitizen.value ? 'my.
 const contactDialogOpen = ref(false);
 const courierDialogOpen = ref(false);
 const passwordDialogOpen = ref(false);
+const faceDialogOpen = ref(false);
+const faceToken = ref('');
+const smsCountdown = ref(0);
+const demoSmsCode = ref('');
+let smsTimer;
 const saving = ref(false);
 const contactForm = reactive({ email: '', phone: '', address: '' });
 const courierForm = reactive({ id: '', name: '', phone: '', vehicleNo: '', active: true });
-const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '' });
+const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '', smsCode: '' });
 
 async function loadData() {
   try {
-    const [account, inbox] = await Promise.all([getMyProfile(), getMyNotifications()]);
+    const [account] = await Promise.all([getMyProfile(), notificationStore.refresh()]);
     profile.value = account;
-    notifications.value = inbox;
     if (!isCitizen.value) {
       const [agent, sites, people] = await Promise.all([getAgentProfile(), getMyAgentCenters(), getMyCouriers()]);
       agentProfile.value = agent;
@@ -212,6 +215,7 @@ function formatDate(value) {
 
 function openContactDialog() {
   Object.assign(contactForm, profile.value);
+  faceToken.value = '';
   contactDialogOpen.value = true;
 }
 
@@ -220,33 +224,67 @@ async function saveContact() {
     ElMessage.warning(t('my.invalidProfile'));
     return;
   }
+  if (isCitizen.value && contactForm.phone !== profile.value.phone && !faceToken.value) {
+    contactDialogOpen.value = false;
+    faceDialogOpen.value = true;
+    return;
+  }
   saving.value = true;
   try {
-    profile.value = await updateMyProfile({ ...contactForm });
+    profile.value = await updateMyProfile({ ...contactForm, faceToken: faceToken.value });
+    faceToken.value = '';
     contactDialogOpen.value = false;
     ElMessage.success(t('my.contactSaved'));
   } catch {
-    // 请求层已显示后端错误。
+    contactDialogOpen.value = true;
   } finally { saving.value = false; }
+}
+
+async function onFaceVerified(payload) {
+  try {
+    const result = await verifyMyPhoneFace({ ...payload, purpose: 'phone-change' });
+    if (!result?.token) throw new Error('Missing face verification token');
+    faceToken.value = result.token;
+    await saveContact();
+  } catch {
+    contactDialogOpen.value = true;
+  }
+}
+
+async function enableDeviceAlerts() {
+  const enabled = await notificationStore.enableDeviceNotifications();
+  ElMessage[enabled ? 'success' : 'warning'](t(enabled ? 'my.alertsEnabled' : 'my.alertsUnavailable'));
+}
+
+async function selectTab(key) {
+  currentTab.value = key;
+  try {
+    if (key === 'outlets') outlets.value = await getMyAgentCenters();
+    if (key === 'couriers') couriers.value = await getMyCouriers();
+    if (key === 'outlets' || key === 'couriers') await notificationStore.markSectionRead(key);
+  } catch { /* The request layer shows the error. */ }
 }
 
 async function markAllRead() {
   const ids = notifications.value.filter(item => !item.read).map(item => item.id);
   if (!ids.length) return;
   try {
-    await markMyNotificationsRead(ids);
-    notifications.value = notifications.value.map(item => ({ ...item, read: true }));
+    await notificationStore.markRead(ids);
   } catch { /* 请求层负责提示 */ }
 }
 
 async function openNotification(item) {
   if (!item.read) {
     try {
-      await markMyNotificationsRead([item.id]);
-      item.read = true;
+      await notificationStore.markRead([item.id]);
     } catch { /* 仍允许查看对应业务 */ }
   }
-  await router.push(isAppMode.value ? { path: item.path, query: { layout: 'app' } } : item.path);
+  if (item.tab) await selectTab(item.tab);
+  const target = notificationUrl(item);
+  const [path, search] = target.split('?');
+  const query = Object.fromEntries(new URLSearchParams(search || ''));
+  if (isAppMode.value) query.layout = 'app';
+  await router.push({ path, query });
 }
 
 function displayOutletName(outlet) {
@@ -281,6 +319,7 @@ async function saveCourier() {
     if (courierForm.id) await updateMyCourier(courierForm.id, payload);
     else await createMyCourier(payload);
     couriers.value = await getMyCouriers();
+    await notificationStore.refresh();
     courierDialogOpen.value = false;
     ElMessage.success(t('my.courierSaved'));
   } catch { /* 请求层负责提示 */ }
@@ -292,20 +331,34 @@ async function removeCourier(courier) {
     await ElMessageBox.confirm(t('my.deleteCourierConfirm'), t('my.deleteCourier'), { type: 'warning' });
     await deleteMyCourier(courier.id);
     couriers.value = await getMyCouriers();
+    await notificationStore.refresh();
     ElMessage.success(t('my.courierDeleted'));
   } catch { /* 用户取消或请求层已提示 */ }
 }
 
 function resetPasswordForm() {
-  Object.assign(passwordForm, { currentPassword: '', newPassword: '', confirmPassword: '' });
+  Object.assign(passwordForm, { currentPassword: '', newPassword: '', confirmPassword: '', smsCode: '' });
+  demoSmsCode.value = '';
+}
+
+async function sendPasswordSms() {
+  try {
+    const result = await sendMyPasswordCode();
+    demoSmsCode.value = import.meta.env.VITE_APP_MOCK_MODE === 'true' ? (result.demoCode || '') : '';
+    smsCountdown.value = 60;
+    clearInterval(smsTimer);
+    smsTimer = setInterval(() => { if (--smsCountdown.value <= 0) clearInterval(smsTimer); }, 1000);
+    ElMessage.success(t('my.smsSent'));
+  } catch { /* The request layer shows the error. */ }
 }
 
 async function savePassword() {
   if (passwordForm.newPassword.length < 8) return ElMessage.warning(t('my.passwordTooShort'));
   if (passwordForm.newPassword !== passwordForm.confirmPassword) return ElMessage.warning(t('my.passwordMismatch'));
+  if (isCitizen.value && !/^\d{6}$/.test(passwordForm.smsCode)) return ElMessage.warning(t('my.invalidSmsCode'));
   saving.value = true;
   try {
-    await changeMyPassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
+    await changeMyPassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword, smsCode: passwordForm.smsCode });
     passwordDialogOpen.value = false;
     resetPasswordForm();
     ElMessage.success(t('my.passwordChanged'));
@@ -318,6 +371,11 @@ async function handleLogout() {
   await router.replace('/login');
 }
 
-onMounted(loadData);
+onMounted(async () => {
+  await loadData();
+  if (route.query.tab === 'outlets' || route.query.tab === 'couriers') await selectTab(route.query.tab);
+});
 watch(role, loadData);
+watch(() => route.query.tab, (tab) => { if (agentTabs.some(item => item.key === tab)) selectTab(tab); });
+onBeforeUnmount(() => clearInterval(smsTimer));
 </script>

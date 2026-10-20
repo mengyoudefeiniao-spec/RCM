@@ -34,6 +34,7 @@
         <div class="flex items-center gap-2">
           <!-- 快速跳过小按钮 (供赶时间/调试使用) -->
           <button
+            v-if="allowQuickPass"
             type="button"
             class="text-[11px] text-[#58685D] hover:text-[#326445] transition-colors cursor-pointer px-2 py-0.5 rounded border border-[#D9E5DB] bg-[#F3F8F4]"
             @click="handleQuickBypassPass"
@@ -353,6 +354,10 @@ const props = defineProps({
   targetNationalId: {
     type: String,
     default: '198004198271'
+  },
+  allowQuickPass: {
+    type: Boolean,
+    default: true
   }
 });
 

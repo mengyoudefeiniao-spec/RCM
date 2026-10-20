@@ -1,5 +1,6 @@
 // 中文测试数据源
 import { i18n } from '../locales/index.js';
+import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -248,18 +249,41 @@ async function passwordDigest(password) {
 
 const MY_NOTIFICATION_SEEDS = {
   citizen: [
-    { id: 'cit-review', type: 'review', path: '/citizen' },
-    { id: 'cit-material', type: 'material', path: '/citizen' },
-    { id: 'cit-ration', type: 'ration', path: '/warehouse' },
-    { id: 'cit-system', type: 'system', path: '/citizen' }
+    { id: 'cit-review', type: 'review', section: 'notifications', path: '/citizen' },
+    { id: 'cit-material-agent', type: 'material', section: 'notifications', flow: 'transfer-agent', path: '/citizen/transfer-agent' },
+    { id: 'cit-material-member', type: 'material', section: 'notifications', flow: 'member-transfer', path: '/citizen/member-transfer' },
+    { id: 'cit-material-split', type: 'material', section: 'notifications', flow: 'split-household', path: '/citizen/split-household' },
+    { id: 'cit-material-head', type: 'material', section: 'notifications', flow: 'change-head', path: '/citizen/change-head' },
+    { id: 'cit-material-unfreeze', type: 'material', section: 'notifications', flow: 'unfreeze', path: '/citizen/unfreeze' },
+    { id: 'cit-ration', type: 'ration', section: 'notifications', path: '/warehouse' },
+    { id: 'cit-system', type: 'system', section: 'notifications', path: '/my' }
   ],
   agent: [
-    { id: 'agt-review', type: 'review', path: '/agent' },
-    { id: 'agt-stock', type: 'stock', path: '/agent-analytics' },
-    { id: 'agt-delivery', type: 'delivery', path: '/warehouse' },
-    { id: 'agt-system', type: 'system', path: '/agent' }
+    { id: 'agt-review', type: 'review', section: 'notifications', path: '/agent' },
+    { id: 'agt-stock', type: 'stock', section: 'notifications', path: '/agent-analytics' },
+    { id: 'agt-delivery', type: 'delivery', section: 'notifications', path: '/warehouse' },
+    { id: 'agt-system', type: 'system', section: 'notifications', path: '/my' },
+    { id: 'agt-outlet-update', type: 'outlet', section: 'outlets', path: '/my', tab: 'outlets' },
+    { id: 'agt-courier-update', type: 'courier', section: 'couriers', path: '/my', tab: 'couriers' }
   ]
 };
+
+function getMockNotifications(role) {
+  const saved = readMyData(role, 'notifications', null);
+  const readIds = readMyData(role, 'read_notifications', []);
+  const seeds = MY_NOTIFICATION_SEEDS[role].map((item, index) => ({
+    ...item, read: readIds.includes(item.id), createdAt: new Date(Date.now() - index * 86400000).toISOString()
+  }));
+  if (!saved) return seeds;
+  return [...saved, ...seeds.filter((item) => !saved.some((old) => old.id === item.id))];
+}
+
+function addMockNotification(role, type, section) {
+  const items = getMockNotifications(role);
+  items.unshift({ id: `${type}-${crypto.randomUUID()}`, type, section, path: '/my', tab: section, read: false, createdAt: new Date().toISOString() });
+  writeMyData(role, 'notifications', items);
+  window.dispatchEvent(new CustomEvent('rcm:notifications-changed', { detail: { role } }));
+}
 
 const MY_COURIER_SEEDS = [
   { id: 'courier-1', name: 'Hashim Ali', phone: '07701234001', vehicleNo: 'BAG-TRK-7841', active: true },
@@ -552,13 +576,46 @@ export async function mockDispatch(config) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email) || !/^\+?[\d\s-]{7,20}$/.test(next.phone) || !next.address) {
           return createResponse({}, 400, i18n.global.t('my.invalidProfile'));
         }
+        if (role === 'citizen' && next.phone !== readMyData(role, 'profile', base).phone) {
+          const proof = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'face_proof')) || 'null');
+          if (!proof || proof.token !== data.faceToken || proof.expiresAt < Date.now()) {
+            return createResponse({}, 400, i18n.global.t('my.faceRequired'));
+          }
+          sessionStorage.removeItem(myStorageKey(role, 'face_proof'));
+        }
         writeMyData(role, 'profile', next);
         if (role === 'citizen') syncCitizenContact(next);
         return createResponse(next);
       }
     }
 
+    if (url.endsWith('/me/phone/face') && method === 'POST') {
+      if (role !== 'citizen' || !data.verifiedAt) return createResponse({}, 400, i18n.global.t('my.faceRequired'));
+      const token = crypto.randomUUID();
+      sessionStorage.setItem(myStorageKey(role, 'face_proof'), JSON.stringify({ token, expiresAt: Date.now() + 5 * 60000 }));
+      return createResponse({ token });
+    }
+
+    if (url.endsWith('/me/password/sms') && method === 'POST') {
+      if (role !== 'citizen') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const previous = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'password_sms')) || 'null');
+      if (previous && previous.sentAt + 60000 > Date.now()) return createResponse({}, 429, i18n.global.t('my.smsWait'));
+      const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0');
+      sessionStorage.setItem(myStorageKey(role, 'password_sms'), JSON.stringify({ code, sentAt: Date.now(), expiresAt: Date.now() + 5 * 60000, attempts: 0 }));
+      return createResponse({ demoCode: code, expiresIn: 300 });
+    }
+
     if (url.endsWith('/me/password') && method === 'POST') {
+      if (role === 'citizen') {
+        const challenge = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'password_sms')) || 'null');
+        if (!challenge || challenge.expiresAt < Date.now() || challenge.attempts >= 5 || challenge.code !== String(data.smsCode || '')) {
+          if (challenge) {
+            challenge.attempts += 1;
+            sessionStorage.setItem(myStorageKey(role, 'password_sms'), JSON.stringify(challenge));
+          }
+          return createResponse({}, 400, i18n.global.t('my.invalidSmsCode'));
+        }
+      }
       const previous = localStorage.getItem(myStorageKey(role, 'password'));
       const currentValid = previous
         ? await passwordDigest(data.currentPassword || '') === previous
@@ -566,21 +623,41 @@ export async function mockDispatch(config) {
       if (!currentValid) return createResponse({}, 400, i18n.global.t('my.currentPasswordWrong'));
       if (String(data.newPassword || '').length < 8) return createResponse({}, 400, i18n.global.t('my.passwordTooShort'));
       localStorage.setItem(myStorageKey(role, 'password'), await passwordDigest(data.newPassword));
+      sessionStorage.removeItem(myStorageKey(role, 'password_sms'));
       return createResponse({ success: true });
     }
 
     if (url.endsWith('/me/notifications') && method === 'GET') {
-      const readIds = readMyData(role, 'read_notifications', []);
-      return createResponse(MY_NOTIFICATION_SEEDS[role].map((item, index) => ({
-        ...item, read: readIds.includes(item.id), createdAt: new Date(Date.now() - index * 86400000).toISOString()
-      })));
+      return createResponse(getMockNotifications(role));
     }
     if (url.endsWith('/me/notifications/read') && method === 'POST') {
-      const allIds = MY_NOTIFICATION_SEEDS[role].map(item => item.id);
-      const requested = Array.isArray(data.ids) ? data.ids.filter(id => allIds.includes(id)) : [];
-      const readIds = [...new Set([...readMyData(role, 'read_notifications', []), ...requested])];
-      writeMyData(role, 'read_notifications', readIds);
-      return createResponse({ readIds });
+      const items = getMockNotifications(role);
+      const ids = Array.isArray(data.ids) ? data.ids : [];
+      items.forEach((item) => { if (ids.includes(item.id)) item.read = true; });
+      writeMyData(role, 'notifications', items);
+      return createResponse({ readIds: ids });
+    }
+    const materialMatch = url.match(/\/me\/notifications\/([^/?]+)\/materials$/);
+    if (materialMatch && method === 'POST') {
+      if (role !== 'citizen') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const items = getMockNotifications(role);
+      const item = items.find((entry) => entry.id === decodeURIComponent(materialMatch[1]) && entry.type === 'material');
+      if (!item) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      const file = data.get?.('file');
+      if (!file || !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type) || !file.size || file.size > 10 * 1024 * 1024) {
+        return createResponse({}, 400, i18n.global.t('my.invalidMaterialFile'));
+      }
+      const fileId = await saveMockMaterial(role, item.id, file);
+      item.materialStatus = 'submitted';
+      item.read = true;
+      item.attachments = [...(item.attachments || []), { id: fileId, name: file.name, size: file.size, uploadedAt: new Date().toISOString() }];
+      writeMyData(role, 'notifications', items);
+      return createResponse({ attachments: item.attachments, materialStatus: item.materialStatus });
+    }
+
+    if (url.endsWith('/me/push-subscription') && method === 'POST') {
+      writeMyData(role, 'push_subscription', { endpoint: data.subscription?.endpoint, locale: data.locale });
+      return createResponse({ success: true });
     }
 
     if (url.includes('/me/couriers')) {
@@ -595,6 +672,7 @@ export async function mockDispatch(config) {
         };
         if (!courier.name || !/^\+?[\d\s-]{7,20}$/.test(courier.phone)) return createResponse({}, 400, i18n.global.t('my.invalidCourier'));
         writeMyData(role, 'couriers', [...couriers, courier]);
+        addMockNotification(role, 'courier', 'couriers');
         return createResponse(courier);
       }
       const id = match ? decodeURIComponent(match[1]) : '';
@@ -608,10 +686,12 @@ export async function mockDispatch(config) {
         if (!courier.name || !/^\+?[\d\s-]{7,20}$/.test(courier.phone)) return createResponse({}, 400, i18n.global.t('my.invalidCourier'));
         couriers[position] = courier;
         writeMyData(role, 'couriers', couriers);
+        addMockNotification(role, 'courier', 'couriers');
         return createResponse(courier);
       }
       if (method === 'DELETE') {
         writeMyData(role, 'couriers', couriers.filter(item => item.id !== id));
+        addMockNotification(role, 'courier', 'couriers');
         return createResponse({ success: true });
       }
     }
@@ -2898,6 +2978,7 @@ export async function mockDispatch(config) {
       targetMyCenter.status = '已注销';
       targetMyCenter.isCurrentActive = false;
       targetMyCenter.cancellationReason = data.reason || (isEn ? 'Voluntarily deregistered' : '已主动注销');
+      addMockNotification('agent', 'outlet', 'outlets');
     }
 
     // 记录一条注销工单
@@ -2991,6 +3072,8 @@ export async function mockDispatch(config) {
         }
       }
     }
+
+    if (targetCenter) addMockNotification('agent', 'outlet', 'outlets');
 
     return createResponse(
       targetApp,
