@@ -400,6 +400,7 @@ async function handlePaymentSuccess(paymentInfo) {
     addSharedTicket({
       id: res.ticketId,
       sourceCode: 'UNF',
+      reviewMode: 'manual',
       source: '配给卡解冻复核申请',
       categoryType: '异常状态解除类',
       appType: '配给卡解冻公文',

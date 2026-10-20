@@ -271,6 +271,7 @@ export function addSharedTicket(ticketPayload) {
     status: ticketPayload.applicationStatus === 'approved'
       ? (isEn ? 'Approved' : '已审批通过')
       : ticketPayload.status || (isEn ? 'Pending Staff Review' : '待分部初审'),
+    reviewMode: ticketPayload.reviewMode || (ticketPayload.applicationStatus === 'approved' ? 'automatic' : 'manual'),
     submittedAt: getCurrentFormattedTime(),
     staffOpinion: '',
     staffName: '',

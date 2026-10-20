@@ -603,6 +603,7 @@ async function handlePaymentSuccess(paymentInfo) {
       addSharedTicket({
         sourceCode: 'SPL',
         applicationStatus: 'approved',
+        reviewMode: 'automatic',
         applicationResult: res.message || '',
         source: '申请分户',
         appType: '公民分户申请',
@@ -641,6 +642,7 @@ async function handleTransferToElectronicReview() {
     addSharedTicket({
       id: res.ticketId,
       sourceCode: 'SPL',
+      reviewMode: 'manual',
       source: '分户申请公文',
       categoryType: '分户与配给卡拆分',
       appType: '公民分户申请',

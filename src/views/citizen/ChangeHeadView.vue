@@ -219,6 +219,7 @@ async function handlePaymentSuccess(paymentInfo) {
     addSharedTicket({
       id: res.ticketId,
       sourceCode: 'HED',
+      reviewMode: 'manual',
       source: '变更户主',
       appType: '法定户主更替申办 (继承轮替)',
       cardNo: citizenStore.currentFamily?.rationCardNo,

@@ -55,12 +55,36 @@
             <p class="mt-0.5 text-xs text-[#8A9A8F]">{{ $t('my.applicationHistorySubtitle') }}</p>
           </div>
         </div>
+        <el-button size="small" text :aria-expanded="showApplicationFilters" @click="showApplicationFilters = !showApplicationFilters">
+          <el-icon class="me-1"><Filter /></el-icon>{{ $t('my.applicationFilterToggle') }}
+        </el-button>
+      </div>
+      <div v-if="showApplicationFilters" class="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg bg-[#F8FAF8] p-3">
+        <el-select v-model="applicationTypeFilter" :placeholder="$t('my.applicationFilterType')" clearable>
+          <el-option :label="$t('my.applicationAnyType')" value="" />
+          <el-option v-for="code in applicationSourceCodes" :key="code" :label="$t(`my.applicationTypes.${code}`)" :value="code" />
+        </el-select>
+        <el-select v-model="applicationStatusFilter" :placeholder="$t('my.applicationFilterStatus')" clearable>
+          <el-option :label="$t('my.applicationAnyStatus')" value="" />
+          <el-option v-for="status in ['pending', 'approved', 'rejected']" :key="status" :label="$t(`my.applicationStatuses.${status}`)" :value="status" />
+        </el-select>
+        <el-select v-model="applicationReviewFilter" :placeholder="$t('my.applicationFilterMode')" clearable>
+          <el-option :label="$t('my.applicationAnyMode')" value="" />
+          <el-option :label="$t('my.automaticReview')" value="automatic" />
+          <el-option :label="$t('my.manualReview')" value="manual" />
+        </el-select>
+        <el-input v-model.trim="applicationSearch" :placeholder="$t('my.applicationSearchNumber')" clearable />
+        <div class="sm:col-span-2 flex justify-end"><el-button size="small" text @click="clearApplicationFilters">{{ $t('my.applicationClearFilters') }}</el-button></div>
       </div>
       <div v-if="applicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.noApplicationHistory') }}</div>
-      <article v-for="record in applicationRecords" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
+      <div v-else-if="filteredApplicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.applicationNoMatches') }}</div>
+      <article v-for="record in filteredApplicationRecords" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-sm font-semibold text-[#1F3326]">{{ $t(`my.applicationTypes.${record.sourceCode}`) }}</h3>
-          <el-tag size="small" :type="applicationStatusType(record)">{{ $t(`my.applicationStatuses.${applicationStatusKey(record)}`) }}</el-tag>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <el-tag size="small" effect="plain">{{ $t(`my.${applicationReviewMode(record)}Review`) }}</el-tag>
+            <el-tag size="small" :type="applicationStatusType(record)">{{ $t(`my.applicationStatuses.${applicationStatusKey(record)}`) }}</el-tag>
+          </div>
         </div>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8A9A8F]">
           <span>{{ $t('my.applicationNumber') }} <bdi dir="ltr" class="font-mono">{{ record.id }}</bdi></span>
@@ -175,7 +199,7 @@ import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
@@ -200,6 +224,11 @@ const couriers = ref([]);
 const notifications = computed(() => notificationStore.items);
 const unreadCount = computed(() => notificationStore.unreadCount);
 const applicationRecords = ref([]);
+const showApplicationFilters = ref(false);
+const applicationTypeFilter = ref('');
+const applicationStatusFilter = ref('');
+const applicationReviewFilter = ref('');
+const applicationSearch = ref('');
 const currentTab = ref(['notifications', 'outlets', 'couriers'].includes(route.query.tab) ? route.query.tab : 'notifications');
 const agentTabs = [
   { key: 'notifications', icon: Bell },
@@ -237,6 +266,13 @@ async function loadData() {
 }
 
 const applicationSourceCodes = new Set(['TRF', 'TRM', 'SPL', 'HED', 'UNF']);
+const filteredApplicationRecords = computed(() => applicationRecords.value.filter((record) => {
+  const mode = applicationReviewMode(record);
+  return (!applicationTypeFilter.value || record.sourceCode === applicationTypeFilter.value)
+    && (!applicationStatusFilter.value || applicationStatusKey(record) === applicationStatusFilter.value)
+    && (!applicationReviewFilter.value || mode === applicationReviewFilter.value)
+    && (!applicationSearch.value || String(record.id || '').toLowerCase().includes(applicationSearch.value.toLowerCase()));
+}));
 function getApplicationSourceCode(ticket) {
   if (applicationSourceCodes.has(ticket.sourceCode)) return ticket.sourceCode;
   const source = `${ticket.source || ''} ${ticket.categoryType || ''} ${ticket.appType || ''}`.toLowerCase();
@@ -266,6 +302,18 @@ function applicationStatusKey(record) {
 
 function applicationStatusType(record) {
   return { approved: 'success', pending: 'warning', rejected: 'danger' }[applicationStatusKey(record)];
+}
+
+function applicationReviewMode(record) {
+  if (record.reviewMode === 'automatic' || record.reviewMode === 'manual') return record.reviewMode;
+  return applicationStatusKey(record) === 'pending' ? 'manual' : 'automatic';
+}
+
+function clearApplicationFilters() {
+  applicationTypeFilter.value = '';
+  applicationStatusFilter.value = '';
+  applicationReviewFilter.value = '';
+  applicationSearch.value = '';
 }
 
 function applicationResult(record) {

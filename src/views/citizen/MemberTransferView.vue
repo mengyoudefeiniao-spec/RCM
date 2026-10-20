@@ -890,6 +890,7 @@ async function handlePaymentSuccess(paymentInfo) {
       id: res.ticketId,
       sourceCode: 'TRM',
       applicationStatus: res.autoApproved ? 'approved' : 'pending',
+      reviewMode: res.autoApproved ? 'automatic' : 'manual',
       applicationResult: res.autoApproved ? res.message : '',
       source: '家庭成员关系转移公文',
       categoryType: '成员户籍转移',

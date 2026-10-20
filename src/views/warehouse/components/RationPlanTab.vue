@@ -75,7 +75,7 @@
             </div>
           </div>
 
-          <el-button v-if="isCitizen" size="small" plain class="shrink-0" @click="openAgentNavigation">
+          <el-button v-if="isCitizen" size="small" plain class="!h-7 !px-2 !text-[11px] shrink-0" @click="mapDialogOpen = true">
             <el-icon class="me-1"><Location /></el-icon>
             <span>{{ $t('warehouse.navigateAgent') }}</span>
           </el-button>
@@ -1219,6 +1219,33 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <el-dialog v-model="mapDialogOpen" :title="$t('warehouse.agentMapTitle')" width="min(92vw, 560px)" append-to-body>
+      <div class="space-y-3">
+        <div class="relative h-64 overflow-hidden rounded-lg border border-[#D9E5DB] bg-[#EAF1E7]" role="img" :aria-label="$t('warehouse.agentMapPreview')">
+          <svg viewBox="0 0 560 280" class="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="560" height="280" fill="#EAF1E7" />
+            <path d="M-20 72 L580 218 M-10 230 L570 56 M142 -20 L302 300 M445 -20 L338 300" stroke="#FFFFFF" stroke-width="24" fill="none" />
+            <path d="M-20 72 L580 218 M-10 230 L570 56" stroke="#D6DFD3" stroke-width="2" fill="none" />
+            <path d="M94 209 C164 182 212 143 265 124 S365 98 421 67" stroke="#3E9B68" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 1" fill="none" />
+            <rect x="34" y="30" width="74" height="30" rx="8" fill="#D7E9D6" />
+            <rect x="404" y="208" width="112" height="35" rx="8" fill="#D7E9D6" />
+            <circle cx="421" cy="67" r="24" fill="#326445" opacity=".16" />
+            <path d="M421 44 C412 44 405 51 405 60 C405 72 421 88 421 88 S437 72 437 60 C437 51 430 44 421 44Z" fill="#326445" />
+            <circle cx="421" cy="60" r="5" fill="#FFFFFF" />
+          </svg>
+          <div class="absolute bottom-3 start-3 rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-semibold text-[#1F3326] shadow-sm">
+            {{ citizenFamilyInfo?.agentName || $t('warehouse.agentMapStationFallback') }}
+          </div>
+        </div>
+        <div class="flex items-start gap-2 text-xs text-[#58685D]">
+          <el-icon class="mt-0.5 shrink-0 text-[#326445]"><Location /></el-icon>
+          <span>{{ citizenFamilyInfo?.district }}, {{ citizenFamilyInfo?.province }}</span>
+        </div>
+        <p class="text-[11px] text-[#8A9A8F]">{{ $t('warehouse.agentMapPreview') }}</p>
+      </div>
+      <template #footer><el-button type="primary" @click="mapDialogOpen = false">{{ $t('common.close') || $t('common.cancel') }}</el-button></template>
+    </el-dialog>
   </div>
 </template>
 
@@ -1234,7 +1261,7 @@ import {
   getAgentAllocationTasks,
   decomposePlanToAgents
 } from '../../../api/warehouse.js';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { unitLabel } from '../../../utils/dataLabels.js';
 import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled, Location } from '@element-plus/icons-vue';
@@ -1243,6 +1270,7 @@ const emit = defineEmits(['go-purchase']);
 const props = defineProps({
   showCitizenQuotaDetails: { type: Boolean, default: true }
 });
+const mapDialogOpen = ref(false);
 
 const route = useRoute();
 const { t, locale } = useI18n();
@@ -1609,23 +1637,6 @@ const memberCount = computed(() => {
   }
   return info?.memberCount || 4;
 });
-
-async function openAgentNavigation() {
-  const location = [citizenFamilyInfo.value?.agentAddress, citizenFamilyInfo.value?.agentName, citizenFamilyInfo.value?.district, citizenFamilyInfo.value?.province]
-    .filter(Boolean)
-    .join(', ');
-  try {
-    await ElMessageBox.confirm(
-      t('warehouse.navigationConfirm', { location }),
-      t('warehouse.navigationTitle'),
-      { confirmButtonText: t('warehouse.openNavigation'), cancelButtonText: t('common.cancel'), type: 'info' }
-    );
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  } catch {
-    // The dialog was dismissed.
-  }
-}
 
 const citizenQuotaItems = computed(() => {
   const n = memberCount.value;

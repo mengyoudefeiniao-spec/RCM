@@ -847,6 +847,7 @@ async function handlePaymentSuccess(paymentInfo) {
       id: res.ticketId,
       sourceCode: 'TRF',
       applicationStatus: res.autoApproved ? 'approved' : 'pending',
+      reviewMode: res.autoApproved ? 'automatic' : 'manual',
       applicationResult: res.autoApproved ? res.message : '',
       source: '申请代理转移',
       appType: `配给代理转移 (${payload.fromProvince} ➔ ${payload.toProvince})`,
