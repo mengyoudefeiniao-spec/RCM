@@ -112,6 +112,13 @@
             <el-icon><Setting /></el-icon>
             <span>{{ $t('nav.admin') }}</span>
           </router-link>
+
+          <router-link v-if="authStore.isAdmin" to="/system-management" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/system-management') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+            <el-icon><Tools /></el-icon><span>{{ $t('system.title') }}</span>
+          </router-link>
+          <router-link to="/messages" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+            <el-icon><Bell /></el-icon><span>{{ $t('messages.title') }}</span>
+          </router-link>
         </nav>
       </div>
 
@@ -119,6 +126,12 @@
       <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ms-auto">
         <!-- 国际化语言切换选择器 -->
         <LanguageSwitcher />
+
+        <el-tooltip :content="$t('messages.notification')" placement="bottom">
+          <el-badge :value="messageStore.unreadCount" :hidden="messageStore.unreadCount === 0" :max="99" class="cursor-pointer">
+            <el-button circle size="small" plain @click="openNotifications"><el-icon><Bell /></el-icon></el-button>
+          </el-badge>
+        </el-tooltip>
 
         <!-- 角色身份切换下拉 (公民app和代理app视口内彻底隐藏) -->
         <el-dropdown v-if="!isAppMode" trigger="click" @command="handleRoleCommand">
@@ -182,15 +195,29 @@
         </el-tooltip>
       </div>
     </div>
+    <el-dialog v-model="notificationsVisible" :title="$t('messages.notification')" width="min(520px, 94vw)">
+      <div v-if="messageStore.inbox.length" class="max-h-[55vh] space-y-2 overflow-y-auto">
+        <button v-for="item in messageStore.inbox" :key="item.id" type="button" class="w-full rounded-lg border p-3 text-start transition-colors hover:bg-[#F4F8F4]" :class="item.read ? 'border-[#E5ECE7]' : 'border-[#C7E0CE] bg-[#F5FAF5]'" @click="previewMessage(item)">
+          <div class="flex items-center justify-between gap-2"><span class="font-semibold text-[#24483A]">{{ item.subjectKey ? $t(item.subjectKey) : item.subject }}</span><span v-if="!item.read" class="h-2 w-2 shrink-0 rounded-full bg-[#C04442]"></span></div>
+          <p class="mt-1 line-clamp-2 text-sm text-[#68796E]">{{ item.bodyKey ? $t(item.bodyKey) : item.body }}</p>
+        </button>
+      </div>
+      <el-empty v-else :description="$t('messages.empty')" />
+    </el-dialog>
+    <el-dialog v-model="messageVisible" :title="$t('messages.detail')" width="min(520px, 94vw)">
+      <template v-if="selectedMessage"><el-tag>{{ $t(selectedMessage.category === 'system' ? 'messages.system' : 'messages.admin') }}</el-tag><h3 class="my-4 text-lg font-bold">{{ selectedMessage.subjectKey ? $t(selectedMessage.subjectKey) : selectedMessage.subject }}</h3><p class="whitespace-pre-wrap leading-7">{{ selectedMessage.bodyKey ? $t(selectedMessage.bodyKey) : selectedMessage.body }}</p></template>
+      <template #footer><el-button @click="messageVisible = false">{{ $t('messages.close') }}</el-button><el-button type="primary" @click="viewMessageDetails">{{ $t('messages.viewDetails') }}</el-button></template>
+    </el-dialog>
   </header>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
 import { useReviewStore } from '../../stores/review.js';
+import { useMessageCenterStore } from '../../stores/messageCenter.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import LanguageSwitcher from '../common/LanguageSwitcher.vue';
 import AppLogo from '../common/AppLogo.vue';
@@ -208,7 +235,9 @@ import {
   Compass,
   ShoppingCart,
   Van,
-  FullScreen
+  FullScreen,
+  Bell,
+  Tools
 } from '@element-plus/icons-vue';
 
 const router = useRouter();
@@ -216,6 +245,9 @@ const route = useRoute();
 const { t } = useI18n();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
+const messageStore = useMessageCenterStore();
+const notificationsVisible = ref(false), messageVisible = ref(false), selectedMessage = ref(null);
+let messageTimer;
 
 const isAppMode = computed(() => {
   if (route.query.layout === 'app' || route.query.mode === 'mobile') return true;
@@ -234,7 +266,14 @@ onMounted(() => {
   if (authStore.isAdmin) {
     reviewStore.fetchTickets('全部');
   }
+  messageStore.refresh().catch(() => {});
+  messageTimer = setInterval(() => messageStore.refresh().catch(() => {}), 30000);
 });
+onBeforeUnmount(() => clearInterval(messageTimer));
+
+async function openNotifications() { notificationsVisible.value = true; await messageStore.refresh().catch(() => {}); }
+async function previewMessage(item) { selectedMessage.value = item; messageVisible.value = true; if (!item.read) await messageStore.markRead(item.id); }
+function viewMessageDetails() { if (!selectedMessage.value) return; const id = selectedMessage.value.id; messageVisible.value = false; notificationsVisible.value = false; router.push({ path: '/messages', query: { detail: id } }); }
 
 const pendingReviewCount = computed(() => {
   return reviewStore.tickets.filter((t) => t.status.includes('待')).length;

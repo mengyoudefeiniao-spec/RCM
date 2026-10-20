@@ -523,6 +523,56 @@ export async function mockDispatch(config) {
   // 模拟真实网络 100~200ms 异步延迟
   await new Promise((resolve) => setTimeout(resolve, 120));
 
+  // System administration and broadcast notifications share local demo state across roles/tabs.
+  const currentRole = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}').role || 'citizen';
+  const readCenter = (key, fallback) => {
+    try { return JSON.parse(localStorage.getItem(`rcm_center_${key}_v1`) || 'null') ?? fallback; } catch { return fallback; }
+  };
+  const writeCenter = (key, value) => localStorage.setItem(`rcm_center_${key}_v1`, JSON.stringify(value));
+  const systemSeed = {
+    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
+    roles: [{ id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access' }, { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations' }, { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records' }],
+    permissions: [{ id: 'perm-users', name: 'Manage users', code: 'system.users', description: 'Create and update Web users' }, { id: 'perm-messages', name: 'Send notifications', code: 'messages.send', description: 'Send messages to application users' }, { id: 'perm-audit', name: 'View audit logs', code: 'system.audit', description: 'Review operation history' }],
+    organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', status: 'active' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', status: 'active' }],
+    'audit-logs': [{ id: 'log-001', actor: 'System Administrator', action: 'Signed in', target: 'Web console', time: new Date().toISOString() }]
+  };
+  if (url.includes('/admin/system/')) {
+    if (!['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    const section = url.split('/admin/system/')[1]?.split('?')[0];
+    if (!Object.hasOwn(systemSeed, section)) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    const records = readCenter(`system_${section}`, systemSeed[section]);
+    if (method === 'GET') return createResponse(records);
+    if (method === 'POST') {
+      const next = { ...data, id: data.id || `rec-${crypto.randomUUID()}`, time: data.time || new Date().toISOString() };
+      const index = records.findIndex((row) => row.id === next.id);
+      if (index >= 0) records.splice(index, 1, next); else records.unshift(next);
+      writeCenter(`system_${section}`, records);
+      if (section !== 'audit-logs') {
+        const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
+        logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', action: index >= 0 ? 'Updated record' : 'Created record', target: `${section}:${next.name || next.username || next.code || next.id}`, time: new Date().toISOString() });
+        writeCenter('system_audit-logs', logs);
+      }
+      return createResponse(next);
+    }
+  }
+  if (url.includes('/messages') && !url.includes('/me/')) {
+    const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
+    if (url.endsWith('/messages/inbox') && method === 'GET') return createResponse(messages.filter((item) => item.audience?.includes(currentRole)).map((item) => ({ ...item, read: (item.readBy || []).includes(currentRole) })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    if (url.endsWith('/messages/sent') && method === 'GET') return createResponse(messages.filter((item) => item.senderRole === currentRole).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    if (url.endsWith('/messages') && method === 'POST') {
+      if (!['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], everyone: ['citizen', 'agent', 'admin', 'minister_center', 'deputy_minister', 'director_planning'] };
+      const next = { ...data, id: `msg-${crypto.randomUUID()}`, senderRole: currentRole, sender: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', audience: audienceMap[data.recipient] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
+      messages.unshift(next); writeCenter('messages', messages); return createResponse(next);
+    }
+    const readMatch = url.match(/\/messages\/([^/?]+)\/read$/);
+    if (readMatch && method === 'POST') {
+      const item = messages.find((entry) => entry.id === decodeURIComponent(readMatch[1]));
+      if (item) { item.readBy = [...new Set([...(item.readBy || []), currentRole])]; writeCenter('messages', messages); }
+      return createResponse({ success: true });
+    }
+  }
+
   // ==========================================
   // 1. 认证模块 (Auth)
   // ==========================================

@@ -143,6 +143,18 @@ const routes = [
         meta: { title: '后台管理', roles: ['admin'] }
       },
       {
+        path: 'system-management',
+        name: 'SystemManagement',
+        component: () => import('../views/admin/SystemManagementView.vue'),
+        meta: { titleKey: 'system.title', roles: ['admin'] }
+      },
+      {
+        path: 'messages',
+        name: 'MessageCenter',
+        component: () => import('../views/messages/MessageCenterView.vue'),
+        meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'] }
+      },
+      {
         path: 'mobile-agent',
         name: 'MobileAgentDashboard',
         component: () => import('../views/dashboard/components/MobileAgentDashboard.vue'),
