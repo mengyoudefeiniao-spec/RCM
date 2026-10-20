@@ -75,28 +75,25 @@
             </div>
           </div>
 
-          <el-button v-if="isCitizen" size="small" plain class="!h-7 !px-2 !text-[11px] shrink-0" @click="mapDialogOpen = true">
-            <el-icon class="me-1"><Location /></el-icon>
-            <span>{{ $t('warehouse.navigateAgent') }}</span>
-          </el-button>
-
-          <!-- 配给月份周期：APP 视口内独占一行并靠左排列，日期控件远离右边界，弹层不再越界 -->
-          <div
-            class="flex items-center gap-2 min-w-0 justify-start"
-            :class="isAppMode ? 'w-full' : 'justify-end'"
-          >
-            <span class="text-xs text-[#58685D] whitespace-nowrap">{{ $t('warehouse.periodLabel') || '配给月份' }}:</span>
-            <el-date-picker
-              v-model="citizenSelectedMonth"
-              type="month"
-              value-format="YYYY-MM"
-              :placeholder="$t('warehouse.selectMonth') || (isEn ? 'Select Month' : '选择月份')"
-              size="small"
-              class="!w-36 max-w-[calc(100%-90px)]"
-              popper-class="rcm-date-popper"
-              :popper-options="datePopperOptions"
-              :teleported="false"
-            />
+          <div class="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:shrink-0">
+            <div class="flex min-w-0 flex-1 items-center justify-start gap-1.5 sm:flex-none">
+              <span class="text-[11px] text-[#58685D] whitespace-nowrap">{{ $t('warehouse.periodLabel') || '配给月份' }}:</span>
+              <el-date-picker
+                v-model="citizenSelectedMonth"
+                type="month"
+                value-format="YYYY-MM"
+                :placeholder="$t('warehouse.selectMonth') || (isEn ? 'Select Month' : '选择月份')"
+                size="small"
+                class="!w-32 max-w-[calc(100%-75px)]"
+                popper-class="rcm-date-popper"
+                :popper-options="datePopperOptions"
+                :teleported="false"
+              />
+            </div>
+            <el-button v-if="isCitizen" size="small" plain class="!h-7 !px-2 !text-[11px] !min-w-0 shrink-0" @click="mapDialogOpen = true">
+              <el-icon class="me-1 shrink-0"><Location /></el-icon>
+              <span class="truncate">{{ $t('warehouse.navigateAgent') }}</span>
+            </el-button>
           </div>
         </div>
 
@@ -1220,29 +1217,26 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="mapDialogOpen" :title="$t('warehouse.agentMapTitle')" width="min(92vw, 560px)" append-to-body>
+    <el-dialog v-model="mapDialogOpen" :title="$t('warehouse.agentMapTitle')" width="min(92vw, 700px)" append-to-body @opened="renderAgentMap">
       <div class="space-y-3">
-        <div class="relative h-64 overflow-hidden rounded-lg border border-[#D9E5DB] bg-[#EAF1E7]" role="img" :aria-label="$t('warehouse.agentMapPreview')">
-          <svg viewBox="0 0 560 280" class="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <rect width="560" height="280" fill="#EAF1E7" />
-            <path d="M-20 72 L580 218 M-10 230 L570 56 M142 -20 L302 300 M445 -20 L338 300" stroke="#FFFFFF" stroke-width="24" fill="none" />
-            <path d="M-20 72 L580 218 M-10 230 L570 56" stroke="#D6DFD3" stroke-width="2" fill="none" />
-            <path d="M94 209 C164 182 212 143 265 124 S365 98 421 67" stroke="#3E9B68" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 1" fill="none" />
-            <rect x="34" y="30" width="74" height="30" rx="8" fill="#D7E9D6" />
-            <rect x="404" y="208" width="112" height="35" rx="8" fill="#D7E9D6" />
-            <circle cx="421" cy="67" r="24" fill="#326445" opacity=".16" />
-            <path d="M421 44 C412 44 405 51 405 60 C405 72 421 88 421 88 S437 72 437 60 C437 51 430 44 421 44Z" fill="#326445" />
-            <circle cx="421" cy="60" r="5" fill="#FFFFFF" />
-          </svg>
-          <div class="absolute bottom-3 start-3 rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-semibold text-[#1F3326] shadow-sm">
-            {{ citizenFamilyInfo?.agentName || $t('warehouse.agentMapStationFallback') }}
-          </div>
+        <div ref="agentMapElement" class="h-72 sm:h-96 overflow-hidden rounded-lg border border-[#D9E5DB] bg-[#EAF1E7]" role="application" :aria-label="$t('warehouse.agentMapTitle')" />
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="min-w-0 flex-1 text-[11px] leading-relaxed text-[#58685D]">{{ $t('warehouse.agentMapPreview') }}</p>
+          <el-button size="small" @click="routeFromCurrentLocation" :loading="agentMapLoading">
+            <el-icon class="me-1"><Location /></el-icon>{{ $t('warehouse.mapUseLocation') }}
+          </el-button>
+          <el-button size="small" type="primary" plain tag="a" :href="googleMapsRouteUrl" target="_blank" rel="noopener noreferrer">
+            {{ $t('warehouse.mapOpenGoogle') }}
+          </el-button>
         </div>
-        <div class="flex items-start gap-2 text-xs text-[#58685D]">
-          <el-icon class="mt-0.5 shrink-0 text-[#326445]"><Location /></el-icon>
-          <span>{{ citizenFamilyInfo?.district }}, {{ citizenFamilyInfo?.province }}</span>
+        <div class="flex items-center gap-2 text-xs" :class="agentMapError ? 'text-amber-700' : 'text-[#326445]'" aria-live="polite">
+          <el-icon class="shrink-0"><Location /></el-icon>
+          <span v-if="agentMapLoading">{{ $t('warehouse.mapRouteLoading') }}</span>
+          <span v-else-if="agentMapError">{{ $t('warehouse.mapRouteUnavailable') }}</span>
+          <span v-else-if="agentRouteSummary">{{ $t(agentUsingCurrentLocation ? 'warehouse.mapRouteDistance' : 'warehouse.mapRouteDistanceDemo', agentRouteSummary) }}</span>
+          <span v-else>{{ $t('warehouse.mapRouteDemoOrigin') }}</span>
         </div>
-        <p class="text-[11px] text-[#8A9A8F]">{{ $t('warehouse.agentMapPreview') }}</p>
+        <p class="text-[10px] text-[#8A9A8F]">© OpenStreetMap contributors</p>
       </div>
       <template #footer><el-button type="primary" @click="mapDialogOpen = false">{{ $t('common.close') || $t('common.cancel') }}</el-button></template>
     </el-dialog>
@@ -1251,7 +1245,7 @@
 
 <script setup>
 import { isEnNow } from '../../../utils/langHint.js';
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../../stores/auth.js';
 import { useCitizenStore } from '../../../stores/citizen.js';
@@ -1263,6 +1257,8 @@ import {
 } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { unitLabel } from '../../../utils/dataLabels.js';
 import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled, Location } from '@element-plus/icons-vue';
 
@@ -1271,6 +1267,21 @@ const props = defineProps({
   showCitizenQuotaDetails: { type: Boolean, default: true }
 });
 const mapDialogOpen = ref(false);
+const agentMapElement = ref(null);
+const agentMapLoading = ref(false);
+const agentMapError = ref(false);
+const agentRouteSummary = ref(null);
+const agentUsingCurrentLocation = ref(false);
+let agentMapInstance = null;
+let agentRouteController = null;
+let agentRouteLayer = null;
+const defaultAgentOrigin = { lat: 33.3152, lng: 44.3535 };
+const agentRouteOrigin = ref(defaultAgentOrigin);
+const agentStationPosition = computed(() => ({
+  lat: Number(citizenFamilyInfo.value?.agentLat || citizenFamilyInfo.value?.latitude || citizenFamilyInfo.value?.gisCoords?.lat) || 33.3128,
+  lng: Number(citizenFamilyInfo.value?.agentLng || citizenFamilyInfo.value?.longitude || citizenFamilyInfo.value?.gisCoords?.lng) || 44.3615
+}));
+const googleMapsRouteUrl = computed(() => `https://www.google.com/maps/dir/?api=1&origin=${agentRouteOrigin.value.lat},${agentRouteOrigin.value.lng}&destination=${agentStationPosition.value.lat},${agentStationPosition.value.lng}&travelmode=driving`);
 
 const route = useRoute();
 const { t, locale } = useI18n();
@@ -1867,6 +1878,80 @@ async function submitCreatePlan() {
   }
 }
 
+async function renderAgentMap() {
+  await nextTick();
+  if (!agentMapElement.value) return;
+  agentMapInstance?.remove();
+  agentRouteLayer = null;
+  agentRouteOriginMarker = null;
+  agentRouteController?.abort();
+  agentMapError.value = false;
+  agentRouteSummary.value = null;
+  const station = agentStationPosition.value;
+  agentMapInstance = L.map(agentMapElement.value, { scrollWheelZoom: false }).setView([station.lat, station.lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(agentMapInstance);
+  L.circleMarker([station.lat, station.lng], { radius: 10, color: '#1F6842', fillColor: '#3E9B68', fillOpacity: 0.95, weight: 3 })
+    .addTo(agentMapInstance)
+    .bindPopup(citizenFamilyInfo.value?.agentName || t('warehouse.agentMapStationFallback'));
+  await nextTick();
+  window.setTimeout(() => agentMapInstance?.invalidateSize(), 80);
+  await drawAgentRoute(agentRouteOrigin.value);
+}
+
+async function drawAgentRoute(origin) {
+  if (!agentMapInstance) return;
+  agentRouteController?.abort();
+  agentRouteController = new AbortController();
+  agentMapLoading.value = true;
+  agentMapError.value = false;
+  const station = agentStationPosition.value;
+  const originMarker = L.circleMarker([origin.lat, origin.lng], { radius: 7, color: '#245A91', fillColor: '#5596D1', fillOpacity: 0.95, weight: 3 }).addTo(agentMapInstance);
+  originMarker.bindPopup(t('warehouse.mapRouteOriginLabel'));
+  if (agentRouteLayer) agentMapInstance.removeLayer(agentRouteLayer);
+  try {
+    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${station.lng},${station.lat}?overview=full&geometries=geojson`;
+    const response = await fetch(routeUrl, { signal: agentRouteController.signal });
+    if (!response.ok) throw new Error('Routing request failed');
+    const data = await response.json();
+    const route = data.routes?.[0];
+    if (!route?.geometry?.coordinates?.length) throw new Error('Route not found');
+    const points = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+    agentRouteLayer = L.polyline(points, { color: '#267A4B', weight: 5, opacity: 0.9 }).addTo(agentMapInstance);
+    agentMapInstance.fitBounds(agentRouteLayer.getBounds().pad(0.18));
+    agentRouteSummary.value = {
+      distance: new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(route.distance / 1000),
+      duration: new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(route.duration / 60)
+    };
+  } catch (error) {
+    if (error.name !== 'AbortError') agentMapError.value = true;
+  } finally {
+    agentMapLoading.value = false;
+  }
+  if (agentRouteOriginMarker) agentMapInstance.removeLayer(agentRouteOriginMarker);
+  agentRouteOriginMarker = originMarker;
+}
+
+let agentRouteOriginMarker = null;
+
+function routeFromCurrentLocation() {
+  if (!navigator.geolocation) {
+    agentMapError.value = true;
+    return;
+  }
+  agentMapLoading.value = true;
+  navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    agentRouteOrigin.value = { lat: coords.latitude, lng: coords.longitude };
+    agentUsingCurrentLocation.value = true;
+    await drawAgentRoute(agentRouteOrigin.value);
+  }, () => {
+    agentMapLoading.value = false;
+    agentMapError.value = true;
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+
 defineExpose({
   loadData
 });
@@ -1876,6 +1961,10 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  agentRouteController?.abort();
+  agentMapInstance?.remove();
+  agentMapInstance = null;
+  agentRouteLayer = null;
   if (cardClockTimer) {
     clearInterval(cardClockTimer);
     cardClockTimer = null;
