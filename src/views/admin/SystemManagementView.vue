@@ -69,21 +69,26 @@
       <template #footer><el-button @click="dialog = false">{{ t('system.cancel') }}</el-button><el-button type="primary" @click="save">{{ t('system.save') }}</el-button></template>
     </el-dialog>
 
-    <el-dialog v-model="locationDialog" :title="t('systemExtras.locate')" width="min(520px, 94vw)">
+    <el-dialog v-model="locationDialog" :title="t('systemExtras.locate')" width="min(720px, 96vw)" @opened="initializeLocationMap">
       <el-form label-position="top"><el-form-item :label="t('systemExtras.address')"><el-input v-model="form.address" /></el-form-item><div class="grid grid-cols-2 gap-3"><el-form-item :label="t('systemExtras.latitude')"><el-input v-model="form.latitude" /></el-form-item><el-form-item :label="t('systemExtras.longitude')"><el-input v-model="form.longitude" /></el-form-item></div></el-form>
+      <div ref="locationMap" class="h-[340px] w-full rounded-lg border border-[#D9E5DB]" />
       <template #footer><el-button @click="locateCurrentPosition">{{ t('systemExtras.useLocation') }}</el-button><el-button type="primary" @click="locationDialog = false">{{ t('common.confirm') }}</el-button></template>
     </el-dialog>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { deleteSystemRecord, getSystemRecords, saveSystemRecord } from '../../api/adminCenter.js';
 const { t } = useI18n();
 const tabs = [{ key: 'users', label: 'users' }, { key: 'roles', label: 'roles' }, { key: 'organizations', label: 'organizations' }, { key: 'audit-logs', label: 'logs' }];
 const section = ref('users'), rows = ref([]), roleRows = ref([]), permissionRows = ref([]), loading = ref(false), keyword = ref(''), appliedQuery = ref(''), dialog = ref(false), locationDialog = ref(false), editing = ref(false), form = ref({});
+const locationMap = ref(null);
+let mapInstance, locationMarker;
 const actor = () => JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}').name || 'System Administrator';
 const catalog = [
   ['moduleDashboard','dashboard.view','view'],
@@ -131,6 +136,30 @@ async function save() {
 }
 async function toggleUser(row) { const enabling = row.status === 'disabled', nextStatus = enabling ? 'active' : 'disabled'; const details = auditMessage(enabling ? 'auditEnabled' : 'auditDisabled', 'entityUser', row.name || row.username); await saveSystemRecord('users', { ...row, status: nextStatus, auditDetails: details }); await load(); ElMessage.success(t('systemExtras.statusUpdated')); }
 async function removeRecord(row) { try { await ElMessageBox.confirm(t('systemExtras.confirmDelete'), t('systemExtras.delete'), { type: 'warning' }); } catch { return; } const entityKey = section.value === 'users' ? 'entityUser' : section.value === 'roles' ? 'entityRole' : 'entityOrganization'; await deleteSystemRecord(section.value, row.id, { auditDetails: auditMessage('auditDeleted', entityKey, row.name || row.username || row.code) }); await load(); ElMessage.success(t(section.value === 'users' ? 'systemExtras.userDeleted' : 'systemExtras.recordDeleted')); }
-function locateCurrentPosition() { if (!navigator.geolocation) { ElMessage.warning(t('systemExtras.locationFailed')); return; } navigator.geolocation.getCurrentPosition(({ coords }) => { form.value.latitude = coords.latitude.toFixed(6); form.value.longitude = coords.longitude.toFixed(6); }, () => ElMessage.warning(t('systemExtras.locationFailed'))); }
+function setMapLocation(latitude, longitude, pan = true) {
+  const point = [Number(latitude), Number(longitude)];
+  if (!point.every(Number.isFinite)) return;
+  form.value.latitude = point[0].toFixed(6); form.value.longitude = point[1].toFixed(6);
+  if (!mapInstance) return;
+  if (!locationMarker) {
+    locationMarker = L.marker(point, { draggable: true }).addTo(mapInstance);
+    locationMarker.on('dragend', () => { const position = locationMarker.getLatLng(); setMapLocation(position.lat, position.lng, false); });
+  } else locationMarker.setLatLng(point);
+  if (pan) mapInstance.setView(point, Math.max(mapInstance.getZoom(), 14));
+}
+function initializeLocationMap() {
+  if (!locationMap.value) return;
+  const latitude = Number(form.value.latitude), longitude = Number(form.value.longitude);
+  const hasCoordinates = form.value.latitude !== '' && form.value.longitude !== '' && Number.isFinite(latitude) && Number.isFinite(longitude);
+  const start = hasCoordinates ? [latitude, longitude] : [33.3152, 44.3661];
+  if (!mapInstance) {
+    mapInstance = L.map(locationMap.value, { scrollWheelZoom: false }).setView(start, hasCoordinates ? 14 : 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(mapInstance);
+    mapInstance.on('click', (event) => setMapLocation(event.latlng.lat, event.latlng.lng, false));
+  }
+  setTimeout(() => { mapInstance?.invalidateSize(); if (form.value.latitude && form.value.longitude) setMapLocation(form.value.latitude, form.value.longitude, false); }, 0);
+}
+function locateCurrentPosition() { if (!navigator.geolocation) { ElMessage.warning(t('systemExtras.locationFailed')); return; } navigator.geolocation.getCurrentPosition(({ coords }) => setMapLocation(coords.latitude, coords.longitude), () => ElMessage.warning(t('systemExtras.locationFailed'))); }
 onMounted(async () => { await loadReferences(); await load(); });
+onBeforeUnmount(() => { mapInstance?.remove(); mapInstance = undefined; });
 </script>
