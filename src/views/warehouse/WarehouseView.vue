@@ -44,6 +44,49 @@
             <OrderDispatchTab v-else />
           </div>
         </el-tab-pane>
+
+        <!-- 仓储执行与库存台账：供管理人员、代理端按职责使用 -->
+        <el-tab-pane v-if="isAdmin" name="inboundOutbound">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Box /></el-icon><span class="font-bold">{{ $t('warehouse.inboundOutbound') }}</span></div>
+          </template>
+          <div class="py-4"><InboundOutboundTab /></div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isAdmin || isAgent" name="inventoryLedger">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><DataAnalysis /></el-icon><span class="font-bold">{{ $t('warehouse.inventoryLedger') }}</span></div>
+          </template>
+          <div class="py-4"><MultiDimInventoryTab /></div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isAdmin || isAgent" name="deliveryVerification">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Van /></el-icon><span class="font-bold">{{ $t('warehouse.deliveryVerification') }}</span></div>
+          </template>
+          <div class="py-4"><DeliveryVerificationTab /></div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isAgent" name="citizenClaim">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><ShoppingCart /></el-icon><span class="font-bold">{{ $t('warehouse.citizenClaim') }}</span></div>
+          </template>
+          <div class="py-4"><CitizenClaimTab /></div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isAdmin" name="traceability">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Connection /></el-icon><span class="font-bold">{{ $t('warehouse.traceability') }}</span></div>
+          </template>
+          <div class="py-4"><TraceabilityAnalysisTab /></div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isAdmin" name="securityAudit">
+          <template #label>
+            <div class="flex items-center gap-1.5 py-1"><el-icon><Lock /></el-icon><span class="font-bold">{{ $t('warehouse.securityAudit') }}</span></div>
+          </template>
+          <div class="py-4"><SecurityAuditTab /></div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -63,7 +106,10 @@ import {
   Calendar,
   ShoppingCart,
   Van,
-  DataAnalysis
+  DataAnalysis,
+  Box,
+  Connection,
+  Lock
 } from '@element-plus/icons-vue';
 
 // 核心子模块
@@ -71,6 +117,12 @@ import RationPlanTab from './components/RationPlanTab.vue';
 import CitizenPurchaseTab from './components/CitizenPurchaseTab.vue';
 import OrderDispatchTab from './components/OrderDispatchTab.vue';
 import OrderStatsTab from './components/OrderStatsTab.vue';
+import InboundOutboundTab from './components/InboundOutboundTab.vue';
+import MultiDimInventoryTab from './components/MultiDimInventoryTab.vue';
+import DeliveryVerificationTab from './components/DeliveryVerificationTab.vue';
+import CitizenClaimTab from './components/CitizenClaimTab.vue';
+import TraceabilityAnalysisTab from './components/TraceabilityAnalysisTab.vue';
+import SecurityAuditTab from './components/SecurityAuditTab.vue';
 
 // P1~P5 阶段规则实体验证看板抽屉
 import P1P5VerificationDrawer from './components/P1P5VerificationDrawer.vue';
