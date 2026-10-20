@@ -20,7 +20,7 @@
           <div>
             <div class="font-bold text-[#1F3326] flex items-center gap-1.5" :class="isAppMode ? 'text-xs' : 'text-sm'">
               <span>{{ $t('payment.title') || '统一在线安全支付网关' }}</span>
-              <el-tag size="small" type="success" effect="plain" class="scale-75 origin-left font-mono">
+              <el-tag size="small" type="success" effect="plain" class="scale-75 origin-left rtl:origin-right font-mono">
                 CBI-PAY
               </el-tag>
             </div>
@@ -29,7 +29,7 @@
             </div>
           </div>
         </div>
-        <div class="text-right">
+        <div class="text-end">
           <span class="text-[9px] text-[#8A9A8F] block">{{ $t('payment.expiresIn') || '倒计时' }}</span>
           <span class="font-mono text-xs font-bold text-[#D3AF62]">{{ countdownFormatted }}</span>
         </div>
@@ -47,8 +47,8 @@
               <div class="text-xs font-bold text-[#D3E2D6] truncate">{{ title || '法定业务公文规费' }}</div>
               <div class="text-[10px] text-white/60 font-mono">{{ $t('payment.orderNo') || '单号' }}: {{ orderId }}</div>
             </div>
-            <div class="text-right shrink-0">
-              <div class="text-lg font-black font-mono text-[#D9B567] tracking-tight leading-none">
+            <div class="text-end shrink-0">
+              <div class="currency-amount text-lg font-black font-mono text-[#D9B567] tracking-tight leading-none">
                 {{ amount.toLocaleString() }} <span class="text-[10px] text-white/80 font-normal">{{ currency }}</span>
               </div>
               <span class="text-[9px] px-1.5 py-0.2 rounded bg-[#D3AF62]/20 text-[#E5CEA1] font-bold border border-[#D3AF62]/30">
@@ -174,7 +174,7 @@
                 :class="isAppMode ? 'h-7.5 text-xs' : 'h-10 text-xs'"
                 @click="handleDeletePin"
               >
-                <el-icon><Back /></el-icon>
+                <el-icon class="rtl-mirror-icon"><Back /></el-icon>
               </button>
             </div>
 
@@ -193,7 +193,7 @@
               :disabled="pinCode.length < 6"
               @click="handleSubmitPinPay"
             >
-              <el-icon class="mr-1.5"><Lock /></el-icon>
+              <el-icon class="me-1.5"><Lock /></el-icon>
               {{ $t('payment.confirmPay', { amount: amount.toLocaleString(), currency }) || `确认支付 ${amount.toLocaleString()} ${currency}` }}
             </el-button>
           </div>
@@ -225,7 +225,7 @@
                 <!-- 动态激光波纹 (扫描时) -->
                 <div
                   v-if="fingerScanning"
-                  class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#6FBF92] to-transparent shadow-[0_0_10px_#6FBF92] animate-scan-finger top-0"
+                  class="absolute inset-x-0 h-1 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-[#6FBF92] to-transparent shadow-[0_0_10px_#6FBF92] animate-scan-finger top-0"
                 ></div>
 
                 <!-- 指纹 SVG 图案 -->
@@ -309,7 +309,7 @@
               :loading="faceScanning"
               @click="triggerFacePayScan"
             >
-              <el-icon class="mr-1.5"><Camera /></el-icon>
+              <el-icon class="me-1.5"><Camera /></el-icon>
               {{ $t('payment.faceIdBtn') || '立即刷脸验证并扣款' }}
             </el-button>
           </div>
@@ -650,8 +650,8 @@ function handleCancel() {
 :deep(.electronic-payment-dialog--app) {
   max-width: 396px !important;
   width: min(92vw, 392px) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+  margin-inline-start: auto !important;
+  margin-inline-end: auto !important;
   border-radius: 18px !important;
 }
 

@@ -59,7 +59,7 @@
     <!-- ======================================================== -->
     <!-- 2. 现场到店核销工作台 (扫动态码 / NFC 读卡直读) -->
     <!-- ======================================================== -->
-    <div class="bg-gradient-to-r from-[#1B3123] via-[#12241A] to-[#1B3123] rounded-lg p-5 text-white shadow-sm space-y-4">
+    <div class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1B3123] via-[#12241A] to-[#1B3123] rounded-lg p-5 text-white shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-[#326445] flex items-center justify-center text-white">
@@ -75,11 +75,11 @@
 
         <div class="flex items-center gap-2">
           <el-button size="small" type="success" plain @click="simulateScan('AGT101-20261013-1012-3841')">
-            <el-icon class="mr-1"><Aim /></el-icon>
+            <el-icon class="me-1"><Aim /></el-icon>
             快速载入待核销示范码 (穆斯塔法)
           </el-button>
           <el-button size="small" type="info" plain @click="simulateReadNfc('RC-10029381')">
-            <el-icon class="mr-1"><CreditCard /></el-icon>
+            <el-icon class="me-1"><CreditCard /></el-icon>
             模拟 NFC 读卡
           </el-button>
         </div>
@@ -108,7 +108,7 @@
             :loading="querying"
             @click="handleQueryReservation"
           >
-            <el-icon class="mr-1"><Aim /></el-icon>
+            <el-icon class="me-1"><Aim /></el-icon>
             核验预约单
           </el-button>
           <el-button size="large" @click="resetScan">重置</el-button>
@@ -202,7 +202,7 @@
             <el-option label="逾期爽约" value="EXPIRED" />
           </el-select>
           <el-button size="small" type="primary" plain @click="loadReservations">
-            <el-icon class="mr-1"><Refresh /></el-icon>
+            <el-icon class="me-1"><Refresh /></el-icon>
             刷新
           </el-button>
         </div>

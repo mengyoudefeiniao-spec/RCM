@@ -82,8 +82,8 @@
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span>
-                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold mr-1">★</span>{{ c.centerName }}
-                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] ml-1">({{ c.province }} · {{ c.city }})</span>
+                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold me-1">★</span>{{ c.centerName }}
+                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] ms-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">140号决议</el-tag>
                   </div>
@@ -157,7 +157,7 @@
             <p class="text-[11px] text-[#58685D]">向规划与跟进司提交的恢复代理权正式呈报公函原件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docApplication', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传正式申请书</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传正式申请书</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docApplication?.name || '已自动加载申请公文' }}</span>
             </div>
@@ -172,7 +172,7 @@
             <p class="text-[11px] text-[#58685D]">承诺整改导致注销的违规行为，按捺拇指印公证书。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docRectification', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传整改承诺</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传整改承诺</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docRectification?.name || '已上传整改承诺书' }}</span>
             </div>
@@ -189,7 +189,7 @@
             <p class="text-[11px] text-[#58685D]">不少于25%家庭支持恢复的签名按印与配给卡复印底账。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docSupportList', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传联署底册</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传联署底册</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docSupportList?.name || '已上传 (28.4%家庭签名册)' }}</span>
             </div>
@@ -204,7 +204,7 @@
             <p class="text-[11px] text-[#58685D]">内政部无犯罪记录证明及双司联合调查申请登记表。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docClearance', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传无犯罪证明</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传无犯罪证明</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docClearance?.name || '已上传无罪公函' }}</span>
             </div>
@@ -262,7 +262,7 @@
               <span class="text-xs text-[#8A9A8F] block">法定规费收取部门</span>
               <span class="text-sm font-bold text-[#DFC08B]">规划与跟进司 / 代理管理司</span>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <span class="text-xs text-[#8A9A8F] block">应缴纳恢复核发规费</span>
               <span class="text-xl font-bold font-mono text-[#6FBF92]">50,000 IQD</span>
               <span class="text-[10px] text-[#8A9A8F] block">(五万伊拉克第纳尔)</span>
@@ -329,7 +329,7 @@
             :loading="submitting"
             @click="handleSubmitAndPay"
           >
-            <el-icon class="mr-1"><Check /></el-icon>
+            <el-icon class="me-1"><Check /></el-icon>
             确认电子支付 50,000 IQD 并重新激活代理权
           </el-button>
         </div>

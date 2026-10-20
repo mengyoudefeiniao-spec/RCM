@@ -1,0 +1,46 @@
+/* The document direction controls layout. Keep machine-readable strings and
+   non-text media in their native left-to-right order. */
+:is(.bidi-ltr, .font-mono, .currency-amount, code, pre, kbd, samp,
+    a[href^="tel:"], a[href^="mailto:"],
+    input[type="tel"], input[type="email"], input[type="url"],
+    input[type="number"], video, audio) {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Third-party controls can keep physical text alignment even when the
+   document direction changes. Match the inline start in both modes. */
+:is(.el-input__inner, .el-textarea__inner, .el-select__placeholder,
+    .el-select__selected-item, .el-form-item__label) {
+  text-align: start;
+}
+
+.bidi-ltr :is(input, textarea, .el-input__inner, .el-textarea__inner) {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+html[dir="rtl"] .el-table .is-left .cell {
+  text-align: start;
+}
+
+html[dir="rtl"] .el-table .is-right .cell {
+  text-align: end;
+}
+
+/* Flip only semantic direction icons. Brand marks, controls, search and
+   status symbols keep their original shape. */
+html[dir="rtl"] .rtl-mirror-icon svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 1023px) {
+  html[dir="rtl"] .timeline-rail-aside .node-icon-wrapper {
+    transform: translate(50%, -50%) !important;
+  }
+}
+
+html[dir="rtl"] body .el-drawer.btt {
+  transform: translateX(50%) !important;
+}

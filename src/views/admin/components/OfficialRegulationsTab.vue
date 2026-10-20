@@ -5,11 +5,11 @@
     <!-- ======================================================== -->
     <div class="ht-card p-5 sm:p-7 relative overflow-hidden bg-gradient-to-br from-white via-[#FBFDFB] to-[#F3F9F5]">
       <!-- 装饰背景微光与麦穗纹理 -->
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#3E8A5E]/5 blur-2xl pointer-events-none"></div>
+      <div class="absolute -end-10 -bottom-10 w-64 h-64 rounded-full bg-[#3E8A5E]/5 blur-2xl pointer-events-none"></div>
       
       <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
         <!-- 文字介绍区 -->
-        <div class="flex-1 space-y-2.5" :class="isRtl ? 'text-right' : 'text-left'">
+        <div class="flex-1 space-y-2.5 text-start">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E1F4E4] border border-[#C7E0CE] text-[#326445] text-xs font-bold">
             <span class="w-2 h-2 rounded-full bg-[#3E8A5E] animate-pulse"></span>
             <span>{{ isRtl ? 'جمهورية العراق · وزارة التجارة' : 'Republic of Iraq · Ministry of Trade' }}</span>
@@ -116,7 +116,7 @@
               <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs font-mono font-bold flex items-center justify-center shrink-0 border border-[#C7E0CE]">
                 {{ item.num }}
               </span>
-              <span class="ht-faq-question font-sans" :dir="isRtl ? 'rtl' : 'ltr'">
+              <span class="ht-faq-question font-sans">
                 {{ getFaqQuestion(item) }}
               </span>
             </div>
@@ -135,7 +135,6 @@
           <div
             v-show="expandedMap[item.id]"
             class="ht-faq-content"
-            :dir="isRtl ? 'rtl' : 'ltr'"
           >
             <div class="space-y-1.5 font-sans leading-relaxed">
               <p>{{ getFaqAnswer(item) }}</p>
@@ -168,7 +167,7 @@ import { currentLang } from '../../../locales/index.js';
 
 const { locale } = useI18n();
 
-const isRtl = computed(() => ['ar', 'ku'].includes(locale.value));
+const isRtl = computed(() => ['ar', 'ckb'].includes(locale.value));
 const isZh = computed(() => locale.value === 'zh');
 
 // 官方 16 篇权威问答知识库 (源自 ht.iq 官方快照数据)

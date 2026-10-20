@@ -14,7 +14,7 @@
           title-class="text-sm font-bold text-[#1B3123]"
         >
           <template #extra>
-            <el-tag size="small" type="danger" effect="plain" class="font-bold ml-1">
+            <el-tag size="small" type="danger" effect="plain" class="font-bold ms-1">
               {{ $t('complaint.supervision') }}
             </el-tag>
           </template>
@@ -23,11 +23,11 @@
 
       <div class="flex items-center gap-2">
         <el-button type="primary" size="small" @click="openCreateComplaintDialog">
-          <el-icon class="mr-1"><Phone /></el-icon>
+          <el-icon class="me-1"><Phone /></el-icon>
           {{ $t('complaint.registerPhone') }}
         </el-button>
         <el-button size="small" @click="loadComplaints" :loading="loading">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') }}
         </el-button>
       </div>
@@ -161,7 +161,7 @@
           <div class="flex items-center justify-between pb-1.5 border-b border-[#E9F1EB]">
             <div class="flex items-center gap-1.5">
               <span class="font-mono font-bold text-[#326445] text-xs">{{ item.id }}</span>
-              <el-tag size="small" :type="item.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="scale-90 origin-left">
+              <el-tag size="small" :type="item.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="scale-90 origin-left rtl:origin-right">
                 {{ item.channel.includes('AI') ? $t('complaint.channelAiTag') : $t('complaint.channelPhoneTag') }}
               </el-tag>
             </div>
@@ -174,7 +174,7 @@
           <div>
             <div class="font-bold text-[#1F3326] text-xs leading-snug">{{ item.title }}</div>
             <div class="mt-1 flex items-center gap-1.5">
-              <el-tag size="small" :type="getTypeTag(item.type)" class="scale-90 origin-left">{{ item.type }}</el-tag>
+              <el-tag size="small" :type="getTypeTag(item.type)" class="scale-90 origin-left rtl:origin-right">{{ item.type }}</el-tag>
               <span class="text-[10px] text-[#8A9A8F] font-mono">{{ item.createdAt?.slice(0, 16) }}</span>
             </div>
           </div>
@@ -183,7 +183,7 @@
           <div class="p-2 rounded-lg bg-[#F3F8F4] text-[11px] grid grid-cols-2 gap-1.5">
             <div>
               <span class="text-[#8A9A8F] block text-[10px]">{{ $t('complaint.cardCitizen') }}</span>
-              <span class="font-medium text-[#43554B]">{{ item.applicantName }} ({{ item.callPhone || '—' }})</span>
+              <span class="font-medium text-[#43554B]">{{ item.applicantName }} (<bdi dir="ltr">{{ item.callPhone || '—' }}</bdi>)</span>
             </div>
             <div>
               <span class="text-[#8A9A8F] block text-[10px]">{{ $t('complaint.cardArea') }}</span>
@@ -219,7 +219,7 @@
           <template #default="{ row }">
             <el-tooltip :content="row.channel" placement="top">
               <el-tag size="small" :type="row.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="font-medium">
-                <el-icon class="mr-1"><ChatDotRound v-if="row.channel.includes('AI')" /><Phone v-else /></el-icon>
+                <el-icon class="me-1"><ChatDotRound v-if="row.channel.includes('AI')" /><Phone v-else /></el-icon>
                 {{ shortChannel(row.channel) }}
               </el-tag>
             </el-tooltip>
@@ -328,27 +328,27 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.channelSource') }}:</span>
-            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.channel }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.channel }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.appealType') }}:</span>
-            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.type }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.type }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.citizenName') }}:</span>
-            <span class="ml-2 font-medium text-[#1F3326]">{{ currentDetail.applicantName }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.applicantName }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('common.phone') }}:</span>
-            <span class="ml-2 font-mono text-[#1F3326]">{{ currentDetail.callPhone }}</span>
+            <span class="ms-2 font-mono text-[#1F3326]">{{ currentDetail.callPhone }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('common.province') }}:</span>
-            <span class="ml-2 text-[#1F3326]">{{ currentDetail.province }} · {{ currentDetail.center }}</span>
+            <span class="ms-2 text-[#1F3326]">{{ currentDetail.province }} · {{ currentDetail.center }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('nav.agent') }}:</span>
-            <span class="ml-2 text-[#1F3326]">{{ currentDetail.agentName }}</span>
+            <span class="ms-2 text-[#1F3326]">{{ currentDetail.agentName }}</span>
           </div>
         </div>
 
@@ -367,7 +367,7 @@
           <p class="leading-relaxed">{{ currentDetail.result }}</p>
           <div class="text-[11px] text-[#2F5B44] pt-1">
             <span>{{ $t('complaint.handler') }}: {{ currentDetail.handlerName }}</span>
-            <span class="ml-3">{{ $t('complaint.satisfaction') }}: {{ currentDetail.satisfaction }}</span>
+            <span class="ms-3">{{ $t('complaint.satisfaction') }}: {{ currentDetail.satisfaction }}</span>
           </div>
         </div>
       </div>
@@ -425,7 +425,7 @@
           </div>
           <div>
             <label class="block font-medium text-[#43554B] mb-1">{{ $t('common.phone') }}：</label>
-            <el-input v-model="createForm.callPhone" placeholder="+964 7XX XXX XXXX" size="small" />
+            <el-input class="bidi-ltr" v-model="createForm.callPhone" placeholder="+964 7XX XXX XXXX" size="small" />
           </div>
         </div>
 

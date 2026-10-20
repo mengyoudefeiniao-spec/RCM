@@ -16,7 +16,7 @@
             title-class="text-lg font-bold text-[#1B3123]"
           >
             <template #extra>
-              <el-tag size="small" type="warning" effect="dark" class="scale-95 ml-1">
+              <el-tag size="small" type="warning" effect="dark" class="scale-95 ms-1">
                 {{ $t('agent.article140Tag') }}
               </el-tag>
             </template>
@@ -27,15 +27,15 @@
         <div class="flex flex-wrap items-center gap-2.5">
           <template v-if="!isAdmin">
             <el-button type="primary" @click="handleOpenApply()">
-              <el-icon class="mr-1"><Plus /></el-icon>
+              <el-icon class="me-1"><Plus /></el-icon>
               {{ $t('agent.applyGrant') }}
             </el-button>
             <el-button type="warning" @click="handleOpenRotation()">
-              <el-icon class="mr-1"><Switch /></el-icon>
+              <el-icon class="me-1"><Switch /></el-icon>
               {{ $t('agent.applyRotation') }}
             </el-button>
             <el-button type="danger" plain @click="handleOpenRestoration()">
-              <el-icon class="mr-1"><RefreshRight /></el-icon>
+              <el-icon class="rtl-mirror-icon me-1"><RefreshRight /></el-icon>
               {{ $t('agent.applyRestoration') }}
             </el-button>
           </template>
@@ -48,7 +48,7 @@
             </el-button>
           </template>
           <el-button @click="loadAllData">
-            <el-icon class="mr-1"><Refresh /></el-icon>
+            <el-icon class="me-1"><Refresh /></el-icon>
             {{ $t('common.refresh') }}
           </el-button>
         </div>
@@ -68,29 +68,29 @@
           </div>
           <div class="text-[11px] text-[#58685D] flex items-center gap-1">
             <span>{{ $t('agent.authorizedAccount') || '持权账号' }}：</span>
-            <span class="font-bold text-[#1F3326]">{{ isEn ? 'Mohammed Jabbar' : (agentProfile?.name || '穆罕默德·贾巴尔') }}</span>
+            <span class="font-bold text-[#1F3326]">{{ formatOwnerName(agentProfile?.name || '穆罕默德·贾巴尔') }}</span>
           </div>
         </div>
 
         <!-- 指标 2: 全国19省与第140号决议网点覆盖 -->
         <div class="p-3 sm:p-4 rounded-lg bg-[#FDF3E0]/70 border border-[#F2E3C6]/80 space-y-1 sm:space-y-1.5">
           <div class="flex items-center justify-between text-[#6B5321] text-[10px] sm:text-[11px]">
-            <span>{{ isEn ? '19 Provinces / 600 Warehouses' : '19省 / 600配给仓库' }}</span>
+            <span>{{ $t('agent.summaryCoverage') }}</span>
             <el-icon class="text-[#C9A13B] text-sm sm:text-base"><LocationFilled /></el-icon>
           </div>
           <div class="flex items-baseline gap-1.5">
             <span class="text-xl sm:text-2xl font-bold font-mono text-[#7A5F21]">104</span>
-            <span class="text-[10px] sm:text-xs text-[#6B5321]/80">{{ isEn ? 'Article 140 Centers' : '所第140号决议中心' }}</span>
+            <span class="text-[10px] sm:text-xs text-[#6B5321]/80">{{ $t('agent.summaryArticle140') }}</span>
           </div>
           <div class="text-[11px] text-[#7A5F21] font-medium truncate">
-            {{ isEn ? 'Kirkuk / Nineveh / Diyala flagged' : '基尔库克 / 尼尼微 / 迪亚拉等重点标识' }}
+            {{ $t('agent.summaryPriorityRegions') }}
           </div>
         </div>
 
         <!-- 指标 3: 签约服务户数与容量健康度 -->
         <div class="p-4 rounded-lg bg-[#EFF5F1]/70 border border-[#C7E0CE]/80 space-y-1.5">
           <div class="flex items-center justify-between text-[#24483A] text-[11px]">
-            <span>{{ isEn ? 'Contracted Households' : '签约服务家庭总户数' }}</span>
+            <span>{{ $t('agent.summaryContractedHouseholds') }}</span>
             <el-icon class="text-[#2F7A50]"><UserFilled /></el-icon>
           </div>
           <div class="flex items-baseline gap-2">
@@ -98,22 +98,22 @@
             <span class="text-[#24483A]/80">{{ $t('agent.householdUnit') || '户' }}</span>
           </div>
           <div class="text-[11px] text-[#2F5B44]">
-            {{ isEn ? '1,500 Households Limit' : '单店上限 1,500 户' }}
+            {{ $t('agent.summaryHouseholdLimit') }}
           </div>
         </div>
 
         <!-- 指标 4: 进行中的业务申请工单 -->
         <div class="p-4 rounded-lg bg-[#EFF5F1]/70 border border-[#C7DED0]/80 space-y-1.5">
           <div class="flex items-center justify-between text-[#24483A] text-[11px]">
-            <span>{{ isEn ? 'Licensing Workorders' : '代理业务审批工单' }}</span>
+            <span>{{ $t('agent.summaryLicensingWorkorders') }}</span>
             <el-icon class="text-[#326445]"><Document /></el-icon>
           </div>
           <div class="flex items-baseline gap-2">
             <span class="text-2xl font-bold font-mono text-[#2A5440]">{{ activeApplicationsCount }}</span>
-            <span class="text-[#24483A]/80">{{ isEn ? 'Active' : '笔在办' }}</span>
+            <span class="text-[#24483A]/80">{{ $t('agent.summaryActive') }}</span>
           </div>
           <div class="text-[11px] text-[#2A5440]">
-            {{ isEn ? 'Audits & Pending Fees' : '审批与待缴规费工单' }}
+            {{ $t('agent.summaryAuditsFees') }}
           </div>
         </div>
       </div>
@@ -135,7 +135,7 @@
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Shop /></el-icon>
               <span class="font-bold">{{ isAdmin ? $t('agent.adminCentersList') : $t('agent.myCenters') }}</span>
-              <el-badge :value="filteredAgents.length" type="primary" class="ml-1" />
+              <el-badge :value="filteredAgents.length" type="primary" class="ms-1" />
             </div>
           </template>
 
@@ -156,7 +156,7 @@
               </div>
               <div class="flex flex-wrap items-center gap-2" :class="isAppMode ? 'w-full justify-end' : ''">
                 <el-button type="primary" size="small" @click="handleOpenApply()">
-                  <el-icon class="mr-1"><Plus /></el-icon>
+                  <el-icon class="me-1"><Plus /></el-icon>
                   {{ $t('agent.applyGrant') }}
                 </el-button>
               </div>
@@ -185,11 +185,7 @@
                   <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.filterProvince') }}</span>
                   <el-select v-model="myCenterProvinceFilter" class="w-full" size="small" @change="myCentersCurrentPage = 1">
                     <el-option :label="$t('agent.allProvinces')" value="全部" />
-                    <el-option :label="isEn ? 'Baghdad Province' : '巴格达省 (Baghdad)'" value="巴格达省" />
-                    <el-option :label="isEn ? 'Diyala Province' : '迪亚拉省 (Diyala)'" value="迪亚拉省" />
-                    <el-option :label="isEn ? 'Kirkuk Province' : '基尔库克省 (Kirkuk)'" value="基尔库克省" />
-                    <el-option :label="isEn ? 'Nineveh Province' : '尼尼微省 (Nineveh)'" value="尼尼微省" />
-                    <el-option :label="isEn ? 'Basra Province' : '巴士拉省 (Basra)'" value="巴士拉省" />
+                    <el-option v-for="province in ['巴格达省', '迪亚拉省', '基尔库克省', '尼尼微省', '巴士拉省']" :key="province" :label="formatProvince(province)" :value="province" />
                   </el-select>
                 </div>
                 <div>
@@ -214,7 +210,7 @@
 
               <div class="flex items-end gap-2" :class="isAppMode ? 'pt-1' : ''">
                 <el-button size="small" type="primary" class="flex-1" @click="myCentersCurrentPage = 1">
-                  <el-icon class="mr-1"><Search /></el-icon>
+                  <el-icon class="me-1"><Search /></el-icon>
                   {{ $t('common.search') }}
                 </el-button>
                 <el-button size="small" class="flex-1" @click="handleResetMyCentersFilter">
@@ -286,11 +282,11 @@
                   </div>
                   <div>
                     <span class="text-[#8A9A8F] block">{{ $t('agent.colOwnerContact') }}</span>
-                    <span class="font-medium text-[#43554B]">{{ formatOwnerName(row.ownerName) }} ({{ row.phone || '07701122339' }})</span>
+                    <span class="font-medium text-[#43554B]">{{ formatOwnerName(row.ownerName) }} (<bdi dir="ltr">{{ row.phone || '07701122339' }}</bdi>)</span>
                   </div>
                   <div>
                     <span class="text-[#8A9A8F] block">{{ $t('agent.colCategory') }}</span>
-                    <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left">{{ formatCategory(row.agentType) }}</el-tag>
+                    <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ formatCategory(row.agentType) }}</el-tag>
                   </div>
                   <div>
                     <span class="text-[#8A9A8F] block">{{ $t('agent.colStoreArea') }}</span>
@@ -402,7 +398,7 @@
                       size="small"
                       type="warning"
                       effect="dark"
-                      class="scale-90 origin-left"
+                      class="scale-90 origin-left rtl:origin-right"
                     >
                       {{ $t('agent.article140Tag') }}
                     </el-tag>
@@ -520,7 +516,7 @@
                     <template v-else>
                       <el-tooltip :content="$t('agent.actionHandleRestoration')" placement="top">
                         <el-button size="small" type="primary" plain circle @click="handleOpenRestoration(row.centerId)">
-                          <el-icon><RefreshRight /></el-icon>
+                          <el-icon class="rtl-mirror-icon"><RefreshRight /></el-icon>
                         </el-button>
                       </el-tooltip>
                       <el-tooltip :content="$t('agent.actionHandleReapply')" placement="top">
@@ -563,7 +559,7 @@
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><Van /></el-icon>
               <span class="font-bold">{{ $t('agent.tabAgentOrders') || '代理订单' }}</span>
-              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">{{ $t('agent.tagWholesaleOrders') || '集中采购' }}</el-tag>
+              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ $t('agent.tagWholesaleOrders') || '集中采购' }}</el-tag>
             </div>
           </template>
           <div class="py-4">
@@ -579,7 +575,7 @@
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><DataAnalysis /></el-icon>
               <span class="font-bold">{{ $t('agent.tabOrderAnalytics') || '库存台账' }}</span>
-              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left">{{ $t('agent.tagAnalyticsCharts') || '分析图表' }}</el-tag>
+              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ $t('agent.tagAnalyticsCharts') || '分析图表' }}</el-tag>
             </div>
           </template>
           <div class="py-4 space-y-4">
@@ -602,7 +598,7 @@
             <div class="flex items-center gap-1.5 py-1">
               <el-icon><DocumentChecked /></el-icon>
               <span class="font-bold">{{ $t('agent.applications') }}</span>
-              <el-badge :value="filteredApplications.length" type="info" class="ml-1" />
+              <el-badge :value="filteredApplications.length" type="info" class="ms-1" />
             </div>
           </template>
 
@@ -650,7 +646,7 @@
               </div>
               <div class="flex items-end gap-2">
                 <el-button size="small" type="primary" class="flex-1" @click="applicationsCurrentPage = 1">
-                  <el-icon class="mr-1"><Search /></el-icon>
+                  <el-icon class="me-1"><Search /></el-icon>
                   {{ $t('agent.receipts.btnSearch') }}
                 </el-button>
                 <el-button size="small" class="flex-1" @click="handleResetAppFilter">
@@ -838,7 +834,7 @@
             >
               <div>
                 <span class="font-medium text-[#1F3326]">{{ member.dept }}</span>
-                <span class="text-[10px] text-[#8A9A8F] ml-1">({{ member.officer }})</span>
+                <span class="text-[10px] text-[#8A9A8F] ms-1">({{ member.officer }})</span>
               </div>
               <el-tag size="small" type="success" effect="plain">{{ member.status }}</el-tag>
             </div>
@@ -868,7 +864,7 @@ const isNormalAgentStatus = (status) => /正常|Active|Operational|Assigned/i.te
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const isAr = computed(() => locale.value === 'ar');
-const isKu = computed(() => locale.value === 'ku');
+const isKu = computed(() => locale.value === 'ckb');
 const isAppMode = computed(() => {
   return route.query.layout === 'app' ||
     sessionStorage.getItem('rcm_layout_mode') === 'app' ||
@@ -890,7 +886,7 @@ const formatCenterName = (centerName) => {
     if (centerName.includes('萨德尔城')) return 'Sadr City Flour Distribution Center';
     if (centerName.includes('卡达米亚')) return 'Kadhimiya 2nd Ration Center';
   } else if (isAr.value) {
-    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔')) return 'مركز المنصور المركزي للتموين';
+    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔') || centerName.includes('Mansour')) return 'مركز المنصور المركزي للتموين';
     if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'مركز خانقين الأول للتموين (المادة 140)';
     if (centerName.includes('卡拉达第一')) return 'مركز توزيع الكرادة الأول';
     if (centerName.includes('鲁萨法第二')) return 'مركز الرصافة الثاني للأمن الغذائي';
@@ -898,19 +894,19 @@ const formatCenterName = (centerName) => {
     if (centerName.includes('迪亚拉')) return 'منفذ خانقين التمويني بديالى';
     if (centerName.includes('摩苏尔')) return 'وكالة الموصل القديمة للضمان الغذائي';
     if (centerName.includes('亚尔穆克')) return 'مركز اليرموك التمويني الثالث';
-    if (centerName.includes('萨德尔城')) return 'مركز مدينة الصدر لتوزيع الطحين';
+    if (centerName.includes('萨德尔城') || centerName.includes('Sadr City')) return 'مركز مدينة الصدر لتوزيع الطحين';
     if (centerName.includes('卡达米亚')) return 'مركز الكاظمية الثاني للتموين';
   } else if (isKu.value) {
-    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔')) return 'Navenda Navendî ya Mansour';
-    if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'Navenda Xaneqîn 1 ya Xwarinê';
-    if (centerName.includes('卡拉达第一')) return 'Navenda Belavkirinê ya Karrada 1';
-    if (centerName.includes('鲁萨法第二')) return 'Navenda Ewlehiya Xwarinê ya Rusafa 2';
-    if (centerName.includes('巴士拉港口') || centerName.includes('阿沙尔')) return 'Navenda Port Basra ya Xwarinê';
-    if (centerName.includes('迪亚拉')) return 'Binkeya Diyala Xaneqîn';
-    if (centerName.includes('摩苏尔')) return 'Ajansa Ewlehiya Xwarinê ya Mûsil';
-    if (centerName.includes('亚尔穆克')) return 'Binkeya Yarmouk 3';
-    if (centerName.includes('萨德尔城')) return 'Navenda Belavkirina Arvan ya Şaristana Sadr';
-    if (centerName.includes('卡达米亚')) return 'Navenda Kazimiyya 2 ya Xwarinê';
+    if (centerName.includes('卡尔赫第一') || centerName.includes('曼苏尔') || centerName.includes('Mansour')) return 'ناوەندی بەشەخۆراکی مەنسوور';
+    if (centerName.includes('哈奈根') || centerName.includes('Khanaqin')) return 'ناوەندی یەکەمی بەشەخۆراکی خانەقین';
+    if (centerName.includes('卡拉达第一')) return 'ناوەندی یەکەمی دابەشکردنی کەرادە';
+    if (centerName.includes('鲁萨法第二')) return 'ناوەندی دووەمی ئاسایشی خۆراک لە ڕەصافە';
+    if (centerName.includes('巴士拉港口') || centerName.includes('阿沙尔')) return 'ناوەندی بەشەخۆراکی بەندەری بەسرە';
+    if (centerName.includes('迪亚拉')) return 'بنکەی بەشەخۆراکی خانەقین لە دیالە';
+    if (centerName.includes('摩苏尔')) return 'بنکەی دابینکردنی خۆراک لە مووسڵی کۆن';
+    if (centerName.includes('亚尔穆克')) return 'بنکەی سێیەمی بەشەخۆراکی یەرمووک';
+    if (centerName.includes('萨德尔城') || centerName.includes('Sadr City')) return 'ناوەندی دابەشکردنی ئارد لە شاری سەدر';
+    if (centerName.includes('卡达米亚')) return 'ناوەندی دووەمی بەشەخۆراکی کازمیە';
   }
   return centerName;
 };
@@ -926,19 +922,19 @@ const formatStoreName = (name) => {
     if (name.includes('拉希德')) return 'Al-Rasheed Community Supply Outlet';
     return name.replace(/便民/g, 'Community ').replace(/代销点/g, ' Agency Outlet').replace(/综合代销站/g, ' Distribution Station').replace(/保供站/g, ' Supply Station');
   } else if (isAr.value) {
-    if (name.includes('卡尔赫第一') || name.includes('101')) return 'منفذ توزيع الكرخ الأول الشامل';
-    if (name.includes('哈奈根第一') || name.includes('496')) return 'محطة خانقين الأولى الحدودية';
-    if (name.includes('萨德尔城') || name.includes('108')) return 'منفذ مدينة الصدر المركزي الخامس للطحين';
+    if (name.includes('卡尔赫第一') || name.includes('101') || name.includes('Karkh 1st')) return 'منفذ توزيع الكرخ الأول الشامل';
+    if (name.includes('哈奈根第一') || name.includes('496') || name.includes('Khanaqin 1st')) return 'محطة خانقين الأولى الحدودية';
+    if (name.includes('萨德尔城') || name.includes('108') || name.includes('Sadr City')) return 'منفذ مدينة الصدر المركزي الخامس للطحين';
     if (name.includes('鲁萨法') || name.includes('102')) return 'منفذ الرصافة التمويني للطحين';
     if (name.includes('巴士拉') || name.includes('201')) return 'محطة ميناء البصرة المشتركة';
     if (name.includes('拉希德')) return 'منفذ الرشيد للتموين الميسر';
   } else if (isKu.value) {
-    if (name.includes('卡尔赫第一') || name.includes('101')) return 'Binkeya Belavkirinê ya Karkh 1';
-    if (name.includes('哈奈根第一') || name.includes('496')) return 'Binkeya Sînorî ya Xaneqîn 1';
-    if (name.includes('萨德尔城') || name.includes('108')) return 'Binkeya Arvan ya Şaristana Sadr 5';
-    if (name.includes('鲁萨法') || name.includes('102')) return 'Binkeya Arvan ya Rusafa';
-    if (name.includes('巴士拉') || name.includes('201')) return 'Binkeya Port Basra';
-    if (name.includes('拉希德')) return 'Binkeya Al-Rasheed ya Xizmetguzarî';
+    if (name.includes('卡尔赫第一') || name.includes('101') || name.includes('Karkh 1st')) return 'بنکەی یەکەمی دابەشکردنی کەرخ';
+    if (name.includes('哈奈根第一') || name.includes('496') || name.includes('Khanaqin 1st')) return 'بنکەی سنووری یەکەمی خانەقین';
+    if (name.includes('萨德尔城') || name.includes('108') || name.includes('Sadr City')) return 'بنکەی پێنجەمی ئارد لە شاری سەدر';
+    if (name.includes('鲁萨法') || name.includes('102')) return 'بنکەی ئاردی ڕەصافە';
+    if (name.includes('巴士拉') || name.includes('201')) return 'بنکەی بەندەری بەسرە';
+    if (name.includes('拉希德')) return 'بنکەی خزمەتگوزاری ڕەشید';
   }
   return name;
 };
@@ -955,21 +951,25 @@ const formatAddress = (address) => {
     if (address.includes('萨阿迪耶')) return 'Block 3, Saadiya Oasis Blvd, Diyala';
     if (address.includes('曼德利')) return '15 Market St, Mandali, Diyala';
   } else if (isAr.value) {
-    if (address.includes('曼苏尔商业街18号')) return 'شارع المنصور التجاري 18، الكرخ، بغداد';
+    if (address.includes('曼苏尔商业街18号') || address.includes('Mansour Commercial')) return 'شارع المنصور التجاري 18، الكرخ، بغداد';
     if (address.includes('粮库路12号')) return 'شارع مستودع الحبوب 12، خانقين';
     if (address.includes('中央大道第5区综合楼')) return 'مبنى 5، شارع الصدر المركزي، بغداد';
     if (address.includes('工业路9号')) return 'شارع الصناعة 9، الرصافة، بغداد';
     if (address.includes('阿夏尔码头大道77号')) return 'شارع رصيف العشار 77، البصرة';
   } else if (isKu.value) {
-    if (address.includes('曼苏尔商业街18号')) return 'Kolana Bazirganî ya Mansour 18, Bexda';
-    if (address.includes('粮库路12号')) return 'Kolana Embarê 12, Xaneqîn';
-    if (address.includes('中央大道第5区综合楼')) return 'Binyana 5, Şaristana Sadr, Bexda';
+    if (address.includes('曼苏尔商业街18号') || address.includes('Mansour Commercial')) return 'شەقامی بازرگانی مەنسوور ١٨، بەغدا';
+    if (address.includes('粮库路12号')) return 'شەقامی کۆگای دانەوێڵە ١٢، خانەقین';
+    if (address.includes('中央大道第5区综合楼')) return 'بینای ٥، شەقامی ناوەندی شاری سەدر، بەغدا';
   }
   return address;
 };
 
 const formatProvince = (province) => {
   if (!province) return '';
+  if (isAr.value || isKu.value) {
+    const localized = provinceLabel(t, locale.value, province);
+    if (localized !== province) return localized;
+  }
   if (province.includes('巴格达')) return isEn.value ? 'Baghdad Province' : isAr.value ? 'محافظة بغداد' : isKu.value ? 'Parêzgeha Bexdayê' : '巴格达省';
   if (province.includes('迪亚拉')) return isEn.value ? 'Diyala Province' : isAr.value ? 'محافظة ديالى' : isKu.value ? 'Parêzgeha Diyala' : '迪亚拉省';
   if (province.includes('基尔库克')) return isEn.value ? 'Kirkuk Province' : isAr.value ? 'محافظة كركوك' : isKu.value ? 'Parêzgeha Kerkûkê' : '基尔库克省';
@@ -990,15 +990,19 @@ const formatBranchName = (branch) => {
     if (branch.includes('巴士拉')) return 'Basra Port Grain Supply Branch';
     if (branch.includes('粮食供应') || branch.includes('粮食保障')) return 'Grain Supply Branch';
   } else if (isAr.value) {
-    if (branch.includes('卡尔赫第一') || branch.includes('卡尔赫')) return 'فرع الكرخ الأول للإمداد الغذائي';
+    if (branch.includes('卡尔赫第一') || branch.includes('卡尔赫') || branch.includes('Karkh')) return 'فرع الكرخ الأول للإمداد الغذائي';
     if (branch.includes('迪亚拉')) return 'فرع شرق ديالى للإمداد الغذائي';
-    if (branch.includes('鲁萨法第二') || branch.includes('鲁萨法')) return 'فرع الرصافة الثاني للإمداد الغذائي';
+    if (branch.includes('鲁萨法第二') || branch.includes('鲁萨法') || branch.includes('Rusafa')) return 'فرع الرصافة الثاني للإمداد الغذائي';
     if (branch.includes('卡拉达')) return 'فرع الكرادة';
     if (branch.includes('曼苏尔')) return 'فرع المنصور';
     if (branch.includes('巴士拉')) return 'فرع ميناء البصرة للإمداد الغذائي';
   } else if (isKu.value) {
-    if (branch.includes('卡拉达')) return 'Beşa Karrada';
-    if (branch.includes('曼苏尔')) return 'Beşa Mansour';
+    if (branch.includes('卡尔赫') || branch.includes('Karkh')) return 'لقی دابینکردنی خۆراکی کەرخ';
+    if (branch.includes('迪亚拉')) return 'لقی دابینکردنی خۆراکی دیالە';
+    if (branch.includes('鲁萨法') || branch.includes('Rusafa')) return 'لقی دابینکردنی خۆراکی ڕەصافە';
+    if (branch.includes('卡拉达')) return 'لقی کەرادە';
+    if (branch.includes('曼苏尔')) return 'لقی مەنسوور';
+    if (branch.includes('巴士拉')) return 'لقی دابینکردنی خۆراکی بەسرە';
   }
   return branch;
 };
@@ -1030,12 +1034,12 @@ const formatCategory = (cat) => {
 };
 
 const formatOwnerName = (name) => {
-  if (!name) return isEn.value ? 'Authorized Agent' : isAr.value ? 'الوكيل المعتمد' : isKu.value ? 'Nûnerê Desthilatdar' : '代销专员';
-  if (name.includes('穆罕默德') || name.includes('贾巴尔') || name.includes('拉希德')) {
-    return isEn.value ? 'Mohammed Jabbar Al-Rasheed' : isAr.value ? 'محمد جبار الرشيد' : isKu.value ? 'Mihemed Cebar Reşîd' : '穆罕默德·贾巴尔·拉希德';
+  if (!name) return isEn.value ? 'Authorized Agent' : isAr.value ? 'الوكيل المعتمد' : isKu.value ? 'بریکاری ڕێپێدراو' : '代销专员';
+  if (name.includes('穆罕默德') || name.includes('贾巴尔') || name.includes('拉希德') || /Mohammed.*Jabbar/i.test(name)) {
+    return isEn.value ? 'Mohammed Jabbar Al-Rasheed' : isAr.value ? 'محمد جبار الرشيد' : isKu.value ? 'محەمەد جەبار ڕەشید' : '穆罕默德·贾巴尔·拉希德';
   }
-  if (name.includes('扎伊德')) return isEn.value ? 'Zaid Qasim Al-Saadi' : isAr.value ? 'زيد قاسم السعدي' : isKu.value ? 'Zêyd Qasim Seidî' : name;
-  if (name.includes('奥马尔')) return isEn.value ? 'Omar Sabah Al-Nasir' : isAr.value ? 'عمر صباح الناصر' : isKu.value ? 'Omer Sebah Nasir' : name;
+  if (name.includes('扎伊德')) return isEn.value ? 'Zaid Qasim Al-Saadi' : isAr.value ? 'زيد قاسم السعدي' : isKu.value ? 'زەید قاسم سەعدی' : name;
+  if (name.includes('奥马尔')) return isEn.value ? 'Omar Sabah Al-Nasir' : isAr.value ? 'عمر صباح الناصر' : isKu.value ? 'عومەر سەباح ناسر' : name;
   return name;
 };
 
@@ -1054,6 +1058,7 @@ const formatAgentStatus = (st) => {
   return st;
 };
 import { ElMessage } from 'element-plus';
+import { provinceLabel } from '../../utils/dataLabels.js';
 import {
   getMyAgentCenters,
   getArticle140Centers,

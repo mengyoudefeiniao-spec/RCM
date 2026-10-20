@@ -14,7 +14,7 @@
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
-          <el-icon class="mr-1"><Back /></el-icon>
+          <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
       </div>
@@ -44,7 +44,7 @@
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 -->
-          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
+          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-e border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
             <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
@@ -87,7 +87,7 @@
           </div>
 
           <!-- 右侧主操作区 (针对多语言长文本优化内边距与排版) -->
-          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 ps-9 sm:ps-10 lg:ps-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
             <!-- APP 视口：顶部横向 1-5 步骤条 (适配手机窗口与操作习惯) -->
             <div v-if="isAppMode" class="flex items-center mb-3 px-1">
@@ -148,7 +148,7 @@
                       <div class="min-w-0 flex-1">
                         <div class="font-bold text-[#1F3326] text-xs flex items-center gap-1.5 flex-wrap">
                           <span class="truncate">{{ item.name }}</span>
-                          <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">
+                          <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left rtl:origin-right">
                             {{ item.relationLabel || $t('memberTransfer.relatedMember') }}
                           </el-tag>
                         </div>
@@ -321,19 +321,19 @@
               <div class="space-y-2">
                 <span class="block text-xs font-semibold text-[#43554B]">{{ $t('memberTransfer.transferTypeLabel') }}：</span>
                 <el-radio-group v-model="transferReasonType" class="w-full grid gap-2.5" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'">
-                  <el-radio-button value="wife" class="w-full text-left custom-radio-btn">
+                  <el-radio-button value="wife" class="w-full text-start custom-radio-btn">
                     {{ $t('memberTransfer.typeWife') }}
                   </el-radio-button>
-                  <el-radio-button value="child" class="w-full text-left custom-radio-btn">
+                  <el-radio-button value="child" class="w-full text-start custom-radio-btn">
                     {{ $t('memberTransfer.typeChild') }}
                   </el-radio-button>
-                  <el-radio-button value="guardianship" class="w-full text-left custom-radio-btn">
+                  <el-radio-button value="guardianship" class="w-full text-start custom-radio-btn">
                     {{ $t('memberTransfer.typeGuardianship') }}
                   </el-radio-button>
-                  <el-radio-button value="support" class="w-full text-left custom-radio-btn">
+                  <el-radio-button value="support" class="w-full text-start custom-radio-btn">
                     {{ $t('memberTransfer.typeSupport') }}
                   </el-radio-button>
-                  <el-radio-button value="other" class="w-full text-left custom-radio-btn">
+                  <el-radio-button value="other" class="w-full text-start custom-radio-btn">
                     {{ $t('memberTransfer.typeOther') }}
                   </el-radio-button>
                 </el-radio-group>
@@ -480,7 +480,7 @@
               <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid gap-4 text-xs" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'">
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.movingMember') }}：</span>
-                  <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember?.name }} ({{ selectedMember?.nationalId }})</span>
+                  <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember?.name }} (<bdi dir="ltr">{{ selectedMember?.nationalId }}</bdi>)</span>
                 </div>
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.receivingRationCard') }}：</span>
@@ -506,7 +506,7 @@
                     5,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
                   </div>
                 </div>
-                <div class="text-xs text-[#8A9A8F] sm:text-right">
+                <div class="text-xs text-[#8A9A8F] sm:text-end">
                   <div>{{ $t('memberTransfer.payChannel') }}</div>
                   <div class="text-[11px] text-[#58685D]">{{ $t('memberTransfer.payChannelSub') }}</div>
                 </div>
@@ -530,7 +530,7 @@
                   :loading="submitting"
                   @click="handleOpenPaymentDialog"
                 >
-                  <el-icon class="mr-1.5"><Cellphone /></el-icon>
+                  <el-icon class="me-1.5"><Cellphone /></el-icon>
                   {{ $t('memberTransfer.payAndSubmitBtn') }}
                 </el-button>
               </div>
@@ -557,7 +557,7 @@
               </div>
 
               <!-- 凭证卡片 -->
-              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-left space-y-3 text-xs">
+              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-start space-y-3 text-xs">
                 <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
                   <span class="font-bold text-[#1F3326]">{{ $t('memberTransfer.receiptTitle') }}</span>
                   <el-tag :type="finalPathDecision === 'auto' ? 'success' : 'warning'" size="small">
@@ -590,7 +590,7 @@
                 size="large"
                 @click="handlePrevStep"
               >
-                <el-icon class="mr-1"><Back /></el-icon>
+                <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
                 {{ $t('common.prevStep') }}
               </el-button>
               <div v-else />
@@ -605,7 +605,7 @@
                   @click="handleNextStep"
                 >
                   {{ $t('common.nextStep') }}
-                  <el-icon class="ml-1"><Right /></el-icon>
+                  <el-icon class="rtl-mirror-icon ms-1"><Right /></el-icon>
                 </el-button>
               </div>
             </div>
@@ -934,7 +934,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-connector-line {
     position: absolute;
-    left: 15px;
+    inset-inline-start: 15px;
     top: 24px;
     bottom: 24px;
     width: 2px;
@@ -983,7 +983,7 @@ async function handlePaymentSuccess(paymentInfo) {
 @media (max-width: 1023px) {
   .timeline-rail-aside {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 20px;
@@ -992,7 +992,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-nodes-list {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 56px;
     bottom: 60px;
     display: flex;
@@ -1001,7 +1001,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-connector-line {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 2px;
@@ -1014,7 +1014,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .node-icon-wrapper {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 20px;

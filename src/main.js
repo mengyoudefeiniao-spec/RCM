@@ -12,6 +12,7 @@ import './styles/theme.scss';
 import './styles/mobile-theme.scss';
 import './styles/dialog-responsive.css';
 import './assets/css/ht-theme.css';
+import './styles/rtl.css';
 
 const app = createApp(App);
 

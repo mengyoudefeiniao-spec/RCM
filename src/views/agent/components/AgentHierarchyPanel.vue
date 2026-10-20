@@ -55,7 +55,7 @@
                     <div class="text-[10px] text-[#8A9A8F]">{{ prov.province }} · {{ isEn ? `${prov.totalDistricts} districts` : `辖区 ${prov.totalDistricts} 区` }}</div>
                   </div>
                 </div>
-                <div class="text-right font-mono">
+                <div class="text-end font-mono">
                   <div class="font-bold text-[#2A5440]">{{ isEn ? `${prov.totalHouseholdsServed} HH` : `${prov.totalHouseholdsServed} 户` }}</div>
                   <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `Load ${prov.overallSaturationRate}%` : `负荷率 ${prov.overallSaturationRate}%` }}</div>
                 </div>
@@ -85,7 +85,7 @@
                       <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `Manager: ${dist.name} | ${dist.children?.length} stations` : `经理: ${dist.name} | ${dist.children?.length} 个终端站` }}</div>
                     </div>
                   </div>
-                  <div class="text-right font-mono">
+                  <div class="text-end font-mono">
                     <div class="font-bold text-[#2A5440]">{{ isEn ? `${dist.totalHouseholdsServed} HH` : `${dist.totalHouseholdsServed} 户` }}</div>
                     <div class="text-[10px] text-[#8A9A8F]">{{ isEn ? `${dist.overallSaturationRate}% Load` : `${dist.overallSaturationRate}% 负荷` }}</div>
                   </div>
@@ -99,7 +99,7 @@
                 <span>{{ isEn ? '③ Street Agents (Terminal Stores · 1,500-Household Ceiling)' : '③ 街道代理 (终端服务门店 · 上限1,500户)' }}</span>
                 <span class="font-mono text-[#2F7A50] text-[10px]">{{ isEn ? `${currentStreetStationsList.length} stations in district` : `当前区 ${currentStreetStationsList.length} 个网点` }}</span>
               </div>
-              <div class="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
+              <div class="space-y-1.5 max-h-[190px] overflow-y-auto pe-1">
                 <div
                   v-for="st in currentStreetStationsList"
                   :key="st.id"
@@ -113,7 +113,7 @@
                     <div class="flex items-center gap-1.5 font-bold truncate">
                       <el-tag size="small" type="success" effect="plain" class="scale-85">{{ isEn ? 'Street' : '街道' }}</el-tag>
                       <span class="truncate text-[#1B3123]">{{ st.storeName }}</span>
-                      <el-tag v-if="st.isSelf" size="small" type="warning" effect="dark" class="scale-75 origin-left">{{ isEn ? 'Mine' : '我经营' }}</el-tag>
+                      <el-tag v-if="st.isSelf" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right">{{ isEn ? 'Mine' : '我经营' }}</el-tag>
                     </div>
 
                     <el-tag
@@ -160,15 +160,15 @@
           <div class="space-y-1.5 text-[#58685D] leading-relaxed text-[11px]">
             <div class="flex justify-between items-start">
               <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Agent Responsible:' : '代理责任人：' }}</span>
-              <span class="font-bold text-[#1F3326] text-right">{{ currentScopeAgentName }} ({{ currentScopeAgentPhone }})</span>
+            <span class="font-bold text-[#1F3326] text-end">{{ currentScopeAgentName }} (<bdi dir="ltr">{{ currentScopeAgentPhone }}</bdi>)</span>
             </div>
             <div class="flex justify-between items-start">
               <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Administrative Scope:' : '管辖行政范围：' }}</span>
-              <span class="font-semibold text-[#2A5440] text-right">{{ currentScopeJurisdiction }}</span>
+              <span class="font-semibold text-[#2A5440] text-end">{{ currentScopeJurisdiction }}</span>
             </div>
             <div class="flex justify-between items-start">
               <span class="text-[#8A9A8F] shrink-0">{{ isEn ? 'Bound Ration Center:' : '物理绑定配给中心：' }}</span>
-              <span class="text-[#1F3326] text-right">{{ currentScopeCenterName }}</span>
+              <span class="text-[#1F3326] text-end">{{ currentScopeCenterName }}</span>
             </div>
             <div class="flex justify-between items-center pt-1 border-t border-[#D9E5DB]/60 font-mono">
               <span class="text-[#8A9A8F]">{{ isEn ? 'Served Households:' : '管辖服务户数：' }}</span>
@@ -315,7 +315,7 @@
     <el-drawer
       v-model="familyDrawerVisible"
       :title="isEn ? 'Ration Citizen Family Dossier Details' : '配给公民家庭档案详情'"
-      direction="rtl"
+      :direction="currentDirection === 'rtl' ? 'ltr' : 'rtl'"
       size="400px"
       destroy-on-close
     >
@@ -341,7 +341,7 @@
           </div>
           <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'Residential Address:' : '常住居所地址：' }}</span>
-            <span class="text-[#1F3326] text-right">{{ activeFamilyRow.address }}</span>
+            <span class="text-[#1F3326] text-end">{{ activeFamilyRow.address }}</span>
           </div>
           <div class="flex justify-between py-1 border-b border-[#E9F1EB]">
             <span>{{ isEn ? 'Affiliated Street Station:' : '归属街道代销站：' }}</span>
@@ -374,6 +374,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { currentDirection } from '../../../locales/index.js';
 import { ElMessage } from 'element-plus';
 import {
   OfficeBuilding,

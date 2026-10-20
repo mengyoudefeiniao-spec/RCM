@@ -12,15 +12,15 @@
       <img
         src="/images/dashboard-banner.png"
         alt="National Ration Card System Background"
-        class="absolute inset-0 w-full h-full object-cover object-left md:object-center select-none pointer-events-none"
+        class="absolute inset-0 w-full h-full object-cover object-left rtl:object-right md:object-center select-none pointer-events-none"
         loading="eager"
       />
 
       <!-- 柔和微弱渐变保护层：确保在不同屏幕分辨率下文字图层均拥有顶级可读性 -->
-      <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-[#F3F8F4]/20 to-[#F3F8F4]/80 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r md:rtl:bg-gradient-to-l from-transparent via-[#F3F8F4]/20 to-[#F3F8F4]/80 pointer-events-none"></div>
 
       <!-- 文字内容图层：加在图片图层上方 (relative z-10)，支持独立排版与交互 -->
-      <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center items-start md:items-end text-left md:text-right">
+      <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center items-start md:items-end text-start md:text-end">
         <!-- 顶部金色服务标识 (含 ht.iq 官方矢量 Logo) -->
         <div class="text-[#B8934A] text-xs sm:text-sm font-semibold tracking-wide mb-1 flex items-center gap-2">
           <div class="w-6 h-6 rounded-lg bg-white/95 p-0.5 border border-[#C7E0CE] shadow-2xs flex items-center justify-center shrink-0">
@@ -71,7 +71,7 @@
           :loading="isRefreshing"
           @click="handleManualRefresh"
         >
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           <span>{{ $t('dashboardOverview.refreshData') }}</span>
         </el-button>
       </div>
@@ -134,7 +134,7 @@
             <span class="text-[#58685D]">{{ $t('dashboardOverview.avgProcessingDays') }}</span>
             <span class="font-mono font-semibold text-sm text-[#1F3326]">
               {{ countAvgProcessingDays.displayValue }}
-              <span class="text-xs font-normal text-[#58685D] ml-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
+              <span class="text-xs font-normal text-[#58685D] ms-0.5">{{ $t('dashboardOverview.daysUnit') }}</span>
             </span>
           </div>
 

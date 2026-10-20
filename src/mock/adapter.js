@@ -224,6 +224,48 @@ const INITIAL_CITIZEN_PURCHASE_ORDERS_EN = [
 ];
 
 // 多语言内存持久化存储池
+const myStorageKey = (role, part) => `rcm_my_${role}_${part}_v1`;
+
+function readMyData(role, part, fallback) {
+  try {
+    const stored = localStorage.getItem(myStorageKey(role, part));
+    return stored ? JSON.parse(stored) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeMyData(role, part, value) {
+  localStorage.setItem(myStorageKey(role, part), JSON.stringify(value));
+  return value;
+}
+
+async function passwordDigest(password) {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+const MY_NOTIFICATION_SEEDS = {
+  citizen: [
+    { id: 'cit-review', type: 'review', path: '/citizen' },
+    { id: 'cit-material', type: 'material', path: '/citizen' },
+    { id: 'cit-ration', type: 'ration', path: '/warehouse' },
+    { id: 'cit-system', type: 'system', path: '/citizen' }
+  ],
+  agent: [
+    { id: 'agt-review', type: 'review', path: '/agent' },
+    { id: 'agt-stock', type: 'stock', path: '/agent-analytics' },
+    { id: 'agt-delivery', type: 'delivery', path: '/warehouse' },
+    { id: 'agt-system', type: 'system', path: '/agent' }
+  ]
+};
+
+const MY_COURIER_SEEDS = [
+  { id: 'courier-1', name: 'Hashim Ali', phone: '07701234001', vehicleNo: 'BAG-TRK-7841', active: true },
+  { id: 'courier-2', name: 'Omar Sabah', phone: '07701234002', vehicleNo: 'BAG-VAN-2198', active: true }
+];
+
 const multiLangStores = {
   zh: {
     complaintsStore: JSON.parse(JSON.stringify(zhComplaint.MOCK_COMPLAINTS)),
@@ -306,6 +348,19 @@ const multiLangStores = {
 multiLangStores.ar = JSON.parse(JSON.stringify(multiLangStores.en));
 multiLangStores.ku = JSON.parse(JSON.stringify(multiLangStores.en));
 
+function syncCitizenContact(profile) {
+  if (!profile) return;
+  Object.values(multiLangStores).forEach((stores) => {
+    const family = stores.familiesStore?.find(item => item.rationCardNo === 'RC-10029381');
+    if (family) {
+      family.phone = profile.phone;
+      family.address = profile.address;
+    }
+  });
+}
+
+syncCitizenContact(readMyData('citizen', 'profile', null));
+
 // 家庭成员/人数变更后同步所有语言内存池：
 // 家庭档案 GET 接口优先读跨标签页共享存储，而 quota-balance 等按当前语言内存池
 // 读取——若只更新其中一处，会造成「家庭代理 5 人 / 配给购买 4 人」的额度分裂
@@ -329,10 +384,12 @@ function getActiveMemberCount(family) {
 export function getActiveLang(config) {
   if (config && config.headers && config.headers['Accept-Language']) {
     const l = config.headers['Accept-Language'];
+    if (l === 'ckb') return 'ku';
     if (['zh', 'en', 'ar', 'ku'].includes(l)) return l;
   }
   if (typeof localStorage !== 'undefined') {
     const l = localStorage.getItem('rcm_language');
+    if (l === 'ckb') return 'ku';
     if (['zh', 'en', 'ar', 'ku'].includes(l)) return l;
   }
   return 'zh';
@@ -342,15 +399,18 @@ export function getActiveLang(config) {
  * 获取智能客服当前请求的精确语言代码 (支持 zh, en, ar, ku)
  */
 export function getAiServiceLang(config, data) {
+  if (data?.lang === 'ckb') return 'ku';
   if (data && data.lang && ['zh', 'en', 'ar', 'ku'].includes(data.lang)) {
     return data.lang;
   }
   const headerLang = config?.headers?.['Accept-Language'];
+  if (headerLang === 'ckb') return 'ku';
   if (headerLang && ['zh', 'en', 'ar', 'ku'].includes(headerLang)) {
     return headerLang;
   }
   if (typeof localStorage !== 'undefined') {
     const storedLang = localStorage.getItem('rcm_language');
+    if (storedLang === 'ckb') return 'ku';
     if (storedLang && ['zh', 'en', 'ar', 'ku'].includes(storedLang)) {
       return storedLang;
     }
@@ -448,6 +508,14 @@ export async function mockDispatch(config) {
       (u) => u.username === username || u.role === username || (u.cardNo && u.cardNo === username)
     ) || MOCK_USERS[0];
 
+    if (user.role === 'citizen' || user.role === 'agent') {
+      const changedDigest = localStorage.getItem(myStorageKey(user.role, 'password'));
+      const matches = changedDigest
+        ? await passwordDigest(data.password || '') === changedDigest
+        : data.password === 'iq-pass-2026';
+      if (!matches) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+    }
+
     return createResponse({
       token: user.token,
       user
@@ -461,6 +529,92 @@ export async function mockDispatch(config) {
 
   if (url.includes('/auth/logout') && method === 'POST') {
     return createResponse({ success: true }, 200, (isEn ? 'Signed out successfully' : '登出成功'));
+  }
+
+  // “我的”模块：演示环境按账号角色保存编辑内容，通知正文始终由前端词包渲染。
+  if (url.includes('/me/')) {
+    const role = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').role;
+    if (!['citizen', 'agent'].includes(role)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+
+    if (url.endsWith('/me/profile')) {
+      const base = {
+        email: role === 'citizen' ? 'ahmed@example.com' : 'agent@example.com',
+        phone: role === 'citizen' ? '07701234567' : '07701122339',
+        address: i18n.global.t(role === 'citizen' ? 'my.demoCitizenAddress' : 'my.demoAgentAddress')
+      };
+      if (method === 'GET') return createResponse(readMyData(role, 'profile', base));
+      if (method === 'PUT') {
+        const next = {
+          email: String(data.email || '').trim(),
+          phone: String(data.phone || '').trim(),
+          address: String(data.address || '').trim()
+        };
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email) || !/^\+?[\d\s-]{7,20}$/.test(next.phone) || !next.address) {
+          return createResponse({}, 400, i18n.global.t('my.invalidProfile'));
+        }
+        writeMyData(role, 'profile', next);
+        if (role === 'citizen') syncCitizenContact(next);
+        return createResponse(next);
+      }
+    }
+
+    if (url.endsWith('/me/password') && method === 'POST') {
+      const previous = localStorage.getItem(myStorageKey(role, 'password'));
+      const currentValid = previous
+        ? await passwordDigest(data.currentPassword || '') === previous
+        : data.currentPassword === 'iq-pass-2026';
+      if (!currentValid) return createResponse({}, 400, i18n.global.t('my.currentPasswordWrong'));
+      if (String(data.newPassword || '').length < 8) return createResponse({}, 400, i18n.global.t('my.passwordTooShort'));
+      localStorage.setItem(myStorageKey(role, 'password'), await passwordDigest(data.newPassword));
+      return createResponse({ success: true });
+    }
+
+    if (url.endsWith('/me/notifications') && method === 'GET') {
+      const readIds = readMyData(role, 'read_notifications', []);
+      return createResponse(MY_NOTIFICATION_SEEDS[role].map((item, index) => ({
+        ...item, read: readIds.includes(item.id), createdAt: new Date(Date.now() - index * 86400000).toISOString()
+      })));
+    }
+    if (url.endsWith('/me/notifications/read') && method === 'POST') {
+      const allIds = MY_NOTIFICATION_SEEDS[role].map(item => item.id);
+      const requested = Array.isArray(data.ids) ? data.ids.filter(id => allIds.includes(id)) : [];
+      const readIds = [...new Set([...readMyData(role, 'read_notifications', []), ...requested])];
+      writeMyData(role, 'read_notifications', readIds);
+      return createResponse({ readIds });
+    }
+
+    if (url.includes('/me/couriers')) {
+      if (role !== 'agent') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const couriers = readMyData(role, 'couriers', MY_COURIER_SEEDS.map(item => ({ ...item })));
+      const match = url.match(/\/me\/couriers\/([^/?]+)/);
+      if (!match && method === 'GET') return createResponse(couriers);
+      if (!match && method === 'POST') {
+        const courier = {
+          id: crypto.randomUUID(), name: String(data.name || '').trim(),
+          phone: String(data.phone || '').trim(), vehicleNo: String(data.vehicleNo || '').trim(), active: Boolean(data.active)
+        };
+        if (!courier.name || !/^\+?[\d\s-]{7,20}$/.test(courier.phone)) return createResponse({}, 400, i18n.global.t('my.invalidCourier'));
+        writeMyData(role, 'couriers', [...couriers, courier]);
+        return createResponse(courier);
+      }
+      const id = match ? decodeURIComponent(match[1]) : '';
+      const position = couriers.findIndex(item => item.id === id);
+      if (position < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      if (method === 'PUT') {
+        const courier = {
+          ...couriers[position], name: String(data.name || '').trim(),
+          phone: String(data.phone || '').trim(), vehicleNo: String(data.vehicleNo || '').trim(), active: Boolean(data.active)
+        };
+        if (!courier.name || !/^\+?[\d\s-]{7,20}$/.test(courier.phone)) return createResponse({}, 400, i18n.global.t('my.invalidCourier'));
+        couriers[position] = courier;
+        writeMyData(role, 'couriers', couriers);
+        return createResponse(courier);
+      }
+      if (method === 'DELETE') {
+        writeMyData(role, 'couriers', couriers.filter(item => item.id !== id));
+        return createResponse({ success: true });
+      }
+    }
   }
 
   // 1.1 纸质配给卡 OCR 扫描识别与有效性比对校验 (返回信息按当前语言国际化)

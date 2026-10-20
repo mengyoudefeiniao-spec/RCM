@@ -89,7 +89,7 @@
               data-demo-target="btn-capture"
               @click="triggerPhotoCapture"
             >
-              <el-icon class="mr-1"><Camera /></el-icon>
+              <el-icon class="me-1"><Camera /></el-icon>
               {{ hasUploadedPhoto ? $t('register.retakeBtn') : $t('register.captureBtn') }}
             </el-button>
             <el-button size="small" type="info" plain class="w-full" :disabled="scanning" @click="triggerTestInvalidCard">
@@ -202,7 +202,7 @@
 
         <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
           <el-form-item :label="$t('register.nidLabel')" required>
-            <el-input v-model="registerForm.nationalId" :placeholder="$t('register.nidPlaceholder')" />
+            <el-input class="bidi-ltr" v-model="registerForm.nationalId" :placeholder="$t('register.nidPlaceholder')" />
           </el-form-item>
           <el-form-item :label="$t('register.memberCountLabel')">
             <el-input-number v-model="registerForm.memberCount" :min="1" :max="15" class="w-full" />
@@ -211,7 +211,7 @@
 
         <div :class="isCompact ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
           <el-form-item :label="$t('register.phoneLabel')" required>
-            <el-input v-model="registerForm.phone" placeholder="+964 780 123 4567" />
+            <el-input class="bidi-ltr" v-model="registerForm.phone" placeholder="+964 780 123 4567" />
           </el-form-item>
 
           <el-form-item :label="$t('register.smsLabel')" required>

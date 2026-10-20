@@ -13,7 +13,7 @@
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
-          <el-icon class="mr-1"><Back /></el-icon>
+          <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
       </div>
@@ -43,7 +43,7 @@
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
-          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
+          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-e border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
             <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
@@ -90,7 +90,7 @@
           </div>
 
           <!-- 右侧主操作区 -->
-          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 ps-9 sm:ps-10 lg:ps-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
             <!-- APP 视口：顶部横向 1-5 步骤条 (适配手机窗口与操作习惯) -->
             <div v-if="isAppMode" class="flex items-center mb-3 px-1">
@@ -209,7 +209,7 @@
                         <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
 
-                      <div class="text-right shrink-0">
+                      <div class="text-end shrink-0">
                         <span
                           class="font-mono font-bold text-xs"
                           :class="ag.currentHouseholds >= 1500 ? 'text-[#C04442]' : 'text-[#326445]'"
@@ -221,7 +221,7 @@
                           size="small"
                           type="danger"
                           effect="dark"
-                          class="scale-90 origin-right block mt-0.5"
+                          class="scale-90 origin-right rtl:origin-left block mt-0.5"
                         >
                           {{ $t('transfer.capacityFull') }}
                         </el-tag>
@@ -257,7 +257,7 @@
                         <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
                       </el-radio>
 
-                      <div class="text-right shrink-0">
+                      <div class="text-end shrink-0">
                         <span
                           class="font-mono font-bold text-xs"
                           :class="ag.currentHouseholds >= 1500 ? 'text-[#C04442]' : 'text-[#326445]'"
@@ -269,7 +269,7 @@
                           size="small"
                           type="danger"
                           effect="dark"
-                          class="scale-90 origin-right block mt-0.5"
+                          class="scale-90 origin-right rtl:origin-left block mt-0.5"
                         >
                           {{ $t('transfer.capacityFull') }}
                         </el-tag>
@@ -444,7 +444,7 @@
                   :loading="submitting"
                   @click="handleOpenPaymentDialog"
                 >
-                  <el-icon class="mr-1.5"><Cellphone /></el-icon>
+                  <el-icon class="me-1.5"><Cellphone /></el-icon>
                   {{ $t('transfer.payAndSubmit') }}
                 </el-button>
               </div>
@@ -471,7 +471,7 @@
               </div>
 
               <!-- 凭证卡片 -->
-              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-left space-y-3 text-xs">
+              <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-start space-y-3 text-xs">
                 <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
                   <span class="font-bold text-[#1F3326]">{{ $t('transfer.receiptTitle') }}</span>
                   <el-tag :type="transferResult?.autoApproved ? 'success' : 'warning'" size="small">
@@ -504,7 +504,7 @@
                 size="large"
                 @click="handlePrevStep"
               >
-                <el-icon class="mr-1"><Back /></el-icon>
+                <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
                 {{ $t('common.prevStep') }}
               </el-button>
               <div v-else />
@@ -518,7 +518,7 @@
                   @click="handleNextStep"
                 >
                   {{ $t('common.nextStep') }}
-                  <el-icon class="ml-1"><Right /></el-icon>
+                  <el-icon class="rtl-mirror-icon ms-1"><Right /></el-icon>
                 </el-button>
               </div>
             </div>
@@ -874,7 +874,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-connector-line {
     position: absolute;
-    left: 15px;
+    inset-inline-start: 15px;
     top: 24px;
     bottom: 24px;
     width: 2px;
@@ -923,7 +923,7 @@ async function handlePaymentSuccess(paymentInfo) {
 @media (max-width: 1023px) {
   .timeline-rail-aside {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 20px;
@@ -932,7 +932,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-nodes-list {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 56px;
     bottom: 60px;
     display: flex;
@@ -941,7 +941,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .timeline-connector-line {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 2px;
@@ -954,7 +954,7 @@ async function handlePaymentSuccess(paymentInfo) {
   }
   .node-icon-wrapper {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 20px;

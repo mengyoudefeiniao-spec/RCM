@@ -22,15 +22,15 @@
       <div class="flex items-center gap-2 flex-wrap" :class="isAppMode ? 'shrink-0 !flex-nowrap' : ''">
         <!-- 上级代理根据贸易部计划生成自己和下级代理的月度配给计划 (省级/区域/街道三层，按户数自动分配，不能手动分配) -->
         <el-button v-if="!isCitizen" type="success" size="small" @click="openDecomposeDialog">
-          <el-icon class="mr-1"><Share /></el-icon>
+          <el-icon class="me-1"><Share /></el-icon>
           <span>{{ $t('warehouse.generateMonthlySchedule') || '依据贸易部计划生成月度排程' }}</span>
         </el-button>
         <el-button v-if="isAdmin" type="primary" size="small" @click="openCreatePlanDialog">
-          <el-icon class="mr-1"><Plus /></el-icon>
+          <el-icon class="me-1"><Plus /></el-icon>
           <span>{{ $t('warehouse.makePlan') || '制定计划' }}</span>
         </el-button>
         <el-button size="small" @click="loadData" :title="$t('common.refresh') || '刷新'">
-          <el-icon :class="isAppMode ? '' : 'mr-1'"><Refresh /></el-icon>
+          <el-icon :class="isAppMode ? '' : 'me-1'"><Refresh /></el-icon>
           <span v-if="!isAppMode">{{ $t('common.refresh') || '刷新' }}</span>
         </el-button>
       </div>
@@ -41,7 +41,7 @@
     <!-- ======================================================== -->
     <div v-if="isCitizen" class="space-y-4" :class="isAppMode ? '!space-y-2.5' : ''">
       <div
-        class="bg-gradient-to-r from-[#EFF5F1]/70 via-[#EFF5F1]/40 to-[#F3F8F4] rounded-lg border border-[#C7DED0]/80 shadow-xs"
+        class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#EFF5F1]/70 via-[#EFF5F1]/40 to-[#F3F8F4] rounded-lg border border-[#C7DED0]/80 shadow-xs"
         :class="isAppMode ? 'p-3.5 space-y-2.5' : 'p-5 space-y-4'"
       >
         <div
@@ -198,7 +198,7 @@
               <el-icon class="text-[#C9A13B] shrink-0"><InfoFilled /></el-icon>
               <span>{{ $t('warehouse.claimPickGuide') || '核销提货与申领指引：' }}</span>
             </div>
-            <p class="text-[11px] text-[#5A4718]/85 leading-relaxed text-left">
+            <p class="text-[11px] text-[#5A4718]/85 leading-relaxed text-start">
               {{ $t('warehouse.claimPickDesc') || '请户主或代领人在本模块选购所需配额并完成自付规费结算，生成二维码后至签约代销站扫码核销即可全额领取。' }}
             </p>
           </div>
@@ -215,7 +215,7 @@
               :title="$t('warehouse.buyThisMonthRation')"
               @click="emit('go-purchase')"
             >
-              <el-icon class="mr-1 text-sm"><ShoppingCart /></el-icon>
+              <el-icon class="me-1 text-sm"><ShoppingCart /></el-icon>
               <span class="text-xs truncate">{{ isAppMode ? ($t('warehouse.buyThisMonthRationShort') || '选购配额') : ($t('warehouse.buyThisMonthRation') || '立即选购本月配给品') }}</span>
             </el-button>
 
@@ -229,7 +229,7 @@
               :title="$t('warehouse.showMyCard')"
               @click="openRationCardModal"
             >
-              <el-icon class="mr-1 text-sm"><Tickets /></el-icon>
+              <el-icon class="me-1 text-sm"><Tickets /></el-icon>
               <span class="text-xs truncate">{{ isAppMode ? ($t('warehouse.showMyCardShort') || '出示卡片') : ($t('warehouse.showMyCard') || '出示我的配给卡') }}</span>
             </el-button>
           </div>
@@ -306,8 +306,8 @@
                   :key="q.itemCode"
                   class="bg-white px-2 py-1 rounded border border-[#D9E5DB]/60 flex items-center justify-between text-[11px]"
                 >
-                  <span class="text-[#58685D] truncate mr-1">{{ formatItemName(q.itemName) }}</span>
-                  <div class="text-right shrink-0">
+                  <span class="text-[#58685D] truncate me-1">{{ formatItemName(q.itemName) }}</span>
+                  <div class="text-end shrink-0">
                     <span class="font-mono font-bold text-[#1B3123] block">{{ q.quotaPerPerson }} {{ q.unit.split('/')[0] }}</span>
                     <span class="text-[9px] text-[#C9A13B] font-mono">{{ q.guidePriceIQD }} IQD</span>
                   </div>
@@ -494,7 +494,7 @@
                 <span class="font-mono font-bold text-[#1F3326] text-xs">{{ (task.registeredHouseholds || 0).toLocaleString() }} {{ $t('warehouse.householdUnit') || '户' }}</span>
                 <span class="text-[9px] text-[#8A9A8F] block font-mono">{{ $t('warehouse.coveredPopulation', { count: (task.coveredCitizens || task.registeredHouseholds * 4 || 0).toLocaleString() }) || `覆盖人口: ${(task.coveredCitizens || task.registeredHouseholds * 4 || 0).toLocaleString()} 人` }}</span>
               </div>
-              <div class="text-right">
+              <div class="text-end">
                 <span class="text-[#8A9A8F] text-[10px] block">{{ $t('warehouse.totalGuideValueTitle') || '指导总货值' }}</span>
                 <span class="font-mono font-bold text-[#7A5F21] text-xs">{{ (task.totalGuideAmountIQD || task.registeredHouseholds * 53800 || 0).toLocaleString() }} IQD</span>
                 <span class="text-[9px] text-[#2F7A50] block">{{ $t('warehouse.algorithmHouseholdLocked') || '按户锁定' }}</span>
@@ -508,7 +508,7 @@
                 :key="item.itemCode"
                 class="px-1.5 py-0.5 rounded bg-[#E9F1EB] text-[#43554B] text-[10px] font-medium border border-[#D9E5DB]/60"
               >
-                {{ formatItemName(item.itemName) }} <b class="font-mono font-bold text-[#1B3123]">{{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty + ' ' + (item.unit === '吨' ? (isEn ? 'Tons' : '吨') : item.unit)) }}</b>
+                {{ formatItemName(item.itemName) }} <b class="font-mono font-bold text-[#1B3123]">{{ formatItemQuantity(item) }}</b>
               </span>
               <span v-if="task.items && task.items.length > 3" class="text-[10px] text-[#8A9A8F]">
                 +{{ task.items.length - 3 }}
@@ -606,12 +606,12 @@
                     class="flex items-center justify-between text-[11px] bg-[#F3F8F4] px-2 py-0.5 rounded border border-[#E9F1EB]"
                   >
                     <span class="text-[#58685D] truncate">{{ formatItemName(item.itemName) }}</span>
-                    <div class="font-mono text-right shrink-0">
-                      <span class="font-bold text-[#1F3326]">{{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty?.toLocaleString() + ' ' + (item.unit === '吨' ? (isEn ? 'Tons' : '吨') : item.unit)) }}</span>
+                    <div class="font-mono text-end shrink-0">
+                      <span class="font-bold text-[#1F3326]">{{ formatItemQuantity(item) }}</span>
                       <span class="text-[9px] text-[#C9A13B] block">{{ $t('warehouse.priceCapPrefix') || '限价: ' }}{{ item.guidePriceIQD || (item.itemCode.includes('RICE') ? 1000 : 750) }} IQD</span>
                     </div>
                   </div>
-                  <div v-if="row.items && row.items.length > 3" class="text-[10px] text-[#8A9A8F] text-right">
+                  <div v-if="row.items && row.items.length > 3" class="text-[10px] text-[#8A9A8F] text-end">
                     {{ $t('warehouse.moreItemsCount', { count: row.items.length }) || `等共 ${row.items.length} 种战略保供物资...` }}
                   </div>
                 </div>
@@ -657,7 +657,7 @@
             </el-table-column>
 
             <!-- 8. 操作 -->
-            <el-table-column :label="$t('common.actions') || '操作'" width="110" align="center" fixed="right">
+            <el-table-column :label="$t('common.actions')" width="110" align="center" fixed="right">
               <template #default="{ row }">
                 <el-button size="small" type="primary" plain @click="handleViewTask(row)">
                   {{ $t('warehouse.taskDetailBtn') || '全链详情' }}
@@ -748,14 +748,14 @@
           </div>
 
           <div class="max-h-56 overflow-y-auto border border-[#D9E5DB] rounded-lg">
-            <table class="w-full text-left text-xs border-collapse">
+            <table class="w-full text-start text-xs border-collapse">
               <thead class="bg-[#F3F8F4] text-[#58685D] font-bold border-b border-[#D9E5DB]">
                 <tr>
                   <th class="p-2">{{ isEn ? 'Level' : '层级' }}</th>
                   <th class="p-2">{{ isEn ? 'Agency Station / Manager' : '代理网点 / 负责人' }}</th>
                   <th class="p-2 text-center">{{ isEn ? 'Quota Households' : '核定签约户数' }}</th>
-                  <th class="p-2 text-right">{{ isEn ? 'Rice / Flour (Tons)' : '自动核算大米/面粉(吨)' }}</th>
-                  <th class="p-2 text-right">{{ isEn ? 'Guide Cap (IQD)' : '指导总货值(IQD)' }}</th>
+                  <th class="p-2 text-end">{{ isEn ? 'Rice / Flour (Tons)' : '自动核算大米/面粉(吨)' }}</th>
+                  <th class="p-2 text-end">{{ isEn ? 'Guide Cap (IQD)' : '指导总货值(IQD)' }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#E9F1EB] font-mono">
@@ -768,8 +768,8 @@
                     {{ isEn ? 'Baghdad Provincial Ration General Operations Agency (Mohammed Jabbar)' : '巴格达省配给运营总代理 (穆罕默德·贾巴尔)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1B3123]">7,650 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">91.8 {{ isEn ? 'T' : '吨' }} / 275.4 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right font-bold text-[#7A5F21]">411,570,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">91.8 {{ isEn ? 'T' : '吨' }} / 275.4 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end font-bold text-[#7A5F21]">411,570,000</td>
                 </tr>
                 <!-- 2. 区域代理 -->
                 <tr class="bg-[#EFF5F1]/30">
@@ -780,8 +780,8 @@
                     {{ isEn ? 'Karkh District Regional Operations Dept (Haider Fatih)' : '卡尔赫区区域代理运营部 (海德尔·法蒂赫)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1B3123]">4,100 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">49.2 {{ isEn ? 'T' : '吨' }} / 147.6 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right font-bold text-[#7A5F21]">220,580,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">49.2 {{ isEn ? 'T' : '吨' }} / 147.6 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end font-bold text-[#7A5F21]">220,580,000</td>
                 </tr>
                 <tr class="bg-[#EFF5F1]/30">
                   <td class="p-2">
@@ -791,8 +791,8 @@
                     {{ isEn ? 'Rusafa District Regional Operations Dept (Zaid Qasim)' : '鲁萨法区区域代理运营部 (扎伊德·卡西姆)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1B3123]">3,550 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">42.6 {{ isEn ? 'T' : '吨' }} / 127.8 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right font-bold text-[#7A5F21]">190,990,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">42.6 {{ isEn ? 'T' : '吨' }} / 127.8 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end font-bold text-[#7A5F21]">190,990,000</td>
                 </tr>
                 <!-- 3. 街道代理网点 -->
                 <tr>
@@ -803,8 +803,8 @@
                     {{ isEn ? 'Karkh 1st Ration Center Comprehensive Store (Mansour)' : '卡尔赫第一配给中心综合代销站 (曼苏尔)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1F3326]">1,120 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">13.4 {{ isEn ? 'T' : '吨' }} / 40.3 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right text-[#7A5F21]">60,256,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">13.4 {{ isEn ? 'T' : '吨' }} / 40.3 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end text-[#7A5F21]">60,256,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
@@ -814,8 +814,8 @@
                     {{ isEn ? 'Yarmouk 3rd Street Service Station (Omar)' : '亚尔穆克第3街道便民配给站 (奥马尔)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1F3326]">1,480 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">17.8 {{ isEn ? 'T' : '吨' }} / 53.3 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right text-[#7A5F21]">79,624,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">17.8 {{ isEn ? 'T' : '吨' }} / 53.3 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end text-[#7A5F21]">79,624,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
@@ -825,8 +825,8 @@
                     {{ isEn ? 'Dora 12th District Ration Station (Khalid Waleed)' : '多拉区第12配给便民站 (哈立德·瓦利德)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1F3326]">1,500 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">18.0 {{ isEn ? 'T' : '吨' }} / 54.0 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right text-[#7A5F21]">80,700,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">18.0 {{ isEn ? 'T' : '吨' }} / 54.0 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end text-[#7A5F21]">80,700,000</td>
                 </tr>
                 <tr>
                   <td class="p-2">
@@ -836,8 +836,8 @@
                     {{ isEn ? 'Khanaqin 1st Border Supply Station (Art. 140 Zone)' : '哈奈根第一边境综合代销保供站 (第140号区)' }}
                   </td>
                   <td class="p-2 text-center font-bold text-[#1F3326]">890 {{ isEn ? 'HH' : '户' }}</td>
-                  <td class="p-2 text-right text-[#2A5440]">10.7 {{ isEn ? 'T' : '吨' }} / 32.0 {{ isEn ? 'T' : '吨' }}</td>
-                  <td class="p-2 text-right text-[#7A5F21]">47,882,000</td>
+                  <td class="p-2 text-end text-[#2A5440]">10.7 {{ isEn ? 'T' : '吨' }} / 32.0 {{ isEn ? 'T' : '吨' }}</td>
+                  <td class="p-2 text-end text-[#7A5F21]">47,882,000</td>
                 </tr>
               </tbody>
             </table>
@@ -1000,7 +1000,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <span class="font-bold text-[#1F3326]">{{ formatItemName(item.itemName) }}</span>
-                  <span class="text-[10px] text-[#8A9A8F] font-mono ml-1.5">{{ item.itemCode }}</span>
+                  <span class="text-[10px] text-[#8A9A8F] font-mono ms-1.5">{{ item.itemCode }}</span>
                 </div>
                 <div class="font-mono font-bold text-[#1B3123] text-sm">
                   {{ item.allocatedQtyTon ? item.allocatedQtyTon + (isEn ? ' Tons' : ' 吨') : (item.plannedQty?.toLocaleString() + ' ' + item.unit) }}
@@ -1062,8 +1062,8 @@
           class="relative overflow-hidden rounded-lg p-4 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/35 select-none"
         >
           <!-- 金色装饰弧线纹理 -->
-          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
+          <div class="absolute -end-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
+          <div class="absolute -end-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
           <div class="relative z-10 space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-white/10">
@@ -1096,7 +1096,7 @@
                 <span class="font-bold text-white text-xs">{{ citizenFamilyInfo?.headName || '艾哈迈德·哈桑' }}</span>
                 <span class="text-[10px] text-[#A7D9BC] font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: memberCount }) || `（全户在册 ${memberCount} 人）` }}</span>
               </div>
-              <div class="text-right">
+              <div class="text-end">
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
                 <span class="text-[11px] text-[#E5CEA1] font-medium truncate block" :title="citizenFamilyInfo?.agentName">
                   {{ citizenFamilyInfo?.agentName || '巴格达卡尔赫第一代销站' }}
@@ -1184,7 +1184,7 @@
 
           <!-- 动态验证密文与刷新控制 -->
           <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB]">
-            <div class="text-left font-mono">
+            <div class="text-start font-mono">
               <span class="text-[10px] text-[#8A9A8F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
               <span class="font-bold text-[#326445] text-[11px]">{{ dynamicCardCode }}</span>
             </div>
@@ -1231,6 +1231,7 @@ import {
 } from '../../../api/warehouse.js';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { unitLabel } from '../../../utils/dataLabels.js';
 import { Plus, Share, Refresh, Calendar, Shop, Search, Goods, Check, ShoppingCart, Tickets, InfoFilled } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['go-purchase']);
@@ -1279,6 +1280,13 @@ function formatTaskStatus(status) {
   return status;
 }
 
+function formatItemQuantity(item) {
+  const hasAllocated = Boolean(item.allocatedQtyTon);
+  const amount = hasAllocated ? item.allocatedQtyTon : (item.plannedQty ?? 0);
+  const unit = hasAllocated ? t('warehouse.tonUnit') : unitLabel(t, item.unit || '吨');
+  return `${Number(amount).toLocaleString()} ${unit}`;
+}
+
 function formatItemName(name) {
   if (!name) return '';
   const lang = locale.value;
@@ -1296,7 +1304,7 @@ function formatItemName(name) {
     if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي';
     if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف';
     if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود نخب';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنم';
     if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی هاوردەکراو';
     if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
@@ -1340,7 +1348,7 @@ function formatTaskCenterName(name) {
     if (name.includes('曼苏尔商业区便民第6配给代销站')) return 'منفذ المنصور التجاري السادس للتموين';
     if (name.includes('费卢杰第1战略保供便民服务网点')) return 'منفذ الفلوجة الاستراتيجي الأول للتموين';
     if (name.includes('巴士拉阿舒尔港口直营代销联络处')) return 'مكتب الارتباط المباشر للتموين بميناء البصرة';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('巴格达省配给运营总代理')) return 'ئاژانسی گشتی ئۆپەراسیۆنەکانی پارێزگای بەغدا';
     if (name.includes('卡尔赫区区域代理运营部')) return 'بەشی ئۆپەراسیۆنی ناوچەیی کەرخ';
     if (name.includes('鲁萨法区区域代理运营部')) return 'بەشی ئۆپەراسیۆنی ناوچەیی ڕەسافە';
@@ -1390,7 +1398,7 @@ function formatTaskResponsible(name) {
     if (name.includes('萨米·易卜拉欣')) return 'سامي إبراهيم الهاشمي';
     if (name.includes('马尔万')) return 'مروان قاسم الفلوجي';
     if (name.includes('贾西姆')) return 'جاسم محمد البصراوي';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('穆罕默德·贾巴尔')) return name.includes('运营总监') ? 'محەممەد جەبار ڕەشید (بەڕێوەبەری ئۆپەراسیۆن)' : 'محەممەد جەبار ڕەشید';
     if (name.includes('海德尔')) return 'حەیدەر فاتیح نەجم';
     if (name.includes('扎伊德')) return 'زەید قاسم سەعدی';
@@ -1430,7 +1438,7 @@ function formatPlanTitle(title) {
     if (title.includes('2026年09月') || title.includes('2026年9月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر أيلول 2026';
     if (title.includes('2026年11月')) return 'خطة البطاقة التموينية الوطنية الاستراتيجية لشهر تشرين الثاني 2026';
     if (title.includes('新增战略物资口粮保供计划')) return 'خطة إمدادات الحصص الاستراتيجية الجديدة';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (title.includes('第四季度') || title.includes('Q4')) return 'پلانی بەشەخۆراکی وەرزی چوارەمی ٢٠٢٦';
     if (title.includes('第三季度') || title.includes('Q3')) return 'پلانی بەشەخۆراکی هاوینەی وەرزی سێیەمی ٢٠٢٦';
     if (title.includes('第二季度') || title.includes('Q2')) return 'پلانی بەشەخۆراکی وەرزی دووەمی ٢٠٢٦';
@@ -1467,7 +1475,7 @@ function formatPeriodName(period) {
     if (period.includes('10月度') || period.includes('2026-10') || period.includes('2026年10月')) return 'دورة تشرين الأول 2026';
     if (period.includes('09月度') || period.includes('9月度') || period.includes('2026-09') || period.includes('2026年09月')) return 'دورة أيلول 2026';
     if (period.includes('11月度') || period.includes('2026-11') || period.includes('2026年11月')) return 'دورة تشرين الثاني 2026';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (period.includes('第3季度') || period.includes('第三季度') || period.includes('Q3')) return 'وەرزی سێیەمی ٢٠٢٦ (تەمووز - ئەیلوول)';
     if (period.includes('第4季度') || period.includes('第四季度') || period.includes('Q4')) return 'وەرزی چوارەمی ٢٠٢٦ (تشرینی یەکەم - کانوونی یەکەم)';
     if (period.includes('第1季度') || period.includes('第一季度') || period.includes('Q1')) return 'وەرزی یەکەمی ٢٠٢٦ (کانوونی دووەم - ئازار)';
@@ -1498,7 +1506,7 @@ function formatPlanStatus(st) {
     if (s === '已完结归档' || s === '已归档' || s === '已完结' || s === 'ARCHIVED' || s === 'Archived') return 'مؤرشف';
     if (s === '已排程' || s === '已完成三级代理排程' || s === '已自动分解排程' || s === 'SCHEDULED' || s === 'Auto-Scheduled') return 'تمت الجدولة';
     if (s === '待排程' || s === '待下发' || s === '待分解排程' || s === '待三级代理排程' || s === 'PENDING' || s === 'Pending Schedule') return 'بانتظار الجدولة';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (s === '执行中' || s === 'ACTIVE' || s === 'Active' || s === 'In Progress' || s === 'Active / In Progress') return 'لە جێبەجێکردندا';
     if (s === '已完成' || s === 'COMPLETED' || s === 'Completed') return 'تەواوکراو';
     if (s === '已完结归档' || s === '已归档' || s === '已完结' || s === 'ARCHIVED' || s === 'Archived') return 'ئەرشیڤکراو';

@@ -16,7 +16,7 @@
       <div class="p-4 rounded-lg bg-[#EFF5F1]/70 border border-[#C7DED0]/80 space-y-1">
         <div class="flex items-center justify-between text-[#24483A]">
           <span>G2B 累计集中批发进货</span>
-          <el-icon class="text-[#326445] text-base"><TopRight /></el-icon>
+          <el-icon class="rtl-mirror-icon text-[#326445] text-base"><TopRight /></el-icon>
         </div>
         <div class="flex items-baseline gap-1.5">
           <span class="text-xl font-bold font-mono text-[#2A5440]">41,600</span>
@@ -28,7 +28,7 @@
       <div class="p-4 rounded-lg bg-[#EFF5F1]/70 border border-[#C7DED0]/80 space-y-1">
         <div class="flex items-center justify-between text-[#24483A]">
           <span>B2C 累计社区核销交付</span>
-          <el-icon class="text-[#326445] text-base"><BottomLeft /></el-icon>
+          <el-icon class="rtl-mirror-icon text-[#326445] text-base"><BottomLeft /></el-icon>
         </div>
         <div class="flex items-baseline gap-1.5">
           <span class="text-xl font-bold font-mono text-[#2A5440]">20,860</span>
@@ -60,7 +60,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" type="primary" plain @click="loadStocks">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           刷新台账
         </el-button>
       </div>
@@ -99,21 +99,21 @@
       <el-table-column label="G2B 累计批发进货" width="130" align="right">
         <template #default="{ row }">
           <span class="font-mono font-bold text-[#1F3326]">{{ row.g2bTotalIn.toLocaleString() }}</span>
-          <span class="text-[10px] text-[#8A9A8F] ml-1">{{ row.unit }}</span>
+          <span class="text-[10px] text-[#8A9A8F] ms-1">{{ row.unit }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="B2C 累计核销发货" width="130" align="right">
         <template #default="{ row }">
           <span class="font-mono font-bold text-[#2F5B44]">{{ row.b2cTotalSold.toLocaleString() }}</span>
-          <span class="text-[10px] text-[#8A9A8F] ml-1">{{ row.unit }}</span>
+          <span class="text-[10px] text-[#8A9A8F] ms-1">{{ row.unit }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="运输/储存损耗" width="110" align="right">
         <template #default="{ row }">
           <span class="font-mono font-bold text-[#7A5F21]">{{ row.lossDamaged }}</span>
-          <span class="text-[10px] text-[#8A9A8F] ml-1">{{ row.unit }}</span>
+          <span class="text-[10px] text-[#8A9A8F] ms-1">{{ row.unit }}</span>
         </template>
       </el-table-column>
 

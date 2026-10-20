@@ -82,8 +82,8 @@
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span>
-                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold mr-1">★</span>{{ c.centerName }}
-                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] ml-1">({{ c.province }} · {{ c.city }})</span>
+                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold me-1">★</span>{{ c.centerName }}
+                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] ms-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <div class="flex items-center gap-1">
                       <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">140号决议</el-tag>
@@ -188,7 +188,7 @@
             <p class="text-[11px] text-[#58685D]">载明代理全体合法继承人姓名与法教份额认证文件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docQassam', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传教法继承证书</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传教法继承证书</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docQassam?.name || '已自动加载默认证书' }}</span>
             </div>
@@ -219,7 +219,7 @@
                 @change="(f) => handleFileChange('docWaiver', f)"
               >
                 <el-button size="small" :type="isExemptWaiver ? 'info' : 'primary'" plain :disabled="isExemptWaiver">
-                  <el-icon class="mr-1"><Upload /></el-icon>{{ isExemptWaiver ? '免提交' : '上传放弃声明' }}
+                  <el-icon class="me-1"><Upload /></el-icon>{{ isExemptWaiver ? '免提交' : '上传放弃声明' }}
                 </el-button>
               </el-upload>
               <span class="text-[11px] text-[#8A9A8F] font-medium truncate">
@@ -237,7 +237,7 @@
             <p class="text-[11px] text-[#58685D]">卫生部死亡证明及4个月内逝者配给份额注销报告（注销报告）。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docDeath', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传注销回执</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传注销回执</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docDeath?.name || '已上传份额注销回执' }}</span>
             </div>
@@ -252,7 +252,7 @@
             <p class="text-[11px] text-[#58685D]">经按捺拇指印并由有权限公证人正式认证的书面专职承诺。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docCommitment', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传公证承诺</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传公证承诺</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docCommitment?.name || '已上传按印公证书' }}</span>
             </div>
@@ -306,7 +306,7 @@
               <span class="text-xs text-[#8A9A8F] block">法定轮替规费收取机构</span>
               <span class="text-sm font-bold text-[#DFC08B]">规划与跟进司 / 代理分支管理科</span>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <span class="text-xs text-[#8A9A8F] block">应缴纳法定轮替规费</span>
               <span class="text-xl font-bold font-mono text-[#6FBF92]">50,000 IQD</span>
               <span class="text-[10px] text-[#8A9A8F] block">(五万伊拉克第纳尔)</span>
@@ -373,7 +373,7 @@
             :loading="submitting"
             @click="handleSubmitAndPay"
           >
-            <el-icon class="mr-1"><Check /></el-icon>
+            <el-icon class="me-1"><Check /></el-icon>
             确认电子支付 50,000 IQD 并换发代理许可证
           </el-button>
         </div>

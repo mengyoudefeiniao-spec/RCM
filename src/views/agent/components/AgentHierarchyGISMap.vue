@@ -1,7 +1,7 @@
 <template>
   <div class="agent-hierarchy-gis-map relative bg-[#12241A] rounded-lg border border-[#1F3326] overflow-hidden shadow-lg select-none">
     <!-- 顶部 GIS 地图控制台与图层工具栏 -->
-    <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="absolute top-3 start-3 end-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
       <!-- 视角与定位状态指示 -->
       <div class="flex items-center gap-2 pointer-events-auto bg-[#1B3123]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#43554B]/80 text-xs shadow-md">
         <span class="w-2.5 h-2.5 rounded-full bg-[#6FBF92] animate-ping"></span>
@@ -61,7 +61,7 @@
     </div>
 
     <!-- 底部 GIS 图例 (Legend) 与饱和度健康指南 -->
-    <div class="absolute bottom-3 left-3 z-20 pointer-events-none">
+    <div class="absolute bottom-3 start-3 z-20 pointer-events-none">
       <div class="pointer-events-auto bg-[#1B3123]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-[#1F3326] text-[10px] sm:text-xs text-[#C9DBCE] space-y-1 shadow-md max-w-[280px] sm:max-w-none">
         <div class="font-bold text-white flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-[#5C8A6B]"></span>
@@ -87,7 +87,7 @@
     <!-- 右下角选中的网格卡片速览 -->
     <div
       v-if="hoveredOrActiveStation"
-      class="absolute bottom-3 right-3 z-20 pointer-events-none max-w-[240px] sm:max-w-[290px]"
+      class="absolute bottom-3 end-3 z-20 pointer-events-none max-w-[240px] sm:max-w-[290px]"
     >
       <div class="pointer-events-auto bg-[#1B3123]/95 backdrop-blur-md p-3 rounded-lg border border-[#5C8A6B]/60 shadow-xl space-y-1.5 text-xs text-[#D9E5DB] animate-fadeIn">
         <div class="flex items-center justify-between">

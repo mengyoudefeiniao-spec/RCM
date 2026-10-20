@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { loginUser, logoutUser } from '../api/auth.js';
 import { ElMessage } from 'element-plus';
+import { i18n } from '../locales/index.js';
 
 /**
  * 管理员角色体系与法定职权常量定义
@@ -229,7 +230,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       // ignore
     }
-    ElMessage.info((isEnNow() ? 'Signed out securely' : '已安全退出登录'));
+    ElMessage.info(i18n.global.t('my.logoutSuccess'));
   }
 
   /**

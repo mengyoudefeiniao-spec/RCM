@@ -15,7 +15,7 @@
       <img
         src="/images/dashboard-banner.png"
         alt="National Ration Card System Background"
-        class="absolute inset-0 w-full h-full object-cover object-left sm:object-center select-none pointer-events-none"
+        class="absolute inset-0 w-full h-full object-cover object-left rtl:object-right sm:object-center select-none pointer-events-none"
         loading="eager"
       />
 
@@ -23,7 +23,7 @@
       <div class="absolute inset-0 bg-gradient-to-t from-[#F8FBF8]/90 via-[#F3F8F4]/30 to-black/5 pointer-events-none"></div>
 
       <!-- 头部文字排版：位于图片图层上方 (relative z-10)，不要直接加在图片里面 -->
-      <div class="relative z-10 h-full p-4 flex flex-col justify-between items-end text-right">
+      <div class="relative z-10 h-full p-4 flex flex-col justify-between items-end text-end">
         <!-- 右上角小副标签与安全盾牌小图标 -->
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E5CEA1] shadow-xs">
           <span class="text-xs font-bold text-[#7A5F21] font-sans">
@@ -147,7 +147,7 @@
           <!-- 发放量: 当日核销出库累计 (与台账已发合计一致) -->
           <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#D9E5DB] text-center space-y-1">
             <div class="text-base sm:text-lg font-black font-mono text-[#326445] tracking-tight">
-              2,450<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">kg</span>
+              2,450<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">kg</span>
             </div>
             <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsIssued') }}</div>
           </div>
@@ -155,7 +155,7 @@
           <!-- 库存: 台账理论应存余量 -->
           <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#D9E5DB] text-center space-y-1">
             <div class="text-base sm:text-lg font-black font-mono text-[#1F3326] tracking-tight">
-              1,250<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">kg</span>
+              1,250<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">kg</span>
             </div>
             <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsStock') }}</div>
           </div>
@@ -163,7 +163,7 @@
           <!-- 每日收益: 当日核销配给折算收益 -->
           <div class="p-2.5 rounded-lg bg-[#FDF9EF] border border-[#EED9AE] text-center space-y-1">
             <div class="text-base sm:text-lg font-black font-mono text-[#B8934A] tracking-tight">
-              428,000<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">IQD</span>
+              428,000<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ms-0.5">IQD</span>
             </div>
             <div class="text-[10px] font-bold text-[#58685D] leading-tight">{{ $t('mobileAgent.bizStatsDailyIncome') }}</div>
           </div>
@@ -187,7 +187,7 @@
           </div>
 
           <!-- 右侧标题 -->
-          <div class="flex items-center gap-1.5 text-right">
+          <div class="flex items-center gap-1.5 text-end">
             <h3 class="text-sm font-bold text-[#1F3326]">{{ $t('mobileAgent.periodInventoryTitle') }}</h3>
           </div>
         </div>
@@ -311,7 +311,7 @@
             <!-- 服务辖区公民 -->
             <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
               <div class="text-base font-bold text-[#1F3326] font-mono">
-                1,480<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">{{ $t('mobileAgent.unitHousehold') }}</span>
+                1,480<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">{{ $t('mobileAgent.unitHousehold') }}</span>
               </div>
               <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenServedHouseholds') }}</div>
             </div>
@@ -319,7 +319,7 @@
             <!-- 今日核销公民 -->
             <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#E4EDE6] text-center space-y-0.5">
               <div class="text-base font-bold text-[#326445] font-mono">
-                128<span v-if="$t('mobileAgent.unitPerson')" class="text-[10px] font-sans font-normal text-[#8A9A8F] ml-0.5">{{ $t('mobileAgent.unitPerson') }}</span>
+                128<span v-if="$t('mobileAgent.unitPerson')" class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">{{ $t('mobileAgent.unitPerson') }}</span>
               </div>
               <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenVerifiedToday') }}</div>
             </div>
@@ -327,7 +327,7 @@
             <!-- 户均发放 -->
             <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
               <div class="text-base font-bold text-[#B8934A] font-mono">
-                25.4<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">kg</span>
+                25.4<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ms-0.5">kg</span>
               </div>
               <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenAvgPerHousehold') }}</div>
             </div>
@@ -335,7 +335,7 @@
             <!-- 公民满意度 -->
             <div class="p-2.5 rounded-lg bg-[#FDF9EF] border border-[#EED9AE] text-center space-y-0.5">
               <div class="text-base font-bold text-[#B8934A] font-mono">
-                98.2<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ml-0.5">%</span>
+                98.2<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ms-0.5">%</span>
               </div>
               <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenSatisfaction') }}</div>
             </div>
@@ -362,13 +362,13 @@
         <!-- 扫码取景框模拟 -->
         <div class="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-lg bg-black/95 overflow-hidden border-2 border-[#D3AF62] shadow-inner flex items-center justify-center">
           <!-- 激光扫描线 -->
-          <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scanBeam"></div>
+          <div class="absolute w-full h-1 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scanBeam"></div>
           
           <!-- 取景角标 -->
-          <div class="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-[#D3AF62]"></div>
-          <div class="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-[#D3AF62]"></div>
-          <div class="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-[#D3AF62]"></div>
-          <div class="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-[#D3AF62]"></div>
+          <div class="absolute top-2 start-2 w-3.5 h-3.5 border-t-2 border-s-2 border-[#D3AF62]"></div>
+          <div class="absolute top-2 end-2 w-3.5 h-3.5 border-t-2 border-e-2 border-[#D3AF62]"></div>
+          <div class="absolute bottom-2 start-2 w-3.5 h-3.5 border-b-2 border-s-2 border-[#D3AF62]"></div>
+          <div class="absolute bottom-2 end-2 w-3.5 h-3.5 border-b-2 border-e-2 border-[#D3AF62]"></div>
 
           <div class="text-white/70 text-xs font-mono space-y-1">
             <el-icon :size="28" class="text-[#D3AF62] animate-pulse"><FullScreen /></el-icon>
@@ -412,7 +412,7 @@
             class="p-2.5 rounded-lg border border-[#D9E5DB] bg-white flex items-center justify-between text-xs"
           >
             <div>
-              <div class="font-bold text-[#1F3326]">{{ item.name }} ({{ $t('mobileAgent.unitCardNo') }}: {{ item.cardNo }})</div>
+              <div class="font-bold text-[#1F3326]">{{ item.name }} ({{ $t('mobileAgent.unitCardNo') }}: <bdi dir="ltr">{{ item.cardNo }}</bdi>)</div>
               <div class="text-[11px] text-[#8A9A8F]">{{ item.time }} · {{ $t('mobileAgent.flourShort') }} {{ item.flour }}kg · {{ $t('mobileAgent.riceShort') }} {{ item.rice }}kg</div>
             </div>
             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E1F4E4] text-[#326445]">
@@ -625,7 +625,7 @@ const distributionRecordsMap = {
 };
 
 const distributionRecords = computed(() => {
-  const baseList = distributionRecordsMap[locale.value] || distributionRecordsMap.zh;
+  const baseList = distributionRecordsMap[locale.value === 'ckb' ? 'ku' : locale.value] || distributionRecordsMap.zh;
   return [...newlyAddedOrders.value, ...baseList];
 });
 
@@ -717,7 +717,7 @@ function openInventoryAudit() {
 
 :deep(.mobile-scan-dialog .el-dialog__header) {
   padding: 14px 18px 8px !important;
-  margin-right: 0 !important;
+  margin-inline-end: 0 !important;
 }
 
 :deep(.mobile-scan-dialog .el-dialog__title) {
@@ -733,9 +733,9 @@ function openInventoryAudit() {
 /* 抽屉深度约束：居中贴合在 412px 手机视口内部 */
 :deep(.el-drawer.btt) {
   max-width: 412px !important;
-  left: 50% !important;
+  inset-inline-start: 50% !important;
   transform: translateX(-50%) !important;
-  border-top-left-radius: 22px !important;
-  border-top-right-radius: 22px !important;
+  border-start-start-radius: 22px !important;
+  border-start-end-radius: 22px !important;
 }
 </style>

@@ -30,7 +30,7 @@
               </span>
               <div>
                 <span class="font-bold text-[#1B3123] text-xs">{{ rule.title }}</span>
-                <span class="text-[#8A9A8F] text-[11px] ml-2">({{ rule.modules }})</span>
+                <span class="text-[#8A9A8F] text-[11px] ms-2">({{ rule.modules }})</span>
               </div>
             </div>
             <el-tag size="small" type="success" effect="dark">

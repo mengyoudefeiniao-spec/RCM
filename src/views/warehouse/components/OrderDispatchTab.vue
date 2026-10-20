@@ -52,7 +52,7 @@
             :class="isAppMode ? '!h-8 !w-full flex items-center justify-center' : ''"
             @click="loadOrders"
           >
-            <el-icon class="mr-1"><Refresh /></el-icon>
+            <el-icon class="me-1"><Refresh /></el-icon>
             <span>{{ $t('common.refresh') }}</span>
           </el-button>
         </div>
@@ -203,7 +203,7 @@
                 <span class="text-[10px] sm:text-[11px] font-mono text-[#8A9A8F] shrink-0">({{ order.cardNo }})</span>
               </div>
               <div class="flex items-center gap-1 text-[#58685D] font-mono shrink-0">
-                <span class="text-[11px]">{{ order.phone }}</span>
+                <bdi dir="ltr" class="text-[11px]">{{ order.phone }}</bdi>
                 <el-button size="small" text class="p-0.5" @click="copyText(order.phone)">
                   <el-icon class="text-xs text-[#326445]"><CopyDocument /></el-icon>
                 </el-button>
@@ -235,7 +235,7 @@
               <span class="font-mono font-bold text-[#C9A13B] text-xs sm:text-sm">IQD {{ (order.selfPayAmount || 0).toLocaleString() }}</span>
             </div>
 
-            <div class="text-right">
+            <div class="text-end">
               <span class="text-[10px] text-[#8A9A8F] block">{{ $t('agentOrders.orderCardPickupCode') }}</span>
               <div class="flex items-center gap-1">
                 <span class="font-mono font-bold text-[#1F3326] bg-white px-1.5 py-0.5 rounded border border-[#D9E5DB] text-xs">
@@ -271,7 +271,7 @@
               data-demo-target="btn-dispatch"
               @click="openDispatchModal(order)"
             >
-              <el-icon class="mr-1"><Van /></el-icon>
+              <el-icon class="me-1"><Van /></el-icon>
               {{ $t('agentOrders.dispatchBtn') }}
             </el-button>
 
@@ -282,7 +282,7 @@
               class="w-full font-bold shadow-xs rounded-lg !h-8 sm:!h-9 text-xs"
               @click="handleMarkReady(order)"
             >
-              <el-icon class="mr-1"><CircleCheck /></el-icon>
+              <el-icon class="me-1"><CircleCheck /></el-icon>
               {{ $t('agentOrders.readyPickupBtn') }}
             </el-button>
 
@@ -354,7 +354,7 @@
           <div class="grid grid-cols-2 gap-2">
             <button
               type="button"
-              class="p-2 rounded-lg text-left border transition-all"
+              class="p-2 rounded-lg text-start border transition-all"
               data-demo-target="btn-quick-driver"
               :class="dispatchForm.vehicleNo.includes('78219') ? 'bg-[#EFF5F1] border-[#7FA48C] text-[#1F3326] font-bold' : 'bg-white border-[#D9E5DB] text-[#43554B] hover:bg-[#F3F8F4]'"
               @click="applyQuickDriver(0)"
@@ -365,7 +365,7 @@
 
             <button
               type="button"
-              class="p-2 rounded-lg text-left border transition-all"
+              class="p-2 rounded-lg text-start border transition-all"
               :class="dispatchForm.vehicleNo.includes('33812') ? 'bg-[#EFF5F1] border-[#7FA48C] text-[#1F3326] font-bold' : 'bg-white border-[#D9E5DB] text-[#43554B] hover:bg-[#F3F8F4]'"
               @click="applyQuickDriver(1)"
             >
@@ -377,6 +377,12 @@
 
         <!-- 详细表单 -->
         <div class="space-y-3">
+          <div v-if="managedCouriers.length">
+            <label class="block text-[#58685D] font-semibold mb-1">{{ $t('my.selectCourier') }}</label>
+            <el-select v-model="selectedCourierId" class="w-full" :placeholder="$t('my.selectCourier')" @change="applyManagedCourier">
+              <el-option v-for="courier in managedCouriers" :key="courier.id" :label="courier.name" :value="courier.id" />
+            </el-select>
+          </div>
           <div>
             <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.deliveryPersonLabel') }}</label>
             <el-input v-model="dispatchForm.deliveryPerson" :placeholder="$t('agentOrders.dispatchPersonNamePlaceholder')" />
@@ -385,7 +391,7 @@
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.driverPhoneLabel') }}</label>
-              <el-input v-model="dispatchForm.driverPhone" placeholder="+964 780..." />
+              <el-input class="bidi-ltr" v-model="dispatchForm.driverPhone" placeholder="+964 780..." />
             </div>
             <div>
               <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.vehicleNoLabel') }}</label>
@@ -409,7 +415,7 @@
         <div class="flex items-center justify-end gap-2">
           <el-button @click="dispatchModalVisible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" :loading="dispatching" class="font-bold px-5" data-demo-target="btn-confirm-dispatch" @click="confirmDispatch">
-            <el-icon class="mr-1"><Van /></el-icon>
+            <el-icon class="me-1"><Van /></el-icon>
             {{ $t('agentOrders.confirmDispatchBtn') }}
           </el-button>
         </div>
@@ -533,13 +539,13 @@
             <!-- 取景器四角定位框 -->
             <div class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-[#6FBF92]/80 rounded-lg flex items-center justify-center pointer-events-none z-10">
               <!-- 四角强化 L 标 -->
-              <div class="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-[#6FBF92]"></div>
-              <div class="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-[#6FBF92]"></div>
-              <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-[#6FBF92]"></div>
-              <div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-[#6FBF92]"></div>
+              <div class="absolute -top-1 -start-1 w-4 h-4 border-t-3 border-s-3 border-[#6FBF92]"></div>
+              <div class="absolute -top-1 -end-1 w-4 h-4 border-t-3 border-e-3 border-[#6FBF92]"></div>
+              <div class="absolute -bottom-1 -start-1 w-4 h-4 border-b-3 border-s-3 border-[#6FBF92]"></div>
+              <div class="absolute -bottom-1 -end-1 w-4 h-4 border-b-3 border-e-3 border-[#6FBF92]"></div>
 
               <!-- 动态上下激光扫描线 -->
-              <div class="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-[#6FBF92] to-transparent shadow-[0_0_15px_#6FBF92] animate-pulse-scan"></div>
+              <div class="absolute start-2 end-2 h-0.5 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-[#6FBF92] to-transparent shadow-[0_0_15px_#6FBF92] animate-pulse-scan"></div>
             </div>
 
             <!-- 取景提示浮条 -->
@@ -662,7 +668,7 @@
                     </div>
                   </div>
 
-                  <div class="text-right font-mono">
+                  <div class="text-end font-mono">
                     <div class="text-[11px] text-[#58685D]">
                       <span>{{ getStockOnHand(item.itemCode) }} {{ item.unit }}</span>
                       <span class="text-[#C04442] font-bold mx-1">-{{ item.qty }}</span>
@@ -678,7 +684,7 @@
             <!-- 自付规费结算与财政全额直补信息 -->
             <div class="p-2.5 rounded-lg bg-[#D3AF62]/10 border border-[#D3AF62]/30 backdrop-blur-sm flex items-center justify-between text-xs">
               <span class="text-[#6B5321] font-medium text-[11px]">{{ $t('orderClaim.subsidyNote') }}</span>
-              <div class="text-right">
+              <div class="text-end">
                 <span class="text-[10px] text-[#7A5F21] block">{{ $t('agentOrders.settledPaidFee') }}</span>
                 <span class="font-mono font-bold text-[#5A4718] text-sm">IQD {{ (verifiedOrder.selfPayAmount || 0).toLocaleString() }}</span>
               </div>
@@ -712,7 +718,7 @@
               class="w-full font-bold shadow-md rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white text-sm py-2.5"
               @click="submitConfirmClaim"
             >
-              <el-icon class="mr-1.5"><Check /></el-icon>
+              <el-icon class="me-1.5"><Check /></el-icon>
               {{ $t('orderClaim.confirmDeliveryBtn') }}
             </el-button>
 
@@ -743,7 +749,7 @@
             <!-- 伊拉克贸易部官方交接小票纸 (高纵深长小票) -->
             <div class="p-3.5 rounded-lg bg-white/85 backdrop-blur-sm border-2 border-dashed border-[#C9DBCE] shadow-sm space-y-2.5 relative">
               <!-- 电子公章印戳 -->
-              <div class="absolute right-3 bottom-3 pointer-events-none opacity-85 border-2 border-[#2F7A50] rounded-full w-20 h-20 flex flex-col items-center justify-center text-[#2F5B44] rotate-[-12deg] scale-90">
+              <div class="absolute end-3 bottom-3 pointer-events-none opacity-85 border-2 border-[#2F7A50] rounded-full w-20 h-20 flex flex-col items-center justify-center text-[#2F5B44] rotate-[-12deg] scale-90">
                 <span class="text-[8px] font-bold">REPUBLIC OF IRAQ</span>
                 <span class="text-[8px] font-bold">MOT VERIFIED</span>
                 <span class="text-[7px] font-mono">100% BALANCED</span>
@@ -779,7 +785,7 @@
           <!-- 底部固定打印与完成操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
           <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
             <el-button class="w-full font-bold" @click="printReceipt">
-              <el-icon class="mr-1"><Printer /></el-icon>
+              <el-icon class="me-1"><Printer /></el-icon>
               {{ $t('orderClaim.printReceiptBtn') }}
             </el-button>
             <el-button type="primary" size="large" class="w-full font-bold rounded-lg" @click="closeScanVerifyModal">
@@ -797,6 +803,7 @@ import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const route = useRoute();
@@ -823,9 +830,11 @@ import {
   verifyAndClaimCitizenOrder
 } from '@/api/agent';
 import { onTabMessage } from '@/utils/crossTabBus';
+import { getMyCouriers } from '@/api/my';
 import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 
 const { t, locale } = useI18n();
+const authStore = useAuthStore();
 const isEn = computed(() => locale.value === 'en');
 
 function formatItemName(name) {
@@ -845,7 +854,7 @@ function formatItemName(name) {
     if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي';
     if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف';
     if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
     if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
     if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
@@ -878,7 +887,7 @@ function formatHeadName(name) {
     if (name.includes('穆罕默德')) return 'محمد جبار الرشيد';
     if (name.includes('法蒂玛')) return 'فاطمة الزهراء الكناني';
     if (name.includes('扎伊德')) return 'زيد قاسم السعدي';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('艾哈迈德')) return 'ئەحمەد حەسەن ساڵح';
     if (name.includes('阿里')) return 'عەلی حوسێن بەیاتی';
     if (name.includes('穆罕默德')) return 'محەممەد جەبار ڕەشید';
@@ -898,7 +907,7 @@ function formatDeliveryAddress(addr) {
   } else if (lang === 'ar') {
     if (addr.includes('卡尔赫') || addr.includes('曼苏尔')) return 'بغداد · قاطع الكرخ · المنصور زقاق 14 دار 8';
     if (addr.includes('鲁萨法') || addr.includes('卡拉达')) return 'بغداد · قاطع الرصافة · الكرادة داخل دار 22';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (addr.includes('卡尔赫') || addr.includes('曼苏尔')) return 'بەغدا · کەرخ · مەنسوور کۆڵانی ١٤ خانووی ٨';
     if (addr.includes('鲁萨法') || addr.includes('卡拉达')) return 'بەغدا · ڕەسافە · کەڕادە ناوەوە خانووی ٢٢';
   }
@@ -916,7 +925,7 @@ function formatAgentName(name) {
     if (name.includes('卡尔赫第一')) return 'منفذ الكرخ الأول لتوزيع التموين (المنصور)';
     if (name.includes('卡拉达')) return 'منفذ الكرادة الأول للسلع التموينية';
     if (name.includes('鲁萨法')) return 'جمعية الرصافة الثانية للأمن الغذائي';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('卡尔赫第一')) return 'بنکەی یەکەمی دابەشکردنی کەرخ (مەنسوور)';
     if (name.includes('卡拉达')) return 'بنکەی یەکەمی کەڕادە';
     if (name.includes('鲁萨法')) return 'کۆمەڵەی دووەمی ئاسایشی خۆراکی ڕەسافە';
@@ -935,7 +944,7 @@ function formatDeliveryPerson(person) {
     if (person.includes('前台备货员') || person.includes('备货员')) return 'موظف تجهيز البضائع بالمنفذ';
     if (person.includes('哈希姆·阿里') || person.includes('哈希姆')) return 'هاشم علي (شاحنة سريعة)';
     if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'سمير قاسم (شاحنة مبردة)';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (person.includes('前台备货员') || person.includes('备货员')) return 'کارمەندی ئامادەکردنی کاڵا';
     if (person.includes('哈希姆·阿里') || person.includes('哈希姆')) return 'هاشم عەلی (بارهەڵگری خێرا)';
     if (person.includes('萨米尔·卡西姆') || person.includes('萨米尔')) return 'سەمیر قاسم (ساردکەرەوە)';
@@ -963,7 +972,7 @@ function formatEstimatedTime(time) {
     if (time.includes('1小时')) return 'خلال ساعة واحدة';
     if (time.includes('2小时')) return 'خلال ساعتين';
     if (time.includes('随时到店可提') || time.includes('可提')) return 'جاهز للاستلام في أي وقت';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (time.includes('30分钟')) return 'لە ماوەی ٣٠ خولەکدا';
     if (time.includes('1小时')) return 'لە ماوەی یەک کاتژمێردا';
     if (time.includes('2小时')) return 'لە ماوەی ٢ کاتژمێردا';
@@ -983,7 +992,7 @@ function formatUnit(unit) {
     if (unit === '公斤' || unit === 'KG') return 'كجم';
     if (unit === '升' || unit === 'L') return 'لتر';
     if (unit === '包' || unit === '袋') return 'كيس';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (unit === '公斤' || unit === 'KG') return 'کگم';
     if (unit === '升' || unit === 'L') return 'لیتر';
     if (unit === '包' || unit === '袋') return 'دانە';
@@ -1019,6 +1028,8 @@ function getStockOnHand(itemCode) {
 const dispatchModalVisible = ref(false);
 const dispatching = ref(false);
 const currentDispatchOrder = ref(null);
+const managedCouriers = ref([]);
+const selectedCourierId = ref('');
 const dispatchForm = ref({
   deliveryPerson: '哈希姆·阿里 (保供急送专员)',
   driverPhone: '+964 780 999 8811',
@@ -1042,6 +1053,7 @@ const quickDrivers = [
 ];
 
 function applyQuickDriver(idx) {
+  selectedCourierId.value = '';
   const d = quickDrivers[idx];
   if (d) {
     dispatchForm.value.deliveryPerson = idx === 0 ? (t('agentOrders.driver1Name') || d.name) : (t('agentOrders.driver2Name') || d.name);
@@ -1051,6 +1063,25 @@ function applyQuickDriver(idx) {
   }
   // 演示模式：用户点选配送员后推进至 04-3 确认出车发货（openDispatchModal 预填时弹窗尚未打开，不会误触发）
   if (isDemoActive.value && dispatchModalVisible.value) setDemoStep('step4_3');
+}
+
+function applyManagedCourier(id) {
+  const courier = managedCouriers.value.find((item) => item.id === id);
+  if (!courier) return;
+  dispatchForm.value.deliveryPerson = courier.name;
+  dispatchForm.value.driverPhone = courier.phone;
+  dispatchForm.value.vehicleNo = courier.vehicleNo || '';
+  if (isDemoActive.value && dispatchModalVisible.value) setDemoStep('step4_3');
+}
+
+async function loadManagedCouriers() {
+  if (authStore.currentRole !== 'agent') return;
+  try {
+    const couriers = await getMyCouriers();
+    managedCouriers.value = couriers.filter((courier) => courier.active);
+  } catch {
+    managedCouriers.value = [];
+  }
 }
 
 // ==========================================
@@ -1380,6 +1411,7 @@ function getStatusText(status) {
 function openDispatchModal(order) {
   currentDispatchOrder.value = order;
   applyQuickDriver(0);
+  loadManagedCouriers();
   dispatchModalVisible.value = true;
   // 演示模式：推进至 04-2 选择配送员
   if (isDemoActive.value) setDemoStep('step4_2');

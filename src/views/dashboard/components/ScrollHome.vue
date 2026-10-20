@@ -15,7 +15,7 @@
           {{ $t(`scrollHome.nav.${s.id}`) }}
         </button>
         <div class="flex-1 min-w-4"></div>
-        <div class="hidden md:flex items-center gap-2 shrink-0 pl-3 border-l border-[#E8EDE9]">
+        <div class="hidden md:flex items-center gap-2 shrink-0 ps-3 border-s border-[#E8EDE9]">
           <span class="text-[10px] uppercase tracking-widest text-[#8A9A8F]">{{ $t('scrollHome.rationPopulation') }}</span>
           <span class="text-sm font-bold text-[#1E3A5F] font-mono">{{ formatInt(national.population) }}</span>
         </div>
@@ -29,14 +29,14 @@
       <div class="absolute inset-0 z-10 pointer-events-none bg-gradient-to-t from-black/70 via-black/10 to-black/30"></div>
 
       <!-- 右上角核心指标 -->
-      <div class="absolute top-5 right-5 sm:top-8 sm:right-10 z-20 text-right text-white">
+      <div class="absolute top-5 end-5 sm:top-8 sm:end-10 z-20 text-end text-white">
         <div class="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-white/70">{{ $t('scrollHome.rationPopulation') }}</div>
         <div class="text-3xl sm:text-5xl font-bold font-mono mt-1 drop-shadow-lg">{{ formatInt(national.population) }}</div>
         <div class="text-[10px] sm:text-xs text-white/60 mt-1">{{ $t('scrollHome.dataPeriod') }}</div>
       </div>
 
       <!-- 左下主标题 -->
-      <div class="absolute bottom-16 left-5 sm:left-10 z-20 text-white max-w-2xl">
+      <div class="absolute bottom-16 start-5 sm:start-10 z-20 text-white max-w-2xl">
         <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/60 mb-3">{{ $t('scrollHome.brand') }}</div>
         <h1 class="text-4xl sm:text-6xl font-bold leading-tight drop-shadow-xl">
           {{ $t('scrollHome.heroTitle') }}<br />{{ $t('scrollHome.heroTitle2') }}
@@ -47,7 +47,7 @@
       </div>
 
       <!-- 底部滚动提示 -->
-      <button class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 text-white/80 hover:text-white transition-colors flex flex-col items-center gap-1" @click="scrollToSection('sec-overview')">
+      <button class="absolute bottom-4 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-20 text-white/80 hover:text-white transition-colors flex flex-col items-center gap-1" @click="scrollToSection('sec-overview')">
         <span class="text-[10px] tracking-[0.3em] uppercase">{{ $t('scrollHome.scrollToExplore') }}</span>
         <el-icon class="animate-bounce"><ArrowDown /></el-icon>
       </button>
@@ -62,7 +62,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div v-for="card in overviewCards" :key="card.label" class="bg-white rounded-xl border border-[#EAEFEA] p-5 shadow-sm hover:shadow-md transition-shadow">
             <div class="text-[11px] text-[#8A9A8F] uppercase tracking-wider">{{ card.label }}</div>
-            <div class="text-2xl sm:text-3xl font-bold mt-2 font-mono" :style="{ color: card.color }">{{ card.value }}<span class="text-sm font-normal ml-1">{{ card.unit }}</span></div>
+            <div class="text-2xl sm:text-3xl font-bold mt-2 font-mono" :style="{ color: card.color }">{{ card.value }}<span class="text-sm font-normal ms-1">{{ card.unit }}</span></div>
             <div class="text-xs mt-2 text-[#58685D]">{{ card.sub }}</div>
           </div>
         </div>
@@ -73,11 +73,11 @@
               <h3 class="text-sm font-bold text-[#152233]">{{ $t('scrollHome.nationalTrend') }}</h3>
               <el-tag size="small" effect="plain" type="success">{{ $t('scrollHome.last6Months') }}</el-tag>
             </div>
-            <div ref="trendChartRef" data-chart="trend" class="h-64"></div>
+            <div ref="trendChartRef" data-chart="trend" class="bidi-ltr h-64"></div>
           </div>
           <div class="bg-white rounded-xl border border-[#EAEFEA] p-5 shadow-sm">
             <h3 class="text-sm font-bold text-[#152233] mb-2">{{ $t('scrollHome.commodityCompletion') }}</h3>
-            <div ref="commodityChartRef" data-chart="commodity" class="h-64"></div>
+            <div ref="commodityChartRef" data-chart="commodity" class="bidi-ltr h-64"></div>
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@
         <div class="grid lg:grid-cols-2 gap-8 items-start">
           <div class="bg-[#FAFBFA] rounded-xl border border-[#EAEFEA] p-5">
             <h3 class="text-sm font-bold text-[#152233] mb-2">{{ $t('scrollHome.ageStructure') }}</h3>
-            <div ref="ageChartRef" data-chart="age" class="h-72"></div>
+            <div ref="ageChartRef" data-chart="age" class="bidi-ltr h-72"></div>
             <div class="text-[11px] text-[#8A9A8F] text-center mt-1">{{ $t('scrollHome.ageFootnote') }}</div>
           </div>
           <div class="space-y-6">
@@ -114,7 +114,7 @@
             </div>
             <div class="bg-[#FAFBFA] rounded-xl border border-[#EAEFEA] p-5">
               <h3 class="text-sm font-bold text-[#152233] mb-2">{{ $t('scrollHome.familySizeDist') }}</h3>
-              <div ref="familyChartRef" data-chart="family" class="h-56"></div>
+              <div ref="familyChartRef" data-chart="family" class="bidi-ltr h-56"></div>
             </div>
           </div>
         </div>
@@ -132,10 +132,10 @@
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-sm font-bold text-[#152233]">{{ $t('scrollHome.provinceFulfillment') }}</h3>
               <el-button size="small" text type="primary" @click="goStats('fulfillmentRate')">
-                {{ $t('scrollHome.viewOnMap') }} <el-icon class="ml-1"><Position /></el-icon>
+                {{ $t('scrollHome.viewOnMap') }} <el-icon class="ms-1"><Position /></el-icon>
               </el-button>
             </div>
-            <div ref="provinceChartRef" data-chart="province" class="h-[520px]"></div>
+            <div ref="provinceChartRef" data-chart="province" class="bidi-ltr h-[520px]"></div>
           </div>
           <div class="lg:col-span-2 space-y-4">
             <div class="bg-white rounded-xl border border-[#EAEFEA] p-5 shadow-sm">
@@ -151,9 +151,9 @@
                 <div v-for="item in rationStandards" :key="item.name" class="flex items-center gap-3">
                   <span class="text-xs text-[#4A4230] w-20 shrink-0">{{ commodityLabel(t, item.name) }}</span>
                   <div class="flex-1 h-2 rounded-full bg-[#EFE8D5] overflow-hidden">
-                    <div class="h-full rounded-full bg-gradient-to-r from-[#C8A45C] to-[#E0C288]" :style="{ width: (item.kgPerPerson / maxStandardKg * 100) + '%' }"></div>
+                    <div class="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-[#C8A45C] to-[#E0C288]" :style="{ width: (item.kgPerPerson / maxStandardKg * 100) + '%' }"></div>
                   </div>
-                  <span class="text-xs font-mono text-[#6B5A2E] w-16 text-right">{{ item.kgPerPerson }} kg</span>
+                  <span class="text-xs font-mono text-[#6B5A2E] w-16 text-end">{{ item.kgPerPerson }} kg</span>
                 </div>
               </div>
               <div class="text-[11px] text-[#8A7A55] mt-3">{{ $t('scrollHome.standardFootnote') }}</div>
@@ -172,12 +172,12 @@
         <div class="grid lg:grid-cols-2 gap-6 items-stretch">
           <div class="rounded-xl overflow-hidden border border-[#EAEFEA] shadow-sm relative isolate z-0 min-h-[420px]">
             <div ref="networkMapRef" class="absolute inset-0"></div>
-            <div class="absolute top-3 left-3 z-[500] bg-white/95 rounded-lg shadow px-3 py-2 space-y-1.5">
+            <div class="absolute top-3 start-3 z-[500] bg-white/95 rounded-lg shadow px-3 py-2 space-y-1.5">
               <div class="flex items-center gap-2 text-[11px] text-[#4A5A50]"><span class="w-2.5 h-2.5 rounded-sm bg-[#2F7A50] inline-block"></span>{{ $t('scrollHome.activeWarehouse') }} <b class="font-mono">{{ formatInt(national.warehouseTotal - national.warehouseVacant) }}</b></div>
               <div class="flex items-center gap-2 text-[11px] text-[#4A5A50]"><span class="w-2.5 h-2.5 rounded-sm bg-[#C8A45C] inline-block"></span>{{ $t('scrollHome.vacantWarehouse') }} <b class="font-mono">{{ formatInt(national.warehouseVacant) }}</b></div>
               <div class="flex items-center gap-2 text-[11px] text-[#4A5A50]"><span class="w-2.5 h-2.5 rounded-full bg-[#1E3A5F] inline-block"></span>{{ $t('scrollHome.agentPoints') }} <b class="font-mono">{{ formatInt(national.agentCount) }}</b></div>
             </div>
-            <button class="absolute bottom-3 right-3 z-[500] bg-[#1E3A5F] text-white text-xs px-3 py-1.5 rounded-full shadow hover:bg-[#152A47] transition-colors" @click="goStats()">
+            <button class="absolute bottom-3 end-3 z-[500] bg-[#1E3A5F] text-white text-xs px-3 py-1.5 rounded-full shadow hover:bg-[#152A47] transition-colors" @click="goStats()">
               {{ $t('scrollHome.openGeoStats') }}
             </button>
           </div>
@@ -190,12 +190,12 @@
               <table class="w-full text-xs">
                 <thead class="sticky top-0 bg-[#FAFBFA] text-[#8A9A8F] uppercase tracking-wider text-[10px]">
                   <tr>
-                    <th class="px-4 py-2.5 text-left font-semibold">#</th>
-                    <th class="px-4 py-2.5 text-left font-semibold">{{ $t('scrollHome.gov') }}</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">{{ $t('scrollHome.warehouses') }}</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">{{ $t('scrollHome.agents') }}</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">{{ $t('scrollHome.quotaTonShort') }}</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">{{ $t('scrollHome.fulfillment') }}</th>
+                    <th class="px-4 py-2.5 text-start font-semibold">#</th>
+                    <th class="px-4 py-2.5 text-start font-semibold">{{ $t('scrollHome.gov') }}</th>
+                    <th class="px-4 py-2.5 text-end font-semibold">{{ $t('scrollHome.warehouses') }}</th>
+                    <th class="px-4 py-2.5 text-end font-semibold">{{ $t('scrollHome.agents') }}</th>
+                    <th class="px-4 py-2.5 text-end font-semibold">{{ $t('scrollHome.quotaTonShort') }}</th>
+                    <th class="px-4 py-2.5 text-end font-semibold">{{ $t('scrollHome.fulfillment') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,12 +207,12 @@
                     <td class="px-4 py-2.5 text-[#8A9A8F] font-mono">{{ i + 1 }}</td>
                     <td class="px-4 py-2.5 font-medium text-[#152233]">
                       {{ provinceLabel(t, locale, p) }}
-                      <el-tag v-if="p.isArticle140" size="small" effect="plain" type="warning" class="ml-1 !text-[9px] !px-1">140</el-tag>
+                      <el-tag v-if="p.isArticle140" size="small" effect="plain" type="warning" class="ms-1 !text-[9px] !px-1">140</el-tag>
                     </td>
-                    <td class="px-4 py-2.5 text-right font-mono">{{ p.warehouseTotal }}</td>
-                    <td class="px-4 py-2.5 text-right font-mono">{{ formatInt(p.agentCount) }}</td>
-                    <td class="px-4 py-2.5 text-right font-mono">{{ formatInt(p.monthlyQuotaTon) }}</td>
-                    <td class="px-4 py-2.5 text-right">
+                    <td class="px-4 py-2.5 text-end font-mono">{{ p.warehouseTotal }}</td>
+                    <td class="px-4 py-2.5 text-end font-mono">{{ formatInt(p.agentCount) }}</td>
+                    <td class="px-4 py-2.5 text-end font-mono">{{ formatInt(p.monthlyQuotaTon) }}</td>
+                    <td class="px-4 py-2.5 text-end">
                       <span class="font-mono font-bold" :class="p.fulfillmentRate >= 98.5 ? 'text-[#2F7A50]' : 'text-[#C8502F]'">{{ p.fulfillmentRate }}%</span>
                     </td>
                   </tr>
@@ -233,7 +233,7 @@
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
           <button class="bg-[#152233] hover:bg-[#1E3A5F] text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-colors flex items-center gap-2" @click="goStats()">
-            {{ $t('scrollHome.ctaOpenMap') }} <el-icon><ArrowRight /></el-icon>
+            {{ $t('scrollHome.ctaOpenMap') }} <el-icon class="rtl-mirror-icon"><ArrowRight /></el-icon>
           </button>
           <button class="bg-white hover:bg-[#F2F6F2] text-[#152233] border border-[#D8E2D8] font-medium px-6 py-3 rounded-lg transition-colors" @click="$emit('switch-mode', 'operational')">
             {{ $t('scrollHome.ctaOpenOps') }}
@@ -253,7 +253,7 @@
         <div><div class="text-white/40 mb-1">DataSource</div><div class="font-mono text-white">IQ-RCM-2026</div></div>
         <div><div class="text-white/40 mb-1">Last Updated</div><div class="font-mono text-white">2026-10-15</div></div>
         <div><div class="text-white/40 mb-1">Governorates</div><div class="font-mono text-white">19 / 19</div></div>
-        <div class="md:text-right"><span class="text-[#5BD08B]">● SYSTEM ONLINE</span></div>
+        <div class="md:text-end"><span class="text-[#5BD08B]">● SYSTEM ONLINE</span></div>
       </div>
     </footer>
   </div>
@@ -524,7 +524,7 @@ onBeforeUnmount(() => {
   display: block;
   position: absolute;
   bottom: -1px;
-  left: 0;
+  inset-inline-start: 0;
   width: 100%;
   height: 48px;
   background: #ffffff;

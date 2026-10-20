@@ -6,7 +6,7 @@
     :class="[
       isAppMode
         ? 'rounded-b-[24px]'
-        : 'fixed bottom-0 left-0 right-0 md:hidden'
+        : 'fixed bottom-0 start-0 end-0 md:hidden'
     ]"
   >
     <!-- ============================================== -->
@@ -41,6 +41,14 @@
       >
         <el-icon :size="20"><House /></el-icon>
         <span>{{ $t('warehouse.familyAgent') || '家庭代理' }}</span>
+      </router-link>
+      <router-link
+        :to="getNavTarget('/my')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/my' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+      >
+        <el-icon :size="20"><UserFilled /></el-icon>
+        <span>{{ $t('my.nav') }}</span>
       </router-link>
     </template>
 
@@ -87,6 +95,14 @@
         <el-icon :size="20"><DataAnalysis /></el-icon>
         <span>{{ $t('agent.tabOrderAnalytics') || '库存台账' }}</span>
       </router-link>
+      <router-link
+        :to="getNavTarget('/my')"
+        class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] min-w-[64px] transition-all"
+        :class="$route.path === '/my' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+      >
+        <el-icon :size="20"><UserFilled /></el-icon>
+        <span>{{ $t('my.nav') }}</span>
+      </router-link>
     </template>
 
     <!-- ============================================== -->
@@ -111,7 +127,7 @@
       >
         <el-icon :size="19"><Stamp /></el-icon>
         <span>{{ $t('nav.review') }}</span>
-        <span v-if="pendingReviewCount > 0" class="absolute top-0.5 right-1.5 w-3.5 h-3.5 rounded-full bg-[#C04442] text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
+        <span v-if="pendingReviewCount > 0" class="absolute top-0.5 end-1.5 w-3.5 h-3.5 rounded-full bg-[#C04442] text-white text-[8px] flex items-center justify-center font-bold">{{ pendingReviewCount }}</span>
       </router-link>
 
       <!-- 3. 配给管理 -->
@@ -165,6 +181,7 @@ import { useReviewStore } from '../../stores/review.js';
 import {
   DataAnalysis,
   User,
+  UserFilled,
   Stamp,
   Box,
   Shop,

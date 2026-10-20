@@ -15,7 +15,7 @@
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
-          <el-icon class="mr-1"><Back /></el-icon>
+          <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
       </div>

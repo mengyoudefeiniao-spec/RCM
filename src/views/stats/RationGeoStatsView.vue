@@ -2,7 +2,7 @@
   <div class="geo-stats-page -mt-0 sm:-mt-6 -mx-0 sm:-mx-6 -mb-0 sm:-mb-8 bg-[#F4F6F4]">
     <div class="flex h-[calc(100vh-150px)] min-h-[520px]">
       <!-- ============ 左侧: 主题指标树 ============ -->
-      <aside class="hidden lg:flex flex-col w-[264px] shrink-0 bg-white border-r border-[#E4EAE5]">
+      <aside class="hidden lg:flex flex-col w-[264px] shrink-0 bg-white border-e border-[#E4EAE5]">
         <div class="px-4 pt-4 pb-3 border-b border-[#EEF1EE]">
           <div class="flex items-center gap-2">
             <div class="w-7 h-7 rounded-lg bg-[#1E3A5F] flex items-center justify-center text-white">
@@ -17,7 +17,7 @@
             class="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs text-[#4A5A50] bg-[#F7FAF8] hover:bg-[#EEF3EF] border border-[#E4EAE5] transition-colors"
             @click="goBackDashboard"
           >
-            <el-icon :size="12"><Back /></el-icon>{{ $t('geoStats.backToDashboard') }}
+            <el-icon :size="12" class="rtl-mirror-icon"><Back /></el-icon>{{ $t('geoStats.backToDashboard') }}
           </button>
           <el-select
             v-model="searchProvinceName"
@@ -46,7 +46,7 @@
               <button
                 v-for="m in theme.metrics"
                 :key="m.key"
-                class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left text-xs transition-colors"
+                class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-start text-xs transition-colors"
                 :class="activeMetric === m.key
                   ? 'bg-[#1E3A5F] text-white font-medium shadow-sm'
                   : 'text-[#4A5A50] hover:bg-[#F0F5F1]'"
@@ -77,21 +77,21 @@
         <div ref="mapRef" class="absolute inset-0"></div>
 
         <!-- 当前指标浮层 (移动端标题替代) -->
-        <div class="absolute top-3 left-3 z-[600] bg-white/95 backdrop-blur rounded-lg shadow px-3 py-2 pointer-events-none">
+        <div class="absolute top-3 start-3 z-[600] bg-white/95 backdrop-blur rounded-lg shadow px-3 py-2 pointer-events-none">
           <div class="text-[10px] uppercase tracking-widest text-[#8A9A8F]">{{ $t('geoStats.currentMetric') }}</div>
           <div class="text-sm font-bold text-[#152233]">{{ metricLabel(activeMetric) }}</div>
         </div>
 
         <!-- 移动端指标切换 -->
-        <div class="lg:hidden absolute top-3 right-3 z-[600]">
+        <div class="lg:hidden absolute top-3 end-3 z-[600]">
           <el-select v-model="activeMetric" size="small" class="w-36" @change="onMetricChange">
             <el-option v-for="m in allMetrics" :key="m.key" :label="metricLabel(m.key)" :value="m.key" />
           </el-select>
         </div>
 
         <!-- 底部控制条 -->
-        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[600] bg-white/95 backdrop-blur rounded-full shadow-lg border border-[#E4EAE5] px-2 py-1.5 flex items-center gap-1 flex-wrap justify-center max-w-[92%]">
-          <el-radio-group v-model="warehouseFilter" size="small" class="!mr-1">
+        <div class="absolute bottom-4 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-[600] bg-white/95 backdrop-blur rounded-full shadow-lg border border-[#E4EAE5] px-2 py-1.5 flex items-center gap-1 flex-wrap justify-center max-w-[92%]">
+          <el-radio-group v-model="warehouseFilter" size="small" class="!me-1">
             <el-radio-button value="all">{{ $t('geoStats.filterAll') }}</el-radio-button>
             <el-radio-button value="assigned">{{ $t('geoStats.filterAssigned') }}</el-radio-button>
             <el-radio-button value="vacant">{{ $t('geoStats.filterVacant') }}</el-radio-button>
@@ -112,23 +112,23 @@
           </button>
           <el-divider direction="vertical" />
           <el-button size="small" text bg @click="resetView">
-            <el-icon class="mr-1"><Refresh /></el-icon>{{ $t('geoStats.resetView') }}
+            <el-icon class="me-1"><Refresh /></el-icon>{{ $t('geoStats.resetView') }}
           </el-button>
         </div>
       </div>
 
       <!-- ============ 右侧: 联动统计面板 ============ -->
-      <aside class="hidden xl:flex flex-col w-[336px] shrink-0 bg-white border-l border-[#E4EAE5] overflow-y-auto">
+      <aside class="hidden xl:flex flex-col w-[336px] shrink-0 bg-white border-s border-[#E4EAE5] overflow-y-auto">
         <div class="px-5 pt-5 pb-4 border-b border-[#EEF1EE]">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-[#152233]">{{ selectedProvince ? provinceLabel(t, locale, selectedProvince) : $t('geoStats.nationalView') }}</h2>
             <el-button v-if="selectedProvince" size="small" text @click="selectProvince(null)">
-              <el-icon class="mr-1"><Back /></el-icon>{{ $t('geoStats.backToNational') }}
+              <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>{{ $t('geoStats.backToNational') }}
             </el-button>
           </div>
           <div v-if="selectedProvince" class="text-[11px] text-[#8A9A8F] mt-0.5">
             {{ selectedProvince.enName }}
-            <el-tag v-if="selectedProvince.isArticle140" size="small" effect="plain" type="warning" class="ml-1 !text-[9px]">{{ $t('geoStats.article140') }}</el-tag>
+            <el-tag v-if="selectedProvince.isArticle140" size="small" effect="plain" type="warning" class="ms-1 !text-[9px]">{{ $t('geoStats.article140') }}</el-tag>
           </div>
 
           <!-- 当前指标大数字 -->
@@ -173,7 +173,7 @@
             <div class="flex items-center justify-between mb-1">
               <h4 class="text-xs font-bold text-[#152233]">{{ $t('geoStats.monthlyTrend') }}</h4>
               <el-dropdown trigger="click" @command="handleExport">
-                <el-button size="small" text>{{ $t('geoStats.export') }}<el-icon class="ml-1"><ArrowDown /></el-icon></el-button>
+                <el-button size="small" text>{{ $t('geoStats.export') }}<el-icon class="ms-1"><ArrowDown /></el-icon></el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item command="csv">CSV</el-dropdown-item>
@@ -182,7 +182,7 @@
                 </template>
               </el-dropdown>
             </div>
-            <div ref="trendChartRef" class="h-44"></div>
+            <div ref="trendChartRef" class="bidi-ltr h-44"></div>
           </div>
 
           <!-- 仓库与代理网络 -->
@@ -220,26 +220,26 @@
                 {{ $t('scrollHome.urban') }} {{ displayStats.urbanRate }}% · {{ $t('scrollHome.rural') }} {{ displayStats.ruralRate }}%
               </div>
             </div>
-            <div ref="ageChartRef" class="h-32"></div>
+            <div ref="ageChartRef" class="bidi-ltr h-32"></div>
           </div>
 
           <!-- 人均商品配额 -->
           <div class="rounded-xl border border-[#EAEFEA] p-3">
             <h4 class="text-xs font-bold text-[#152233] mb-1">{{ $t('geoStats.itemQuotaPanel') }}</h4>
-            <div ref="itemChartRef" class="h-40"></div>
+            <div ref="itemChartRef" class="bidi-ltr h-40"></div>
             <div class="text-[10px] text-[#8A9A8F] mt-1">{{ $t('geoStats.itemQuotaFootnote') }}</div>
           </div>
         </div>
       </aside>
 
       <!-- 移动端底部抽屉式统计面板 -->
-      <div class="xl:hidden fixed bottom-14 left-2 right-2 z-[700]">
+      <div class="xl:hidden fixed bottom-14 start-2 end-2 z-[700]">
         <el-collapse v-model="mobilePanelOpen" class="geo-mobile-panel">
           <el-collapse-item name="open">
             <template #title>
               <span class="text-sm font-bold text-[#152233] px-1">
                 {{ selectedProvince ? provinceLabel(t, locale, selectedProvince) : $t('geoStats.nationalView') }} · {{ metricLabel(activeMetric) }}
-                <b class="font-mono text-[#1E3A5F] ml-1">{{ formatMetricValue(displayStats[activeMetric]) }}</b>
+                <b class="font-mono text-[#1E3A5F] ms-1">{{ formatMetricValue(displayStats[activeMetric]) }}</b>
               </span>
             </template>
             <div class="px-1 pb-2 space-y-3">
@@ -253,7 +253,7 @@
                   <div class="text-sm font-bold font-mono" :class="displayStats.deviationRate >= -1 ? 'text-[#2F7A50]' : 'text-[#C8502F]'">{{ displayStats.deviationRate }}%</div>
                 </div>
               </div>
-              <div ref="mobileTrendChartRef" class="h-36 bg-white rounded-lg border border-[#EAEFEA] p-1"></div>
+              <div ref="mobileTrendChartRef" class="bidi-ltr h-36 bg-white rounded-lg border border-[#EAEFEA] p-1"></div>
             </div>
           </el-collapse-item>
         </el-collapse>

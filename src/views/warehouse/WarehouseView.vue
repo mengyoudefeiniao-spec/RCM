@@ -36,7 +36,7 @@
               <span class="font-bold">
                 {{ isAdmin ? ($t('warehouse.orderStats') || '订单统计') : ($t('agentOrders.tabTitle') || '订单配送') }}
               </span>
-              <el-tag v-if="!isAdmin" size="small" type="danger" effect="plain" class="scale-90 origin-left">{{ $t('agentOrders.badgeNew') }}</el-tag>
+              <el-tag v-if="!isAdmin" size="small" type="danger" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ $t('agentOrders.badgeNew') }}</el-tag>
             </div>
           </template>
           <div class="py-4">

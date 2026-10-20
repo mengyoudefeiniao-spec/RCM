@@ -20,7 +20,7 @@
           <el-radio-button value="lossAudit">三节点损耗与审计分析</el-radio-button>
         </el-radio-group>
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           刷新
         </el-button>
       </div>
@@ -64,7 +64,7 @@
             </el-input>
           </div>
           <el-button type="primary" @click="handleRunTrace">
-            <el-icon class="mr-1"><Search /></el-icon>
+            <el-icon class="me-1"><Search /></el-icon>
             执行穿透追溯
           </el-button>
         </div>
@@ -144,7 +144,7 @@
         <el-table-column prop="province" label="重点行政省区 / 争议区" min-width="190">
           <template #default="{ row }">
             <span class="font-bold text-[#1F3326]">{{ row.province }}</span>
-            <el-tag v-if="row.province.includes('第140号')" size="small" type="warning" effect="plain" class="scale-90 ml-1">
+            <el-tag v-if="row.province.includes('第140号')" size="small" type="warning" effect="plain" class="scale-90 ms-1">
               宪法第140号决议区
             </el-tag>
           </template>

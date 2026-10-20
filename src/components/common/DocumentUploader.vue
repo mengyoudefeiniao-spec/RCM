@@ -42,13 +42,13 @@
             </div>
           </div>
         </el-popover>
-        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-90 origin-left">
+        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-90 origin-left rtl:origin-right">
           {{ $t('uploader.required') }}
         </el-tag>
-        <el-tag v-else type="info" size="small" effect="plain" class="scale-90 origin-left">
+        <el-tag v-else type="info" size="small" effect="plain" class="scale-90 origin-left rtl:origin-right">
           {{ $t('uploader.optional') }}
         </el-tag>
-        <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-90 origin-left">
+        <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-90 origin-left rtl:origin-right">
           {{ categoryBadge }}
         </el-tag>
       </div>
@@ -81,7 +81,7 @@
               <span class="text-xs font-bold text-[#1F3326] font-mono truncate max-w-[190px] sm:max-w-none block">
                 {{ currentFile.fileName }}
               </span>
-              <el-tag type="success" size="small" effect="light" class="font-bold scale-90 origin-left shrink-0">
+              <el-tag type="success" size="small" effect="light" class="font-bold scale-90 origin-left rtl:origin-right shrink-0">
                 {{ $t('uploader.verifiedBadge') }}
               </el-tag>
             </div>
@@ -102,19 +102,19 @@
         <!-- 显式操作按钮栏：移动端 4 按钮网格等分排列，绝不超界 -->
         <div class="grid grid-cols-4 gap-1 pt-2 border-t border-[#D9E5DB] w-full">
           <el-button size="small" type="primary" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="previewModalVisible = true">
-            <el-icon class="mr-0.5"><ZoomIn /></el-icon>
+            <el-icon class="me-0.5"><ZoomIn /></el-icon>
             {{ $t('uploader.btnPreview') }}
           </el-button>
           <el-button size="small" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="triggerOpenLocalFile">
-            <el-icon class="mr-0.5"><UploadFilled /></el-icon>
+            <el-icon class="me-0.5"><UploadFilled /></el-icon>
             {{ $t('uploader.btnReupload') }}
           </el-button>
           <el-button size="small" text type="info" class="!px-1 !m-0 w-full text-center text-xs justify-center bg-[#F3F8F4] border border-[#D9E5DB]" @click="triggerReloadTemplate">
-            <el-icon class="mr-0.5"><RefreshRight /></el-icon>
+            <el-icon class="rtl-mirror-icon me-0.5"><RefreshRight /></el-icon>
             {{ $t('uploader.btnReloadTemplate') }}
           </el-button>
           <el-button size="small" type="danger" plain class="!px-1 !m-0 w-full text-center text-xs justify-center" @click="handleRemoveFile">
-            <el-icon class="mr-0.5"><DeleteFilled /></el-icon>
+            <el-icon class="me-0.5"><DeleteFilled /></el-icon>
             {{ $t('uploader.btnDelete') }}
           </el-button>
         </div>
@@ -139,11 +139,11 @@
         <!-- 移动端并排按钮网格化防溢出 -->
         <div class="grid grid-cols-2 gap-2 mt-1.5 w-full max-w-[280px]">
           <el-button type="primary" size="small" class="!m-0 w-full font-medium justify-center" @click="triggerOpenLocalFile">
-            <el-icon class="mr-1"><UploadFilled /></el-icon>
+            <el-icon class="me-1"><UploadFilled /></el-icon>
             {{ $t('uploader.btnUploadFile') }}
           </el-button>
           <el-button size="small" plain class="!m-0 w-full justify-center" @click="triggerReloadTemplate">
-            <el-icon class="mr-1"><DocumentCopy /></el-icon>
+            <el-icon class="me-1"><DocumentCopy /></el-icon>
             {{ $t('uploader.btnLoadSample') }}
           </el-button>
         </div>

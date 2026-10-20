@@ -88,7 +88,7 @@
           <div v-if="cameraUnavailableReason" class="absolute bottom-3 inset-x-4 z-20">
             <div class="px-3 py-2 rounded-lg bg-black/45 backdrop-blur-sm border border-[#D3AF62]/30 flex items-start gap-2">
               <span class="text-sm leading-none mt-0.5">💡</span>
-              <span class="text-[10px] leading-relaxed text-[#E5CEA1] text-left">
+              <span class="text-[10px] leading-relaxed text-[#E5CEA1] text-start">
                 {{ cameraUnavailableReason === 'insecure'
                   ? $t('register.liveness.camInsecure')
                   : cameraUnavailableReason === 'denied'
@@ -182,14 +182,14 @@
             <!-- 激光上下扫描线 (暖砂金高能光束) -->
             <div
               v-if="status !== 'success'"
-              class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scan-line"
+              class="absolute inset-x-4 h-0.5 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scan-line"
             ></div>
 
             <!-- 取景框四角高精度瞄准刻度 (暖金刻度) -->
-            <span class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-3 border-l-3 border-[#D3AF62]"></span>
-            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-3 border-r-3 border-[#D3AF62]"></span>
-            <span class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-3 border-l-3 border-[#D3AF62]"></span>
-            <span class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-3 border-r-3 border-[#D3AF62]"></span>
+            <span class="absolute -top-1.5 -start-1.5 w-5 h-5 border-t-3 border-s-3 border-[#D3AF62]"></span>
+            <span class="absolute -top-1.5 -end-1.5 w-5 h-5 border-t-3 border-e-3 border-[#D3AF62]"></span>
+            <span class="absolute -bottom-1.5 -start-1.5 w-5 h-5 border-b-3 border-s-3 border-[#D3AF62]"></span>
+            <span class="absolute -bottom-1.5 -end-1.5 w-5 h-5 border-b-3 border-e-3 border-[#D3AF62]"></span>
           </div>
 
           <!-- ======================================================== -->
@@ -293,7 +293,7 @@
             <!-- 总进度进度条 -->
             <div class="w-full bg-[#1F3326] rounded-full h-1.5 overflow-hidden">
               <div
-                class="bg-gradient-to-r from-[#6FBF92] via-[#DFC08B] to-[#6FBF92] h-full transition-all duration-500 rounded-full"
+                class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#6FBF92] via-[#DFC08B] to-[#6FBF92] h-full transition-all duration-500 rounded-full"
                 :style="{ width: `${progressPercent}%` }"
               ></div>
             </div>
@@ -301,7 +301,7 @@
         </div>
 
         <!-- 左上角摄像头在线状态指示 -->
-        <div class="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-[#12241A]/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-[#43554B] text-[10px] text-[#C9DBCE]">
+        <div class="absolute top-3 start-3 z-20 flex items-center gap-1.5 bg-[#12241A]/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-[#43554B] text-[10px] text-[#C9DBCE]">
           <span class="w-2 h-2 rounded-full" :class="cameraActive ? 'bg-[#6FBF92] animate-pulse' : 'bg-[#DFC08B]'"></span>
           <span>{{ cameraActive ? $t('register.liveness.camOnline') : $t('register.liveness.camSimulated') }}</span>
         </div>

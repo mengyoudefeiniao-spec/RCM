@@ -53,8 +53,8 @@
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span :class="{'text-[#C04442] font-bold': c.status === '已被代理' || c.status === 'Assigned'}">
-                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold mr-1">★</span>{{ c.centerName }}
-                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] font-normal ml-1">({{ c.province }} · {{ c.city }})</span>
+                      <span v-if="c.isArticle140" class="text-[#D3AF62] font-bold me-1">★</span>{{ c.centerName }}
+                      <span v-if="c.city" class="text-[11px] text-[#8A9A8F] font-normal ms-1">({{ c.province }} · {{ c.city }})</span>
                     </span>
                     <div class="flex items-center gap-1">
                       <el-tag v-if="c.isArticle140" size="small" type="warning" effect="dark" class="scale-90">{{ isEn ? 'Article 140' : '140号决议' }}</el-tag>
@@ -175,7 +175,7 @@
             <p class="text-[11px] text-[#58685D]">贸易部部长正式签发的食品或面粉代理权电子批准批文。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docMinister', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>点击上传公函</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>点击上传公函</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docMinister?.name || '已自动装载默认批文' }}</span>
             </div>
@@ -190,7 +190,7 @@
             <p class="text-[11px] text-[#58685D]">已注销代理权30%家庭同意书，按捺拇指印并附配给卡复印件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docFamilies', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传联署名册</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传联署名册</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docFamilies?.name || '已上传 (附240户按印底册)' }}</span>
             </div>
@@ -205,7 +205,7 @@
             <p class="text-[11px] text-[#58685D]">国家统一国民卡正反面及教育部认证小学毕业证书扫描件。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docIdentity', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传身份学历</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传身份学历</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docIdentity?.name || '已上传国民卡及毕业证' }}</span>
             </div>
@@ -220,7 +220,7 @@
             <p class="text-[11px] text-[#58685D]">公证处认证房产合同（农业用地附卡伊马卡米亚市政外函）。</p>
             <div class="flex items-center gap-2">
               <el-upload action="#" :auto-upload="false" :show-file-list="false" @change="(f) => handleFileChange('docProperty', f)">
-                <el-button size="small" type="primary" plain><el-icon class="mr-1"><Upload /></el-icon>上传场地公证书</el-button>
+                <el-button size="small" type="primary" plain><el-icon class="me-1"><Upload /></el-icon>上传场地公证书</el-button>
               </el-upload>
               <span class="text-[11px] text-[#2F7A50] font-medium truncate">{{ docs.docProperty?.name || '已上传公证租赁合同' }}</span>
             </div>
@@ -286,7 +286,7 @@
               <span class="text-xs text-[#8A9A8F] block">法定规费收取部门</span>
               <span class="text-sm font-bold text-[#DFC08B]">规划与跟进司 / 分支机构财务专户</span>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <span class="text-xs text-[#8A9A8F] block">应缴纳法定规费</span>
               <span class="text-xl font-bold font-mono text-[#6FBF92]">250,000 IQD</span>
               <span class="text-[10px] text-[#8A9A8F] block">(二十五万伊拉克第纳尔)</span>
@@ -353,7 +353,7 @@
             :loading="submitting"
             @click="handleSubmitAndPay"
           >
-            <el-icon class="mr-1"><Check /></el-icon>
+            <el-icon class="me-1"><Check /></el-icon>
             {{ isEn ? 'Pay 250,000 IQD & Issue Grant' : '确认电子支付 250,000 IQD 并生成授权' }}
           </el-button>
         </div>

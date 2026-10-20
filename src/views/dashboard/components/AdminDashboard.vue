@@ -128,7 +128,7 @@
           </div>
           <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagCitizen') }}</el-tag>
         </div>
-        <div ref="citizenTrendChartRef" class="w-full h-72"></div>
+        <div ref="citizenTrendChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
 
       <!-- 图表 2: 家庭规模分布与民生业务办理统计 -->
@@ -145,7 +145,7 @@
           </div>
           <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagFamily') }}</el-tag>
         </div>
-        <div ref="familyBusinessChartRef" class="w-full h-72"></div>
+        <div ref="familyBusinessChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
     </div>
 
@@ -167,7 +167,7 @@
           </div>
           <el-tag size="small" type="success" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagAgentNetwork') }}</el-tag>
         </div>
-        <div ref="agentRegionChartRef" class="w-full h-72"></div>
+        <div ref="agentRegionChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
 
       <!-- 图表 4: 实际配给情况与战略物资达成进度 -->
@@ -184,7 +184,7 @@
           </div>
           <el-tag size="small" type="success" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagRationFulfillment') }}</el-tag>
         </div>
-        <div ref="rationDistributionChartRef" class="w-full h-72"></div>
+        <div ref="rationDistributionChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
     </div>
 
@@ -206,7 +206,7 @@
           </div>
           <el-tag size="small" type="danger" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagTypeComposition') }}</el-tag>
         </div>
-        <div ref="complaintPieChartRef" class="w-full h-72"></div>
+        <div ref="complaintPieChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
 
       <!-- 图表 6: 投诉受理与办结趋势 (折线走势图) -->
@@ -223,7 +223,7 @@
           </div>
           <el-tag size="small" type="warning" effect="plain" class="font-mono">{{ $t('dashboard.admin.tagResolutionTrend') }}</el-tag>
         </div>
-        <div ref="complaintTrendChartRef" class="w-full h-72"></div>
+        <div ref="complaintTrendChartRef" class="bidi-ltr w-full h-72"></div>
       </div>
     </div>
 
@@ -246,21 +246,27 @@
         </el-table-column>
         <el-table-column prop="type" :label="$t('dashboard.admin.colComplaintType')" width="110">
           <template #default="{ row }">
-            <el-tag size="small" :type="getTypeTag(row.type)">{{ row.type }}</el-tag>
+            <el-tag size="small" :type="getTypeTag(row.type)">{{ dashboardComplaintLabel(t, row.type) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="province" :label="$t('dashboard.admin.colRegion')" min-width="140" />
-        <el-table-column prop="agent" :label="$t('dashboard.admin.colAgentInvolved')" min-width="150" />
-        <el-table-column prop="applicant" :label="$t('dashboard.admin.colComplainant')" width="120" />
+        <el-table-column prop="province" :label="$t('dashboard.admin.colRegion')" min-width="140">
+          <template #default="{ row }">{{ localizeArea(row.province) }}</template>
+        </el-table-column>
+        <el-table-column prop="agent" :label="$t('dashboard.admin.colAgentInvolved')" min-width="150">
+          <template #default="{ row }">{{ localizeAgent(row.agent) }}</template>
+        </el-table-column>
+        <el-table-column prop="applicant" :label="$t('dashboard.admin.colComplainant')" width="120">
+          <template #default="{ row }">{{ localizeApplicant(row.applicant) }}</template>
+        </el-table-column>
         <el-table-column prop="result" :label="$t('dashboard.admin.colResult')" min-width="220">
           <template #default="{ row }">
-            <span class="text-[#43554B]">{{ row.result }}</span>
+            <span class="text-[#43554B]">{{ localizeResult(row.result) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="status" :label="$t('dashboard.admin.colStatus')" width="90" align="center">
           <template #default="{ row }">
             <el-tag size="small" :type="isResolvedStatus(row.status) ? 'success' : 'warning'" effect="light">
-              {{ row.status }}
+              {{ localizeStatus(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -330,7 +336,7 @@
       </div>
 
       <!-- AI 扩容需求决策建议 -->
-      <div class="p-3.5 rounded-lg bg-gradient-to-r from-[#EFF5F1]/80 via-[#EFF5F1]/60 to-[#F3F8F4] border border-[#E1F4E4] text-xs space-y-2">
+      <div class="p-3.5 rounded-lg bg-gradient-to-r rtl:bg-gradient-to-l from-[#EFF5F1]/80 via-[#EFF5F1]/60 to-[#F3F8F4] border border-[#E1F4E4] text-xs space-y-2">
         <div class="flex items-center gap-2 font-bold text-[#12241A]">
           <span class="text-base">🤖</span>
           <span>{{ $t('dashboard.aiExpansionConclusionTitle') }}</span>
@@ -373,9 +379,38 @@ import AgentInventoryLedger from '../../agent/components/AgentInventoryLedger.vu
 import * as echarts from 'echarts';
 import { User, House, Shop, Box, Service } from '@element-plus/icons-vue';
 import { getAdminDashboardStats } from '../../../api/dashboard.js';
+import { businessLabel, commodityLabel, dashboardComplaintLabel, provinceLabel, weekLabel } from '../../../utils/dataLabels.js';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
+const display = (group, raw) => {
+  const key = group[raw];
+  return key ? t(`dataLabels.dashboard.${key}`) : raw;
+};
+const areaKeys = {
+  '巴格达省卡尔赫区': 'areaKarkh', '巴士拉省阿沙尔区': 'areaAshar',
+  '迪亚拉省哈奈根': 'areaKhanaqin', '尼尼微省摩苏尔': 'areaMosul'
+};
+const agentKeys = {
+  '第14号食品供应站': 'agent14', '滨海第二代销点': 'agentCoastal',
+  '哈奈根中心代销站': 'agentKhanaqin', '摩苏尔第三配发处': 'agentMosul'
+};
+const applicantKeys = {
+  '拉希德·马吉德': 'personRashid', '萨巴赫·卡西姆': 'personSabah',
+  '穆罕默德·阿里': 'personMohammed', '法蒂玛·努尔': 'personFatima'
+};
+const resultKeys = {
+  '退还违规差价并责令通报批评': 'resultRefund',
+  '经核实当日补发2公斤大米': 'resultRice',
+  '已抽样送质检实验室化验': 'resultSample',
+  '已协调增开2个扫码核销核发窗口': 'resultCounters'
+};
+const statusKeys = { '已办结': 'statusResolved', 'Resolved': 'statusResolved', '处理中': 'statusProcessing', 'Processing': 'statusProcessing' };
+const localizeArea = (value) => display(areaKeys, value);
+const localizeAgent = (value) => display(agentKeys, value);
+const localizeApplicant = (value) => display(applicantKeys, value);
+const localizeResult = (value) => display(resultKeys, value);
+const localizeStatus = (value) => display(statusKeys, value);
 
 const props = defineProps({
   timeRange: {
@@ -454,7 +489,7 @@ function renderCitizenTrendChart(citizens = {}) {
     },
     xAxis: {
       type: 'category',
-      data: trend.dates,
+      data: trend.dates.map(date => weekLabel(t, date)),
       axisLabel: { fontSize: 10 }
     },
     yAxis: [
@@ -505,7 +540,7 @@ function renderFamilyBusinessChart(families = {}) {
   }
 
   const bStats = families.businessStats || [];
-  const types = bStats.map(b => b.type);
+  const types = bStats.map(b => businessLabel(t, b.type));
   const applies = bStats.map(b => b.applyCount);
   const approved = bStats.map(b => b.approvedCount);
 
@@ -565,7 +600,7 @@ function renderAgentRegionChart(agents = {}) {
   }
 
   const regions = agents.regionDistribution || [];
-  const provinces = regions.map(r => r.province);
+  const provinces = regions.map(r => provinceLabel(t, locale.value, r.province));
   const agentCounts = regions.map(r => r.agentCount);
   const avgHouseholds = regions.map(r => r.avgHouseholds);
 
@@ -636,7 +671,7 @@ function renderRationDistributionChart(distribution = {}) {
   }
 
   const commodities = distribution.commodities || [];
-  const names = commodities.map(c => c.name);
+  const names = commodities.map(c => commodityLabel(t, c.name));
   const planned = commodities.map(c => c.plannedTon);
   const actual = commodities.map(c => c.actualTon);
 
@@ -697,7 +732,7 @@ function renderComplaintPieChart(complaints = {}) {
 
   const list = complaints.categoryDistribution || [];
   const data = list.map(item => ({
-    name: item.name,
+    name: dashboardComplaintLabel(t, item.name),
     value: item.count
   }));
 
@@ -764,7 +799,7 @@ function renderComplaintTrendChart(complaints = {}) {
     },
     xAxis: {
       type: 'category',
-      data: trend.dates,
+      data: trend.dates.map(date => weekLabel(t, date)),
       axisLabel: { fontSize: 10 }
     },
     yAxis: [

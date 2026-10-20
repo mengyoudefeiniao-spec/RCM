@@ -14,7 +14,7 @@
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
-          <el-icon class="mr-1"><Back /></el-icon>
+          <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
       </div>
@@ -44,7 +44,7 @@
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
           
           <!-- 左侧时间线节点 (移动端收入左侧边框仅露半圆，桌面端为标准流程侧栏) -->
-          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-r border-[#D9E5DB] lg:p-6 p-0">
+          <div v-if="!isAppMode" class="timeline-rail-aside lg:w-72 xl:w-80 lg:shrink-0 lg:bg-[#F3F8F4]/80 lg:border-e border-[#D9E5DB] lg:p-6 p-0">
             <!-- 桌面端侧边栏标题 -->
             <div class="items-center justify-between pb-4 mb-5 border-b border-[#D9E5DB]" :class="isAppMode ? 'hidden' : 'hidden lg:flex'">
               <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
@@ -91,7 +91,7 @@
           </div>
 
           <!-- 右侧主操作区 (根据页面自适应延展优化，移动端留出左侧内边距避免遮挡半节点) -->
-          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 pl-9 sm:pl-10 lg:pl-7'">
+          <div class="flex-1 min-w-0 w-full space-y-6" :class="isAppMode ? 'p-4' : 'p-4 sm:p-6 lg:p-7 ps-9 sm:ps-10 lg:ps-7'">
             <!-- 移动端顶部轻量步骤指示器 -->
             <!-- APP 视口：顶部横向 1-5 步骤条 (适配手机窗口与操作习惯) -->
             <div v-if="isAppMode" class="flex items-center mb-3 px-1">
@@ -143,7 +143,7 @@
                 <div>
                   <div class="font-bold flex items-center gap-1.5">
                     <span>{{ m.name }}</span>
-                    <el-tag size="small" type="purple" effect="plain" class="scale-90 origin-left">
+                    <el-tag size="small" type="purple" effect="plain" class="scale-90 origin-left rtl:origin-right">
                       {{ m.relation }}
                     </el-tag>
                   </div>
@@ -321,7 +321,7 @@
                 :loading="judging"
                 @click="handleStartSplitPayment"
               >
-                <el-icon class="mr-1.5"><CreditCard /></el-icon>
+                <el-icon class="me-1.5"><CreditCard /></el-icon>
                 打开在线收银台并完成支付
               </el-button>
             </div>
@@ -351,7 +351,7 @@
             </div>
 
             <!-- 凭证卡片 -->
-            <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-left space-y-3 text-xs">
+            <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-start space-y-3 text-xs">
               <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
                 <span class="font-bold text-[#1F3326]">分立建卡存根凭证</span>
                 <el-tag :type="splitResult?.passed ? 'success' : 'warning'" size="small">
@@ -382,7 +382,7 @@
                   :loading="reviewSubmitting"
                   @click="handleTransferToElectronicReview"
                 >
-                  <el-icon class="mr-1.5"><Stamp /></el-icon>
+                  <el-icon class="me-1.5"><Stamp /></el-icon>
                   转入分部电子审核 (提交分部门人员手动复核)
                 </el-button>
                 <el-button size="large" @click="currentStep = 1">
@@ -401,7 +401,7 @@
               size="large"
               @click="handlePrevStep"
             >
-              <el-icon class="mr-1"><Back /></el-icon>
+              <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
               {{ $t('common.prevStep') }}
             </el-button>
             <div v-else />
@@ -416,7 +416,7 @@
                 @click="handleNextStep"
               >
                 {{ $t('common.nextStep') }}
-                <el-icon class="ml-1"><Right /></el-icon>
+                <el-icon class="rtl-mirror-icon ms-1"><Right /></el-icon>
               </el-button>
             </div>
           </div>
@@ -671,7 +671,7 @@ async function handleTransferToElectronicReview() {
 @media (min-width: 1024px) {
   .timeline-connector-line {
     position: absolute;
-    left: 14px;
+    inset-inline-start: 14px;
     top: 14px;
     bottom: 24px;
     width: 2px;
@@ -720,7 +720,7 @@ async function handleTransferToElectronicReview() {
 @media (max-width: 1023px) {
   .timeline-rail-aside {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 20px;
@@ -729,7 +729,7 @@ async function handleTransferToElectronicReview() {
   }
   .timeline-nodes-list {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 56px;
     bottom: 60px;
     display: flex;
@@ -738,7 +738,7 @@ async function handleTransferToElectronicReview() {
   }
   .timeline-connector-line {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     bottom: 0;
     width: 2px;
@@ -749,10 +749,10 @@ async function handleTransferToElectronicReview() {
     position: relative;
     z-index: 2;
   }
-  /* 半收入左侧边框：中心位于 left: 0，左半部分被左边框截断收入，仅露右半圆 */
+  /* 半收入左侧边框：中心位于 inset-inline-start: 0，左半部分被左边框截断收入，仅露右半圆 */
   .node-icon-wrapper {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 20px;

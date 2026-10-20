@@ -38,7 +38,7 @@
           </div>
 
           <el-button type="primary" plain class="w-full" size="small" @click="handleCopyLink">
-            <el-icon class="mr-1"><CopyDocument /></el-icon>
+            <el-icon class="me-1"><CopyDocument /></el-icon>
             {{ $t('register.remote.copyBtn') }}
           </el-button>
         </div>

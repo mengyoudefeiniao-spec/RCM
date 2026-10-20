@@ -29,7 +29,8 @@
 
 /* 阿拉伯语与库尔德语环境下优先应用 somer 官方官方字体 */
 html[lang="ar"],
-html[lang="ku"],
+html[lang="ckb"],
+html[lang="sdh"],
 [dir="rtl"] {
   font-family: 'somer', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }

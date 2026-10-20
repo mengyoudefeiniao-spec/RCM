@@ -9,7 +9,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') || '刷新' }}
         </el-button>
       </div>
@@ -96,7 +96,7 @@
             <span class="font-mono font-bold text-[#2F5B44] text-xs bg-[#EFF5F1] px-1.5 py-0.5 rounded border border-[#E1F4E4]">
               {{ row.claimVoucherNo }}
             </span>
-            <el-tag size="small" type="success" effect="dark" class="scale-90 origin-right">{{ getStatusLabel(row.status) }}</el-tag>
+            <el-tag size="small" type="success" effect="dark" class="scale-90 origin-right rtl:origin-left">{{ getStatusLabel(row.status) }}</el-tag>
           </div>
 
           <div class="grid grid-cols-2 gap-1.5 text-[11px]">

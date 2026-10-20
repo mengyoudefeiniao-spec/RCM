@@ -3,7 +3,7 @@
     <!-- ======================================================== -->
     <!-- 1. 优化点3：极简户主信息胶囊栏 (释放 APP 移动端首屏宝贵空间) -->
     <!-- ======================================================== -->
-    <div class="bg-gradient-to-r from-[#1B3123] via-[#12241A] to-[#1B3123] text-white rounded-lg px-3.5 py-2.5 shadow-xs border border-[#1F3326] flex flex-wrap items-center justify-between gap-2 text-xs">
+    <div class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1B3123] via-[#12241A] to-[#1B3123] text-white rounded-lg px-3.5 py-2.5 shadow-xs border border-[#1F3326] flex flex-wrap items-center justify-between gap-2 text-xs">
       <!-- 左侧：户主、卡号与人数徽章 -->
       <div class="flex items-center gap-2 flex-wrap">
         <div class="w-6 h-6 rounded-lg bg-[#326445]/80 flex items-center justify-center text-white shrink-0">
@@ -17,13 +17,13 @@
         <span class="font-mono text-[#AECBB8] font-bold tracking-tight">
           {{ quotaInfo.cardNo || 'RC-10029381' }}
         </span>
-        <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono font-bold origin-left">
+        <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono font-bold origin-left rtl:origin-right">
           {{ quotaInfo.memberCount || 4 }} {{ $t('citizenPurchase.compactMembers') }}
         </el-tag>
       </div>
 
       <!-- 右侧：签约网点与快速刷新 -->
-      <div class="flex items-center gap-2 ml-auto text-[11px] text-[#C9DBCE]">
+      <div class="flex items-center gap-2 ms-auto text-[11px] text-[#C9DBCE]">
         <div class="hidden sm:flex items-center gap-1 text-[#C9DBCE]">
           <el-icon class="text-[#DFC08B]"><Shop /></el-icon>
           <span class="truncate max-w-[190px]">{{ quotaInfo.agentName || '卡尔赫第一代销站' }}</span>
@@ -137,7 +137,7 @@
 
           <div :class="isAppMode ? 'grid grid-cols-2 gap-2 w-full' : 'flex items-center gap-2'">
             <el-button size="small" type="primary" plain class="!m-0 w-full" data-demo-target="btn-fill-quota" @click="handleFillAllQuota">
-              <el-icon class="mr-1"><Check /></el-icon>
+              <el-icon class="me-1"><Check /></el-icon>
               {{ $t('citizenPurchase.fillAllQuota') }}
             </el-button>
             <el-button size="small" class="!m-0 w-full" @click="handleClearSelected">
@@ -168,7 +168,7 @@
                   <span class="font-bold text-[#1B3123] text-xs sm:text-sm block">{{ formatItemName(item.itemName) }}</span>
                   <span class="text-[10px] text-[#8A9A8F] font-mono">{{ formatOriginPack(item) }}</span>
                 </div>
-                <el-tag size="small" type="success" effect="plain" class="scale-90 origin-right font-bold">
+                <el-tag size="small" type="success" effect="plain" class="scale-90 origin-right rtl:origin-left font-bold">
                   {{ formatStockStatus(item.stockStatus) }}
                 </el-tag>
               </div>
@@ -268,12 +268,12 @@
           >
             <span>
               {{ $t('citizenPurchase.totalWeight') }}:
-              <strong class="font-mono text-[#1B3123] text-sm ml-1">{{ totalSelectedWeight }} kg/L</strong>
+              <strong class="font-mono text-[#1B3123] text-sm ms-1">{{ totalSelectedWeight }} kg/L</strong>
             </span>
             <span v-if="!isAppMode">·</span>
             <span>
               {{ $t('citizenPurchase.goodsAmount') }}:
-              <strong class="font-mono text-[#326445] text-sm ml-1">{{ totalGoodsAmount.toLocaleString() }} IQD</strong>
+              <strong class="font-mono text-[#326445] text-sm ms-1">{{ totalGoodsAmount.toLocaleString() }} IQD</strong>
             </span>
           </div>
 
@@ -287,7 +287,7 @@
             @click="handleProceedToStep2"
           >
             <span>{{ $t('citizenPurchase.nextStepDelivery') }}</span>
-            <el-icon class="ml-1"><Right /></el-icon>
+            <el-icon class="rtl-mirror-icon ms-1"><Right /></el-icon>
           </el-button>
         </div>
       </div>
@@ -348,11 +348,11 @@
             <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/60 text-[11px] text-[#58685D] space-y-1">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.pickupStationLabel') }}:</span>
-                <span class="font-bold text-[#1F3326] truncate text-right">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
+                <span class="font-bold text-[#1F3326] truncate text-end">{{ quotaInfo.agentName || '巴格达卡尔赫第一代销站' }}</span>
               </div>
               <div class="flex items-center justify-between gap-2 text-[#58685D]">
                 <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.pickupHoursLabel') }}:</span>
-                <span class="text-[#58685D] text-right font-medium">{{ $t('citizenPurchase.pickupHoursVal') }}</span>
+                <span class="text-[#58685D] text-end font-medium">{{ $t('citizenPurchase.pickupHoursVal') }}</span>
               </div>
             </div>
           </div>
@@ -392,11 +392,11 @@
             <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB]/60 text-[11px] text-[#58685D] space-y-1">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.deliverySlaLabel') }}</span>
-                <span class="font-bold text-[#2A5440] text-right">{{ $t('citizenPurchase.deliverySlaValue') }}</span>
+                <span class="font-bold text-[#2A5440] text-end">{{ $t('citizenPurchase.deliverySlaValue') }}</span>
               </div>
               <div class="flex items-center justify-between gap-2">
                 <span class="text-[#8A9A8F] shrink-0">{{ $t('citizenPurchase.verifyHandover') }}</span>
-                <span class="font-medium text-[#43554B] text-right">{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
+                <span class="font-medium text-[#43554B] text-end">{{ $t('citizenPurchase.verifyHandoverHint') }}</span>
               </div>
             </div>
           </div>
@@ -421,7 +421,7 @@
             </div>
             <div>
               <span class="text-[#58685D] mb-1 block">{{ $t('citizenPurchase.deliveryPhone') }}:</span>
-              <el-input v-model="contactPhone" placeholder="+964 780 123 4567" size="small" />
+              <el-input class="bidi-ltr" v-model="contactPhone" placeholder="+964 780 123 4567" size="small" />
             </div>
           </div>
 
@@ -434,13 +434,13 @@
         <!-- 步骤 2 底部操作栏 (等宽自适应网格防挤压) -->
         <div class="pt-3 border-t border-[#E9F1EB] grid grid-cols-2 gap-2" :class="isAppMode ? 'pb-2' : ''">
           <el-button class="w-full font-medium rounded-lg" @click="currentProcessStep = 1; scrollToTop()">
-            <el-icon class="mr-1"><Back /></el-icon>
+            <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
 
           <el-button type="primary" size="large" class="w-full font-bold shadow-xs rounded-lg" data-demo-target="btn-next-pay" @click="handleProceedToStep3">
             <span>{{ $t('citizenPurchase.nextStepPay') }}</span>
-            <el-icon class="ml-1"><Right /></el-icon>
+            <el-icon class="rtl-mirror-icon ms-1"><Right /></el-icon>
           </el-button>
         </div>
       </div>
@@ -523,7 +523,7 @@
         <!-- 步骤 3 底部操作栏 (等宽自适应网格防截断) -->
         <div class="pt-3 border-t border-[#E9F1EB] grid grid-cols-2 gap-2">
           <el-button class="w-full font-medium rounded-lg" @click="currentProcessStep = 2; scrollToTop()">
-            <el-icon class="mr-1"><Back /></el-icon>
+            <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
             <span>{{ $t('citizenPurchase.prevStep') }}</span>
           </el-button>
 
@@ -535,7 +535,7 @@
             :loading="submitting"
             @click="handleStartPayment"
           >
-            <el-icon class="mr-1"><CreditCard /></el-icon>
+            <el-icon class="me-1"><CreditCard /></el-icon>
             <span>{{ $t('citizenPurchase.payBtn') }} ({{ finalTotalPayAmount.toLocaleString() }} IQD)</span>
           </el-button>
         </div>
@@ -586,7 +586,7 @@
               >
                 {{ ord.deliveryType === 'PICKUP' ? '🏬 ' + $t('citizenPurchase.pickupTitle') : '🚚 ' + $t('citizenPurchase.deliveryTitle') }}
               </span>
-              <el-tag size="small" :type="getOrderStatusTagType(ord.status)" effect="dark" class="scale-95 origin-right">
+              <el-tag size="small" :type="getOrderStatusTagType(ord.status)" effect="dark" class="scale-95 origin-right rtl:origin-left">
                 {{ getOrderStatusLabel(ord.status, ord.deliveryType) }}
               </el-tag>
             </div>
@@ -606,8 +606,8 @@
             </div>
 
             <!-- 金额与提货二维码按钮 -->
-            <div class="flex items-center gap-2 shrink-0 ml-auto">
-              <span class="font-mono font-bold text-[#2F5B44] text-xs sm:text-sm">
+            <div class="flex items-center gap-2 shrink-0 ms-auto">
+              <span class="currency-amount font-mono font-bold text-[#2F5B44] text-xs sm:text-sm">
                 IQD {{ (ord.selfPayAmount || ord.amount || 0).toLocaleString() }}
               </span>
               <el-button
@@ -816,7 +816,7 @@ function formatItemName(name) {
     if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي مكرر';
     if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف كامل الدسم';
     if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود فاخر';
-  } else if (lang === 'ku') {
+  } else if (lang === 'ckb') {
     if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
     if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
     if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
@@ -942,7 +942,7 @@ watch(locale, (val) => {
     quotaInfo.defaultAddress = 'عمارة 3، شقة 201، شارع حيفا 88، الكرخ، بغداد';
     quotaInfo.quotaPeriod = 'أكتوبر 2026';
     deliveryAddress.value = 'عمارة 3، شقة 201، شارع حيفا 88، الكرخ، بغداد';
-  } else if (val === 'ku') {
+  } else if (val === 'ckb') {
     quotaInfo.headName = 'ئەحمەد حەسەن ساڵح';
     quotaInfo.agentName = 'وێستگەی یەکەمی کەرخی بەغدا (محەممەد جەبار)';
     quotaInfo.province = 'پارێزگای بەغدا';

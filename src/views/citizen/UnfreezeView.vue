@@ -15,7 +15,7 @@
           </template>
         </ModuleDescTip>
         <el-button size="small" plain class="shrink-0" @click="handleGoBack">
-          <el-icon class="mr-1"><Back /></el-icon>
+          <el-icon class="rtl-mirror-icon me-1"><Back /></el-icon>
           {{ $t('common.back') }}
         </el-button>
       </div>
@@ -87,7 +87,7 @@
               :loading="submitting"
               @click="handleStartUnfreeze"
             >
-              <el-icon class="mr-1.5"><Unlock /></el-icon>
+              <el-icon class="me-1.5"><Unlock /></el-icon>
               <span>{{ $t('unfreeze.submitBtn') }}</span>
             </el-button>
           </div>
@@ -192,7 +192,7 @@ const allDefaultTexts = Object.values(STATEMENTS_BY_TYPE).flatMap(typeObj => Obj
 
 const unfreezeType = ref('商业');
 const unfreezeFileUploaded = ref(true);
-const unfreezeStatement = ref(STATEMENTS_BY_TYPE['商业'][locale.value] || STATEMENTS_BY_TYPE['商业'].en);
+const unfreezeStatement = ref(STATEMENTS_BY_TYPE['商业'][locale.value === 'ckb' ? 'ku' : locale.value] || STATEMENTS_BY_TYPE['商业'].en);
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
 
@@ -367,7 +367,7 @@ function handleTypeChange() {
   unfreezeFileUploaded.value = true;
   if (!unfreezeStatement.value.trim() || allDefaultTexts.includes(unfreezeStatement.value)) {
     const caseObj = STATEMENTS_BY_TYPE[unfreezeType.value] || STATEMENTS_BY_TYPE['商业'];
-    unfreezeStatement.value = caseObj[locale.value] || caseObj.en;
+    unfreezeStatement.value = caseObj[locale.value === 'ckb' ? 'ku' : locale.value] || caseObj.en;
   }
 }
 

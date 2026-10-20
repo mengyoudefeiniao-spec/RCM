@@ -109,7 +109,7 @@
             <div class="w-full bg-[#D9E5DB]/60 rounded-full h-1.5 sm:h-2 overflow-hidden">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                :class="item.level === 'warn' ? 'bg-gradient-to-r from-[#C9A13B] to-[#C9A13B]' : 'bg-gradient-to-r from-[#5C8A6B] to-[#5C8A6B]'"
+                :class="item.level === 'warn' ? 'bg-gradient-to-r rtl:bg-gradient-to-l from-[#C9A13B] to-[#C9A13B]' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-[#5C8A6B] to-[#5C8A6B]'"
                 :style="{ width: `${item.barWidth}%` }"
               ></div>
             </div>
@@ -137,7 +137,7 @@
             <div class="flex items-center justify-between gap-1.5 min-w-0">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-[10px] sm:text-[11px] font-mono font-bold text-[#43554B] shrink-0">{{ row.month }}</span>
-                <el-tag size="small" :type="row.type === 'surplus' ? 'success' : 'danger'" effect="plain" class="scale-90 origin-left shrink-0">
+                <el-tag size="small" :type="row.type === 'surplus' ? 'success' : 'danger'" effect="plain" class="scale-90 origin-left rtl:origin-right shrink-0">
                   {{ row.type === 'surplus' ? $t('agentInventoryLedger.typeSurplus') : $t('agentInventoryLedger.typeShortage') }}
                 </el-tag>
               </div>
@@ -150,7 +150,7 @@
             <div class="text-[9px] sm:text-[10px] text-[#8A9A8F] leading-snug min-w-0">🏷️ {{ row.cause }}</div>
             <!-- 行 3: 处理状态 -->
             <div>
-              <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left">{{ $t(`agentInventoryLedger.${row.status}`) }}</el-tag>
+              <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ $t(`agentInventoryLedger.${row.status}`) }}</el-tag>
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ const { locale } = useI18n();
 const route = useRoute();
 const isEn = computed(() => locale.value === 'en');
 const isAr = computed(() => locale.value === 'ar');
-const isKu = computed(() => locale.value === 'ku');
+const isKu = computed(() => locale.value === 'ckb');
 const isAppMode = computed(() => {
   return route.query.layout === 'app' ||
     sessionStorage.getItem('rcm_layout_mode') === 'app' ||

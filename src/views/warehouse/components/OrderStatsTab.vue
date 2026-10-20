@@ -4,11 +4,11 @@
     <!-- 1. 顶部国家战略保供大盘 Hero Banner (深绿砂金伊拉克国家风格) -->
     <!-- ======================================================== -->
     <div
-      class="bg-gradient-to-r from-[#1F3326] via-[#326445] to-[#2F5B44] text-white p-4 sm:p-5 rounded-lg shadow-lg border border-[#D3AF62]/35 relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+      class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1F3326] via-[#326445] to-[#2F5B44] text-white p-4 sm:p-5 rounded-lg shadow-lg border border-[#D3AF62]/35 relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-4"
     >
       <!-- 背景保供暗纹光晕与雷达质感 -->
-      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-[#D3AF62]/10 blur-3xl pointer-events-none"></div>
-      <div class="absolute left-1/3 -top-12 w-48 h-48 rounded-full bg-[#6FBF92]/10 blur-2xl pointer-events-none"></div>
+      <div class="absolute -end-10 -bottom-10 w-64 h-64 rounded-full bg-[#D3AF62]/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute start-1/3 -top-12 w-48 h-48 rounded-full bg-[#6FBF92]/10 blur-2xl pointer-events-none"></div>
 
       <div class="space-y-1.5 relative z-10">
         <div class="flex items-center gap-2.5 flex-wrap">
@@ -41,7 +41,7 @@
           :loading="aiAnalyzing"
           @click="generateAiForecast"
         >
-          <span class="mr-1.5">🤖</span>
+          <span class="me-1.5">🤖</span>
           <span>{{ $t('orderStats.aiForecastBtn') }}</span>
         </el-button>
         <el-button
@@ -217,7 +217,7 @@
             <div class="w-full bg-[#E9F1EB] rounded-full h-2.5 overflow-hidden">
               <div
                 class="h-2.5 rounded-full transition-all duration-700"
-                :class="item.isOverload ? 'bg-gradient-to-r from-[#D3AF62] to-[#C04442]' : 'bg-gradient-to-r from-[#326445] to-[#D3AF62]'"
+                :class="item.isOverload ? 'bg-gradient-to-r rtl:bg-gradient-to-l from-[#D3AF62] to-[#C04442]' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-[#326445] to-[#D3AF62]'"
                 :style="{ width: `${item.barWidth}%` }"
               ></div>
             </div>
@@ -291,7 +291,7 @@
         <!-- 履约渠道洞察微条 -->
         <div class="p-2.5 rounded-lg bg-[#326445]/5 border border-[#326445]/15 flex items-center justify-between text-xs text-[#326445]">
           <span>🛵 <strong>{{ isEn ? 'Fulfillment Trend: ' : '履约偏好趋势：' }}</strong>{{ isEn ? 'Home delivery share reaches ' + deliveryHomeRatio + '%, supported by door-to-door welfare services.' : '送货上门选购占比达 ' + deliveryHomeRatio + '%，契合便民保供导向。' }}</span>
-          <span class="text-[#D3AF62] font-mono font-bold shrink-0 ml-2">{{ isEn ? 'Fulfillment 99.1%' : '时效履约 99.1%' }}</span>
+          <span class="text-[#D3AF62] font-mono font-bold shrink-0 ms-2">{{ isEn ? 'Fulfillment 99.1%' : '时效履约 99.1%' }}</span>
         </div>
       </div>
     </div>
@@ -300,7 +300,7 @@
     <!-- 5. 核心：AI 智能助手 - 下月配给扩容需求预测与备货建议面板 -->
     <!-- ======================================================== -->
     <div
-      class="bg-gradient-to-r from-[#1F3326] via-[#326445] to-[#1F3326] text-white rounded-lg p-4 sm:p-5 border border-[#D3AF62]/40 shadow-md space-y-3.5 relative overflow-hidden"
+      class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1F3326] via-[#326445] to-[#1F3326] text-white rounded-lg p-4 sm:p-5 border border-[#D3AF62]/40 shadow-md space-y-3.5 relative overflow-hidden"
     >
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D3AF62]/30 pb-3">
         <div class="flex items-center gap-2.5">
@@ -455,7 +455,7 @@
 
         <el-table-column :label="isEn ? 'Amount' : '实付金额'" width="120" align="right">
           <template #default="{ row }">
-            <span class="font-mono font-bold text-[#7A5F21]">IQD {{ (row.selfPayAmount || row.amount || 0).toLocaleString() }}</span>
+            <span class="currency-amount font-mono font-bold text-[#7A5F21]">IQD {{ (row.selfPayAmount || row.amount || 0).toLocaleString() }}</span>
           </template>
         </el-table-column>
 

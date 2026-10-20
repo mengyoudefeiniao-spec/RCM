@@ -14,7 +14,7 @@
             <el-icon class="text-[#D3AF62] text-base"><Stamp /></el-icon>
           </template>
           <template #extra>
-            <el-tag :type="authStore.isMinisterCenter ? 'primary' : authStore.isDeputyMinister ? 'danger' : 'warning'" effect="dark" size="small" class="font-bold ml-1">
+            <el-tag :type="authStore.isMinisterCenter ? 'primary' : authStore.isDeputyMinister ? 'danger' : 'warning'" effect="dark" size="small" class="font-bold ms-1">
               {{ currentRoleTitle }}
             </el-tag>
           </template>
@@ -23,7 +23,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" @click="handleRefresh">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('review.refresh') }}
         </el-button>
       </div>
@@ -42,7 +42,7 @@
               <span>{{ $t('review.filterTitle') }}</span>
               <button
                 type="button"
-                class="lg:hidden text-[11px] text-[#326445] font-normal underline ml-1"
+                class="lg:hidden text-[11px] text-[#326445] font-normal underline ms-1"
                 @click="showMobileFilter = !showMobileFilter"
               >
                 {{ showMobileFilter ? $t('review.collapseFilters') : $t('review.expandFilters') }}
@@ -79,7 +79,7 @@
                 @change="handleProvinceChange"
               >
                 <el-option :label="$t('review.allProvinces')" value="全部" />
-                <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
+                <el-option v-for="p in provinceOptions" :key="p" :label="localizedProvinceOption(p)" :value="p" />
               </el-select>
 
               <el-select
@@ -89,7 +89,7 @@
                 clearable
               >
                 <el-option :label="$t('review.allCenters')" value="全部" />
-                <el-option v-for="c in currentCenterOptions" :key="c" :label="c" :value="c" />
+                <el-option v-for="c in currentCenterOptions" :key="c" :label="localizedCenterOption(c)" :value="c" />
               </el-select>
             </div>
 
@@ -144,7 +144,7 @@
           </div>
 
           <!-- 工单卡片列表 -->
-          <div class="space-y-2 max-h-[580px] overflow-y-auto pr-0.5">
+          <div class="space-y-2 max-h-[580px] overflow-y-auto pe-0.5">
             <div
               v-if="filteredTickets.length === 0"
               class="p-6 text-center text-xs text-[#8A9A8F] border border-dashed border-[#D9E5DB] rounded-lg"
@@ -179,15 +179,15 @@
                 </el-tag>
               </div>
 
-              <div class="font-semibold text-[#1F3326] truncate">{{ tk.appType }}</div>
+              <div class="font-semibold text-[#1F3326] truncate">{{ localizedTicketField(tk, 'appType') }}</div>
               
               <div class="text-[11px] text-[#58685D] mt-1 flex items-center justify-between">
-                <span class="truncate">{{ $t('review.targetPrefix') }}{{ tk.targetMemberName }}</span>
+                <span class="truncate">{{ $t('review.targetPrefix') }}{{ localizedTicketField(tk, 'targetMemberName') }}</span>
                 <span class="font-mono text-[#8A9A8F] shrink-0">{{ tk.submittedAt?.slice(5) }}</span>
               </div>
 
               <div v-if="tk.province || tk.center" class="text-[10px] text-[#8A9A8F] mt-1 flex items-center gap-1.5">
-                <span class="truncate">{{ $t('review.regionPrefix') }}{{ tk.province }} {{ tk.center ? '· ' + tk.center : '' }}</span>
+                <span class="truncate">{{ $t('review.regionPrefix') }}{{ localizedTicketField(tk, 'province') }} {{ tk.center ? '· ' + localizedTicketField(tk, 'center') : '' }}</span>
               </div>
             </div>
           </div>
@@ -200,13 +200,13 @@
         :class="{ 'hidden lg:block': mobileTab === 'list' }"
       >
         <!-- 移动端专属：返回待审工单列表操作条 (Pixel 9 专属便捷导航) -->
-        <div class="lg:hidden flex items-center justify-between bg-gradient-to-r from-[#FDF3E0] to-[#FDF3E0] px-3.5 py-2.5 rounded-lg border border-[#F2E3C6] shadow-2xs">
+        <div class="lg:hidden flex items-center justify-between bg-gradient-to-r rtl:bg-gradient-to-l from-[#FDF3E0] to-[#FDF3E0] px-3.5 py-2.5 rounded-lg border border-[#F2E3C6] shadow-2xs">
           <button
             type="button"
             class="flex items-center gap-1.5 text-xs text-[#5A4718] font-bold active:scale-95 transition-transform"
             @click="mobileTab = 'list'"
           >
-            <el-icon class="text-sm"><Back /></el-icon>
+            <el-icon class="rtl-mirror-icon text-sm"><Back /></el-icon>
             <span>{{ $t('review.backToList') }} ({{ filteredTickets.length }})</span>
           </button>
           <span class="text-[11px] font-mono font-semibold text-[#6B5321]">{{ reviewStore.selectedTicket?.id }}</span>
@@ -234,7 +234,7 @@
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.businessTypeLabel') }}</span>
-                <span class="font-bold text-[#1F3326]">{{ reviewStore.selectedTicket.appType }}</span>
+                <span class="font-bold text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'appType') }}</span>
               </div>
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.cardNoLabel') }}</span>
@@ -242,7 +242,7 @@
               </div>
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.targetPersonLabel') }}</span>
-                <span class="font-bold text-[#1F3326]">{{ reviewStore.selectedTicket.targetMemberName }}</span>
+                <span class="font-bold text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'targetMemberName') }}</span>
               </div>
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.currentStatusLabel') }}</span>
@@ -250,27 +250,27 @@
               </div>
               <div v-if="reviewStore.selectedTicket.province">
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.centerLabel') }}</span>
-                <span class="text-[#1F3326]">{{ reviewStore.selectedTicket.province }} · {{ reviewStore.selectedTicket.center }}</span>
+                <span class="text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'province') }} · {{ localizedTicketField(reviewStore.selectedTicket, 'center') }}</span>
               </div>
             </div>
 
             <!-- 触发电子审核原因 -->
             <div class="p-3 bg-[#FBEAE9] rounded-lg border border-[#F2D5D4] text-[#A93B39] text-xs">
               <span class="font-bold">{{ $t('review.triggerReasonLabel') }}</span>
-              {{ reviewStore.selectedTicket.reason }}
+              {{ localizedTicketField(reviewStore.selectedTicket, 'reason') }}
             </div>
 
             <!-- 附件材料一览 -->
             <div v-if="reviewStore.selectedTicket.attachments?.length" class="space-y-1.5 pt-1">
               <div class="text-[11px] font-bold text-[#43554B]">{{ $t('review.attachmentListLabel') }}</div>
               <div
-                v-for="att in reviewStore.selectedTicket.attachments"
+                v-for="(att, attIndex) in reviewStore.selectedTicket.attachments"
                 :key="att.name"
                 class="p-2 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] flex items-center justify-between text-xs"
               >
                 <div class="flex items-center gap-2">
                   <el-icon class="text-[#326445]"><Document /></el-icon>
-                  <span class="font-mono text-[#1F3326]">{{ att.name }}</span>
+                  <bdi dir="ltr" class="font-mono text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, `attachment${attIndex}`, att.name) }}</bdi>
                 </div>
                 <el-tag size="small" type="success">{{ $t('review.sealValid') }}</el-tag>
               </div>
@@ -370,14 +370,31 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { provinceLabel } from '../../utils/dataLabels.js';
 import { useReviewStore } from '../../stores/review.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { Stamp, Refresh, Document, Check, Search, Back } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
-const { t, locale } = useI18n();
+const { t, te, locale } = useI18n();
 const reviewStore = useReviewStore();
 const authStore = useAuthStore();
+
+function localizedTicketField(ticket, field, fallback) {
+  const value = fallback ?? ticket?.[field] ?? '';
+  if (!ticket || (locale.value !== 'ar' && locale.value !== 'ckb')) return value;
+  const key = `review.ticketData.${ticket.id}.${field}`;
+  return te(key, locale.value) ? t(key) : value;
+}
+
+function localizedProvinceOption(province) {
+  return provinceLabel(t, locale.value, province);
+}
+
+function localizedCenterOption(center) {
+  const match = reviewStore.tickets.find(ticket => ticket.center === center);
+  return match ? localizedTicketField(match, 'center') : center;
+}
 
 // 当前登录角色头衔（按角色键动态转译；userProfile.title 为登录时固化的文案，切语言不刷新）
 const currentRoleTitle = computed(() => {
@@ -476,7 +493,7 @@ const filterProvince = ref('全部');
 const filterCenter = ref('全部');
 const filterDateRange = ref(null);
 
-const isEn = computed(() => locale.value === 'en');
+const isEn = computed(() => locale.value !== 'zh');
 
 const provinceOptions = computed(() => {
   return isEn.value ? [

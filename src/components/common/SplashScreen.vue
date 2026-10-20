@@ -19,7 +19,7 @@
         <!-- 官方徽标容器：完全与背景结合的无白边设计 -->
         <div class="relative mb-4 flex items-center justify-center">
           <!-- 环形金色与翡翠绿双层氛围呼吸光晕 -->
-          <div class="absolute w-44 h-44 rounded-full bg-gradient-to-r from-[#3E8A5E]/30 to-[#D3AF62]/25 blur-2xl animate-pulse pointer-events-none"></div>
+          <div class="absolute w-44 h-44 rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-[#3E8A5E]/30 to-[#D3AF62]/25 blur-2xl animate-pulse pointer-events-none"></div>
 
           <!-- 官方矢量徽标：直接与深绿背景融合，自然呈现其原生绿金圆角底座与国徽细节 -->
           <div class="w-32 h-32 sm:w-36 sm:h-36 relative flex items-center justify-center transform transition-transform duration-700 animate-splash-pop">
@@ -55,7 +55,7 @@
       <div class="relative z-10 w-full flex flex-col items-center pb-10 sm:pb-14 px-8">
         <!-- 金绿渐变流动加载进度条 -->
         <div class="w-40 sm:w-48 h-1 rounded-full bg-[#12241A] overflow-hidden mb-3 border border-[#D3AF62]/20">
-          <div class="h-full bg-gradient-to-r from-[#326445] via-[#E5CEA1] to-[#3E8A5E] rounded-full animate-splash-progress"></div>
+          <div class="h-full bg-gradient-to-r rtl:bg-gradient-to-l from-[#326445] via-[#E5CEA1] to-[#3E8A5E] rounded-full animate-splash-progress"></div>
         </div>
 
         <!-- 极简系统初始化状态提示 -->

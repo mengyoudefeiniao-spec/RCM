@@ -1,7 +1,7 @@
 <template>
   <div class="agent-trace-panel space-y-4">
     <!-- 顶部功能简介与搜索框 -->
-    <div class="p-5 bg-gradient-to-r from-[#1B3123] to-[#1F3326] text-white rounded-lg space-y-3 shadow-xs">
+    <div class="p-5 bg-gradient-to-r rtl:bg-gradient-to-l from-[#1B3123] to-[#1F3326] text-white rounded-lg space-y-3 shadow-xs">
       <div class="flex items-center gap-2">
         <el-icon class="text-xl text-[#7FA48C]"><Compass /></el-icon>
         <h3 class="font-bold text-sm tracking-wide">{{ isEn ? 'Multi-Dimensional Flow & Audit Traceability Engine (Full-Lifecycle Penetration Lookup)' : '多维流转与审计追溯引擎 (全生命周期穿透倒查)' }}</h3>
@@ -27,7 +27,7 @@
           <template #prefix><el-icon class="text-[#8A9A8F]"><Search /></el-icon></template>
         </el-input>
         <el-button type="primary" size="large" class="font-bold shrink-0" :loading="loading" @click="handleSearch">
-          <el-icon class="mr-1"><Search /></el-icon>
+          <el-icon class="me-1"><Search /></el-icon>
           {{ isEn ? 'Full-Chain Penetration Lookup' : '全链路穿透倒查' }}
         </el-button>
       </div>
@@ -72,11 +72,11 @@
             <div class="px-2.5 py-1 bg-[#EFF5F1] border border-[#C7DED0] rounded-lg text-[#24483A] font-semibold text-[11px]">
               {{ isEn ? 'WH:' : '仓：' }}{{ chain.centerWarehouse }}
             </div>
-            <el-icon class="text-[#8A9A8F]"><Right /></el-icon>
+            <el-icon class="rtl-mirror-icon text-[#8A9A8F]"><Right /></el-icon>
             <div class="px-2.5 py-1 bg-[#FDF3E0] border border-[#F2E3C6] rounded-lg text-[#6B5321] font-semibold text-[11px]">
               {{ isEn ? 'Shop:' : '店：' }}{{ chain.agentShop }}
             </div>
-            <el-icon class="text-[#8A9A8F]"><Right /></el-icon>
+            <el-icon class="rtl-mirror-icon text-[#8A9A8F]"><Right /></el-icon>
             <div class="px-2.5 py-1 bg-[#EFF5F1] border border-[#C7E0CE] rounded-lg text-[#24483A] font-semibold text-[11px]">
               {{ isEn ? 'Family:' : '户：' }}{{ chain.citizenName }} ({{ chain.cardNo }})
             </div>

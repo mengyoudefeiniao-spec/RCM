@@ -33,15 +33,15 @@
         <img
           src="/images/dashboard-banner.png"
           alt="National Ration Card System Background"
-          class="absolute inset-0 w-full h-full object-cover object-left md:object-center select-none pointer-events-none"
+          class="absolute inset-0 w-full h-full object-cover object-left rtl:object-right md:object-center select-none pointer-events-none"
           loading="eager"
         />
 
         <!-- 柔和微弱渐变保护层：确保在不同屏幕分辨率与多语言下文字图层均清晰易读 -->
-        <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-[#F3F8F4]/30 to-[#F3F8F4]/85 pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r md:rtl:bg-gradient-to-l from-transparent via-[#F3F8F4]/30 to-[#F3F8F4]/85 pointer-events-none"></div>
 
         <!-- 文字内容图层：位于图片图层上方 (relative z-10)，支持独立排版与交互 -->
-        <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-7 md:p-8 flex flex-col justify-center items-start md:items-end text-left md:text-right">
+        <div class="relative z-10 w-full md:w-3/5 lg:w-1/2 p-5 sm:p-7 md:p-8 flex flex-col justify-center items-start md:items-end text-start md:text-end">
           <!-- 金色微标 -->
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF3E0]/95 backdrop-blur-xs border border-[#E5CEA1] text-[#B8934A] text-xs font-semibold mb-2.5 shadow-2xs">
             <span class="font-sans font-bold">{{ $t('portal.serviceTag') }}</span>
@@ -89,7 +89,7 @@
           </div>
 
           <!-- 卡片内容区 -->
-          <div class="py-3 space-y-2" :class="isRtl ? 'text-right' : 'text-left'">
+          <div class="py-3 space-y-2 text-start">
             <h2 class="text-lg sm:text-xl font-black text-[#1F3326] group-hover:text-[#326445] transition-colors">
               {{ $t('portal.citizenApp.title') }}
             </h2>
@@ -104,11 +104,11 @@
           </div>
 
           <!-- 卡片底栏：进入按钮与方向箭头 (在新标签页打开) -->
-          <div class="pt-4 border-t border-[#E9F1EB] flex items-center" :class="isRtl ? 'justify-start' : 'justify-end'">
+          <div class="pt-4 border-t border-[#E9F1EB] flex items-center justify-end">
             <div class="inline-flex items-center gap-1.5 text-xs font-bold text-[#326445] group-hover:text-[#D3AF62] transition-colors">
               <span>{{ $t('portal.citizenApp.btn') }}</span>
-              <el-icon class="transform transition-transform duration-300" :class="isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'">
-                <component :is="isRtl ? Back : Right" />
+              <el-icon class="rtl-mirror-icon transform transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                <Right />
               </el-icon>
             </div>
           </div>
@@ -135,7 +135,7 @@
           </div>
 
           <!-- 卡片内容区 -->
-          <div class="py-3 space-y-2" :class="isRtl ? 'text-right' : 'text-left'">
+          <div class="py-3 space-y-2 text-start">
             <h2 class="text-lg sm:text-xl font-black text-[#1F3326] group-hover:text-[#326445] transition-colors">
               {{ $t('portal.agentApp.title') }}
             </h2>
@@ -150,11 +150,11 @@
           </div>
 
           <!-- 卡片底栏 -->
-          <div class="pt-4 border-t border-[#E9F1EB] flex items-center" :class="isRtl ? 'justify-start' : 'justify-end'">
+          <div class="pt-4 border-t border-[#E9F1EB] flex items-center justify-end">
             <div class="inline-flex items-center gap-1.5 text-xs font-bold text-[#326445] group-hover:text-[#D3AF62] transition-colors">
               <span>{{ $t('portal.agentApp.btn') }}</span>
-              <el-icon class="transform transition-transform duration-300" :class="isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'">
-                <component :is="isRtl ? Back : Right" />
+              <el-icon class="rtl-mirror-icon transform transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                <Right />
               </el-icon>
             </div>
           </div>
@@ -181,7 +181,7 @@
           </div>
 
           <!-- 卡片内容区 -->
-          <div class="py-3 space-y-2" :class="isRtl ? 'text-right' : 'text-left'">
+          <div class="py-3 space-y-2 text-start">
             <h2 class="text-lg sm:text-xl font-black text-[#1F3326] group-hover:text-[#326445] transition-colors">
               {{ $t('portal.adminWeb.title') }}
             </h2>
@@ -196,11 +196,11 @@
           </div>
 
           <!-- 卡片底栏 -->
-          <div class="pt-4 border-t border-[#E9F1EB] flex items-center" :class="isRtl ? 'justify-start' : 'justify-end'">
+          <div class="pt-4 border-t border-[#E9F1EB] flex items-center justify-end">
             <div class="inline-flex items-center gap-1.5 text-xs font-bold text-[#326445] group-hover:text-[#D3AF62] transition-colors">
               <span>{{ $t('portal.adminWeb.btn') }}</span>
-              <el-icon class="transform transition-transform duration-300" :class="isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'">
-                <component :is="isRtl ? Back : Right" />
+              <el-icon class="rtl-mirror-icon transform transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                <Right />
               </el-icon>
             </div>
           </div>
@@ -234,7 +234,7 @@
       class="flow-demo-dialog"
       :show-close="false"
     >
-      <div class="p-3 sm:p-5 space-y-4" :dir="isRtl ? 'rtl' : 'ltr'">
+      <div class="p-3 sm:p-5 space-y-4">
         <!-- 头部 Header：标题与关闭按钮 -->
         <div class="flex items-start justify-between gap-4 border-b border-[#D9E5DB] pb-4">
           <div class="space-y-1">
@@ -260,7 +260,7 @@
         </div>
 
         <!-- 流程提示指引条 -->
-        <div class="p-3 rounded-lg bg-gradient-to-r from-[#FDF3E0] to-[#E9F1EB] border border-[#E5CEA1] text-xs text-[#7A5F21] flex items-start gap-2.5 shadow-2xs">
+        <div class="p-3 rounded-lg bg-gradient-to-r rtl:bg-gradient-to-l from-[#FDF3E0] to-[#E9F1EB] border border-[#E5CEA1] text-xs text-[#7A5F21] flex items-start gap-2.5 shadow-2xs">
           <div class="w-5 h-5 rounded-full bg-[#D3AF62] text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
             💡
           </div>
@@ -303,7 +303,7 @@
             </div>
 
             <!-- 卡片核心内容：标题与说明 -->
-            <div class="py-3 space-y-1.5 flex-1" :class="isRtl ? 'text-right' : 'text-left'">
+            <div class="py-3 space-y-1.5 flex-1 text-start">
               <h3 class="text-sm font-bold text-[#1F3326] group-hover:text-[#326445] transition-colors flex items-center gap-1">
                 <span>{{ $t(item.titleKey) }}</span>
               </h3>
@@ -320,7 +320,7 @@
 
               <div class="inline-flex items-center gap-1 font-bold text-xs text-[#326445] group-hover:text-[#D3AF62] transition-colors shrink-0">
                 <span>{{ $t('portal.flowDemo.openInNewTab') }}</span>
-                <el-icon class="transform group-hover:translate-x-0.5 transition-transform"><TopRight /></el-icon>
+                <el-icon class="rtl-mirror-icon transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-transform"><TopRight /></el-icon>
               </div>
             </div>
           </div>
@@ -341,13 +341,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import {
   Check,
   Cellphone,
   FullScreen,
   DataAnalysis,
-  Back,
   Right,
   OfficeBuilding,
   VideoPlay,
@@ -358,14 +357,12 @@ import {
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
-import { currentLang } from '../../locales/index.js';
 import { useAuthStore } from '../../stores/auth.js';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 
 // 是否为 RTL 语言环境 (阿语、库尔德语)
-const isRtl = computed(() => ['ar', 'ku'].includes(currentLang.value));
 
 // 流程演示弹窗控制
 const showFlowDemoDialog = ref(false);

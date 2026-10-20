@@ -9,14 +9,14 @@
     :style="!isAppMode ? loginBgStyle : {}"
   >
     <!-- 国际化语言切换选择器 (Web 桌面端右上角浮动) -->
-    <div v-if="!isAppMode" class="absolute top-4 right-4 z-20">
+    <div v-if="!isAppMode" class="absolute top-4 end-4 z-20">
       <LanguageSwitcher />
     </div>
 
     <!-- 背景暖砂金与翡翠墨绿光影装饰 (Web 桌面端) -->
     <template v-if="!isAppMode">
-      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#D3AF62]/15 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#326445]/40 blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-32 -start-32 w-96 h-96 rounded-full bg-[#D3AF62]/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-32 -end-32 w-96 h-96 rounded-full bg-[#326445]/40 blur-3xl pointer-events-none"></div>
     </template>
 
     <!-- 登录主视口容器：APP 模式下自适应 Pixel 9 手机视口 (412px 宽，最大 924px 高，内部滚动)；Web 模式下居中居宽 -->
@@ -142,7 +142,7 @@
 
         <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
         <div
-          class="rounded-lg border border-[#D3AF62]/60 bg-gradient-to-r from-[#FDF3E0] to-[#FDF3E0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D3AF62] hover:shadow-2xs transition-all select-none"
+          class="rounded-lg border border-[#D3AF62]/60 bg-gradient-to-r rtl:bg-gradient-to-l from-[#FDF3E0] to-[#FDF3E0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D3AF62] hover:shadow-2xs transition-all select-none"
           @click="$router.push('/portal')"
         >
           <div class="flex items-center gap-2">
@@ -156,7 +156,7 @@
           </div>
           <div class="flex items-center text-[#7A5F21] font-bold text-[11px] gap-0.5">
             <span>{{ $t('login.portalCardEnter') || '进入' }}</span>
-            <el-icon><Right /></el-icon>
+            <el-icon class="rtl-mirror-icon"><Right /></el-icon>
           </div>
         </div>
 

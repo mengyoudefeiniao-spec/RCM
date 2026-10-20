@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import AppLayout from '../components/layout/AppLayout.vue';
 import { createProfileByRole, useAuthStore } from '../stores/auth.js';
+import { i18n } from '../locales/index.js';
 
 /**
  * 角色说明：
@@ -50,6 +51,12 @@ const routes = [
         name: 'CitizenFamily',
         component: () => import('../views/citizen/CitizenFamilyView.vue'),
         meta: { title: '公民服务', roles: ['citizen'] }
+      },
+      {
+        path: 'my',
+        name: 'MyAccount',
+        component: () => import('../views/my/MyAccountView.vue'),
+        meta: { titleKey: 'my.title', roles: ['citizen', 'agent'] }
       },
       {
         path: 'citizen/change-head',
@@ -196,8 +203,8 @@ router.beforeEach((to, from, next) => {
     token = null;
   }
 
-  if (to.meta?.title) {
-    const pageTitle = (to.path === '/warehouse' && (currentRole === 'citizen' || currentRole === 'agent')) ? '配给管理' : to.meta.title;
+  if (to.meta?.title || to.meta?.titleKey) {
+    const pageTitle = to.meta.titleKey ? i18n.global.t(to.meta.titleKey) : (to.path === '/warehouse' && (currentRole === 'citizen' || currentRole === 'agent')) ? '配给管理' : to.meta.title;
     document.title = `${pageTitle} - Ration Card Management (RCM)`;
   }
 

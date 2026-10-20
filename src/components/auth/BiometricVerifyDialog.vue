@@ -35,7 +35,7 @@
                 alt="Face Preview"
                 class="w-full h-full object-cover"
               />
-              <div class="absolute bottom-1 right-1 bg-[#2F7A50]/90 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
+              <div class="absolute bottom-1 end-1 bg-[#2F7A50]/90 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
                 PASS: 99.8%
               </div>
             </div>

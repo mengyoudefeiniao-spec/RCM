@@ -33,7 +33,7 @@
           </el-select>
 
           <el-button size="small" type="primary" plain :class="isAppMode ? 'w-full' : ''" @click="loadOrders">
-            <el-icon class="mr-1"><Refresh /></el-icon>
+            <el-icon class="me-1"><Refresh /></el-icon>
             {{ $t('common.refresh') }}
           </el-button>
         </div>
@@ -47,7 +47,7 @@
         :class="isAppMode ? 'w-full' : ''"
         @click="openCreateModal"
       >
-        <el-icon class="mr-1"><Plus /></el-icon>
+        <el-icon class="me-1"><Plus /></el-icon>
         {{ $t('agentG2B.btnNewPurchase') }}
       </el-button>
     </div>
@@ -153,7 +153,7 @@
             class="!h-7 text-xs flex-1 font-bold"
             @click="showOrderQRCode(row)"
           >
-            <el-icon class="mr-1"><FullScreen /></el-icon>
+            <el-icon class="me-1"><FullScreen /></el-icon>
             {{ $t('agentG2B.btnPickupQR') }}
           </el-button>
 
@@ -470,7 +470,7 @@
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.flour.toLocaleString(), unit: 'KG' }) }}</span>
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.flour.toLocaleString(), unit: 'KG' }) }}</span>
-                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
+                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.flour.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
                 </div>
@@ -497,7 +497,7 @@
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.rice.toLocaleString(), unit: 'KG' }) }}</span>
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.rice.toLocaleString(), unit: 'KG' }) }}</span>
-                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
+                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.rice.toLocaleString(), unit: 'KG' }) }}
                   </el-tag>
                 </div>
@@ -524,7 +524,7 @@
                 <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.oil.toLocaleString(), unit: 'L' }) }}</span>
                   <span class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.oil.toLocaleString(), unit: 'L' }) }}</span>
-                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left">
+                  <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.oil.toLocaleString(), unit: 'L' }) }}
                   </el-tag>
                 </div>
@@ -579,7 +579,7 @@
     >
       <div v-if="activeQRRow" class="space-y-3 sm:space-y-4 text-xs text-center">
         <!-- 顶部中心仓与凭证说明 -->
-        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 text-left space-y-1">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 text-start space-y-1">
           <div class="flex justify-between items-center">
             <span class="text-[#58685D] text-[11px]">{{ $t('agentG2B.qrCenterLabel') }}</span>
             <span class="font-bold text-[#1F3326]">{{ activeQRRow.centerName }}</span>
@@ -704,7 +704,7 @@
         </div>
 
         <!-- 采购明细与金额汇总 -->
-        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-1.5 text-left">
+        <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-1.5 text-start">
           <div class="flex justify-between items-center font-semibold text-[#43554B]">
             <span>{{ $t('agentG2B.qrOrderNoLabel') }}</span>
             <span class="font-mono text-[#1B3123]">{{ activeQRRow.orderNo }}</span>
@@ -715,7 +715,7 @@
           </div>
           <div class="pt-1 border-t border-[#D9E5DB]/60 text-[11px] text-[#58685D]">
             {{ $t('agentG2B.qrIncludeItems') }}
-            <span v-for="(it, i) in activeQRRow.items" :key="i" class="mr-2">
+            <span v-for="(it, i) in activeQRRow.items" :key="i" class="me-2">
               {{ formatG2BItemName(it.itemName) }}: <strong>{{ it.qty }}{{ formatG2BUnit(it.unit) }}</strong>
             </span>
           </div>
@@ -765,7 +765,7 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const isEn = computed(() => locale.value === 'en');
 const isAr = computed(() => locale.value === 'ar');
-const isKu = computed(() => locale.value === 'ku');
+const isKu = computed(() => locale.value === 'ckb');
 const isAppMode = computed(() => {
   return route.query.layout === 'app' ||
     sessionStorage.getItem('rcm_layout_mode') === 'app' ||

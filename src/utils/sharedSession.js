@@ -15,7 +15,8 @@ const STORAGE_KEY_FAMILIES = 'rcm_shared_families';
 
 function getActiveLanguage() {
   if (typeof localStorage !== 'undefined') {
-    return localStorage.getItem('rcm_language') || 'zh';
+    const language = localStorage.getItem('rcm_language') || 'zh';
+    return language === 'ckb' ? 'ku' : language;
   }
   return 'zh';
 }

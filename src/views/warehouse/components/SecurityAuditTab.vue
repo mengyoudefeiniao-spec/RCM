@@ -9,7 +9,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') || '刷新' }}
         </el-button>
       </div>
@@ -57,7 +57,7 @@
       />
 
       <el-button size="small" link type="primary" @click="resetFilters">{{ $t('common.reset') || '重置' }}</el-button>
-      <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredAuditLogs.length} records` : `共 ${filteredAuditLogs.length} 条记录` }}</span>
+      <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ isEn ? `Total ${filteredAuditLogs.length} records` : `共 ${filteredAuditLogs.length} 条记录` }}</span>
     </div>
 
     <!-- 不可篡改操作审计日志表格 -->

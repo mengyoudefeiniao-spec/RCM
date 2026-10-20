@@ -11,7 +11,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') || '刷新' }}
         </el-button>
       </div>
@@ -27,7 +27,7 @@
           <span>{{ $t('warehouse.subInbound') || '采购收货质检入库记录' }}</span>
         </h3>
         <el-button type="primary" size="small" @click="openInboundDialog">
-          <el-icon class="mr-1"><Plus /></el-icon>
+          <el-icon class="me-1"><Plus /></el-icon>
           {{ $t('warehouse.newInbound') || '新建收货质检入库' }}
         </el-button>
       </div>
@@ -54,7 +54,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetInboundFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredInboundOrders.length} records` : `共 ${filteredInboundOrders.length} 条记录` }}</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ isEn ? `Total ${filteredInboundOrders.length} records` : `共 ${filteredInboundOrders.length} 条记录` }}</span>
       </div>
 
       <!-- 入库单表格 -->
@@ -139,7 +139,7 @@
           <span>配给配送出库波次与交付流水</span>
         </h3>
         <el-button type="primary" size="small" @click="openOutboundDialog">
-          <el-icon class="mr-1"><Plus /></el-icon>
+          <el-icon class="me-1"><Plus /></el-icon>
           创建配送波次出库 (FIFO)
         </el-button>
       </div>
@@ -167,7 +167,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetOutboundFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredOutboundOrders.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredOutboundOrders.length }} 条记录</span>
       </div>
 
       <!-- 出库单表格 -->
@@ -193,7 +193,7 @@
             <template #default="{ row }">
               <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
               <div class="font-mono text-[#58685D] text-[11px] mt-0.5">{{ row.batchNo }}</div>
-              <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left mt-0.5">
+              <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left rtl:origin-right mt-0.5">
                 {{ row.pickingRule }}
               </el-tag>
             </template>
@@ -252,7 +252,7 @@
           <span>跨库调拨管理 (中心仓至区域前置仓)</span>
         </h3>
         <el-button type="primary" size="small" @click="openTransferDialog">
-          <el-icon class="mr-1"><Plus /></el-icon>
+          <el-icon class="me-1"><Plus /></el-icon>
           发起跨库调拨申请
         </el-button>
       </div>
@@ -279,7 +279,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetTransferFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredTransferOrders.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredTransferOrders.length }} 条记录</span>
       </div>
 
       <!-- 调拨卡片列表 -->
@@ -289,7 +289,7 @@
             <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2">
               <div>
                 <span class="font-mono font-bold text-[#326445]">{{ trf.transferNo }}</span>
-                <span class="text-[#8A9A8F] text-xs ml-2 font-bold">{{ trf.itemName }} ({{ trf.transferQty.toLocaleString() }} {{ trf.unit }})</span>
+                <span class="text-[#8A9A8F] text-xs ms-2 font-bold">{{ trf.itemName }} ({{ trf.transferQty.toLocaleString() }} {{ trf.unit }})</span>
               </div>
               <el-tag size="small" type="primary" effect="dark">{{ trf.currentStage }}</el-tag>
             </div>
@@ -367,7 +367,7 @@
             <span>全流程盘点管理</span>
           </h3>
           <el-button type="primary" size="small" @click="openStocktakeDialog">
-            <el-icon class="mr-1"><Plus /></el-icon>
+            <el-icon class="me-1"><Plus /></el-icon>
             录入盘点结果
           </el-button>
         </div>
@@ -393,7 +393,7 @@
           </el-select>
 
           <el-button size="small" link type="primary" @click="resetStocktakeFilter">重置</el-button>
-          <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredStocktakeRecords.length }} 条记录</span>
+          <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredStocktakeRecords.length }} 条记录</span>
         </div>
 
         <!-- 盘点表格 -->
@@ -461,7 +461,7 @@
             <span>报损与报溢管理</span>
           </h3>
           <el-button type="danger" size="small" plain @click="openLossDialog">
-            <el-icon class="mr-1"><Plus /></el-icon>
+            <el-icon class="me-1"><Plus /></el-icon>
             登记报损/报溢
           </el-button>
         </div>
@@ -489,7 +489,7 @@
           </el-select>
 
           <el-button size="small" link type="primary" @click="resetLossFilter">重置</el-button>
-          <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredLossRecords.length }} 条记录</span>
+          <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredLossRecords.length }} 条记录</span>
         </div>
 
         <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -625,7 +625,7 @@
         <el-form-item label="随车押运司机/电话">
           <div class="flex items-center gap-2 w-full">
             <el-input v-model="outboundForm.driverName" placeholder="司机姓名" />
-            <el-input v-model="outboundForm.driverPhone" placeholder="联系电话" />
+            <el-input class="bidi-ltr" v-model="outboundForm.driverPhone" placeholder="联系电话" />
           </div>
         </el-form-item>
       </el-form>

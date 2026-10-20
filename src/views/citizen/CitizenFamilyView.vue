@@ -10,8 +10,8 @@
         class="relative overflow-hidden rounded-lg p-5 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
       >
         <!-- 金色装饰弧线纹理 -->
-        <div class="absolute -right-8 -top-8 w-36 h-36 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
-        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
+        <div class="absolute -end-8 -top-8 w-36 h-36 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
+        <div class="absolute -end-4 -bottom-4 w-28 h-28 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
         <div class="relative z-10">
           <div class="flex items-center justify-between pb-3 border-b border-white/10">
@@ -38,7 +38,7 @@
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
             <button
               type="button"
-              class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all shrink-0 ml-2 group"
+              class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all shrink-0 ms-2 group"
               @click="openCardQrModal"
               :title="$t('citizenCard.showCardQr') || '出示二维码'"
             >
@@ -58,7 +58,7 @@
               <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.legalHeadName') }}</span>
               <span class="font-bold text-white text-sm">{{ citizenStore.currentFamily.headName }}</span>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.agentStore') }}</span>
               <span class="text-xs text-[#E5CEA1] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
             </div>
@@ -145,7 +145,7 @@
             </span>
           </div>
           <el-button type="primary" size="small" class="!px-2.5 !py-1 text-xs font-bold" @click="openAddMemberDialog">
-            <el-icon class="mr-1"><Plus /></el-icon>
+            <el-icon class="me-1"><Plus /></el-icon>
             {{ $t('citizenCard.registerNewMember') }}
           </el-button>
         </div>
@@ -240,27 +240,27 @@
           <!-- 业务快捷操作按钮 -->
           <div class="flex items-center gap-2 flex-wrap">
             <el-button type="warning" plain class="shadow-xs font-bold" @click="openCardQrModal">
-              <el-icon class="mr-1"><Tickets /></el-icon>
+              <el-icon class="me-1"><Tickets /></el-icon>
               {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
             </el-button>
             <el-button type="success" plain @click="navigateToService('/citizen/transfer-agent')">
-              <el-icon class="mr-1"><Switch /></el-icon>
+              <el-icon class="me-1"><Switch /></el-icon>
               {{ $t('citizen.applyTransferAgent') }}
             </el-button>
             <el-button color="#C9A13B" plain @click="navigateToService('/citizen/member-transfer')">
-              <el-icon class="mr-1"><User /></el-icon>
+              <el-icon class="me-1"><User /></el-icon>
               {{ $t('citizen.applyMemberTransfer') }}
             </el-button>
             <el-button type="primary" plain @click="navigateToService('/citizen/split-household')">
-              <el-icon class="mr-1"><Share /></el-icon>
+              <el-icon class="me-1"><Share /></el-icon>
               {{ $t('citizen.applySplitHousehold') }}
             </el-button>
             <el-button type="warning" plain @click="navigateToService('/citizen/change-head')">
-              <el-icon class="mr-1"><UserFilled /></el-icon>
+              <el-icon class="me-1"><UserFilled /></el-icon>
               {{ $t('citizen.applyChangeHead') }}
             </el-button>
             <el-button type="info" plain @click="navigateToService('/citizen/unfreeze')">
-              <el-icon class="mr-1"><Unlock /></el-icon>
+              <el-icon class="me-1"><Unlock /></el-icon>
               {{ $t('citizen.applyUnfreeze') }}
             </el-button>
           </div>
@@ -326,7 +326,7 @@
               <div class="space-y-0.5">
                 <div class="flex items-center gap-1 font-mono">
                   <span class="font-bold text-[#326445]">{{ citizenStore.currentFamily?.rationCardNo }}</span>
-                  <el-tag size="small" effect="plain" type="primary" class="scale-90 origin-left">{{ $t('citizen.rationCard') }}</el-tag>
+                  <el-tag size="small" effect="plain" type="primary" class="scale-90 origin-left rtl:origin-right">{{ $t('citizen.rationCard') }}</el-tag>
                 </div>
                 <div class="text-[11px] text-[#6B5321] font-mono flex items-center gap-1">
                   <span>{{ $t('citizen.oldPaperCardNo') }}:</span>
@@ -425,7 +425,7 @@
                 <el-input v-model="newMemberForm.name" :placeholder="$t('citizen.inputFullNamePlaceholder')" />
               </el-form-item>
               <el-form-item :label="$t('citizen.nidLabel')" required class="!mb-1">
-                <el-input v-model="newMemberForm.nationalId" :placeholder="$t('citizen.inputNidPlaceholder')" />
+                <el-input class="bidi-ltr" v-model="newMemberForm.nationalId" :placeholder="$t('citizen.inputNidPlaceholder')" />
               </el-form-item>
             </div>
 
@@ -583,7 +583,7 @@
           <div v-if="addMemberStep === 3" class="space-y-2 w-full">
             <div class="grid grid-cols-2 gap-2 w-full">
               <el-button class="!m-0 w-full" @click="addMemberStep--">
-                <el-icon class="mr-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
+                <el-icon class="rtl-mirror-icon me-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
               </el-button>
               <el-button class="!m-0 w-full" @click="addMemberDialogVisible = false">
                 {{ $t('common.cancel') }}
@@ -595,14 +595,14 @@
               :loading="addingMember"
               @click="handleSubmitAddMember"
             >
-              <el-icon class="mr-1.5"><Check /></el-icon>{{ $t('citizen.confirmAddMember') }}
+              <el-icon class="me-1.5"><Check /></el-icon>{{ $t('citizen.confirmAddMember') }}
             </el-button>
           </div>
           <!-- Step 2: 上方两按钮(上一步、取消)，下方通栏下一步 -->
           <div v-else-if="addMemberStep === 2" class="space-y-2 w-full">
             <div class="grid grid-cols-2 gap-2 w-full">
               <el-button class="!m-0 w-full" @click="addMemberStep--">
-                <el-icon class="mr-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
+                <el-icon class="rtl-mirror-icon me-1"><ArrowLeft /></el-icon>{{ $t('common.prevStep') }}
               </el-button>
               <el-button class="!m-0 w-full" @click="addMemberDialogVisible = false">
                 {{ $t('common.cancel') }}
@@ -613,7 +613,7 @@
               class="!m-0 w-full !h-10 text-sm font-semibold shadow-sm"
               @click="handleNextAddMemberStep"
             >
-              {{ $t('common.nextStep') }}<el-icon class="ml-1"><ArrowRight /></el-icon>
+              {{ $t('common.nextStep') }}<el-icon class="rtl-mirror-icon ms-1"><ArrowRight /></el-icon>
             </el-button>
           </div>
           <!-- Step 1: 取消与下一步等分双列 -->
@@ -626,7 +626,7 @@
               class="!m-0 w-full !h-10 text-sm font-semibold shadow-sm"
               @click="handleNextAddMemberStep"
             >
-              {{ $t('common.nextStep') }}<el-icon class="ml-1"><ArrowRight /></el-icon>
+              {{ $t('common.nextStep') }}<el-icon class="rtl-mirror-icon ms-1"><ArrowRight /></el-icon>
             </el-button>
           </div>
         </div>
@@ -661,7 +661,7 @@
           <el-input v-model="editForm.name" disabled />
         </el-form-item>
         <el-form-item :label="$t('citizen.contactPhone')">
-          <el-input v-model="editForm.phone" :placeholder="$t('citizen.inputPhonePlaceholder')" />
+          <el-input class="bidi-ltr" v-model="editForm.phone" :placeholder="$t('citizen.inputPhonePlaceholder')" />
         </el-form-item>
         <el-form-item :label="$t('citizen.residenceAddress')">
           <el-input v-model="editForm.residenceInfo" :placeholder="$t('citizen.inputAddressPlaceholder')" />
@@ -717,8 +717,8 @@
           class="relative overflow-hidden rounded-lg p-4 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/35 select-none"
         >
           <!-- 金色装饰弧线纹理 -->
-          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
-          <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
+          <div class="absolute -end-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
+          <div class="absolute -end-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
           <div class="relative z-10 space-y-3">
             <div class="flex items-center justify-between pb-2 border-b border-white/10">
@@ -751,7 +751,7 @@
                 <span class="font-bold text-white text-xs">{{ citizenStore.currentFamily?.headName || '艾哈迈德·哈桑' }}</span>
                 <span class="text-[10px] text-[#A7D9BC] font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: citizenStore.currentFamily?.members?.length || 0 }) || `（全户在册 ${citizenStore.currentFamily?.members?.length || 0} 人）` }}</span>
               </div>
-              <div class="text-right">
+              <div class="text-end">
                 <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
                 <span class="text-[11px] text-[#E5CEA1] font-medium truncate block" :title="citizenStore.currentFamily?.agentName">
                   {{ citizenStore.currentFamily?.agentName || '巴格达卡尔赫第一代销站' }}
@@ -839,7 +839,7 @@
 
           <!-- 动态验证密文与刷新控制 -->
           <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB]">
-            <div class="text-left font-mono">
+            <div class="text-start font-mono">
               <span class="text-[10px] text-[#8A9A8F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
               <span class="font-bold text-[#326445] text-[11px]">{{ dynamicCardCode }}</span>
             </div>

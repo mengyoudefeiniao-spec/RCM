@@ -3,12 +3,12 @@
     v-model="visible"
     :title="isEn ? 'Agent Management Process Optimization: Business Panorama Flow & Constraint Engine Overview' : '代理管理流程优化：业务全景流转与约束引擎全貌'"
     size="720px"
-    direction="rtl"
+    :direction="currentDirection === 'rtl' ? 'ltr' : 'rtl'"
     destroy-on-close
   >
-    <div class="space-y-6 text-xs text-[#43554B] pr-1">
+    <div class="space-y-6 text-xs text-[#43554B] pe-1">
       <!-- 顶部概述提示 -->
-      <div class="p-4 bg-gradient-to-r from-[#EFF5F1] to-[#EFF5F1] border border-[#C7DED0]/80 rounded-lg space-y-2">
+      <div class="p-4 bg-gradient-to-r rtl:bg-gradient-to-l from-[#EFF5F1] to-[#EFF5F1] border border-[#C7DED0]/80 rounded-lg space-y-2">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-[#326445] animate-pulse"></span>
           <h3 class="font-bold text-sm text-[#1F3326]">{{ isEn ? 'Dual-Layer Quota Pool & Fund Settlement Closed-Loop System' : '双层配额池与资金清算闭环体系' }}</h3>
@@ -190,7 +190,7 @@
         </h4>
 
         <div class="border border-[#D9E5DB] rounded-lg overflow-hidden">
-          <table class="w-full text-[11px] text-left">
+          <table class="w-full text-[11px] text-start">
             <thead class="bg-[#E9F1EB] text-[#43554B] font-bold border-b border-[#D9E5DB]">
               <tr>
                 <th class="p-2.5 w-16 text-center">{{ isEn ? 'Node' : '节点' }}</th>
@@ -241,6 +241,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { currentDirection } from '../../../locales/index.js';
 import { Connection, Lock, CircleCheckFilled, UserFilled } from '@element-plus/icons-vue';
 
 const { locale } = useI18n();

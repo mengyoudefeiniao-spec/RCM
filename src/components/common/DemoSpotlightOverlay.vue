@@ -74,10 +74,10 @@
           }"
         >
           <!-- 四角金色雷达准星装饰 -->
-          <span class="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-[#D3AF62]" />
-          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-[#D3AF62]" />
-          <span class="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-[#D3AF62]" />
-          <span class="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-[#D3AF62]" />
+          <span class="absolute -top-1 -start-1 w-2.5 h-2.5 border-t-2 border-s-2 border-[#D3AF62]" />
+          <span class="absolute -top-1 -end-1 w-2.5 h-2.5 border-t-2 border-e-2 border-[#D3AF62]" />
+          <span class="absolute -bottom-1 -start-1 w-2.5 h-2.5 border-b-2 border-s-2 border-[#D3AF62]" />
+          <span class="absolute -bottom-1 -end-1 w-2.5 h-2.5 border-b-2 border-e-2 border-[#D3AF62]" />
 
           <!-- 动态呼吸光圈 -->
           <div class="absolute inset-0 rounded-lg animate-ping opacity-20 border-2 border-[#D3AF62]" />

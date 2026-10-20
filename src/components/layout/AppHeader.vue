@@ -116,7 +116,7 @@
       </div>
 
       <!-- 右侧区域：语言切换、用户信息与退出系统 (针对移动端自适应紧凑化) -->
-      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ms-auto">
         <!-- 国际化语言切换选择器 -->
         <LanguageSwitcher />
 
@@ -141,7 +141,7 @@
             >
               <el-icon :size="15"><UserFilled /></el-icon>
               <!-- 角色小圆点徽标 -->
-              <span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border border-[#FDF3E0]" :class="roleDotColor"></span>
+              <span class="absolute top-0.5 end-0.5 w-2 h-2 rounded-full border border-[#FDF3E0]" :class="roleDotColor"></span>
             </button>
           </div>
           <template #dropdown>
@@ -151,15 +151,15 @@
               </div>
               <el-dropdown-item command="minister_center">
                 <span class="font-bold text-[#326445]">● {{ $t('roles.ministerCenter') }}</span>
-                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.ministerDuty') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ms-3">{{ $t('roles.ministerDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="deputy_minister">
                 <span class="font-bold text-[#C04442]">● {{ $t('roles.deputyMinister') }}</span>
-                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.deputyDuty') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ms-3">{{ $t('roles.deputyDuty') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="director_planning">
                 <span class="font-bold text-[#D3AF62]">● {{ $t('roles.directorPlanning') }}</span>
-                <span class="text-[11px] text-[#8A9A8F] block ml-3">{{ $t('roles.directorDuty') }}</span>
+                <span class="text-[11px] text-[#8A9A8F] block ms-3">{{ $t('roles.directorDuty') }}</span>
               </el-dropdown-item>
               <div class="px-3 py-1.5 text-[11px] font-bold text-[#8A9A8F] border-t border-b border-[#E9F1EB] mt-1">
                 {{ $t('roles.businessRoles') }}

@@ -164,7 +164,7 @@
           </div>
           <el-tag size="small" type="primary" effect="plain" class="font-mono">SCM</el-tag>
         </div>
-        <div ref="fulfillmentChartRef" class="w-full h-76"></div>
+        <div ref="fulfillmentChartRef" class="bidi-ltr w-full h-76"></div>
       </div>
 
       <div class="lg:col-span-5 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
@@ -180,7 +180,7 @@
           </div>
           <el-tag size="small" type="success" effect="plain" class="font-mono">{{ $t('dashboard.agent.tagStockModel') }}</el-tag>
         </div>
-        <div ref="inventoryStatusChartRef" class="w-full h-76"></div>
+        <div ref="inventoryStatusChartRef" class="bidi-ltr w-full h-76"></div>
       </div>
     </div>
 
@@ -201,7 +201,7 @@
           </div>
           <el-tag size="small" type="info" effect="plain" class="font-mono">{{ $t('dashboard.agent.tagStorageDist') }}</el-tag>
         </div>
-        <div ref="warehouseCapacityChartRef" class="w-full h-76"></div>
+        <div ref="warehouseCapacityChartRef" class="bidi-ltr w-full h-76"></div>
       </div>
 
       <div class="lg:col-span-7 bg-white p-4.5 rounded-lg border border-[#D9E5DB]/80 shadow-2xs space-y-3">
@@ -217,7 +217,7 @@
           </div>
           <el-tag size="small" type="danger" effect="plain" class="font-mono">{{ $t('dashboard.agent.tagCompliance') }}</el-tag>
         </div>
-        <div ref="lossRadarChartRef" class="w-full h-76"></div>
+        <div ref="lossRadarChartRef" class="bidi-ltr w-full h-76"></div>
       </div>
     </div>
 
@@ -250,7 +250,7 @@
           </div>
         </div>
       </div>
-      <div ref="dailyThroughputChartRef" class="w-full h-80"></div>
+      <div ref="dailyThroughputChartRef" class="bidi-ltr w-full h-80"></div>
     </div>
   </div>
 </template>

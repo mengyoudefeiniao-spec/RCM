@@ -75,6 +75,38 @@ export function commodityLabel(t, name) {
   return lookup(t, 'dataLabels.commodity', name, COMMODITY_KEYS);
 }
 
+const BUSINESS_KEYS = {
+  '变更户主': 'sourceChangeHead', 'Change Head': 'sourceChangeHead',
+  '申请解冻': 'sourceUnfreeze', 'Unfreeze Card': 'sourceUnfreeze',
+  '申请分户': 'sourceSplit', 'Split Household': 'sourceSplit',
+  '成员转移': 'sourceMemberTransfer', 'Transfer Member': 'sourceMemberTransfer'
+};
+
+export function businessLabel(t, name) {
+  return lookup(t, 'review', name, BUSINESS_KEYS);
+}
+
+const COMPLAINT_KEYS = {
+  '代销点缺斤短两/克扣': 'typeShortfall', 'Short Weight / Deductions': 'typeShortfall',
+  '服务态度差/排队耗时': 'typeService', 'Poor Service / Long Waiting Queues': 'typeService',
+  '物资品质口感异议': 'typeQuality', '物资品质/口感异议': 'typeQuality', 'Quality / Odor Complaints': 'typeQuality',
+  '私自加价/违规收费': 'typeOvercharge', 'Unauthorized Overcharge / Illegal Fees': 'typeOvercharge',
+  '配给份额核定有误': 'typeQuotaError', 'Quota Calculation Dispute': 'typeQuotaError',
+  '违规收费': 'typeOvercharge', 'Overcharge': 'typeOvercharge',
+  '少发漏发': 'typeShortfall', 'Shortfall': 'typeShortfall',
+  '物资品质': 'typeQuality', 'Quality': 'typeQuality',
+  '排队耗时': 'typeService', 'Long Waiting': 'typeService'
+};
+
+export function dashboardComplaintLabel(t, name) {
+  return lookup(t, 'dashboard.admin', name, COMPLAINT_KEYS);
+}
+
+export function weekLabel(t, name) {
+  const match = /^(?:第(\d+)周|Week\s+(\d+))$/.exec(name || '');
+  return match ? t('dataLabels.week', { count: match[1] || match[2] }) : name;
+}
+
 /** 年龄段: 0-14岁未成年人 → Ages 0-14 */
 export function ageLabel(t, name) {
   return lookup(t, 'dataLabels.age', name, AGE_KEYS);
@@ -97,9 +129,23 @@ export function monthLabel(t, locale, name) {
 
 /** 省份名称: 巴格达省 → Baghdad (非中文语言使用 enName) */
 export function provinceLabel(t, locale, nameOrProv) {
-  const prov = typeof nameOrProv === 'string' ? getProvinceStatsByName(nameOrProv) : nameOrProv;
+  const prov = typeof nameOrProv === 'string'
+    ? getProvinceStatsByName(nameOrProv)
+      || getProvinceStatsByName(nameOrProv.replace(/ Province$/, ''))
+      || getProvinceStatsByName(nameOrProv.match(/^[^\s(]+省/)?.[0])
+    : nameOrProv;
   if (!prov) return typeof nameOrProv === 'string' ? nameOrProv : '';
   if (locale === 'zh') return prov.name;
+  const provinceKeys = {
+    '巴格达省': 'baghdad', '尼尼微省': 'nineveh', '巴士拉省': 'basra',
+    '迪亚拉省': 'diyala', '基尔库克省': 'kirkuk', '安巴尔省': 'anbar',
+    '埃尔比勒省': 'erbil', '苏莱曼尼亚省': 'sulaymaniyah'
+  };
+  const key = provinceKeys[prov.name];
+  if (key) {
+    const translated = t(`dataLabels.provinces.${key}`);
+    if (translated !== `dataLabels.provinces.${key}`) return translated;
+  }
   return prov.enName || prov.name;
 }
 

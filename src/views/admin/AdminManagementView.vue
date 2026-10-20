@@ -50,7 +50,7 @@
           <template #label>
             <span class="flex items-center gap-1.5">
               <span>{{ $t('admin.tabCards') || '公民配给卡管理' }}</span>
-              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left">{{ $t('admin.electronicCard') || '电子卡' }}</el-tag>
+              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left rtl:origin-right">{{ $t('admin.electronicCard') || '电子卡' }}</el-tag>
             </span>
           </template>
           <div class="py-3.5 space-y-3.5">
@@ -62,14 +62,14 @@
                     <span class="flex items-center gap-1.5 font-medium">
                       <el-icon><CreditCard /></el-icon>
                       <span>{{ $t('admin.viewModeCards') || '配给卡总账' }}</span>
-                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-[#E9F1EB] text-[#58685D] text-[11px] font-mono">{{ filteredCards.length }}</span>
+                      <span class="ms-1 px-1.5 py-0.2 rounded-full bg-[#E9F1EB] text-[#58685D] text-[11px] font-mono">{{ filteredCards.length }}</span>
                     </span>
                   </el-radio-button>
                   <el-radio-button value="members">
                     <span class="flex items-center gap-1.5 font-medium">
                       <el-icon><User /></el-icon>
                       <span>{{ $t('admin.viewModeMembers') || '在册家庭成员清单' }}</span>
-                      <span class="ml-1 px-1.5 py-0.2 rounded-full bg-[#E1F4E4] text-[#24483A] text-[11px] font-mono">{{ currentFamilyMembers.length }}</span>
+                      <span class="ms-1 px-1.5 py-0.2 rounded-full bg-[#E1F4E4] text-[#24483A] text-[11px] font-mono">{{ currentFamilyMembers.length }}</span>
                     </span>
                   </el-radio-button>
                 </el-radio-group>
@@ -92,6 +92,7 @@
                 <div class="flex flex-wrap items-center gap-2.5">
                   <el-input
                     v-model="cardQuery.cardNo"
+                    class="bidi-ltr"
                     :placeholder="$t('admin.cardNoPlaceholder') || '配给卡号 (RC-...)'"
                     style="width: 170px"
                     size="small"
@@ -219,7 +220,7 @@
                           class="hover:scale-110 transition-transform shadow-2xs"
                           @click="handleReissueCard(row)"
                         >
-                          <el-icon><RefreshRight /></el-icon>
+                          <el-icon class="rtl-mirror-icon"><RefreshRight /></el-icon>
                         </el-button>
                       </el-tooltip>
                     </div>
@@ -244,7 +245,7 @@
             <!-- 模式 2: 在册家庭成员名册 (Members) (与公民 APP 移动视口 Family Members 1:1 镜像) -->
             <div v-show="cardViewMode === 'members'" class="space-y-3.5">
               <!-- 顶部当前家庭信息摘要横幅 -->
-              <div class="bg-gradient-to-r from-[#EFF5F1] via-[#EFF5F1] to-[#F3F8F4] p-3.5 rounded-lg border border-[#E1F4E4] flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#EFF5F1] via-[#EFF5F1] to-[#F3F8F4] p-3.5 rounded-lg border border-[#E1F4E4] flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-lg bg-[#2F5B44] text-white flex items-center justify-center font-bold text-base shadow-sm">
                     <el-icon><UserFilled /></el-icon>
@@ -289,7 +290,7 @@
                   <template #default="{ row }">
                     <div class="flex items-center gap-1.5">
                       <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
-                      <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left">
+                      <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right">
                         {{ $t('citizenCard.headTag') || '户主' }}
                       </el-tag>
                     </div>
@@ -822,7 +823,7 @@
           <template #label>
             <span class="flex items-center gap-1.5">
               <span>{{ $t('admin.tabReconciliation') || '财政对账与清算' }}</span>
-              <el-tag size="small" type="success" effect="dark" class="scale-90 origin-left font-mono">{{ $t('reconciliation.balancedTag') || '100% 平衡' }}</el-tag>
+              <el-tag size="small" type="success" effect="dark" class="scale-90 origin-left rtl:origin-right font-mono">{{ $t('reconciliation.balancedTag') || '100% 平衡' }}</el-tag>
             </span>
           </template>
           <div class="py-2">
@@ -837,7 +838,7 @@
           <template #label>
             <span class="flex items-center gap-1.5">
               <span>{{ $t('admin.tabRegulations') || '官方业务法规指南' }}</span>
-              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left font-mono font-bold">FAQ</el-tag>
+              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left rtl:origin-right font-mono font-bold">FAQ</el-tag>
             </span>
           </template>
           <div class="py-2">
@@ -903,7 +904,7 @@
             <el-input v-model="establishForm.manager" placeholder="姓名" />
           </el-form-item>
           <el-form-item label="联系电话">
-            <el-input v-model="establishForm.phone" placeholder="+964 770 000 0000" />
+            <el-input class="bidi-ltr" v-model="establishForm.phone" placeholder="+964 770 000 0000" />
           </el-form-item>
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -941,7 +942,7 @@
               {{ $t('admin.regionInfo') || '辖区分部' }}: {{ formatDistrict(selectedCardForFreeze.district) }} · {{ formatProvince(selectedCardForFreeze.province) }}
             </div>
           </div>
-          <div class="text-right">
+          <div class="text-end">
             <span class="text-[10px] text-[#8A9A8F] block">{{ $t('admin.currentMembersCount') || '在册成员总数' }}</span>
             <span class="font-bold font-mono text-[#2F5B44] text-sm">{{ getFreezeTargetMembers().length }} {{ $t('admin.personUnit') || '人' }}</span>
           </div>
@@ -981,7 +982,7 @@
             <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="130">
               <template #default="{ row }">
                 <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
-                <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left ml-1">
+                <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right ms-1">
                   {{ $t('citizenCard.headTag') || '户主' }}
                 </el-tag>
               </template>
@@ -1148,7 +1149,7 @@
       <el-form label-position="top" :model="agentForm" class="space-y-2 text-xs">
         <el-form-item label="网点名称" required><el-input v-model="agentForm.name" size="small" /></el-form-item>
         <el-form-item label="负责人" required><el-input v-model="agentForm.manager" size="small" /></el-form-item>
-        <el-form-item label="联系电话"><el-input v-model="agentForm.phone" size="small" /></el-form-item>
+        <el-form-item label="联系电话"><el-input class="bidi-ltr" v-model="agentForm.phone" size="small" /></el-form-item>
         <div class="grid grid-cols-2 gap-3">
           <el-form-item label="服务户数"><el-input-number v-model="agentForm.servedHouseholds" :min="10" :max="2500" class="w-full" size="small" /></el-form-item>
           <el-form-item label="仓储容积 (吨)"><el-input-number v-model="agentForm.storageCapacity" :min="5" :max="200" class="w-full" size="small" /></el-form-item>
@@ -1215,7 +1216,7 @@
             <el-input v-model="warehouseForm.manager" placeholder="姓名" size="small" />
           </el-form-item>
           <el-form-item label="联络电话">
-            <el-input v-model="warehouseForm.phone" placeholder="+964 780 000 0000" size="small" />
+            <el-input class="bidi-ltr" v-model="warehouseForm.phone" placeholder="+964 780 000 0000" size="small" />
           </el-form-item>
         </div>
 

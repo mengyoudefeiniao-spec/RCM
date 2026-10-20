@@ -10,31 +10,43 @@ import elAr from 'element-plus/es/locale/lang/ar';
 import zh from './zh.js';
 import en from './en.js';
 import ar from './ar.js';
-import ku from './ku.js';
+import ckb from './ku.js';
+import myMessages from './my.js';
+
+// ku/kmr is Kurmanji (Latin script); the existing Arabic-script catalog is Sorani.
+// sdh is recorded here for future catalogs, but is not offered without translations.
+export const LANGUAGE_DIRECTIONS = Object.freeze({
+  zh: 'ltr', en: 'ltr', ar: 'rtl', ckb: 'rtl', sdh: 'rtl', kmr: 'ltr', ku: 'ltr'
+});
 
 export const SUPPORTED_LANGUAGES = [
-  { code: 'zh', name: '简体中文', nativeName: '中文 (ZH)', flag: '🇨🇳' },
-  { code: 'en', name: 'English', nativeName: 'English (US)', flag: '🇺🇸' },
-  { code: 'ar', name: 'العربية', nativeName: 'العربية (IQ)', flag: '🇮🇶' },
-  { code: 'ku', name: 'Kurdî', nativeName: 'کوردی (KU)', flag: '☀️' }
+  { code: 'zh', name: '简体中文', nativeName: '中文 (ZH)', flag: '🇨🇳', dir: 'ltr' },
+  { code: 'en', name: 'English', nativeName: 'English (US)', flag: '🇺🇸', dir: 'ltr' },
+  { code: 'ar', name: 'العربية', nativeName: 'العربية (IQ)', flag: '🇮🇶', dir: 'rtl' },
+  { code: 'ckb', name: 'کوردی', nativeName: 'سۆرانی (CKB)', flag: '☀️', dir: 'rtl' }
 ];
 
-const savedLang = localStorage.getItem('rcm_language') || 'zh';
+const storedLang = localStorage.getItem('rcm_language') || 'zh';
+// Previous versions used `ku` for the Sorani catalog. Migrate that saved choice.
+const migratedLang = storedLang === 'ku' ? 'ckb' : storedLang;
+const savedLang = SUPPORTED_LANGUAGES.some(({ code }) => code === migratedLang) ? migratedLang : 'zh';
+if (storedLang !== savedLang) localStorage.setItem('rcm_language', savedLang);
 
 export const i18n = createI18n({
   legacy: false, // Composition API 模式
   locale: savedLang,
   fallbackLocale: 'zh',
   messages: {
-    zh,
-    en,
-    ar,
-    ku
+    zh: { ...zh, my: myMessages.zh },
+    en: { ...en, my: myMessages.en },
+    ar: { ...ar, my: myMessages.ar },
+    ckb: { ...ckb, my: myMessages.ckb }
   }
 });
 
 // 当前响应式语言代码
 export const currentLang = ref(savedLang);
+export const currentDirection = computed(() => LANGUAGE_DIRECTIONS[currentLang.value] || 'ltr');
 
 // Element Plus 语言包映射联动
 export const elementLocale = computed(() => {
@@ -42,7 +54,7 @@ export const elementLocale = computed(() => {
     case 'en':
       return elEn;
     case 'ar':
-    case 'ku':
+    case 'ckb':
       return elAr;
     case 'zh':
     default:
@@ -52,18 +64,17 @@ export const elementLocale = computed(() => {
 
 /**
  * 切换全局语言
- * 确保各语言切换时保持全局骨架与对齐布局一致（统一维持标准现代化 LTR 容器布局，避免左右颠倒导致UI错位）
- * @param {string} lang 'zh' | 'en' | 'ar' | 'ku'
+ * 根据语言设置文档阅读与布局方向。
+ * @param {string} lang 'zh' | 'en' | 'ar' | 'ckb'
  */
 export function setLanguage(lang) {
-  if (!['zh', 'en', 'ar', 'ku'].includes(lang)) return;
+  if (!SUPPORTED_LANGUAGES.some(({ code }) => code === lang)) return;
 
   currentLang.value = lang;
   i18n.global.locale.value = lang;
   localStorage.setItem('rcm_language', lang);
 
-  // 保持全局容器排版走向严格一致 (dir="ltr")，防止左右镜像颠倒破坏导航与栅格系统
-  document.documentElement.setAttribute('dir', 'ltr');
+  document.documentElement.setAttribute('dir', LANGUAGE_DIRECTIONS[lang]);
   document.documentElement.setAttribute('lang', lang);
 
   // 分发全局语言切换事件，通知业务 Store 响应式刷新对应语言的测试数据
@@ -74,6 +85,6 @@ export function setLanguage(lang) {
 
 // 页面初始化时执行一致性初始化
 (function initLayoutDirection() {
-  document.documentElement.setAttribute('dir', 'ltr');
+  document.documentElement.setAttribute('dir', LANGUAGE_DIRECTIONS[savedLang] || 'ltr');
   document.documentElement.setAttribute('lang', savedLang);
 })();

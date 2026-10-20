@@ -1,7 +1,7 @@
 <template>
   <div class="agent-real-gis-map relative bg-[#1B3123] rounded-lg border border-[#D9E5DB]/90 shadow-sm overflow-hidden">
     <!-- 地图顶端控制与状态信息栏 -->
-    <div class="absolute top-3 left-3 right-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="absolute top-3 start-3 end-3 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
       <div class="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#D9E5DB] shadow-md text-xs">
         <span class="w-2.5 h-2.5 rounded-full bg-[#3E9B68] animate-ping"></span>
         <span class="font-bold text-[#1F3326]">伊拉克真实在线地理信息系统 (GIS)</span>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- 地图右下角热力密度图例 -->
-    <div class="absolute bottom-3 right-3 z-[1000] pointer-events-none">
+    <div class="absolute bottom-3 end-3 z-[1000] pointer-events-none">
       <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-3 py-2 rounded-lg border border-[#D9E5DB] text-[11px] shadow-md space-y-1">
         <div class="font-bold text-[#1F3326] flex items-center justify-between gap-3">
           <span>管辖公民数量热力密度</span>
@@ -47,7 +47,7 @@
         </div>
         <div class="flex items-center gap-1.5">
           <span class="text-[10px] text-[#8A9A8F]">低密</span>
-          <div class="w-24 h-2.5 rounded-full bg-gradient-to-r from-[#5C8A6B] via-[#6FBF92] via-[#DFC08B] to-[#C04442]"></div>
+          <div class="w-24 h-2.5 rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-[#5C8A6B] via-[#6FBF92] via-[#DFC08B] to-[#C04442]"></div>
           <span class="text-[10px] text-[#C04442] font-bold">高密</span>
         </div>
       </div>

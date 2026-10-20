@@ -26,6 +26,7 @@ export default {
     "success": "Operation Successful",
     "failed": "Operation Failed",
     "status": "Status",
+    "actions": "Actions",
     "action": "Action",
     "all": "All",
     "approved": "Approved",
@@ -1503,7 +1504,15 @@ export default {
     "actionHandleRestoration": "Restore",
     "actionHandleReapply": "Re-apply",
     "pageInfo": "Page {current} / {total}",
-    "loadAgentsFailed": "Failed to load agent outlet data"
+    "loadAgentsFailed": "Failed to load agent outlet data",
+    "summaryCoverage": "19 Provinces / 600 Warehouses",
+    "summaryArticle140": "Article 140 Centers",
+    "summaryPriorityRegions": "Kirkuk / Nineveh / Diyala flagged",
+    "summaryContractedHouseholds": "Contracted Households",
+    "summaryHouseholdLimit": "1,500 Households Limit",
+    "summaryLicensingWorkorders": "Licensing Workorders",
+    "summaryActive": "Active",
+    "summaryAuditsFees": "Audits & Pending Fees",
   },
   "agentG2B": {
     "searchPlaceholder": "Search order no / pickup voucher / warehouse",
@@ -2723,7 +2732,38 @@ export default {
       "householdsPerOutlet": "families/outlet"
     },
     "pointWarehouse": "{province} Ration Storage Center {seq}",
-    "pointAgent": "{province} Agent Outlet {seq}"
+    "pointAgent": "{province} Agent Outlet {seq}",
+    "week": "Week {count}",
+    "provinces": {
+      "baghdad": "Baghdad",
+      "nineveh": "Nineveh",
+      "basra": "Basra",
+      "diyala": "Diyala",
+      "kirkuk": "Kirkuk",
+      "anbar": "Anbar",
+      "erbil": "Erbil",
+      "sulaymaniyah": "Sulaymaniyah"
+    },
+    "dashboard": {
+      "areaKarkh": "Karkh, Baghdad",
+      "areaAshar": "Ashar, Basra",
+      "areaKhanaqin": "Khanaqin, Diyala",
+      "areaMosul": "Mosul, Nineveh",
+      "agent14": "Food Supply Station No. 14",
+      "agentCoastal": "Coastal Agent Outlet No. 2",
+      "agentKhanaqin": "Khanaqin Central Agent Outlet",
+      "agentMosul": "Mosul Distribution Station No. 3",
+      "personRashid": "Rashid Majid",
+      "personSabah": "Sabah Qasim",
+      "personMohammed": "Mohammed Ali",
+      "personFatima": "Fatima Noor",
+      "resultRefund": "Illegal overcharge refunded; formal reprimand issued",
+      "resultRice": "Verified and supplied 2 kg of rice on the same day",
+      "resultSample": "Sample sent to quality laboratory",
+      "resultCounters": "Two additional QR verification counters opened",
+      "statusResolved": "Resolved",
+      "statusProcessing": "Processing"
+    },
   },
   "scrollHome": {
     "nav": {

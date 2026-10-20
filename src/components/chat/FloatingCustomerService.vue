@@ -8,7 +8,7 @@
         :class="[
           isAppMode
             ? 'opacity-90 hover:opacity-100 active:scale-95'
-            : 'right-3.5 bottom-20 sm:right-6 sm:bottom-6'
+            : 'end-3.5 bottom-20 sm:end-6 sm:bottom-6'
         ]"
         :style="isAppMode ? fabAppStyle : undefined"
         @click="openChatWindow"
@@ -16,9 +16,9 @@
         <!-- 悬浮提示气泡 (仅宽屏桌面模式显示，APP模式下隐藏避免横向遮挡) -->
         <div
           v-if="!isAppMode"
-          class="hidden sm:flex items-center mr-3 px-3.5 py-1.5 rounded-full bg-white text-[#326445] text-xs font-medium shadow-[0_3px_18px_-6px_rgba(58,77,62,0.18)] backdrop-blur-md border border-[#E5CEA1] transform translate-x-2 group-hover:translate-x-0 transition-all duration-300"
+          class="hidden sm:flex items-center me-3 px-3.5 py-1.5 rounded-full bg-white text-[#326445] text-xs font-medium shadow-[0_3px_18px_-6px_rgba(58,77,62,0.18)] backdrop-blur-md border border-[#E5CEA1] transform translate-x-2 rtl:-translate-x-2 group-hover:translate-x-0 transition-all duration-300"
         >
-          <span class="inline-block w-2 h-2 rounded-full bg-[#D3AF62] mr-2 animate-pulse"></span>
+          <span class="inline-block w-2 h-2 rounded-full bg-[#D3AF62] me-2 animate-pulse"></span>
           <span>{{ $t('chat.fabTitle') }}</span>
         </div>
 
@@ -40,7 +40,7 @@
           <!-- 在线状态角标 (APP模式下等比微型化) -->
           <span
             class="absolute flex"
-            :class="isAppMode ? '-top-0.5 -right-0.5 h-2.5 w-2.5' : '-top-1 -right-1 h-3.5 w-3.5'"
+            :class="isAppMode ? '-top-0.5 -end-0.5 h-2.5 w-2.5' : '-top-1 -end-1 h-3.5 w-3.5'"
           >
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D3AF62] opacity-75"></span>
             <span
@@ -61,10 +61,10 @@
         class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-lg overflow-hidden border border-[#E5CEA1] backdrop-blur-md transition-all duration-300"
         :class="[
           isExpanded
-            ? 'right-2 bottom-2 sm:right-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[740px] h-[90vh] sm:h-[88vh] max-h-[820px]'
+            ? 'end-2 bottom-2 sm:end-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[740px] h-[90vh] sm:h-[88vh] max-h-[820px]'
             : (isAppMode
                 ? 'h-[72vh]'
-                : 'right-2 bottom-2 sm:right-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[480px] h-[86vh] sm:h-[84vh] max-h-[720px]')
+                : 'end-2 bottom-2 sm:end-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[480px] h-[86vh] sm:h-[84vh] max-h-[720px]')
         ]"
         :style="isAppMode ? chatWindowAppStyle : undefined"
       >
@@ -85,7 +85,7 @@
                 </el-icon>
               </div>
               <span
-                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                class="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full border-2 border-white"
                 :class="serviceMode === 'HUMAN' ? 'bg-[#DFC08B]' : 'bg-[#D3AF62] animate-pulse'"
               ></span>
             </div>
@@ -139,7 +139,7 @@
               :title="$t('chat.clearHistory')"
               @click="clearHistoryConfirm"
             >
-              <el-icon class="text-base"><RefreshRight /></el-icon>
+              <el-icon class="rtl-mirror-icon text-base"><RefreshRight /></el-icon>
             </button>
 
             <!-- 窗口大小缩放 (大屏显示) -->
@@ -195,10 +195,10 @@
                   v-for="(item, idx) in currentPrompts"
                   :key="idx"
                   type="button"
-                  class="px-3 py-1.5 bg-[#F3F8F4] hover:bg-[#FDF3E0] hover:text-[#326445] hover:border-[#D3AF62] text-[#58685D] border border-[#D9E5DB] rounded-lg text-xs transition duration-150 cursor-pointer text-left"
+                  class="px-3 py-1.5 bg-[#F3F8F4] hover:bg-[#FDF3E0] hover:text-[#326445] hover:border-[#D3AF62] text-[#58685D] border border-[#D9E5DB] rounded-lg text-xs transition duration-150 cursor-pointer text-start"
                   @click="handleQuickQuestion(item.question)"
                 >
-                  <span class="text-[#D3AF62] mr-1 font-bold">#{{ item.tag }}</span>
+                  <span class="text-[#D3AF62] me-1 font-bold">#{{ item.tag }}</span>
                   <span>{{ item.question }}</span>
                 </button>
               </div>
@@ -216,9 +216,9 @@
               v-if="msg.role === 'user'"
               class="flex justify-end items-start space-x-2.5"
             >
-              <div class="max-w-[82%] rounded-lg rounded-tr-xs bg-gradient-to-r from-[#326445] to-[#2F5B44] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
+              <div class="max-w-[82%] rounded-lg rounded-tr-xs bg-gradient-to-r rtl:bg-gradient-to-l from-[#326445] to-[#2F5B44] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
                 {{ msg.content }}
-                <div class="text-[10px] text-[#C7DED0] text-right mt-1 font-mono">
+                <div class="text-[10px] text-[#C7DED0] text-end mt-1 font-mono">
                   {{ formatTime(msg.timestamp) }}
                 </div>
               </div>
@@ -250,7 +250,7 @@
                     class="pt-3 border-t border-[#E9F1EB] space-y-2"
                   >
                     <div class="flex items-center text-xs font-semibold text-[#43554B]">
-                      <el-icon class="text-[#326445] mr-1"><DocumentCopy /></el-icon>
+                      <el-icon class="text-[#326445] me-1"><DocumentCopy /></el-icon>
                       <span>{{ $t('chat.sourcesTitle') }} ({{ msg.sources.length }}{{ $t('chat.items') }})：</span>
                     </div>
 
@@ -282,7 +282,7 @@
                             @click="viewSourceDetail(source)"
                           >
                             <span>{{ $t('chat.viewClause') }}</span>
-                            <el-icon class="ml-0.5"><Right /></el-icon>
+                            <el-icon class="rtl-mirror-icon ms-0.5"><Right /></el-icon>
                           </button>
                         </div>
                       </div>
@@ -300,7 +300,7 @@
                         v-for="(sq, sIdx) in msg.suggestQuestions"
                         :key="sIdx"
                         type="button"
-                        class="px-2.5 py-1 bg-[#E9F1EB] hover:bg-[#EFF5F1] hover:text-[#2A5440] text-[#43554B] rounded-md text-xs transition cursor-pointer text-left"
+                        class="px-2.5 py-1 bg-[#E9F1EB] hover:bg-[#EFF5F1] hover:text-[#2A5440] text-[#43554B] rounded-md text-xs transition cursor-pointer text-start"
                         @click="handleQuickQuestion(sq)"
                       >
                         {{ sq }}
@@ -374,7 +374,7 @@
 
                 <div class="bg-[#FDF3E0]/80 border border-[#F2E3C6]/80 rounded-lg rounded-tl-xs p-4 shadow-xs text-[13px] text-[#1F3326] leading-relaxed whitespace-pre-wrap break-words">
                   {{ msg.content }}
-                  <div class="text-[10px] text-[#8A9A8F] text-right mt-1.5 font-mono">
+                  <div class="text-[10px] text-[#8A9A8F] text-end mt-1.5 font-mono">
                     {{ formatTime(msg.timestamp) }}
                   </div>
                 </div>
@@ -384,7 +384,7 @@
             <!-- 4. 会话上下文同步完成提示卡片 -->
             <div
               v-else-if="msg.role === 'system'"
-              class="my-2 p-3 rounded-lg bg-gradient-to-r from-[#FDF3E0] via-[#FDF3E0] to-[#FDF3E0] border border-[#F2E3C6]/90 text-center text-xs text-[#5A4718] space-y-1.5 shadow-2xs"
+              class="my-2 p-3 rounded-lg bg-gradient-to-r rtl:bg-gradient-to-l from-[#FDF3E0] via-[#FDF3E0] to-[#FDF3E0] border border-[#F2E3C6]/90 text-center text-xs text-[#5A4718] space-y-1.5 shadow-2xs"
             >
               <div class="flex items-center justify-center space-x-1 font-semibold text-[#6B5321]">
                 <el-icon class="text-[#C9A13B]"><CircleCheck /></el-icon>
@@ -496,7 +496,7 @@
     <el-drawer
       v-model="isSourceDrawerVisible"
       :title="$t('chat.drawerTitle')"
-      direction="rtl"
+      :direction="currentDirection === 'rtl' ? 'ltr' : 'rtl'"
       :size="isExpanded ? '540px' : '90%'"
       destroy-on-close
     >
@@ -603,6 +603,7 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { currentDirection } from '../../locales/index.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   ChatDotRound,
@@ -636,6 +637,7 @@ import {
 
 const route = useRoute();
 const { t, locale, tm } = useI18n();
+const contentLang = computed(() => locale.value === 'ckb' ? 'ku' : locale.value);
 
 // 1. 窗口显隐与形态控制
 const isOpen = ref(false);
@@ -677,13 +679,13 @@ const fabAppStyle = computed(() => {
   if (!isAppMode.value) return {};
   if (windowWidth.value < 640) {
     return {
-      right: '12px',
+      insetInlineEnd: '12px',
       bottom: '68px'
     };
   }
   // 桌面端 Pixel 9 仿真视口预览：手机视口居中宽 412px，浮窗严格固定在手机视口右内侧
   return {
-    right: 'calc(50vw - 192px)',
+    insetInlineEnd: 'calc(50vw - 192px)',
     bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 68px)'
   };
 });
@@ -693,8 +695,8 @@ const chatWindowAppStyle = computed(() => {
   if (!isAppMode.value) return {};
   if (windowWidth.value < 640) {
     return {
-      left: '10px',
-      right: '10px',
+      insetInlineStart: '10px',
+      insetInlineEnd: '10px',
       bottom: '64px',
       maxHeight: 'calc(100vh - 120px)'
     };
@@ -702,8 +704,7 @@ const chatWindowAppStyle = computed(() => {
   // 桌面端 Pixel 9 仿真视口预览：居中严密包裹在 412px 视口内
   return {
     width: '388px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    insetInlineStart: 'calc(50% - 194px)',
     bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 64px)',
     maxHeight: 'calc(min(924px, 100vh - 20px) - 100px)'
   };
@@ -764,6 +765,7 @@ const messages = ref([
 // 核心多语言同步方法：智能助手内所有的聊天记录（用户提问、AI 回答、系统提示、人工客服消息）均自动切换为对应语言
 function syncChatMessagesLanguage(newLang) {
   if (!newLang) newLang = locale.value;
+  if (newLang === 'ckb') newLang = 'ku';
   thinkingText.value = t('chat.retrieving') || '正在检索政策依据...';
 
   // 1. 更新初始问候语
@@ -916,7 +918,7 @@ async function handleSendMessage() {
   const userMsg = {
     id: `USER-${Date.now()}`,
     role: 'user',
-    content: (topic && topic.userQuestion && topic.userQuestion[locale.value]) ? topic.userQuestion[locale.value] : query,
+    content: (topic && topic.userQuestion && topic.userQuestion[contentLang.value]) ? topic.userQuestion[contentLang.value] : query,
     topicKey: topic ? topic.key : '',
     contentMap: topic ? { ...topic.userQuestion } : { zh: query, en: query, ar: query, ku: query },
     timestamp: new Date().toISOString()
@@ -1068,7 +1070,7 @@ async function triggerHumanHandoff(reason = 'USER_TRIGGER', targetMsg = null) {
     currentTicketNo.value = res.ticketNo;
 
     const bannerText = t('chat.humanBanner');
-    const agentName = res.agentNameMap?.[locale.value] || res.agent.name;
+    const agentName = res.agentNameMap?.[contentLang.value] || res.agent.name;
 
     messages.value.push({
       id: `SYS-${Date.now()}`,

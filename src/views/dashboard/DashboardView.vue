@@ -44,7 +44,7 @@
 
           <!-- 刷新按钮 -->
           <el-button size="small" @click="handleRefresh" :loading="refreshing">
-            <el-icon class="mr-1"><Refresh /></el-icon>
+            <el-icon class="me-1"><Refresh /></el-icon>
             {{ $t('dashboard.refresh') || '刷新数据' }}
           </el-button>
         </div>

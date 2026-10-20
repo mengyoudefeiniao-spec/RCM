@@ -20,7 +20,7 @@
           <el-radio-button value="snapshot">{{ $t('warehouse.snapshotRollback') || '历史快照时光回溯' }}</el-radio-button>
         </el-radio-group>
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') || '刷新' }}
         </el-button>
       </div>
@@ -155,7 +155,7 @@
               可用: {{ (row.availableQty || 0).toLocaleString() }} {{ row.unit }}
             </div>
             <div class="text-[10px] text-[#58685D] font-mono mt-0.5">
-              <span v-if="row.lockedQty > 0" class="text-[#C9A13B] font-bold mr-1">锁定: {{ row.lockedQty }}</span>
+              <span v-if="row.lockedQty > 0" class="text-[#C9A13B] font-bold me-1">锁定: {{ row.lockedQty }}</span>
               <span v-if="row.frozenQty > 0" class="text-[#C04442] font-bold">冻结: {{ row.frozenQty }}</span>
             </div>
           </template>
@@ -228,7 +228,7 @@
             >
               {{ row.changeQty > 0 ? '+' : '' }}{{ row.changeQty.toLocaleString() }}
             </span>
-            <span class="text-[#8A9A8F] ml-1 text-[11px]">{{ row.unit }}</span>
+            <span class="text-[#8A9A8F] ms-1 text-[11px]">{{ row.unit }}</span>
             <div class="text-[10px] text-[#8A9A8F] mt-0.5">{{ row.changeType }}</div>
           </template>
         </el-table-column>
@@ -316,7 +316,7 @@
               <span class="font-mono font-bold text-[#326445] text-sm">
                 {{ (row.availableQty || 0).toLocaleString() }}
               </span>
-              <span class="text-[#8A9A8F] ml-1">{{ row.unit }}</span>
+              <span class="text-[#8A9A8F] ms-1">{{ row.unit }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="snapshotNotice" label="三级钩稽核验说明" min-width="220" />

@@ -3,7 +3,7 @@
     <!-- ======================================================== -->
     <!-- 1. 顶部操作与宏观调度栏 (支持日终清算与导出国家审计凭单) -->
     <!-- ======================================================== -->
-    <div class="bg-gradient-to-r from-[#1B3123] via-[#12241A] to-[#1B3123] text-white p-4 sm:p-5 rounded-lg shadow-md border border-[#1F3326]/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div class="bg-gradient-to-r rtl:bg-gradient-to-l from-[#1B3123] via-[#12241A] to-[#1B3123] text-white p-4 sm:p-5 rounded-lg shadow-md border border-[#1F3326]/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="space-y-1">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-[#6FBF92] animate-pulse"></span>
@@ -26,7 +26,7 @@
           class="font-bold border-none shadow-md bg-[#D3AF62] hover:bg-[#C9A13B] text-[#1B3123]"
           @click="openAiReportModal"
         >
-          <el-icon class="mr-1"><Cpu /></el-icon>
+          <el-icon class="me-1"><Cpu /></el-icon>
           {{ $t('reconciliation.aiReportBtn') }}
         </el-button>
 
@@ -36,7 +36,7 @@
           :loading="clearingLoading"
           @click="handleTriggerDailyClearing"
         >
-          <el-icon class="mr-1"><Check /></el-icon>
+          <el-icon class="me-1"><Check /></el-icon>
           {{ $t('reconciliation.dailyClearBtn') }}
         </el-button>
 
@@ -46,7 +46,7 @@
           class="font-bold bg-white/10 hover:bg-white/20 border-white/20 text-white"
           @click="openOfficialVoucherModal"
         >
-          <el-icon class="mr-1"><Document /></el-icon>
+          <el-icon class="me-1"><Document /></el-icon>
           {{ $t('reconciliation.exportReportBtn') }}
         </el-button>
 
@@ -189,7 +189,7 @@
             </div>
 
             <!-- 账实平衡与日终清算状态面板 -->
-            <div class="p-4 rounded-lg bg-gradient-to-r from-[#12241A]/90 via-[#1B3123] to-[#12241A] text-white flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="p-4 rounded-lg bg-gradient-to-r rtl:bg-gradient-to-l from-[#12241A]/90 via-[#1B3123] to-[#12241A] text-white flex flex-col sm:flex-row items-center justify-between gap-3">
               <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-lg bg-[#3E9B68]/20 border border-[#6FBF92]/40 text-[#6FBF92] flex items-center justify-center text-2xl font-bold">
                   ✓
@@ -320,7 +320,7 @@
               <div>
                 <strong>{{ isEn ? 'Fiscal Price Stabilization: ' : '财政平抑物价兜底机制：' }}</strong>{{ $t('reconciliation.subsidyMechanismDesc') }}
               </div>
-              <div class="font-mono font-bold text-[#6B5321] shrink-0 ml-2">
+              <div class="font-mono font-bold text-[#6B5321] shrink-0 ms-2">
                 {{ $t('reconciliation.subsidyGrandTotal') }}: IQD {{ (subsidiesData.grandTreasurySubsidy || 483250000).toLocaleString() }}
               </div>
             </div>
@@ -493,7 +493,7 @@
                 <template #default="{ row }">
                   <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
                     <span>{{ row.province }}</span>
-                    <el-tag v-if="row.isArticle140" size="small" type="warning" effect="dark" class="scale-90 origin-left">
+                    <el-tag v-if="row.isArticle140" size="small" type="warning" effect="dark" class="scale-90 origin-left rtl:origin-right">
                       {{ $t('reconciliation.article140Area') }}
                     </el-tag>
                   </div>
@@ -568,7 +568,7 @@
         <!-- 官方凭单纸张效果 -->
         <div class="p-5 rounded-lg bg-[#F3F8F4] border-2 border-dashed border-[#C9DBCE] space-y-3 relative overflow-hidden">
           <!-- 官方双重公章印戳 -->
-          <div class="absolute right-4 bottom-4 pointer-events-none opacity-85 border-2 border-[#2F5B44] rounded-full w-24 h-24 flex flex-col items-center justify-center text-[#24483A] rotate-[-15deg] scale-90">
+          <div class="absolute end-4 bottom-4 pointer-events-none opacity-85 border-2 border-[#2F5B44] rounded-full w-24 h-24 flex flex-col items-center justify-center text-[#24483A] rotate-[-15deg] scale-90">
             <span class="text-[7px] font-bold">REPUBLIC OF IRAQ</span>
             <span class="text-[8px] font-bold">MINISTRY OF TRADE</span>
             <span class="text-[7px] font-mono">100% BALANCED</span>
@@ -580,7 +580,7 @@
               <div class="font-bold text-sm text-[#1B3123]">{{ $t('reconciliation.officialVoucherTitle') }}</div>
               <div class="text-[10px] text-[#8A9A8F] font-mono">CENTRAL FISCAL RECONCILIATION VOUCHER</div>
             </div>
-            <div class="text-right">
+            <div class="text-end">
               <span class="font-mono text-[#2F5B44] font-bold text-xs">{{ officialVoucher.officialVoucherNo || 'GOV-FIN-VOUCH-882109' }}</span>
               <div class="text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</div>
             </div>
@@ -605,7 +605,7 @@
         <div class="flex items-center justify-end gap-2">
           <el-button @click="voucherModalVisible = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" class="font-bold" @click="handlePrintOfficialReport">
-            <el-icon class="mr-1"><Printer /></el-icon>
+            <el-icon class="me-1"><Printer /></el-icon>
             {{ $t('reconciliation.printOfficialVoucher') }}
           </el-button>
         </div>
@@ -623,9 +623,9 @@
       align-center
       destroy-on-close
     >
-      <div class="space-y-4 text-xs select-none max-h-[70vh] overflow-y-auto pr-1">
+      <div class="space-y-4 text-xs select-none max-h-[70vh] overflow-y-auto pe-1">
         <!-- 报告头 -->
-        <div class="p-4 rounded-lg bg-gradient-to-r from-[#1F3326] via-[#1B3123] to-[#12241A] text-white space-y-1.5 border border-[#24483A]">
+        <div class="p-4 rounded-lg bg-gradient-to-r rtl:bg-gradient-to-l from-[#1F3326] via-[#1B3123] to-[#12241A] text-white space-y-1.5 border border-[#24483A]">
           <div class="flex items-center justify-between">
             <span class="text-sm font-bold text-[#E5CEA1]">{{ $t('reconciliation.aiReportHeading') }}</span>
             <el-tag size="small" type="success" effect="dark" class="font-mono font-bold">AI MODEL V5.2 VALIDATED</el-tag>
@@ -696,7 +696,7 @@
           <div class="flex items-center gap-2">
             <el-button @click="aiReportModalVisible = false">{{ $t('common.cancel') }}</el-button>
             <el-button type="success" class="font-bold shadow-xs" @click="handleApplyAiPlanToNextMonth">
-              <el-icon class="mr-1"><Check /></el-icon>
+              <el-icon class="me-1"><Check /></el-icon>
               {{ $t('reconciliation.adoptAiPlanBtn') }}
             </el-button>
           </div>

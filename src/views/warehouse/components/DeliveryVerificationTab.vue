@@ -14,7 +14,7 @@
 
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
-          <el-icon class="mr-1"><Refresh /></el-icon>
+          <el-icon class="me-1"><Refresh /></el-icon>
           {{ $t('common.refresh') || '刷新' }}
         </el-button>
       </div>
@@ -54,7 +54,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetTrackingFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">{{ isEn ? `Total ${filteredTrackings.length} records` : `共 ${filteredTrackings.length} 条记录` }}</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ isEn ? `Total ${filteredTrackings.length} records` : `共 ${filteredTrackings.length} 条记录` }}</span>
       </div>
 
       <!-- 表格 -->
@@ -123,7 +123,7 @@
                 plain
                 @click="openScanReceiptDialog(row)"
               >
-                <el-icon class="mr-1"><FullScreen /></el-icon>
+                <el-icon class="me-1"><FullScreen /></el-icon>
                 扫码核收
               </el-button>
               <span v-else class="text-[11px] text-[#C04442] font-bold">已阻断</span>
@@ -155,7 +155,7 @@
           <span>代理网点扫码签收与对账记录</span>
         </h3>
         <el-button type="primary" size="small" @click="openQuickReceipt">
-          <el-icon class="mr-1"><Plus /></el-icon>
+          <el-icon class="me-1"><Plus /></el-icon>
           模拟移动扫码核收 (对账)
         </el-button>
       </div>
@@ -181,7 +181,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetReceiptFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredReceipts.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredReceipts.length }} 条记录</span>
       </div>
 
       <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -290,7 +290,7 @@
         </el-select>
 
         <el-button size="small" link type="primary" @click="resetDiscrepancyFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ml-auto">共 {{ filteredDiscrepancies.length }} 条记录</span>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredDiscrepancies.length }} 条记录</span>
       </div>
 
       <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -371,7 +371,7 @@
             <span class="text-[#8A9A8F] text-[11px] block">待签收交付流水单号：</span>
             <span class="font-mono font-bold text-[#2A5440] text-sm">{{ currentScanRow?.deliveryFlowNo }}</span>
           </div>
-          <div class="text-right">
+          <div class="text-end">
             <span class="text-[#8A9A8F] text-[11px] block">目的代销网点：</span>
             <span class="font-bold text-[#1F3326]">{{ currentScanRow?.toAgentCenter }}</span>
           </div>
@@ -394,10 +394,10 @@
             <!-- 扫描框与雷达扫描线动画 (摄像头运行状态) -->
             <div v-if="cameraActive" class="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div class="relative w-56 h-56 border-2 border-[#6FBF92]/80 rounded-lg shadow-[0_0_20px_rgba(111, 191, 146,0.3)] flex items-center justify-center overflow-hidden">
-                <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[#6FBF92]"></div>
-                <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[#6FBF92]"></div>
-                <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[#6FBF92]"></div>
-                <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[#6FBF92]"></div>
+                <div class="absolute top-0 start-0 w-4 h-4 border-t-4 border-s-4 border-[#6FBF92]"></div>
+                <div class="absolute top-0 end-0 w-4 h-4 border-t-4 border-e-4 border-[#6FBF92]"></div>
+                <div class="absolute bottom-0 start-0 w-4 h-4 border-b-4 border-s-4 border-[#6FBF92]"></div>
+                <div class="absolute bottom-0 end-0 w-4 h-4 border-b-4 border-e-4 border-[#6FBF92]"></div>
                 <div class="scan-laser-line"></div>
               </div>
             </div>
@@ -414,13 +414,13 @@
                 </p>
               </div>
               <el-button size="small" type="primary" plain @click="startCamera">
-                <el-icon class="mr-1"><Refresh /></el-icon>
+                <el-icon class="me-1"><Refresh /></el-icon>
                 重试打开摄像头
               </el-button>
             </div>
 
             <!-- 状态角标 -->
-            <div v-if="cameraActive" class="absolute top-3 left-3 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-[10px] text-[#6FBF92] flex items-center gap-1.5 border border-[#3E9B68]/30">
+            <div v-if="cameraActive" class="absolute top-3 start-3 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-[10px] text-[#6FBF92] flex items-center gap-1.5 border border-[#3E9B68]/30">
               <span class="w-2 h-2 rounded-full bg-[#3E9B68] animate-pulse"></span>
               <span>摄像头已启动，对准二维码自动识别...</span>
             </div>
@@ -430,7 +430,7 @@
           <div class="flex items-center justify-between text-xs pt-1">
             <span class="text-[#8A9A8F] text-[11px]">将配给物资二维码对准取景框即可自动识别</span>
             <el-button size="small" type="success" plain @click="simulateScanSuccess">
-              <el-icon class="mr-1"><Aim /></el-icon>
+              <el-icon class="me-1"><Aim /></el-icon>
               模拟扫描识别成功
             </el-button>
           </div>
@@ -967,7 +967,7 @@ onBeforeUnmount(() => {
 
 .scan-laser-line {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   width: 100%;
   height: 2px;
   background: linear-gradient(90deg, transparent, #6FBF92, #3E9B68, transparent);
