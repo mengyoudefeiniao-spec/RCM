@@ -530,37 +530,73 @@ export async function mockDispatch(config) {
   };
   const writeCenter = (key, value) => localStorage.setItem(`rcm_center_${key}_v1`, JSON.stringify(value));
   const systemSeed = {
-    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
-    roles: [{ id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access' }, { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations' }, { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records' }],
-    permissions: [{ id: 'perm-users', name: 'Manage users', code: 'system.users', description: 'Create and update Web users' }, { id: 'perm-messages', name: 'Send notifications', code: 'messages.send', description: 'Send messages to application users' }, { id: 'perm-audit', name: 'View audit logs', code: 'system.audit', description: 'Review operation history' }],
-    organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', status: 'active' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', status: 'active' }],
-    'audit-logs': [{ id: 'log-001', actor: 'System Administrator', action: 'Signed in', target: 'Web console', time: new Date().toISOString() }]
+    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
+    roles: [{ id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'] }, { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','messages.view'] }, { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'] }],
+    permissions: [
+      ['moduleDashboard','dashboard.view','view'], ['moduleAgents','agents.view','view'], ['moduleAgents','agents.create','create'], ['moduleAgents','agents.edit','editFeature'], ['moduleAgents','agents.delete','remove'],
+      ['moduleRation','ration.view','view'], ['moduleRation','ration.dispatch','dispatch'], ['moduleReview','review.view','view'], ['moduleReview','review.process','process'],
+      ['moduleComplaints','complaints.view','view'], ['moduleComplaints','complaints.process','process'], ['moduleSystem','system.users','manage'], ['moduleSystem','system.roles','manage'],
+      ['moduleSystem','system.permissions','manage'], ['moduleSystem','system.organizations','manage'], ['moduleSystem','system.audit','view'], ['moduleMessages','messages.view','view'], ['moduleMessages','messages.send','send']
+    ].map(([moduleKey, code, featureKey]) => ({ id: `perm-${code}`, moduleKey, code, featureKey })),
+    organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Central Office', phone: '+964 1 000 0000' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Baghdad Office', phone: '+964 1 000 0001' }],
+    'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', ip: '127.0.0.1', time: new Date().toISOString() }]
   };
   if (url.includes('/admin/system/')) {
-    if (!['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
-    const section = url.split('/admin/system/')[1]?.split('?')[0];
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
+    const hasSystemGrant = Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('system.users') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole);
+    if (!hasSystemGrant) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    const [section, recordId] = (url.split('/admin/system/')[1]?.split('?')[0] || '').split('/');
     if (!Object.hasOwn(systemSeed, section)) return createResponse({}, 404, i18n.global.t('api.notFound'));
-    const records = readCenter(`system_${section}`, systemSeed[section]);
+    let records = readCenter(`system_${section}`, systemSeed[section]);
+    if (section === 'permissions') {
+      const extras = records.filter((row) => row.code && !systemSeed.permissions.some((seed) => seed.code === row.code));
+      records = [...systemSeed.permissions, ...extras]; writeCenter(`system_${section}`, records);
+    } else if (section === 'roles') {
+      records = records.map((row) => ({ ...row, permissionCodes: row.permissionCodes || systemSeed.roles.find((seed) => seed.id === row.id || seed.code === row.code)?.permissionCodes || [] }));
+      writeCenter(`system_${section}`, records);
+    } else if (section === 'users') {
+      records = records.map((row) => ({ ...row, roleId: row.roleId || systemSeed.roles.find((role) => role.code === row.role)?.id }));
+      writeCenter(`system_${section}`, records);
+    } else if (section === 'organizations') {
+      records = records.map((row) => ({ ...row, address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
+      writeCenter(`system_${section}`, records);
+    }
     if (method === 'GET') return createResponse(records);
+    if (method === 'DELETE' && recordId) {
+      const index = records.findIndex((row) => row.id === decodeURIComponent(recordId));
+      if (index < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      const [removed] = records.splice(index, 1); writeCenter(`system_${section}`, records);
+      const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
+      logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'System Administrator', details: data.auditDetails || `Deleted ${section} ${removed.name || removed.username || removed.code || removed.id}`, ip: '127.0.0.1', time: new Date().toISOString() });
+      writeCenter('system_audit-logs', logs);
+      return createResponse({ success: true });
+    }
     if (method === 'POST') {
       const next = { ...data, id: data.id || `rec-${crypto.randomUUID()}`, time: data.time || new Date().toISOString() };
+      const auditDetails = next.auditDetails;
+      delete next.auditDetails;
       const index = records.findIndex((row) => row.id === next.id);
       if (index >= 0) records.splice(index, 1, next); else records.unshift(next);
       writeCenter(`system_${section}`, records);
       if (section !== 'audit-logs') {
         const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
-        logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', action: index >= 0 ? 'Updated record' : 'Created record', target: `${section}:${next.name || next.username || next.code || next.id}`, time: new Date().toISOString() });
+        logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', details: auditDetails || `${index >= 0 ? 'Updated' : 'Created'} ${section} ${next.name || next.username || next.code || next.id}`, ip: '127.0.0.1', time: new Date().toISOString() });
         writeCenter('system_audit-logs', logs);
       }
       return createResponse(next);
     }
   }
   if (url.includes('/messages') && !url.includes('/me/')) {
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
+    if (Array.isArray(profile.permissionCodes)) {
+      const requiredCode = method === 'POST' ? 'messages.send' : 'messages.view';
+      if (!profile.permissionCodes.includes(requiredCode)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    }
     const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
     if (url.endsWith('/messages/inbox') && method === 'GET') return createResponse(messages.filter((item) => item.audience?.includes(currentRole)).map((item) => ({ ...item, read: (item.readBy || []).includes(currentRole) })).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     if (url.endsWith('/messages/sent') && method === 'GET') return createResponse(messages.filter((item) => item.senderRole === currentRole).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     if (url.endsWith('/messages') && method === 'POST') {
-      if (!['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      if (!Array.isArray(profile.permissionCodes) && !['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
       const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], everyone: ['citizen', 'agent', 'admin', 'minister_center', 'deputy_minister', 'director_planning'] };
       const next = { ...data, id: `msg-${crypto.randomUUID()}`, senderRole: currentRole, sender: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', audience: audienceMap[data.recipient] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
       messages.unshift(next); writeCenter('messages', messages); return createResponse(next);
@@ -578,6 +614,15 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/auth/login') && method === 'POST') {
     const { username } = data;
+    const managedUsers = readCenter('system_users', systemSeed.users);
+    const managedUser = managedUsers.find((entry) => entry.username === username);
+    if (managedUser) {
+      if (managedUser.status === 'disabled') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      const roleRows = readCenter('system_roles', systemSeed.roles);
+      const assignedRole = roleRows.find((entry) => entry.id === managedUser.roleId || entry.code === managedUser.role);
+      const profile = { id: managedUser.id, username: managedUser.username, name: managedUser.name, role: assignedRole?.code || managedUser.role || 'operator', department: managedUser.organization, permissionCodes: assignedRole?.permissionCodes || [] };
+      return createResponse({ token: `mock-token-${managedUser.id}`, user: profile });
+    }
     const user = MOCK_USERS.find(
       (u) => u.username === username || u.role === username || (u.cardNo && u.cardNo === username)
     ) || MOCK_USERS[0];

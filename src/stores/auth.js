@@ -172,6 +172,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 管理员多维研判
   const isAdmin = computed(() => ADMIN_ROLES.includes(currentRole.value));
+  const hasPermission = (code) => {
+    if (!code || isAdmin.value) return true;
+    const codes = userProfile.value?.permissionCodes;
+    return !Array.isArray(codes) || codes.includes(code);
+  };
   const isMinisterCenter = computed(() => currentRole.value === ROLE_MINISTER_CENTER);
   const isDeputyMinister = computed(() => currentRole.value === ROLE_DEPUTY_MINISTER);
   const isDirectorPlanning = computed(() => currentRole.value === ROLE_DIRECTOR_PLANNING);
@@ -290,6 +295,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     currentRole,
     isAdmin,
+    hasPermission,
     isMinisterCenter,
     isDeputyMinister,
     isDirectorPlanning,

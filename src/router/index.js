@@ -38,13 +38,13 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('../views/dashboard/DashboardView.vue'),
-        meta: { title: '数据看板', roles: ['admin', 'agent'] }
+        meta: { title: '数据看板', roles: ['admin', 'agent'], permissionCode: 'dashboard.view' }
       },
       {
         path: 'stats',
         name: 'GeoStats',
         component: () => import('../views/stats/RationGeoStatsView.vue'),
-        meta: { title: '配给地理统计', roles: ['admin', 'agent'] }
+        meta: { title: '配给地理统计', roles: ['admin', 'agent'], permissionCode: 'dashboard.view' }
       },
       {
         path: 'citizen',
@@ -92,13 +92,13 @@ const routes = [
         path: 'review',
         name: 'ElectronicReview',
         component: () => import('../views/review/ElectronicReviewView.vue'),
-        meta: { title: '审核工作台', roles: ['admin'] }
+        meta: { title: '审核工作台', roles: ['admin'], permissionCode: 'review.view' }
       },
       {
         path: 'complaint',
         name: 'ComplaintManagement',
         component: () => import('../views/complaint/ComplaintMgmtView.vue'),
-        meta: { title: '投诉和处理', roles: ['admin'] }
+        meta: { title: '投诉和处理', roles: ['admin'], permissionCode: 'complaints.view' }
       },
       {
         path: 'family-agent',
@@ -110,7 +110,7 @@ const routes = [
         path: 'warehouse',
         name: 'Warehouse',
         component: () => import('../views/warehouse/WarehouseView.vue'),
-        meta: { title: '配给管理', roles: ['admin', 'agent', 'citizen'] }
+        meta: { title: '配给管理', roles: ['admin', 'agent', 'citizen'], permissionCode: 'ration.view' }
       },
       {
         path: 'warehouse/delivery/:orderId',
@@ -122,37 +122,43 @@ const routes = [
         path: 'agent',
         name: 'AgentMgmt',
         component: () => import('../views/agent/AgentMgmtView.vue'),
-        meta: { title: '代理管理', roles: ['admin', 'agent'] }
+        meta: { title: '代理管理', roles: ['admin', 'agent'], permissionCode: 'agents.view' }
       },
       {
         path: 'agent-orders',
         name: 'AgentOrders',
         component: () => import('../views/agent/AgentOrdersView.vue'),
-        meta: { title: '代理订单', roles: ['agent', 'admin'] }
+        meta: { title: '代理订单', roles: ['agent', 'admin'], permissionCode: 'agents.view' }
       },
       {
         path: 'agent-analytics',
         name: 'AgentAnalytics',
         component: () => import('../views/agent/AgentAnalyticsView.vue'),
-        meta: { title: '库存台账', roles: ['agent', 'admin'] }
+        meta: { title: '库存台账', roles: ['agent', 'admin'], permissionCode: 'agents.view' }
       },
       {
         path: 'admin',
         name: 'AdminManagement',
         component: () => import('../views/admin/AdminManagementView.vue'),
-        meta: { title: '后台管理', roles: ['admin'] }
+        meta: { title: '后台管理', roles: ['admin'], permissionCode: 'system.users' }
       },
       {
         path: 'system-management',
         name: 'SystemManagement',
         component: () => import('../views/admin/SystemManagementView.vue'),
-        meta: { titleKey: 'system.title', roles: ['admin'] }
+        meta: { titleKey: 'system.title', roles: ['admin'], permissionCode: 'system.users' }
       },
       {
         path: 'messages',
         name: 'MessageCenter',
         component: () => import('../views/messages/MessageCenterView.vue'),
-        meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'] }
+        meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view' }
+      },
+      {
+        path: 'access-denied',
+        name: 'AccessDenied',
+        component: () => import('../views/common/AccessDeniedView.vue'),
+        meta: { titleKey: 'systemExtras.accessDenied' }
       },
       {
         path: 'mobile-agent',
@@ -242,10 +248,15 @@ router.beforeEach((to, from, next) => {
     if (allowedRoles.includes('admin')) {
       allowedRoles.push(...ALL_ADMIN_ROLES);
     }
-    if (!allowedRoles.includes(currentRole)) {
+    const hasExplicitGrant = to.meta.permissionCode && Array.isArray(userProfile.permissionCodes) && userProfile.permissionCodes.includes(to.meta.permissionCode);
+    if (!allowedRoles.includes(currentRole) && !hasExplicitGrant) {
       // 越权访问，自动重定向到其合规首页
       return next(getDefaultPathByRole(currentRole));
     }
+  }
+
+  if (token && to.meta?.permissionCode && Array.isArray(userProfile.permissionCodes) && !ALL_ADMIN_ROLES.includes(currentRole) && !userProfile.permissionCodes.includes(to.meta.permissionCode)) {
+    return next('/access-denied');
   }
 
   next();

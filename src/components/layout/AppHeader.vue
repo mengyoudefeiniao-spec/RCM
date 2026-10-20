@@ -36,7 +36,7 @@
         <nav v-if="!isAppMode" class="hidden md:flex items-center gap-1 text-xs shrink-0">
           <!-- 1. 数据看板：配给代理或管理角色可见 -->
           <router-link
-            v-if="canViewDashboard"
+            v-if="canViewDashboard && authStore.hasPermission('dashboard.view')"
             to="/dashboard"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path === '/dashboard' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
@@ -58,7 +58,7 @@
 
           <!-- 3. 审核工作台：仅 Admin 管理角色可见 -->
           <router-link
-            v-if="authStore.isAdmin"
+            v-if="authStore.hasPermission('review.view') && (authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('review.view'))"
             to="/review"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path === '/review' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
@@ -72,7 +72,7 @@
 
           <!-- 4. 投诉和处理：仅 Admin 管理角色可见 -->
           <router-link
-            v-if="authStore.isAdmin"
+            v-if="authStore.hasPermission('complaints.view') && (authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('complaints.view'))"
             to="/complaint"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path.startsWith('/complaint') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
@@ -84,6 +84,7 @@
           <!-- 5. 配给管理 (统一显示为配给管理) -->
           <router-link
             to="/warehouse"
+            v-if="authStore.hasPermission('ration.view')"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path === '/warehouse' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
@@ -93,7 +94,7 @@
 
           <!-- 6. 代理管理：管理角色与 Agent 配给代理可见 -->
           <router-link
-            v-if="authStore.isAdmin || authStore.currentRole === 'agent'"
+            v-if="(authStore.isAdmin || authStore.currentRole === 'agent' || authStore.userProfile?.permissionCodes?.includes('agents.view')) && authStore.hasPermission('agents.view')"
             to="/agent"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path === '/agent' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
@@ -104,7 +105,7 @@
 
           <!-- 7. 后台管理：仅 Admin 管理角色可见 -->
           <router-link
-            v-if="authStore.isAdmin"
+            v-if="authStore.isAdmin && authStore.hasPermission('system.users')"
             to="/admin"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path.startsWith('/admin') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
@@ -113,10 +114,10 @@
             <span>{{ $t('nav.admin') }}</span>
           </router-link>
 
-          <router-link v-if="authStore.isAdmin" to="/system-management" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/system-management') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+          <router-link v-if="authStore.hasPermission('system.users')" to="/system-management" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/system-management') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Tools /></el-icon><span>{{ $t('system.title') }}</span>
           </router-link>
-          <router-link to="/messages" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+          <router-link v-if="authStore.hasPermission('messages.view')" to="/messages" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Bell /></el-icon><span>{{ $t('messages.title') }}</span>
           </router-link>
         </nav>
@@ -127,14 +128,14 @@
         <!-- 国际化语言切换选择器 -->
         <LanguageSwitcher />
 
-        <el-tooltip :content="$t('messages.notification')" placement="bottom">
+        <el-tooltip v-if="authStore.hasPermission('messages.view')" :content="$t('messages.notification')" placement="bottom">
           <el-badge :value="messageStore.unreadCount" :hidden="messageStore.unreadCount === 0" :max="99" class="cursor-pointer">
             <el-button circle size="small" plain @click="openNotifications"><el-icon><Bell /></el-icon></el-button>
           </el-badge>
         </el-tooltip>
 
         <!-- 角色身份切换下拉 (公民app和代理app视口内彻底隐藏) -->
-        <el-dropdown v-if="!isAppMode" trigger="click" @command="handleRoleCommand">
+        <el-dropdown v-if="!isAppMode && !authStore.userProfile?.permissionCodes" trigger="click" @command="handleRoleCommand">
           <!-- 统一单一根容器，杜绝 ElementPlusError: [ElOnlyChild] requires exact only one valid child -->
           <div class="inline-flex items-center cursor-pointer select-none">
             <!-- 桌面端普通模式：显示小圆点、角色名称与下拉箭头 -->
@@ -281,7 +282,7 @@ const pendingReviewCount = computed(() => {
 
 // 数据看板仅限配给代理或者任意管理角色可见
 const canViewDashboard = computed(() => {
-  return authStore.isAdmin || authStore.currentRole === 'agent';
+  return authStore.isAdmin || authStore.currentRole === 'agent' || authStore.hasPermission('dashboard.view');
 });
 
 const roleLabel = computed(() => {

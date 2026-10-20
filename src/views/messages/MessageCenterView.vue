@@ -2,7 +2,7 @@
   <section class="mx-auto max-w-[1320px] space-y-4 p-3 sm:p-5">
     <div class="rounded-xl border border-[#C7E0CE] bg-white p-5 shadow-sm"><h1 class="text-xl font-bold text-[#24483A]">{{ t('messages.title') }}</h1><p class="mt-1 text-sm text-[#68796E]">{{ t('messages.subtitle') }}</p></div>
     <el-tabs v-model="tab" class="rounded-xl border border-[#D9E5DB] bg-white px-4 pt-2 shadow-sm" @tab-change="load">
-      <el-tab-pane :label="t('messages.inbox')" name="inbox"/><el-tab-pane v-if="authStore.isAdmin" :label="t('messages.compose')" name="compose"/><el-tab-pane v-if="authStore.isAdmin" :label="t('messages.sent')" name="sent"/>
+      <el-tab-pane :label="t('messages.inbox')" name="inbox"/><el-tab-pane v-if="canSend" :label="t('messages.compose')" name="compose"/><el-tab-pane v-if="canSend" :label="t('messages.sent')" name="sent"/>
       <div v-if="tab === 'compose'" class="max-w-3xl py-4">
         <el-form :model="form" label-position="top">
           <el-form-item :label="t('messages.category')"><el-select v-model="form.category" class="w-full"><el-option value="admin" :label="t('messages.admin')"/><el-option value="system" :label="t('messages.system')"/></el-select></el-form-item>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
@@ -40,6 +40,7 @@ import { useMessageCenterStore } from '../../stores/messageCenter.js';
 const { t } = useI18n(), route = useRoute(), router = useRouter(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
 const tab = ref('inbox'), items = ref([]), loading = ref(false), sending = ref(false), selected = ref(null), detailVisible = ref(false);
 const form = ref({ category: 'admin', recipient: 'citizens', subject: '', body: '' });
+const canSend = computed(() => authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('messages.send'));
 function titleOf(item) { return item.subjectKey ? t(item.subjectKey) : item.subject; }
 function bodyOf(item) { return item.bodyKey ? t(item.bodyKey) : item.body; }
 function categoryLabel(item) { return t(item.category === 'system' ? 'messages.system' : 'messages.admin'); }
