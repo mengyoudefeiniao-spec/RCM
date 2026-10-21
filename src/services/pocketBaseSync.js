@@ -4,6 +4,7 @@ const collection = import.meta.env.VITE_POCKETBASE_COLLECTION || 'app_data';
 const filesCollection = import.meta.env.VITE_POCKETBASE_FILES_COLLECTION || 'app_files';
 const PAGE_SIZE = 500;
 const POLL_INTERVAL = 15000;
+const EMPTY_ARRAY_MARKER = '__rcm_pocketbase_empty_array_v1__';
 
 const localKeys = new Set();
 const pendingKeys = new Set();
@@ -25,6 +26,19 @@ export function isPocketBaseSyncEnabled() {
 
 function recordUrl(id = '') {
   return `${baseUrl}/api/collections/${encodeURIComponent(collection)}/records${id ? `/${encodeURIComponent(id)}` : ''}`;
+}
+
+function encodePocketBaseValue(value) {
+  // PocketBase treats [] as blank when the JSON field is required.
+  return Array.isArray(value) && value.length === 0 ? { [EMPTY_ARRAY_MARKER]: true } : value;
+}
+
+function decodePocketBaseValue(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value) &&
+      Object.keys(value).length === 1 && value[EMPTY_ARRAY_MARKER] === true) {
+    return [];
+  }
+  return value;
 }
 
 async function request(url, options = {}) {
@@ -66,7 +80,7 @@ function setLocal(key, value) {
 async function persistRecord(key, value) {
   const filter = encodeURIComponent(`key = ${JSON.stringify(key)}`);
   const result = await request(`${recordUrl()}?filter=${filter}&perPage=1`);
-  const payload = { key, value: JSON.parse(value) };
+  const payload = { key, value: encodePocketBaseValue(JSON.parse(value)) };
   if (result.items?.length) {
     await request(recordUrl(result.items[0].id), { method: 'PATCH', body: JSON.stringify(payload) });
   } else {
@@ -85,7 +99,7 @@ export async function readPocketBaseValue(key) {
   if (!isPocketBaseSyncEnabled()) return null;
   const filter = encodeURIComponent(`key = ${JSON.stringify(key)}`);
   const result = await request(`${recordUrl()}?filter=${filter}&perPage=1`);
-  return result.items?.[0]?.value ?? null;
+  return result.items?.[0] ? decodePocketBaseValue(result.items[0].value) : null;
 }
 
 export async function writePocketBaseValue(key, value) {
@@ -168,7 +182,7 @@ async function pullRemoteRecords({ mergeLocal = false } = {}) {
     if (!isSharedBusinessKey(record.key)) continue;
     remoteKeys.add(record.key);
     if (pendingKeys.has(record.key)) continue;
-    const serialized = JSON.stringify(record.value);
+    const serialized = JSON.stringify(decodePocketBaseValue(record.value));
     if (localGet(record.key) !== serialized) setLocal(record.key, serialized);
     localKeys.add(record.key);
   }

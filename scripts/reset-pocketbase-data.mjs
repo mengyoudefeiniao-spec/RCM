@@ -8,6 +8,7 @@ const email = process.env.POCKETBASE_ADMIN_EMAIL;
 const password = process.env.POCKETBASE_ADMIN_PASSWORD;
 const applyChanges = process.argv.includes('--apply');
 const languages = ['zh', 'en', 'ar', 'ku'];
+const EMPTY_ARRAY_MARKER = '__rcm_pocketbase_empty_array_v1__';
 
 if (!email || !password) {
   throw new Error('Set POCKETBASE_ADMIN_EMAIL and POCKETBASE_ADMIN_PASSWORD before running this script.');
@@ -77,7 +78,11 @@ if (!applyChanges) {
 }
 
 for (const { key, value, existing } of plan) {
-  const body = JSON.stringify({ key, value });
+  // PocketBase rejects [] as blank when app_data.value is a required JSON field.
+  const storedValue = Array.isArray(value) && value.length === 0
+    ? { [EMPTY_ARRAY_MARKER]: true }
+    : value;
+  const body = JSON.stringify({ key, value: storedValue });
   const action = existing ? 'UPDATE' : 'CREATE';
   console.log(`${action} ${key}${existing ? ` (${existing.id})` : ''}...`);
   try {
