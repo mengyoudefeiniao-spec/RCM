@@ -1,3 +1,5 @@
+import { isPocketBaseSyncEnabled, readPocketBaseFile, savePocketBaseFile } from '../services/pocketBaseSync.js';
+
 function openMessageAttachmentDb() {
   return new Promise((resolve, reject) => {
     const opening = indexedDB.open('rcm-message-attachments', 1);
@@ -8,8 +10,12 @@ function openMessageAttachmentDb() {
 }
 
 export async function saveMockMessageAttachment(file) {
-  const database = await openMessageAttachmentDb();
   const id = `mail-file-${crypto.randomUUID()}`;
+  if (isPocketBaseSyncEnabled()) {
+    await savePocketBaseFile(id, file);
+    return id;
+  }
+  const database = await openMessageAttachmentDb();
   await new Promise((resolve, reject) => {
     const transaction = database.transaction('files', 'readwrite');
     transaction.objectStore('files').put({ id, file });
@@ -21,6 +27,18 @@ export async function saveMockMessageAttachment(file) {
 }
 
 export async function getMockMessageAttachment(id) {
+  if (isPocketBaseSyncEnabled()) {
+    const remote = await readPocketBaseFile(id);
+    if (remote) {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(remote.blob);
+      });
+      return { name: remote.record.file, dataUrl };
+    }
+  }
   const database = await openMessageAttachmentDb();
   const file = await new Promise((resolve, reject) => {
     const request = database.transaction('files', 'readonly').objectStore('files').get(id);
@@ -29,11 +47,14 @@ export async function getMockMessageAttachment(id) {
   });
   database.close();
   if (!file) return null;
+  if (isPocketBaseSyncEnabled()) {
+    await savePocketBaseFile(id, file);
+  }
   const dataUrl = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   return { name: file.name, dataUrl };
 }

@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'iq.gov.mot.rcm'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'iq.gov.mot.rcm'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    def pocketBaseHost = project.findProperty('PocketBaseHost') ?: 'pb.51xyu.com'
+
+    flavorDimensions += 'audience'
+    productFlavors {
+        citizen {
+            dimension 'audience'
+            applicationIdSuffix '.citizen'
+            resValue 'string', 'app_name', 'RCM 公民服务'
+            buildConfigField 'String', 'APP_ROLE', '"citizen"'
+            buildConfigField 'String', 'POCKETBASE_HOST', "\"${pocketBaseHost}\""
+        }
+        agent {
+            dimension 'audience'
+            applicationIdSuffix '.agent'
+            resValue 'string', 'app_name', 'RCM 代理工作台'
+            buildConfigField 'String', 'APP_ROLE', '"agent"'
+            buildConfigField 'String', 'POCKETBASE_HOST', "\"${pocketBaseHost}\""
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+}

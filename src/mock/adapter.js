@@ -1448,7 +1448,7 @@ export async function mockDispatch(config) {
     const memberCount = getActiveMemberCount(family) || family?.memberCount || family?.members?.length || 4;
 
     // 计算当月已购数量 (从订单历史汇总)
-    const cardOrders = citizenPurchaseOrdersStore.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
+    const cardOrders = getSharedOrders(isEn ? 'en' : 'zh').filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
     const consumedMap = {
       'FLOUR-WHT-02': 0,
       'RICE-BAS-01': 0,
@@ -1551,7 +1551,7 @@ export async function mockDispatch(config) {
   if (url.includes('/citizen/ration/orders') && method === 'GET') {
     const cardNo = params.cardNo;
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
-    let list = sharedOrders && sharedOrders.length > 0 ? [...sharedOrders] : [...citizenPurchaseOrdersStore];
+    let list = [...sharedOrders];
     if (cardNo) {
       list = list.filter((o) => o.cardNo === cardNo);
     }
@@ -3378,7 +3378,7 @@ export async function mockDispatch(config) {
       return createResponse({}, 400, isEn ? 'Please enter the pickup voucher code or scan the QR code' : '请输入提货凭证码或扫描二维码');
     }
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
-    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const sourcePool = sharedOrders;
     const matched = sourcePool.find((o) =>
       (o.pickupCode && o.pickupCode.toLowerCase() === code) ||
       (o.orderId && o.orderId.toLowerCase() === code) ||
@@ -3397,7 +3397,7 @@ export async function mockDispatch(config) {
   if (citizenOrderDetailMatch && method === 'GET') {
     const orderId = decodeURIComponent(citizenOrderDetailMatch[1]);
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
-    const order = [...sharedOrders, ...(citizenPurchaseOrdersStore || [])].find((item) => item.orderId === orderId || item.id === orderId);
+    const order = sharedOrders.find((item) => item.orderId === orderId || item.id === orderId);
     if (!order) return createResponse({}, 404, i18n.global.t('agentDelivery.orderNotFound'));
     const demoPositions = {
       'PO-20261013-1001': { lat: 33.3277, lng: 44.3674, accuracy: 'approximate' },
@@ -3408,23 +3408,15 @@ export async function mockDispatch(config) {
 
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
-    const map = new Map();
-    // 优先读取共享持久化订单
-    sharedOrders.forEach((o) => {
-      const key = o.orderId || o.id;
-      if (key) map.set(key, o);
-    });
-    // 合并初始/内存订单池
-    (citizenPurchaseOrdersStore || []).forEach((o) => {
-      const key = o.orderId || o.id;
-      if (key && !map.has(key)) {
-        map.set(key, o);
-      }
-    });
-
-    let result = Array.from(map.values());
-    // 按时间倒序排序
-    result.sort((a, b) => new Date(b.createdAt || b.paidAt || 0) - new Date(a.createdAt || a.paidAt || 0));
+    // PocketBase/共享缓存是订单列表的唯一来源；空数组表示已清空，不能回退到内存演示数据。
+    let result = [...sharedOrders];
+    const orderTimestamp = (order) => {
+      const value = order.createdAt || order.paidAt || order.updatedAt || 0;
+      const parsed = Date.parse(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    // 新订单保持在最前；同时兼容 ISO 与 PocketBase 日期字符串。
+    result.sort((a, b) => orderTimestamp(b) - orderTimestamp(a));
 
     if (params.deliveryType && params.deliveryType !== 'ALL') {
       result = result.filter((o) => o.deliveryType === params.deliveryType);
@@ -3451,7 +3443,7 @@ export async function mockDispatch(config) {
     const parts = url.split('/');
     const orderId = parts[parts.indexOf('citizen-orders') + 1];
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
-    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const sourcePool = sharedOrders;
     const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId);
 
     if (!targetOrder) {
@@ -3508,7 +3500,7 @@ export async function mockDispatch(config) {
     const parts = url.split('/');
     const orderId = parts[parts.indexOf('citizen-orders') + 1];
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
-    const sourcePool = sharedOrders && sharedOrders.length > 0 ? sharedOrders : citizenPurchaseOrdersStore;
+    const sourcePool = sharedOrders;
     const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.pickupCode === orderId || (data && (data.orderId === o.orderId || data.pickupCode === o.pickupCode)));
 
     if (!targetOrder) {

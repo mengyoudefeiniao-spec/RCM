@@ -1,0 +1,10 @@
+/android-sdk/
+/android-tools/
+/gradle-user-home/
+/downloads/
+/www/
+/output/
+/android/.gradle/
+/android/local.properties
+/android/app/build/
+/android/app/src/main/assets/

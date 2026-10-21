@@ -73,7 +73,7 @@ function getKurdishFamilies() {
   return base;
 }
 
-function getInitialFamilies(lang) {
+export function getInitialFamilies(lang) {
   if (lang === 'en') return JSON.parse(JSON.stringify(MOCK_FAMILIES_EN));
   if (lang === 'ar') return getArabicFamilies();
   if (lang === 'ku') return getKurdishFamilies();
@@ -207,7 +207,7 @@ const INITIAL_DEMO_ORDERS_EN = [
   }
 ];
 
-function getInitialOrders(lang) {
+export function getInitialOrders(lang) {
   if (lang === 'en') return JSON.parse(JSON.stringify(INITIAL_DEMO_ORDERS_EN));
   return JSON.parse(JSON.stringify(INITIAL_DEMO_ORDERS_ZH));
 }

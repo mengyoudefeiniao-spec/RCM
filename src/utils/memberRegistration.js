@@ -1,5 +1,7 @@
 // Mock registration archives retain the original upload rather than a preview URL.
 // Live API responses may provide the same registrationMaterials object on a member.
+import { isPocketBaseSyncEnabled, readPocketBaseValue, writePocketBaseValue } from '../services/pocketBaseSync.js';
+
 function archiveTransaction(mode, run) {
   return new Promise((resolve, reject) => {
     const opening = indexedDB.open('rcm-member-registration', 1);
@@ -17,11 +19,22 @@ function archiveTransaction(mode, run) {
 
 export function saveRegistrationArchive(archive) {
   if (!archive.nationalId) return Promise.reject(new Error('Missing national ID'));
+  if (isPocketBaseSyncEnabled()) {
+    return writePocketBaseValue(`rcm_registration_${archive.nationalId}`, archive);
+  }
   return archiveTransaction('readwrite', store => store.put(archive));
 }
 
-export function getRegistrationArchive(nationalId) {
+export async function getRegistrationArchive(nationalId) {
   if (!nationalId) return Promise.resolve(null);
+  if (isPocketBaseSyncEnabled()) {
+    const remote = await readPocketBaseValue(`rcm_registration_${nationalId}`);
+    if (remote) return remote;
+    // Migrate this device's existing archive the first time it is requested.
+    const local = await archiveTransaction('readonly', store => store.get(nationalId));
+    if (local) await writePocketBaseValue(`rcm_registration_${nationalId}`, local);
+    return local;
+  }
   return archiveTransaction('readonly', store => store.get(nationalId));
 }
 

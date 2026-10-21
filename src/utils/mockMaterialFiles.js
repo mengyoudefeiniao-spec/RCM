@@ -1,5 +1,11 @@
-// The mock gateway retains actual uploaded bytes locally, keyed by notification.
+import { isPocketBaseSyncEnabled, savePocketBaseFile } from '../services/pocketBaseSync.js';
+
+// The mock gateway retains uploaded bytes in PocketBase when shared sync is enabled.
 export function saveMockMaterial(role, notificationId, file) {
+  if (isPocketBaseSyncEnabled()) {
+    const id = `${role}:${notificationId}:${crypto.randomUUID()}`;
+    return savePocketBaseFile(id, file).then(() => id);
+  }
   return new Promise((resolve, reject) => {
     const opening = indexedDB.open('rcm-material-uploads', 1);
     opening.onupgradeneeded = () => opening.result.createObjectStore('files', { keyPath: 'id' });
