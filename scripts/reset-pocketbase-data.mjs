@@ -29,8 +29,11 @@ async function request(path, { token, ...options } = {}) {
   let result = null;
   try { result = body ? JSON.parse(body) : null; } catch { result = body; }
   if (!response.ok) {
-    const message = result?.message || result || response.statusText;
-    throw new Error(`PocketBase ${response.status}: ${message}`);
+    const details = result?.data && Object.keys(result.data).length
+      ? `; details=${JSON.stringify(result.data)}`
+      : '';
+    const message = result?.message || (typeof result === 'string' ? result : response.statusText);
+    throw new Error(`PocketBase ${response.status}: ${message}${details}`);
   }
   return result;
 }
@@ -75,14 +78,20 @@ if (!applyChanges) {
 
 for (const { key, value, existing } of plan) {
   const body = JSON.stringify({ key, value });
-  if (existing) {
-    await request(`/api/collections/${encodeURIComponent(collection)}/records/${encodeURIComponent(existing.id)}`, {
-      method: 'PATCH', token, body
-    });
-  } else {
-    await request(`/api/collections/${encodeURIComponent(collection)}/records`, {
-      method: 'POST', token, body
-    });
+  const action = existing ? 'UPDATE' : 'CREATE';
+  console.log(`${action} ${key}${existing ? ` (${existing.id})` : ''}...`);
+  try {
+    if (existing) {
+      await request(`/api/collections/${encodeURIComponent(collection)}/records/${encodeURIComponent(existing.id)}`, {
+        method: 'PATCH', token, body
+      });
+    } else {
+      await request(`/api/collections/${encodeURIComponent(collection)}/records`, {
+        method: 'POST', token, body
+      });
+    }
+  } catch (error) {
+    throw new Error(`${action} ${key} failed: ${error.message}`, { cause: error });
   }
 }
 
