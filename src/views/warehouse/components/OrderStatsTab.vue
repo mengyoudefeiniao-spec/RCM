@@ -25,7 +25,7 @@
             v-if="todayNewCount > 0"
             class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3E9B68]/30 text-[#A7D9BC] border border-[#6FBF92]/50 animate-bounce"
           >
-            +{{ todayNewCount }} {{ isEn ? 'New Orders Today' : '今日新生成订单' }}
+            +{{ todayNewCount }} {{ w("今日新生成订单") }}
           </span>
         </div>
         <p class="text-xs text-[#E1F4E4]/80 leading-relaxed max-w-3xl">
@@ -70,7 +70,7 @@
             {{ $t('orderStats.matchedOrdersCount', { count: filteredOrders.length }) }}
           </span>
           <span class="text-[11px] text-[#2F5B44] bg-[#EFF5F1] px-2 py-0.5 rounded font-mono font-bold border border-[#C7E0CE]/60">
-            {{ isEn ? 'Active Real-time' : '实盘动态' }}
+            {{ w("实盘动态") }}
           </span>
         </div>
       </div>
@@ -81,7 +81,7 @@
           <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.provinceLabel') }}</label>
           <el-select v-model="selectedProvince" class="w-full" size="small" @change="handleProvinceChange">
             <el-option :label="$t('orderStats.allProvinces')" value="全部" />
-            <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
+            <el-option v-for="p in provinceOptions" :key="p" :label="w(p)" :value="p" />
           </el-select>
         </div>
 
@@ -90,7 +90,7 @@
           <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.districtLabel') }}</label>
           <el-select v-model="selectedDistrict" class="w-full" size="small" @change="handleDistrictChange">
             <el-option :label="$t('orderStats.allDistricts')" value="全部" />
-            <el-option v-for="d in districtOptions" :key="d" :label="d" :value="d" />
+            <el-option v-for="d in districtOptions" :key="d" :label="w(d)" :value="d" />
           </el-select>
         </div>
 
@@ -99,7 +99,7 @@
           <label class="block text-[#58685D] mb-1 font-medium">{{ $t('orderStats.streetLabel') }}</label>
           <el-select v-model="selectedStreet" class="w-full" size="small">
             <el-option :label="$t('orderStats.allStreets')" value="全部" />
-            <el-option v-for="s in streetOptions" :key="s" :label="s" :value="s" />
+            <el-option v-for="s in streetOptions" :key="s" :label="w(s)" :value="s" />
           </el-select>
         </div>
 
@@ -129,7 +129,7 @@
         </div>
         <div class="text-xl sm:text-2xl font-bold font-mono text-[#326445]">
           {{ totalOrdersCount.toLocaleString() }}
-          <span class="text-xs font-normal text-[#58685D]">{{ isEn ? 'orders' : '笔' }}</span>
+          <span class="text-xs font-normal text-[#58685D]">{{ w("笔") }}</span>
         </div>
         <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
           <span>{{ $t('orderStats.coveredPopulation', { count: (totalOrdersCount * 5).toLocaleString() }) }}</span>
@@ -150,8 +150,8 @@
           <span class="text-xs font-normal text-[#58685D]">KG</span>
         </div>
         <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
-          <span>{{ isEn ? 'Equivalent Tons:' : '折合战略储备:' }}</span>
-          <span class="text-[#7A5F21] font-bold font-mono">{{ (calculateItemTotal('面粉') / 1000).toFixed(1) }} 吨</span>
+          <span>{{ w("折合战略储备:") }}</span>
+          <span class="text-[#7A5F21] font-bold font-mono">{{ (calculateItemTotal('面粉') / 1000).toFixed(1) }} {{ w("吨") }}</span>
         </div>
       </div>
 
@@ -168,7 +168,7 @@
           <span class="text-xs font-normal text-[#58685D]">KG</span>
         </div>
         <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
-          <span>{{ isEn ? 'Fulfillment:' : '核验交付率:' }}</span>
+          <span>{{ w("核验交付率:") }}</span>
           <span class="text-[#2F5B44] font-bold font-mono">98.4%</span>
         </div>
       </div>
@@ -178,14 +178,14 @@
         class="bg-white p-3.5 sm:p-4 rounded-lg border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm hover:border-[#D3AF62]/60 transition-all space-y-1.5 relative overflow-hidden"
       >
         <div class="flex items-center justify-between text-xs text-[#58685D]">
-          <span class="font-medium">{{ isEn ? 'Fee & State Subsidy' : '规费实收与国家直补' }}</span>
+          <span class="font-medium">{{ w("规费实收与国家直补") }}</span>
           <span class="w-6 h-6 rounded-lg bg-[#D3AF62]/15 text-[#7A5F21] flex items-center justify-center font-bold">🏛️</span>
         </div>
         <div class="text-lg sm:text-xl font-bold font-mono text-[#326445] truncate">
           IQD {{ (totalSelfPayAmount / 1000000).toFixed(2) }}M
         </div>
         <div class="flex items-center justify-between text-[11px] text-[#8A9A8F] pt-1 border-t border-[#E9F1EB]">
-          <span>{{ isEn ? 'State Subsidy:' : '国家财政贴息:' }}</span>
+          <span>{{ w("国家财政贴息:") }}</span>
           <span class="text-[#7A5F21] font-bold font-mono">IQD {{ (totalSubsidyAmount / 1000000).toFixed(2) }}M</span>
         </div>
       </div>
@@ -208,7 +208,7 @@
         <div class="space-y-3 pt-1">
           <div v-for="item in dynamicStreetData" :key="item.street" class="space-y-1 text-xs">
             <div class="flex justify-between items-center text-[#43554B]">
-              <span class="font-medium truncate max-w-[220px]">{{ item.street }}</span>
+              <span class="font-medium truncate max-w-[220px]">{{ w(item.street) }}</span>
               <div class="font-mono flex items-center gap-2">
                 <span class="font-bold text-[#1B3123]">{{ item.orders }} {{ $t('reconciliation.unitsOrder') }}</span>
                 <span class="text-[10px] text-[#8A9A8F]">({{ item.ratio }}%)</span>
@@ -222,7 +222,7 @@
               ></div>
             </div>
             <div v-if="item.isOverload" class="text-[10px] text-[#C04442] flex items-center gap-1 font-medium">
-              <span>{{ isEn ? '⚠️ Demand surge >25%, agent station near 1,500 limit, expansion advised' : '⚠️ 需求增速超 25%，代销网点逼近 1,500 户红线，建议增设分站' }}</span>
+              <span>{{ w("⚠️ 需求增速超 25%，代销网点逼近 1,500 户红线，建议增设分站") }}</span>
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@
             <div class="text-base font-bold font-mono text-[#5A4718]">
               {{ calculateItemTotal('面粉').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-[#58685D]">{{ isEn ? '54.2% of staple demand' : '占主粮比重 54.2%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ w('占主粮比重 {percent}%', { percent: 54.2 }) }}</div>
           </div>
 
           <!-- 大米 -->
@@ -260,7 +260,7 @@
             <div class="text-base font-bold font-mono text-[#12241A]">
               {{ calculateItemTotal('大米').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-[#58685D]">{{ isEn ? '45.8% of staple demand' : '占主粮比重 45.8%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ w('占主粮比重 {percent}%', { percent: 45.8 }) }}</div>
           </div>
 
           <!-- 食用油 -->
@@ -272,7 +272,7 @@
             <div class="text-base font-bold font-mono text-[#5A4718]">
               {{ calculateItemTotal('油').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">L</span>
             </div>
-            <div class="text-[10px] text-[#58685D]">{{ isEn ? 'Household uptake 92.5%' : '户均选购率 92.5%' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ w("户均选购率 92.5%") }}</div>
           </div>
 
           <!-- 白糖 -->
@@ -284,14 +284,14 @@
             <div class="text-base font-bold font-mono text-[#1B3123]">
               {{ calculateItemTotal('糖').toLocaleString() }} <span class="text-[11px] font-normal text-[#58685D]">KG</span>
             </div>
-            <div class="text-[10px] text-[#58685D]">{{ isEn ? 'Supply stable and ample' : '储备充沛供应稳定' }}</div>
+            <div class="text-[10px] text-[#58685D]">{{ w("储备充沛供应稳定") }}</div>
           </div>
         </div>
 
         <!-- 履约渠道洞察微条 -->
         <div class="p-2.5 rounded-lg bg-[#326445]/5 border border-[#326445]/15 flex items-center justify-between text-xs text-[#326445]">
-          <span>🛵 <strong>{{ isEn ? 'Fulfillment Trend: ' : '履约偏好趋势：' }}</strong>{{ isEn ? 'Home delivery share reaches ' + deliveryHomeRatio + '%, supported by door-to-door welfare services.' : '送货上门选购占比达 ' + deliveryHomeRatio + '%，契合便民保供导向。' }}</span>
-          <span class="text-[#D3AF62] font-mono font-bold shrink-0 ms-2">{{ isEn ? 'Fulfillment 99.1%' : '时效履约 99.1%' }}</span>
+          <span>🛵 <strong>{{ w("履约偏好趋势：") }}</strong>{{ w('送货上门选购占比达 {percent}%，契合便民保供导向。', { percent: deliveryHomeRatio }) }}</span>
+          <span class="text-[#D3AF62] font-mono font-bold shrink-0 ms-2">{{ w("时效履约 99.1%") }}</span>
         </div>
       </div>
     </div>
@@ -330,36 +330,30 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
         <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
           <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
-            <span>🎯 {{ isEn ? 'Key Expansion Area Recommendation' : '重点扩容区域建议' }}</span>
+            <span>🎯 {{ w("重点扩容区域建议") }}</span>
           </div>
           <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
-            {{ isEn
-              ? '[Baghdad Karkh Yarmouk St 3] Order growth highest (+28.4%), nearing 1,500 household limit. Recommended to increase next month flour allocation by 35 tons (+15%) and deploy 1 pickup sub-station.'
-              : '【巴格达省卡尔赫区亚尔穆克第3街】订单增速最高 (+28.4%)，网点签约户逼近 1,500 户红线。建议下月面粉调拨额度调增 35 吨 (+15%)，并前置增设 1 处便民提货点。'
+            {{ w("【巴格达省卡尔赫区亚尔穆克第3街】订单增速最高 (+28.4%)，网点签约户逼近 1,500 户红线。建议下月面粉调拨额度调增 35 吨 (+15%)，并前置增设 1 处便民提货点。")
             }}
           </p>
         </div>
 
         <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
           <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
-            <span>⚖️ {{ isEn ? 'Supply-Demand Balance & Waste Prevention' : '供需平衡与防积压' }}</span>
+            <span>⚖️ {{ w("供需平衡与防积压") }}</span>
           </div>
           <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
-            {{ isEn
-              ? '[Nineveh Mosul Old City] Sugar and flour turnover days longer than usual (28-day surplus). Recommended to maintain normal quota without additions, prioritizing stock clearance.'
-              : '【尼尼微省摩苏尔老城区】白糖与面粉周转天数长于常态 (余量达 28 天)，建议下月保持常态配给不增发，以消化现货库存为主，规避仓储损耗与资金占用。'
+            {{ w("【尼尼微省摩苏尔老城区】白糖与面粉周转天数长于常态 (余量达 28 天)，建议下月保持常态配给不增发，以消化现货库存为主，规避仓储损耗与资金占用。")
             }}
           </p>
         </div>
 
         <div class="p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 space-y-1.5">
           <div class="font-bold text-[#E5CEA1] flex items-center gap-1.5">
-            <span>🚚 {{ isEn ? 'Fleet Logistics Capacity Advice' : '车队运力扩充建议' }}</span>
+            <span>🚚 {{ w("车队运力扩充建议") }}</span>
           </div>
           <p class="text-[#E1F4E4]/90 text-[11px] leading-relaxed">
-            {{ isEn
-              ? 'Home delivery adoption reaches ' + deliveryHomeRatio + '%; peak hours (9:00-11:00 AM) face slight backlog. Recommended to deploy 4 additional rapid delivery trucks to ensure 1-hour fulfillment.'
-              : '居民“送货上门”选购率达 ' + deliveryHomeRatio + '%，高峰期（上午 9:00-11:00）订单积压率上升。建议联合区域代销商扩充 4 台急送保供货车，保障 1 小时内履约达标率。'
+            {{ w('居民“送货上门”选购率达 {percent}%，高峰期（上午 9:00-11:00）订单积压率上升。建议联合区域代销商扩充 4 台急送保供货车，保障 1 小时内履约达标率。', { percent: deliveryHomeRatio })
             }}
           </p>
         </div>
@@ -380,7 +374,7 @@
             class="text-[11px] bg-[#FDF3E0] text-[#6B5321] px-2 py-0.5 rounded-full font-bold border border-[#E5CEA1] flex items-center gap-1"
           >
             <span>✨</span>
-            <span>{{ isEn ? 'New Citizen Order Received' : '新生成的公民订单已置顶展示' }}</span>
+            <span>{{ w("新生成的公民订单已置顶展示") }}</span>
           </span>
         </div>
         <div class="flex items-center gap-2">
@@ -426,7 +420,7 @@
 
         <el-table-column prop="headName" :label="$t('orderStats.orderColHead')" min-width="160">
           <template #default="{ row }">
-            <div class="font-bold text-[#1B3123]">{{ row.headName }}</div>
+            <div class="font-bold text-[#1B3123]">{{ w(row.headName) }}</div>
             <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.cardNo }}</div>
             <div class="text-[10px] text-[#58685D] font-mono">{{ row.phone }}</div>
           </template>
@@ -434,8 +428,8 @@
 
         <el-table-column :label="$t('orderStats.orderColRegion')" min-width="180">
           <template #default="{ row }">
-            <div class="text-[#1F3326] font-medium">{{ row.province || '巴格达省' }} · {{ row.district || '卡尔赫区' }}</div>
-            <div class="text-[10px] text-[#8A9A8F] truncate">{{ row.street || row.deliveryAddress || '亚尔穆克第3街道' }}</div>
+            <div class="text-[#1F3326] font-medium">{{ w(row.province || '巴格达省') }} · {{ w(row.district || '卡尔赫区') }}</div>
+            <div class="text-[10px] text-[#8A9A8F] truncate">{{ w(row.street || row.deliveryAddress || '亚尔穆克第3街道') }}</div>
           </template>
         </el-table-column>
 
@@ -447,13 +441,13 @@
                 :key="idx"
                 class="px-1.5 py-0.5 rounded bg-[#E9F1EB] text-[#43554B] text-[10px] font-medium border border-[#D9E5DB]"
               >
-                {{ formatItemShortName(it.itemName) }} <b class="font-mono font-bold">×{{ it.qty }}{{ it.unit }}</b>
+                {{ w(formatItemShortName(it.itemName)) }} <b class="font-mono font-bold">×{{ it.qty }}{{ w(it.unit) }}</b>
               </span>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column :label="isEn ? 'Amount' : '实付金额'" width="120" align="right">
+        <el-table-column :label="w('实付金额')" width="120" align="right">
           <template #default="{ row }">
             <span class="currency-amount font-mono font-bold text-[#7A5F21]">IQD {{ (row.selfPayAmount || row.amount || 0).toLocaleString() }}</span>
           </template>
@@ -482,7 +476,7 @@
               size="small"
               :type="row.status === 'DELIVERED' ? 'success' : row.status === 'DISPATCHED' ? 'warning' : 'info'"
             >
-              {{ getStatusLabel(row.status) }}
+              {{ w(getStatusLabel(row.status)) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -511,6 +505,8 @@
 </template>
 
 <script setup>
+import { useWarehouseI18n } from '../../../utils/warehouseI18n.js';
+const { w, sameLabel } = useWarehouseI18n();
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -546,11 +542,7 @@ const recentNewOrderIds = ref(new Set());
 // 统计今日新订单数
 const todayNewCount = computed(() => recentNewOrderIds.value.size);
 
-const provinceOptions = computed(() =>
-  isEn.value
-    ? ['Baghdad', 'Basra', 'Nineveh', 'Diyala', 'Kirkuk']
-    : ['巴格达省', '巴士拉省', '尼尼微省', '迪亚拉省', '基尔库克省']
-);
+const provinceOptions = ['巴格达省', '巴士拉省', '尼尼微省', '迪亚拉省', '基尔库克省'];
 
 const districtOptionsMapZh = {
   '巴格达省': ['卡尔赫区', '鲁萨法区', '曼苏尔区', '多拉区', '亚尔穆克区'],
@@ -558,13 +550,6 @@ const districtOptionsMapZh = {
   '尼尼微省': ['摩苏尔老城区', '尼尼微平原区'],
   '迪亚拉省': ['巴古拜区', '哈奈根区'],
   '基尔库克省': ['基尔库克市中心区', '达库克区']
-};
-const districtOptionsMapEn = {
-  'Baghdad': ['Karkh', 'Rusafa', 'Mansour', 'Dora', 'Yarmouk'],
-  'Basra': ['Ashar', 'Old Basra', 'Zubair'],
-  'Nineveh': ['Old Mosul', 'Nineveh Plains'],
-  'Diyala': ['Baqubah', 'Khanaqin'],
-  'Kirkuk': ['Kirkuk Center', 'Daquq']
 };
 
 const streetOptionsMapZh = {
@@ -574,32 +559,21 @@ const streetOptionsMapZh = {
   '多拉区': ['多拉第12街道', '多拉炼厂便民网格'],
   '摩苏尔老城区': ['摩苏尔滨河街', '老城中心集市路']
 };
-const streetOptionsMapEn = {
-  'Karkh': ['Yarmouk 3rd St', 'Palestine St', 'Haifa Avenue'],
-  'Rusafa': ['Saadoun Ave', 'Karrada St', 'Rashid St'],
-  'Mansour': ['Mansour Commercial St', '14 Ramadan St'],
-  'Dora': ['Dora 12th St', 'Dora Grid Station'],
-  'Old Mosul': ['Mosul Riverfront St', 'Central Bazaar Way']
-};
 
 const districtOptions = computed(() => {
-  const map = isEn.value ? districtOptionsMapEn : districtOptionsMapZh;
+  const map = districtOptionsMapZh;
   if (selectedProvince.value === '全部') {
-    return isEn.value
-      ? ['Karkh', 'Rusafa', 'Mansour', 'Dora', 'Ashar', 'Old Mosul']
-      : ['卡尔赫区', '鲁萨法区', '曼苏尔区', '多拉区', '阿沙尔区', '摩苏尔老城区'];
+    return ['卡尔赫区', '鲁萨法区', '曼苏尔区', '多拉区', '阿沙尔区', '摩苏尔老城区'];
   }
   return map[selectedProvince.value] || [];
 });
 
 const streetOptions = computed(() => {
-  const map = isEn.value ? streetOptionsMapEn : streetOptionsMapZh;
+  const map = streetOptionsMapZh;
   if (selectedDistrict.value === '全部') {
-    return isEn.value
-      ? ['Yarmouk 3rd St', 'Palestine St', 'Saadoun Ave', 'Dora 12th St', 'Mosul Riverfront St']
-      : ['亚尔穆克第3街道', '巴勒斯坦街', '萨阿敦大街', '多拉第12街道', '摩苏尔滨河街'];
+    return ['亚尔穆克第3街道', '巴勒斯坦街', '萨阿敦大街', '多拉第12街道', '摩苏尔滨河街'];
   }
-  return map[selectedDistrict.value] || (isEn.value ? ['Community Grid 1', 'Main Supply Way'] : ['社区第1网格街', '便民保供主干道']);
+  return map[selectedDistrict.value] || ['社区第1网格街', '便民保供主干道'];
 });
 
 function handleProvinceChange() {
@@ -628,17 +602,7 @@ function formatItemShortName(name) {
 }
 
 function getStatusLabel(status) {
-  switch (status) {
-    case 'DELIVERED':
-      return t('reconciliation.deliveredStatus') || (isEn.value ? 'Delivered' : '已交付');
-    case 'DISPATCHED':
-      return t('reconciliation.dispatchedStatus') || (isEn.value ? 'Dispatched' : '配送中');
-    case 'READY_FOR_PICKUP':
-      return isEn.value ? 'Ready for Pickup' : '备货就绪';
-    case 'PAID':
-    default:
-      return isEn.value ? 'Paid / Pending' : '已支付待安排';
-  }
+  return w({ DELIVERED: '已签收', DISPATCHED: '运输在途中', READY_FOR_PICKUP: '备货就绪' }[status] || '已支付待安排');
 }
 
 function isRecentOrder(row) {
@@ -682,15 +646,15 @@ async function loadData() {
   try {
     const res = await getAgentCitizenOrders();
     const orders = Array.isArray(res) ? res : (res?.data || []);
-    const provs = provinceOptions.value;
-    const distMap = isEn.value ? districtOptionsMapEn : districtOptionsMapZh;
-    const strMap = isEn.value ? streetOptionsMapEn : streetOptionsMapZh;
+    const provs = provinceOptions;
+    const distMap = districtOptionsMapZh;
+    const strMap = streetOptionsMapZh;
 
     rawOrders.value = orders.map((o, idx) => {
       const p = provs[idx % provs.length];
-      const districts = distMap[p] || [isEn.value ? 'Central District' : '中心示范区'];
+      const districts = distMap[p] || ['中心示范区'];
       const d = districts[idx % districts.length];
-      const streets = strMap[d] || [isEn.value ? 'Main Street' : '便民示范街'];
+      const streets = strMap[d] || ['便民示范街'];
       const s = streets[idx % streets.length];
       return {
         ...o,
@@ -710,13 +674,13 @@ const filteredOrders = computed(() => {
   let list = [...rawOrders.value];
 
   if (selectedProvince.value !== '全部') {
-    list = list.filter(o => o.province === selectedProvince.value);
+    list = list.filter(o => sameLabel(o.province, selectedProvince.value));
   }
   if (selectedDistrict.value !== '全部') {
-    list = list.filter(o => o.district === selectedDistrict.value);
+    list = list.filter(o => sameLabel(o.district, selectedDistrict.value));
   }
   if (selectedStreet.value !== '全部') {
-    list = list.filter(o => o.street === selectedStreet.value);
+    list = list.filter(o => sameLabel(o.street, selectedStreet.value));
   }
   if (selectedDeliveryType.value !== '全部') {
     list = list.filter(o => o.deliveryType === selectedDeliveryType.value);
@@ -813,12 +777,12 @@ function generateAiForecast() {
   aiAnalyzing.value = true;
   setTimeout(() => {
     aiAnalyzing.value = false;
-    ElMessage.success(isEn.value ? 'AI diagnosis completed! Demand forecasts and capacity advice refreshed.' : 'AI 智能分析已完成！各省各街道扩容需求预测与下月配额调减建议已刷新。');
+    ElMessage.success(w('AI 智能分析已完成！各省各街道扩容需求预测与下月配额调减建议已刷新。'));
   }, 700);
 }
 
 function applyAiAdviceToPlan() {
-  ElMessage.success(isEn.value ? 'AI expansion parameters applied to Allocation Planning Form!' : '已自动将 AI 扩容预测参数应用至【配给计划管理】制定表单！');
+  ElMessage.success(w('已自动将 AI 扩容预测参数应用至【配给计划管理】制定表单！'));
 }
 
 let unsubs = [];

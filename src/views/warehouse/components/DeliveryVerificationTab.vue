@@ -15,7 +15,7 @@
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
           <el-icon class="me-1"><Refresh /></el-icon>
-          {{ $t('common.refresh') || '刷新' }}
+          {{ w("刷新") }}
         </el-button>
       </div>
     </div>
@@ -35,7 +35,7 @@
       <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="trackingSearch"
-          :placeholder="$t('warehouse.trackingSearchPlaceholder') || '搜索交付流水号 / 代理中心 / 承运车队 / 司机'"
+          :placeholder="w('搜索交付流水号 / 代理中心 / 承运车队 / 司机')"
           clearable
           size="small"
           class="max-w-xs"
@@ -46,15 +46,15 @@
           </template>
         </el-input>
 
-        <el-select v-model="trackingStatus" :placeholder="$t('warehouse.trackingStatus') || '配送状态'" clearable size="small" class="w-36" @change="trackingPage = 1">
-          <el-option :label="$t('warehouse.statusInTransit') || '在途运输中'" value="在途" />
-          <el-option :label="$t('warehouse.statusDelivered') || '已送达待签收'" value="送达" />
-          <el-option :label="$t('warehouse.statusSigned') || '已签收'" value="已签收" />
-          <el-option :label="$t('warehouse.statusDiscrepancy') || '签收异常差异'" value="差异" />
+        <el-select v-model="trackingStatus" :placeholder="w('配送状态')" clearable size="small" class="w-36" @change="trackingPage = 1">
+          <el-option :label="w('在途运输中')" value="在途" />
+          <el-option :label="w('已送达待签收')" value="送达" />
+          <el-option :label="w('已签收')" value="已签收" />
+          <el-option :label="w('签收异常差异')" value="差异" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetTrackingFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ isEn ? `Total ${filteredTrackings.length} records` : `共 ${filteredTrackings.length} 条记录` }}</span>
+        <el-button size="small" link type="primary" @click="resetTrackingFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredTrackings.length }) }}</span>
       </div>
 
       <!-- 表格 -->
@@ -63,37 +63,37 @@
           <el-table-column prop="deliveryFlowNo" :label="$t('warehouse.deliveryFlowNo') || '交付流水号'" min-width="180">
             <template #default="{ row }">
               <span class="font-mono font-bold text-[#2A5440]">{{ row.deliveryFlowNo }}</span>
-              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ isEn ? 'Dispatch: ' : '发运: ' }}{{ row.dispatchTime }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ w("发运: ") }}{{ row.dispatchTime }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="toAgentCenter" :label="$t('warehouse.toAgentCenter') || '目的代理网点'" min-width="180">
             <template #default="{ row }">
-              <div class="font-bold text-[#1F3326]">{{ row.toAgentCenter }}</div>
+              <div class="font-bold text-[#1F3326]">{{ w(row.toAgentCenter) }}</div>
             </template>
           </el-table-column>
           <el-table-column prop="carrierName" :label="$t('warehouse.carrierName') || '物流承运车队'" min-width="160">
             <template #default="{ row }">
-              <div class="text-[#43554B] font-medium">{{ row.carrierName }}</div>
-              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
+              <div class="text-[#43554B] font-medium">{{ w(row.carrierName) }}</div>
+              <div class="text-[10px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ w(row.driverName) }})</div>
             </template>
           </el-table-column>
           <el-table-column :label="$t('warehouse.inTransitAging') || '在途时效'" width="130" align="center">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-[#43554B]">{{ row.inTransitHours }} / {{ row.maxAllowedHours }} {{ isEn ? 'hrs' : '小时' }}</span>
-              <div class="text-[10px] text-[#2F7A50] font-medium">● {{ isEn ? 'Normal Timing' : '时效正常' }}</div>
+              <span class="font-mono font-bold text-[#43554B]">{{ row.inTransitHours }} / {{ row.maxAllowedHours }} {{ w("小时") }}</span>
+              <div class="text-[10px] text-[#2F7A50] font-medium">● {{ w("时效正常") }}</div>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('warehouse.latestTrace') || '最新轨迹'" min-width="200">
+          <el-table-column :label="w('最新轨迹')" min-width="200">
             <template #default="{ row }">
-              <div class="text-[11px] text-[#58685D] truncate" :title="row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc">
-                {{ row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc || (isEn ? 'Trunk Line in Transit' : '干线运输中') }}
+              <div class="text-[11px] text-[#58685D] truncate" :title="w(row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc)">
+                {{ w(row.gpsNodes?.[row.gpsNodes?.length - 1]?.desc || '运输在途中') }}
               </div>
               <div class="text-[10px] text-[#8A9A8F] font-mono">
                 {{ row.gpsNodes?.[row.gpsNodes?.length - 1]?.time }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="status" :label="$t('warehouse.trackingStatus') || '配送状态'" width="130" align="center">
+          <el-table-column prop="status" :label="w('配送状态')" width="130" align="center">
             <template #default="{ row }">
               <el-tag
                 size="small"
@@ -104,7 +104,7 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('admin.actions') || '操作'" width="120" align="center" fixed="right">
+          <el-table-column :label="w('操作')" width="120" align="center" fixed="right">
             <template #default="{ row }">
               <!-- 已签收状态直接展示已签收状态徽章 -->
               <el-tag
@@ -114,7 +114,7 @@
                 effect="plain"
                 class="font-bold"
               >
-                {{ isEn ? 'Signed' : '已签收' }}
+                {{ w("已签收") }}
               </el-tag>
               <el-button
                 v-else-if="!row.status.includes('差异')"
@@ -123,16 +123,14 @@
                 plain
                 @click="openScanReceiptDialog(row)"
               >
-                <el-icon class="me-1"><FullScreen /></el-icon>
-                扫码核收
-              </el-button>
-              <span v-else class="text-[11px] text-[#C04442] font-bold">已阻断</span>
+                <el-icon class="me-1"><FullScreen /></el-icon> {{ w("扫码核收") }} </el-button>
+              <span v-else class="text-[11px] text-[#C04442] font-bold">{{ w("已阻断") }}</span>
             </template>
           </el-table-column>
         </el-table>
 
         <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredTrackings.length }} 笔在途任务</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredTrackings.length }) }}</span>
           <el-pagination
             v-model:current-page="trackingPage"
             v-model:page-size="trackingPageSize"
@@ -180,8 +178,8 @@
           <el-option label="差异短缺 (SHORTAGE)" value="SHORTAGE" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetReceiptFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredReceipts.length }} 条记录</span>
+        <el-button size="small" link type="primary" @click="resetReceiptFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredReceipts.length }) }}</span>
       </div>
 
       <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -228,7 +226,7 @@
                 :type="row.reconciliationResult.includes('MATCHED') ? 'success' : 'danger'"
                 effect="dark"
               >
-                {{ row.reconciliationResult }}
+                {{ w(row.reconciliationResult) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -238,14 +236,14 @@
                 class="text-[11px] font-bold"
                 :class="row.status.includes('阻断') ? 'text-[#C04442]' : 'text-[#2F7A50]'"
               >
-                {{ row.status }}
+                {{ w(row.status) }}
               </span>
             </template>
           </el-table-column>
         </el-table>
 
         <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredReceipts.length }} 笔核收凭据</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredReceipts.length }) }}</span>
           <el-pagination
             v-model:current-page="receiptPage"
             v-model:page-size="receiptPageSize"
@@ -289,8 +287,8 @@
           <el-option label="已闭环解除" value="已闭环" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetDiscrepancyFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredDiscrepancies.length }} 条记录</span>
+        <el-button size="small" link type="primary" @click="resetDiscrepancyFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredDiscrepancies.length }) }}</span>
       </div>
 
       <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -309,7 +307,7 @@
           </el-table-column>
           <el-table-column prop="discrepancyQty" label="锁定差额数量" width="140" align="right">
             <template #default="{ row }">
-              <span class="font-mono font-bold text-[#C04442] text-sm">{{ row.discrepancyQty }} {{ row.unit }}</span>
+              <span class="font-mono font-bold text-[#C04442] text-sm">{{ row.discrepancyQty }} {{ w(row.unit) }}</span>
               <div class="text-[10px] text-[#C04442] font-medium">● 异常阻断锁定</div>
             </template>
           </el-table-column>
@@ -324,7 +322,7 @@
               <el-tag size="small" type="danger" effect="light">{{ row.quarantineStatus }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" align="center" fixed="right">
+          <el-table-column :label="w('操作')" width="120" align="center" fixed="right">
             <template #default="{ row }">
               <el-button
                 v-if="row.resolutionStatus && row.resolutionStatus.includes('核查中')"
@@ -341,7 +339,7 @@
         </el-table>
 
         <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredDiscrepancies.length }} 笔工单记录</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredDiscrepancies.length }) }}</span>
           <el-pagination
             v-model:current-page="discrepancyPage"
             v-model:page-size="discrepancyPageSize"
@@ -373,7 +371,7 @@
           </div>
           <div class="text-end">
             <span class="text-[#8A9A8F] text-[11px] block">目的代销网点：</span>
-            <span class="font-bold text-[#1F3326]">{{ currentScanRow?.toAgentCenter }}</span>
+            <span class="font-bold text-[#1F3326]">{{ w(currentScanRow?.toAgentCenter) }}</span>
           </div>
         </div>
 
@@ -486,7 +484,7 @@
               </div>
               <div>
                 <span class="text-[#8A9A8F] text-[11px] block">物资品名与数量：</span>
-                <span class="font-bold text-[#1F3326]">{{ scannedResult?.itemName }} ({{ scannedResult?.qty }} {{ scannedResult?.unit }})</span>
+                <span class="font-bold text-[#1F3326]">{{ w(scannedResult?.itemName) }} ({{ scannedResult?.qty }} {{ w(scannedResult?.unit) }})</span>
               </div>
               <div>
                 <span class="text-[#8A9A8F] text-[11px] block">生产批次：</span>
@@ -504,7 +502,7 @@
 
       <template #footer>
         <div class="flex items-center justify-between">
-          <el-button @click="handleCloseScanDialog">取消</el-button>
+          <el-button @click="handleCloseScanDialog">{{ w("取消") }}</el-button>
           <div class="flex items-center gap-2">
             <el-button v-if="scanSuccess" size="small" plain @click="resetScanState">重新扫描</el-button>
             <el-button
@@ -546,7 +544,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="receiptDialogVisible = false">取消</el-button>
+        <el-button @click="receiptDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitReceiptForm" :loading="submitting">确认终端扫码核验</el-button>
       </template>
     </el-dialog>
@@ -554,6 +552,8 @@
 </template>
 
 <script setup>
+import { useWarehouseI18n } from '../../../utils/warehouseI18n.js';
+const { w, sameLabel } = useWarehouseI18n();
 import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -563,14 +563,7 @@ const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 
 function getDeliveryStatusLabel(status) {
-  if (isEn.value && status) {
-    if (status.includes('差异')) return 'Discrepancy Alert';
-    if (status.includes('已签收')) return 'Signed & Received';
-    if (status.includes('送达')) return 'Delivered (Pending Sign)';
-    if (status.includes('在途')) return 'In-Transit';
-    return status;
-  }
-  return status;
+  return w(status);
 }
 import {
   getDeliveryTrackings,
@@ -615,10 +608,11 @@ const filteredTrackings = computed(() => {
     const q = (trackingSearch.value || '').toLowerCase();
     const matchSearch = !q ||
       (item.deliveryFlowNo || '').toLowerCase().includes(q) ||
-      (item.toAgentCenter || '').toLowerCase().includes(q) ||
-      (item.carrierName || '').toLowerCase().includes(q) ||
-      (item.driverName || '').toLowerCase().includes(q);
-    const matchStatus = !trackingStatus.value || (item.status || '').includes(trackingStatus.value);
+      (String(item.toAgentCenter || '') + ' ' + w(item.toAgentCenter)).toLowerCase().includes(q) ||
+      (String(item.carrierName || '') + ' ' + w(item.carrierName)).toLowerCase().includes(q) ||
+      (String(item.driverName || '') + ' ' + w(item.driverName)).toLowerCase().includes(q);
+    const statusGroups = { '在途': ['运输在途中', '在途运输中'], '送达': ['已安全送达待签收', '已送达待签收'], '已签收': ['已签收'], '差异': ['已触发差异预警(阻断流转)', '签收异常差异'] };
+    const matchStatus = !trackingStatus.value || (statusGroups[trackingStatus.value] || [trackingStatus.value]).some((status) => sameLabel(item.status, status));
     return matchSearch && matchStatus;
   });
 });
@@ -669,7 +663,7 @@ const filteredDiscrepancies = computed(() => {
     const matchSearch = !q ||
       (item.ticketNo || '').toLowerCase().includes(q) ||
       (item.deliveryFlowNo || '').toLowerCase().includes(q) ||
-      (item.centerName || '').toLowerCase().includes(q);
+      (String(item.centerName || '') + ' ' + w(item.centerName)).toLowerCase().includes(q);
     const matchStatus = !discrepancyStatus.value || (item.resolutionStatus || '').includes(discrepancyStatus.value);
     return matchSearch && matchStatus;
   });

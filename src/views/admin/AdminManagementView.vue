@@ -290,8 +290,8 @@
                   <template #default="{ row }">
                     <div class="flex items-center gap-1.5">
                       <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
-                      <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right">
-                        {{ $t('citizenCard.headTag') || '户主' }}
+                      <el-tag v-if="sameLabel(row.relation, '户主')" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right">
+                        {{ w('户主') }}
                       </el-tag>
                     </div>
                   </template>
@@ -983,8 +983,8 @@
             <el-table-column prop="name" :label="$t('admin.name') || '姓名'" min-width="130">
               <template #default="{ row }">
                 <span class="font-bold text-[#1F3326]">{{ formatMemberName(row.name) }}</span>
-                <el-tag v-if="row.relation === '户主' || row.relation === 'Head'" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right ms-1">
-                  {{ $t('citizenCard.headTag') || '户主' }}
+                <el-tag v-if="sameLabel(row.relation, '户主')" size="small" type="warning" effect="dark" class="scale-75 origin-left rtl:origin-right ms-1">
+                  {{ w('户主') }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -1239,6 +1239,8 @@
 </template>
 
 <script setup>
+import { useWarehouseI18n } from '../../utils/warehouseI18n.js';
+const { w, sameLabel } = useWarehouseI18n();
 import { isEnNow } from '../../utils/langHint.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -1252,17 +1254,6 @@ import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
-
-const nameZhToEnMap = {
-  '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
-  '海德尔·阿卜杜勒·拉赫曼': 'Haider Abdul-Rahman',
-  '海德尔·阿卜杜勒-拉赫曼': 'Haider Abdul-Rahman',
-  '法蒂玛·扎赫拉·穆罕默德': 'Fatima Zahra Mohammed',
-  '奥马尔·法鲁克·哈利勒': 'Omar Farooq Khalil',
-  '优素福·易卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
-  '优素福·恩卜拉欣·卡西姆': 'Youssef Ibrahim Qasim',
-  '海德尔·卡西姆·纳赛尔': 'Haider Qasim Nasser'
-};
 
 const districtZhToEnMap = {
   '卡尔赫第一配给中心 (#04)': 'Karkh 1st Ration Center (#04)',
@@ -1289,8 +1280,7 @@ const provinceZhToEnMap = {
 
 function formatHeadName(name) {
   if (!name) return '';
-  if (isEn.value && nameZhToEnMap[name]) return nameZhToEnMap[name];
-  return name;
+  return w(name);
 }
 
 function formatDistrict(dist) {
@@ -1309,42 +1299,17 @@ function isFrozenCard(row) {
   return row?.status === '已冻结' || row?.status === 'Frozen';
 }
 
-const memberNameZhToEnMap = {
-  '艾哈迈德·哈桑·萨利赫': 'Ahmed Hassan Saleh',
-  '法蒂玛·阿里·穆罕默德': 'Fatima Ali Mohammed',
-  '奥马尔·艾哈迈德·哈桑': 'Omar Ahmed Hassan',
-  '宰娜卜·艾哈迈德·哈桑': 'Zainab Ahmed Hassan',
-  '优素福·艾哈迈德·哈桑': 'Youssef Ahmed Hassan'
-};
-
 function formatMemberName(name) {
   if (!name) return '';
-  if (isEn.value && memberNameZhToEnMap[name]) return memberNameZhToEnMap[name];
-  return formatHeadName(name);
+  return w(name);
 }
 
 function formatMemberRelation(relation) {
-  if (!relation) return '';
-  if (isEn.value) {
-    const map = {
-      '户主': 'Head',
-      '配偶': 'Spouse',
-      '子女': 'Child',
-      '父母': 'Parent',
-      '其他亲属': 'Other Relative'
-    };
-    return map[relation] || relation;
-  }
-  return relation;
+  return w(relation);
 }
 
 function formatMemberGender(gender) {
-  if (!gender) return '';
-  if (isEn.value) {
-    if (gender === '男' || gender === 'Male') return 'Male';
-    if (gender === '女' || gender === 'Female') return 'Female';
-  }
-  return gender;
+  return w(gender);
 }
 
 function openCardMembersDrawer(row) {

@@ -12,7 +12,7 @@
       <div class="flex items-center gap-2">
         <el-button size="small" @click="loadData">
           <el-icon class="me-1"><Refresh /></el-icon>
-          {{ $t('common.refresh') || '刷新' }}
+          {{ w("刷新") }}
         </el-button>
       </div>
     </div>
@@ -36,7 +36,7 @@
       <div class="bg-white p-3.5 rounded-lg border border-[#D9E5DB]/80 shadow-xs flex flex-wrap items-center gap-2.5 text-xs">
         <el-input
           v-model="inboundSearch"
-          :placeholder="isEn ? 'Search Inbound No / PO / Item Name' : '搜索入库单号 / 采购单 / 物资品名'"
+          :placeholder="w('搜索入库单号 / 采购单 / 物资品名')"
           clearable
           size="small"
           class="max-w-xs"
@@ -47,48 +47,48 @@
           </template>
         </el-input>
 
-        <el-select v-model="inboundStatus" :placeholder="isEn ? 'Quality Status' : '质检状态'" clearable size="small" class="w-32" @change="inboundPage = 1">
-          <el-option :label="isEn ? 'Passed' : '合格入库'" value="合格" />
-          <el-option :label="isEn ? 'Pending' : '待检'" value="待检" />
-          <el-option :label="isEn ? 'Rejected' : '不合格'" value="不合格" />
+        <el-select v-model="inboundStatus" :placeholder="w('质检状态')" clearable size="small" class="w-32" @change="inboundPage = 1">
+          <el-option :label="w('合格入库')" value="合格" />
+          <el-option :label="w('待检')" value="待检" />
+          <el-option :label="w('不合格')" value="不合格" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetInboundFilter">{{ $t('common.reset') || '重置' }}</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ isEn ? `Total ${filteredInboundOrders.length} records` : `共 ${filteredInboundOrders.length} 条记录` }}</span>
+        <el-button size="small" link type="primary" @click="resetInboundFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredInboundOrders.length }) }}</span>
       </div>
 
       <!-- 入库单表格 -->
       <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
         <el-table :data="paginatedInboundOrders" v-loading="loading" border style="width: 100%" class="text-xs">
-          <el-table-column prop="inboundNo" :label="isEn ? 'Inbound No. / PO' : '入库单号 / 采购单'" min-width="160">
+          <el-table-column prop="inboundNo" :label="w('入库单号 / 采购单')" min-width="160">
             <template #default="{ row }">
               <span class="font-mono font-bold text-[#326445]">{{ row.inboundNo }}</span>
               <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.purchaseOrderNo }}</div>
             </template>
           </el-table-column>
-          <el-table-column prop="tradePlanNo" :label="isEn ? 'Plan Link (P1)' : '关联贸易部计划 (P1校验)'" min-width="160">
+          <el-table-column prop="tradePlanNo" :label="w('关联贸易部计划 (P1校验)')" min-width="160">
             <template #default="{ row }">
               <el-tag size="small" type="primary" effect="light" class="font-mono">
                 {{ row.tradePlanNo }}
               </el-tag>
-              <div class="text-[10px] text-[#2F7A50] font-medium mt-0.5">● {{ isEn ? 'Verified' : '计划校验合格' }}</div>
+              <div class="text-[10px] text-[#2F7A50] font-medium mt-0.5">● {{ w("计划校验合格") }}</div>
             </template>
           </el-table-column>
-          <el-table-column prop="itemName" :label="isEn ? 'Item Name & Qty' : '物资品名与实收量'" min-width="160">
+          <el-table-column prop="itemName" :label="w('物资品名与实收量')" min-width="160">
             <template #default="{ row }">
               <div class="font-bold text-[#1F3326]">{{ formatItemName(row.itemName) }}</div>
               <div class="font-mono text-[#2F7A50] font-bold mt-0.5">
-                {{ (row.actualQty || 0).toLocaleString() }} {{ row.unit }}
+                {{ (row.actualQty || 0).toLocaleString() }} {{ w(row.unit) }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="batchNo" :label="isEn ? 'Batch & Expiry' : '生产批次与效期 (强制建档)'" min-width="210">
+          <el-table-column prop="batchNo" :label="w('生产批次与效期 (强制建档)')" min-width="210">
             <template #default="{ row }">
               <span class="font-mono text-[11px] font-bold text-[#43554B] bg-[#E9F1EB] px-1.5 py-0.5 rounded">
                 {{ row.batchNo }}
               </span>
               <div class="text-[10px] text-[#58685D] font-mono mt-0.5">
-                {{ isEn ? 'MFG: ' : '生产: ' }}{{ row.productionDate }} ~ {{ isEn ? 'EXP: ' : '效期: ' }}{{ row.expiryDate }}
+                {{ w("生产: ") }}{{ row.productionDate }} ~ {{ w("效期: ") }}{{ row.expiryDate }}
               </div>
               <div class="text-[10px] text-[#326445] font-mono mt-0.5 flex items-center gap-1">
                 <el-icon><Tickets /></el-icon>
@@ -96,19 +96,19 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="warehouseName" :label="isEn ? 'Location / Shelf' : '推荐上架货位'" min-width="170">
+          <el-table-column prop="warehouseName" :label="w('推荐上架货位')" min-width="170">
             <template #default="{ row }">
-              <div class="text-[#1F3326] font-medium">{{ row.warehouseName }}</div>
+              <div class="text-[#1F3326] font-medium">{{ w(row.warehouseName) }}</div>
               <div class="font-mono text-[#326445] font-bold text-[11px] mt-0.5">
-                {{ isEn ? 'Bin: ' : '库位: ' }}{{ row.locationCode }}
+                {{ w("库位: ") }}{{ row.locationCode }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="inspectStatus" label="品控质检报告" width="130" align="center">
+          <el-table-column prop="inspectStatus" :label="w('品控质检报告')" width="130" align="center">
             <template #default="{ row }">
-              <el-tag size="small" type="success" effect="light">{{ row.inspectStatus }}</el-tag>
-              <div class="text-[10px] text-[#8A9A8F] mt-0.5 truncate" :title="row.inspectReport">
-                {{ row.inspectReport }}
+              <el-tag size="small" type="success" effect="light">{{ w(row.inspectStatus) }}</el-tag>
+              <div class="text-[10px] text-[#8A9A8F] mt-0.5 truncate" :title="w(row.inspectReport)">
+                {{ w(row.inspectReport) }}
               </div>
             </template>
           </el-table-column>
@@ -116,7 +116,7 @@
 
         <!-- 入库单分页 -->
         <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredInboundOrders.length }} 笔入库单</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredInboundOrders.length }) }}</span>
           <el-pagination
             v-model:current-page="inboundPage"
             v-model:page-size="inboundPageSize"
@@ -166,8 +166,8 @@
           <el-option label="签收异常" value="异常" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetOutboundFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredOutboundOrders.length }} 条记录</span>
+        <el-button size="small" link type="primary" @click="resetOutboundFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredOutboundOrders.length }) }}</span>
       </div>
 
       <!-- 出库单表格 -->
@@ -191,7 +191,7 @@
           </el-table-column>
           <el-table-column prop="itemName" label="出库物资与拣选批次" min-width="180">
             <template #default="{ row }">
-              <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+              <div class="font-bold text-[#1F3326]">{{ w(row.itemName) }}</div>
               <div class="font-mono text-[#58685D] text-[11px] mt-0.5">{{ row.batchNo }}</div>
               <el-tag size="small" type="info" effect="plain" class="scale-90 origin-left rtl:origin-right mt-0.5">
                 {{ row.pickingRule }}
@@ -201,7 +201,7 @@
           <el-table-column prop="actualOutQty" label="出库量 / 在途锁定" width="140" align="right">
             <template #default="{ row }">
               <div class="font-mono font-bold text-[#326445] text-sm">
-                {{ (row.actualOutQty || 0).toLocaleString() }} {{ row.unit }}
+                {{ (row.actualOutQty || 0).toLocaleString() }} {{ w(row.unit) }}
               </div>
               <div class="text-[10px] text-[#C9A13B] font-mono mt-0.5">
                 已锁定在途: {{ (row.lockedInTransitQty || 0).toLocaleString() }}
@@ -210,8 +210,8 @@
           </el-table-column>
           <el-table-column prop="carrierName" label="物流承运与车队" min-width="150">
             <template #default="{ row }">
-              <div class="text-[#43554B] font-medium">{{ row.carrierName }}</div>
-              <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ row.driverName }})</div>
+              <div class="text-[#43554B] font-medium">{{ w(row.carrierName) }}</div>
+              <div class="text-[11px] text-[#8A9A8F] font-mono">{{ row.vehicleNo }} ({{ w(row.driverName) }})</div>
             </template>
           </el-table-column>
           <el-table-column prop="status" label="交付流转状态" width="140" align="center">
@@ -221,7 +221,7 @@
                 :type="row.status.includes('锁定') ? 'warning' : row.status.includes('异常') ? 'danger' : 'success'"
                 effect="light"
               >
-                {{ row.status }}
+                {{ w(row.status) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -229,7 +229,7 @@
 
         <!-- 出库单分页 -->
         <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredOutboundOrders.length }} 笔出库单</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredOutboundOrders.length }) }}</span>
           <el-pagination
             v-model:current-page="outboundPage"
             v-model:page-size="outboundPageSize"
@@ -278,8 +278,8 @@
           <el-option label="阶段3: 验收入库" value="阶段3" />
         </el-select>
 
-        <el-button size="small" link type="primary" @click="resetTransferFilter">重置</el-button>
-        <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredTransferOrders.length }} 条记录</span>
+        <el-button size="small" link type="primary" @click="resetTransferFilter">{{ w("重置") }}</el-button>
+        <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredTransferOrders.length }) }}</span>
       </div>
 
       <!-- 调拨卡片列表 -->
@@ -289,9 +289,9 @@
             <div class="flex items-center justify-between border-b border-[#E9F1EB] pb-2">
               <div>
                 <span class="font-mono font-bold text-[#326445]">{{ trf.transferNo }}</span>
-                <span class="text-[#8A9A8F] text-xs ms-2 font-bold">{{ trf.itemName }} ({{ trf.transferQty.toLocaleString() }} {{ trf.unit }})</span>
+                <span class="text-[#8A9A8F] text-xs ms-2 font-bold">{{ w(trf.itemName) }} ({{ trf.transferQty.toLocaleString() }} {{ w(trf.unit) }})</span>
               </div>
-              <el-tag size="small" type="primary" effect="dark">{{ trf.currentStage }}</el-tag>
+              <el-tag size="small" type="primary" effect="dark">{{ w(trf.currentStage) }}</el-tag>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
@@ -309,16 +309,16 @@
             <div class="p-2.5 bg-[#F3F8F4] rounded-lg space-y-1.5 text-[11px]">
               <div class="flex items-center justify-between">
                 <span class="text-[#58685D]">1. 调出出库:</span>
-                <span class="font-mono text-[#43554B]">{{ trf.stage1Outbound.outboundFlowNo }} ({{ trf.stage1Outbound.status }})</span>
+                <span class="font-mono text-[#43554B]">{{ trf.stage1Outbound.outboundFlowNo }} ({{ w(trf.stage1Outbound.status) }})</span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-[#58685D]">2. 在途管理:</span>
-                <span class="font-mono text-[#43554B]">{{ trf.stage2InTransit.vehicleNo }} ({{ trf.stage2InTransit.status }})</span>
+                <span class="font-mono text-[#43554B]">{{ trf.stage2InTransit.vehicleNo }} ({{ w(trf.stage2InTransit.status) }})</span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-[#58685D]">3. 调入验收:</span>
                 <span class="font-mono" :class="trf.stage3Inbound.status === '已验收入库' ? 'text-[#2F7A50] font-bold' : 'text-[#8A9A8F]'">
-                  {{ trf.stage3Inbound.status }}
+                  {{ w(trf.stage3Inbound.status) }}
                 </span>
               </div>
             </div>
@@ -342,7 +342,7 @@
 
         <!-- 调拨单分页 -->
         <div class="p-3 bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs flex items-center justify-between text-xs">
-          <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredTransferOrders.length }} 笔调拨单</span>
+          <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredTransferOrders.length }) }}</span>
           <el-pagination
             v-model:current-page="transferPage"
             v-model:page-size="transferPageSize"
@@ -392,8 +392,8 @@
             <el-option label="待双人签批核销" value="待双人签批" />
           </el-select>
 
-          <el-button size="small" link type="primary" @click="resetStocktakeFilter">重置</el-button>
-          <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredStocktakeRecords.length }} 条记录</span>
+          <el-button size="small" link type="primary" @click="resetStocktakeFilter">{{ w("重置") }}</el-button>
+          <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredStocktakeRecords.length }) }}</span>
         </div>
 
         <!-- 盘点表格 -->
@@ -407,17 +407,17 @@
             </el-table-column>
             <el-table-column prop="warehouseName" label="所在仓库与货位" min-width="160">
               <template #default="{ row }">
-                <div class="text-[#1F3326]">{{ row.warehouseName }}</div>
+                <div class="text-[#1F3326]">{{ w(row.warehouseName) }}</div>
                 <div class="font-mono text-[#58685D] text-[11px]">{{ row.locationCode }}</div>
               </template>
             </el-table-column>
-            <el-table-column prop="itemName" label="盘点物资" min-width="150" />
+            <el-table-column prop="itemName" label="盘点物资" min-width="150" ><template #default="{ row }">{{ w(row.itemName) }}</template></el-table-column>
             <el-table-column prop="diffQty" label="账面 / 实盘 / 差异" width="170" align="right">
               <template #default="{ row }">
-                <div class="font-mono text-[#58685D] text-[11px]">账面: {{ row.bookQty.toLocaleString() }} {{ row.unit }}</div>
-                <div class="font-mono text-[#43554B] font-bold">实盘: {{ row.countedQty.toLocaleString() }} {{ row.unit }}</div>
+                <div class="font-mono text-[#58685D] text-[11px]">账面: {{ row.bookQty.toLocaleString() }} {{ w(row.unit) }}</div>
+                <div class="font-mono text-[#43554B] font-bold">实盘: {{ row.countedQty.toLocaleString() }} {{ w(row.unit) }}</div>
                 <div class="font-mono font-bold text-[11px]" :class="row.diffQty < 0 ? 'text-[#C04442]' : row.diffQty > 0 ? 'text-[#C9A13B]' : 'text-[#2F7A50]'">
-                  差异: {{ row.diffQty > 0 ? '+' : '' }}{{ row.diffQty }} {{ row.unit }}
+                  差异: {{ row.diffQty > 0 ? '+' : '' }}{{ row.diffQty }} {{ w(row.unit) }}
                 </div>
               </template>
             </el-table-column>
@@ -429,10 +429,10 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="status" label="状态" width="120" align="center">
+            <el-table-column prop="status" :label="w('状态')" width="120" align="center">
               <template #default="{ row }">
                 <el-tag size="small" :type="row.status === '盘点无差异' ? 'success' : 'warning'" effect="light">
-                  {{ row.status }}
+                  {{ w(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -440,7 +440,7 @@
 
           <!-- 盘点单分页 -->
           <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-            <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredStocktakeRecords.length }} 笔盘点记录</span>
+            <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredStocktakeRecords.length }) }}</span>
             <el-pagination
               v-model:current-page="stocktakePage"
               v-model:page-size="stocktakePageSize"
@@ -488,8 +488,8 @@
             <el-option label="不可抗力损耗" value="不可抗力" />
           </el-select>
 
-          <el-button size="small" link type="primary" @click="resetLossFilter">重置</el-button>
-          <span class="text-[11px] text-[#8A9A8F] ms-auto">共 {{ filteredLossRecords.length }} 条记录</span>
+          <el-button size="small" link type="primary" @click="resetLossFilter">{{ w("重置") }}</el-button>
+          <span class="text-[11px] text-[#8A9A8F] ms-auto">{{ w('共 {count} 条记录', { count: filteredLossRecords.length }) }}</span>
         </div>
 
         <div class="bg-white rounded-lg border border-[#D9E5DB]/80 shadow-xs overflow-hidden">
@@ -502,13 +502,13 @@
             </el-table-column>
             <el-table-column prop="itemName" label="物资与损耗量" min-width="160">
               <template #default="{ row }">
-                <div class="font-bold text-[#1F3326]">{{ row.itemName }}</div>
+                <div class="font-bold text-[#1F3326]">{{ w(row.itemName) }}</div>
                 <div class="font-mono text-[#C04442] font-bold mt-0.5">
-                  损耗: {{ row.qty }} {{ row.unit }} (约 {{ row.estimatedCostIQD.toLocaleString() }} IQD)
+                  损耗: {{ row.qty }} {{ w(row.unit) }} (约 {{ row.estimatedCostIQD.toLocaleString() }} IQD)
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="damageReason" label="损耗原因及事实说明" min-width="220" />
+            <el-table-column prop="damageReason" label="损耗原因及事实说明" min-width="220" ><template #default="{ row }">{{ w(row.damageReason) }}</template></el-table-column>
             <el-table-column label="现场存证影像" width="130" align="center">
               <template #default="{ row }">
                 <el-image
@@ -532,7 +532,7 @@
 
           <!-- 报损单分页 -->
           <div class="p-3 bg-[#F3F8F4]/60 border-t border-[#E9F1EB] flex items-center justify-between text-xs">
-            <span class="text-[#8A9A8F] text-[11px]">共 {{ filteredLossRecords.length }} 笔报损记录</span>
+            <span class="text-[#8A9A8F] text-[11px]">{{ w('共 {count} 条记录', { count: filteredLossRecords.length }) }}</span>
             <el-pagination
               v-model:current-page="lossPage"
               v-model:page-size="lossPageSize"
@@ -562,10 +562,10 @@
         </el-form-item>
         <el-form-item label="物资品名与规格" required>
           <el-select v-model="inboundForm.itemName" class="w-full" @change="onInboundItemChange">
-            <el-option label="精制大米 (巴斯马蒂一等品)" value="精制大米 (巴斯马蒂一等品)" />
-            <el-option label="优质特级面粉 (标准白面)" value="优质特级面粉 (标准白面)" />
-            <el-option label="精炼食用植物油 (葵花籽配方)" value="精炼食用植物油 (葵花籽配方)" />
-            <el-option label="一级纯精制白砂糖" value="一级纯精制白砂糖" />
+            <el-option :label="w('精制大米 (巴斯马蒂一等品)')" value="精制大米 (巴斯马蒂一等品)" />
+            <el-option :label="w('优质特级面粉 (标准白面)')" value="优质特级面粉 (标准白面)" />
+            <el-option :label="w('精炼食用植物油 (葵花籽配方)')" value="精炼食用植物油 (葵花籽配方)" />
+            <el-option :label="w('一级纯精制白砂糖')" value="一级纯精制白砂糖" />
           </el-select>
         </el-form-item>
         <div class="grid grid-cols-2 gap-2">
@@ -595,7 +595,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="inboundDialogVisible = false">取消</el-button>
+        <el-button @click="inboundDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitInbound" :loading="submitting">完成质检建档并上架</el-button>
       </template>
     </el-dialog>
@@ -630,7 +630,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="outboundDialogVisible = false">取消</el-button>
+        <el-button @click="outboundDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitOutboundWave" :loading="submitting">复核出库并锁定在途数量</el-button>
       </template>
     </el-dialog>
@@ -655,7 +655,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="transferDialogVisible = false">取消</el-button>
+        <el-button @click="transferDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitTransfer" :loading="submitting">确认发起调出出库</el-button>
       </template>
     </el-dialog>
@@ -681,7 +681,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="stocktakeDialogVisible = false">取消</el-button>
+        <el-button @click="stocktakeDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitStocktakeForm" :loading="submitting">提交盘点报告</el-button>
       </template>
     </el-dialog>
@@ -707,7 +707,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="lossDialogVisible = false">取消</el-button>
+        <el-button @click="lossDialogVisible = false">{{ w("取消") }}</el-button>
         <el-button type="primary" @click="submitLoss" :loading="submitting">提交报损待双人审批</el-button>
       </template>
     </el-dialog>
@@ -715,6 +715,8 @@
 </template>
 
 <script setup>
+import { useWarehouseI18n } from '../../../utils/warehouseI18n.js';
+const { w, sameLabel } = useWarehouseI18n();
 import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -723,14 +725,7 @@ const { t, locale } = useI18n();
 const isEn = computed(() => locale.value === 'en');
 
 function formatItemName(name) {
-  if (isEn.value && name) {
-    if (name.includes('大米')) return 'Refined Basmati Rice';
-    if (name.includes('面粉')) return 'Premium Wheat Flour';
-    if (name.includes('油')) return 'Sunflower Cooking Oil';
-    if (name.includes('糖')) return 'Refined White Sugar';
-    return name;
-  }
-  return name;
+  return w(name);
 }
 import {
   getInboundOrders,
@@ -779,9 +774,9 @@ const filteredInboundOrders = computed(() => {
     const matchSearch = !q ||
       (item.inboundNo || '').toLowerCase().includes(q) ||
       (item.purchaseOrderNo || '').toLowerCase().includes(q) ||
-      (item.itemName || '').toLowerCase().includes(q) ||
+      (String(item.itemName || '') + ' ' + w(item.itemName)).toLowerCase().includes(q) ||
       (item.tradePlanNo || '').toLowerCase().includes(q);
-    const matchStatus = !inboundStatus.value || (item.inspectStatus || '').includes(inboundStatus.value);
+    const matchStatus = !inboundStatus.value || sameLabel(item.inspectStatus, inboundStatus.value);
     return matchSearch && matchStatus;
   });
 });
@@ -806,8 +801,8 @@ const filteredOutboundOrders = computed(() => {
     const matchSearch = !q ||
       (item.deliveryFlowNo || '').toLowerCase().includes(q) ||
       (item.taskNo || '').toLowerCase().includes(q) ||
-      (item.itemName || '').toLowerCase().includes(q) ||
-      (item.targetAgentName || '').toLowerCase().includes(q);
+      (String(item.itemName || '') + ' ' + w(item.itemName)).toLowerCase().includes(q) ||
+      (String(item.targetAgentName || '') + ' ' + w(item.targetAgentName)).toLowerCase().includes(q);
     const matchStatus = !outboundStatus.value || (item.status || '').includes(outboundStatus.value);
     return matchSearch && matchStatus;
   });
@@ -832,7 +827,7 @@ const filteredTransferOrders = computed(() => {
     const q = (transferSearch.value || '').toLowerCase();
     const matchSearch = !q ||
       (item.transferNo || '').toLowerCase().includes(q) ||
-      (item.itemName || '').toLowerCase().includes(q) ||
+      (String(item.itemName || '') + ' ' + w(item.itemName)).toLowerCase().includes(q) ||
       (item.fromWarehouseName || '').toLowerCase().includes(q) ||
       (item.toWarehouseName || '').toLowerCase().includes(q);
     const matchStage = !transferStage.value || (item.currentStage || '').includes(transferStage.value);
@@ -859,9 +854,9 @@ const filteredStocktakeRecords = computed(() => {
     const q = (stocktakeSearch.value || '').toLowerCase();
     const matchSearch = !q ||
       (item.stocktakeNo || '').toLowerCase().includes(q) ||
-      (item.warehouseName || '').toLowerCase().includes(q) ||
+      (String(item.warehouseName || '') + ' ' + w(item.warehouseName)).toLowerCase().includes(q) ||
       (item.locationCode || '').toLowerCase().includes(q) ||
-      (item.itemName || '').toLowerCase().includes(q);
+      (String(item.itemName || '') + ' ' + w(item.itemName)).toLowerCase().includes(q);
     const matchStatus = !stocktakeStatus.value || (item.status || '').includes(stocktakeStatus.value);
     return matchSearch && matchStatus;
   });
@@ -886,7 +881,7 @@ const filteredLossRecords = computed(() => {
     const q = (lossSearch.value || '').toLowerCase();
     const matchSearch = !q ||
       (item.lossNo || '').toLowerCase().includes(q) ||
-      (item.itemName || '').toLowerCase().includes(q) ||
+      (String(item.itemName || '') + ' ' + w(item.itemName)).toLowerCase().includes(q) ||
       (item.damageReason || '').toLowerCase().includes(q);
     const matchType = !lossType.value || (item.lossType || '').includes(lossType.value);
     return matchSearch && matchType;

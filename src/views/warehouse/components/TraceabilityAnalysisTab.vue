@@ -4,25 +4,21 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F3F8F4] p-4 rounded-lg border border-[#D9E5DB]">
       <div>
         <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-[#1B3123]">全链路溯源与报表分析模块 (UNICODE / SCM)</span>
-          <el-tag size="small" type="primary" effect="plain">端到端溯源引擎</el-tag>
-          <el-tag size="small" type="success" effect="plain">三节点损耗审计</el-tag>
+          <span class="text-sm font-bold text-[#1B3123]">{{ w('全链路溯源与报表分析模块 (UNICODE / SCM)') }}</span>
+          <el-tag size="small" type="primary" effect="plain">{{ w("端到端溯源引擎") }}</el-tag>
+          <el-tag size="small" type="success" effect="plain">{{ w("三节点损耗审计") }}</el-tag>
         </div>
-        <p class="text-xs text-[#58685D] mt-1">
-          建立“采购入库 -> 仓储货位 -> 配送在途 -> 代理核收 -> 家庭领取”端到端全生命周期追溯链；多维流转切片报表及损耗审计。
-        </p>
+        <p class="text-xs text-[#58685D] mt-1"> {{ w("建立“采购入库 -> 仓储货位 -> 配送在途 -> 代理核收 -> 家庭领取”端到端全生命周期追溯链；多维流转切片报表及损耗审计。") }} </p>
       </div>
 
       <div class="flex items-center gap-2">
         <el-radio-group v-model="activeSection" size="small">
-          <el-radio-button value="engine">端到端全链路溯源引擎</el-radio-button>
-          <el-radio-button value="report">多维流转报表分析</el-radio-button>
-          <el-radio-button value="lossAudit">三节点损耗与审计分析</el-radio-button>
+          <el-radio-button value="engine">{{ w("端到端全链路溯源引擎") }}</el-radio-button>
+          <el-radio-button value="report">{{ w("多维流转报表分析") }}</el-radio-button>
+          <el-radio-button value="lossAudit">{{ w("三节点损耗与审计分析") }}</el-radio-button>
         </el-radio-group>
         <el-button size="small" @click="loadData">
-          <el-icon class="me-1"><Refresh /></el-icon>
-          刷新
-        </el-button>
+          <el-icon class="me-1"><Refresh /></el-icon> {{ w("刷新") }} </el-button>
       </div>
     </div>
 
@@ -35,17 +31,17 @@
           <div>
             <h3 class="font-bold text-[#1B3123] text-sm flex items-center gap-2">
               <el-icon class="text-[#326445]"><Compass /></el-icon>
-              <span>“仓库到家庭”端到端溯源引擎 (UNICODE)</span>
+              <span>{{ w("“仓库到家庭”端到端溯源引擎 (UNICODE)") }}</span>
             </h3>
-            <span class="text-[11px] text-[#8A9A8F]">支持正向顺藤摸瓜追溯与逆向倒查追根溯源</span>
+            <span class="text-[11px] text-[#8A9A8F]">{{ w("支持正向顺藤摸瓜追溯与逆向倒查追根溯源") }}</span>
           </div>
 
           <!-- 模式切换：正向追溯 vs 反向倒查 -->
           <div class="flex items-center gap-2">
-            <span class="text-xs text-[#58685D]">溯源方向：</span>
+            <span class="text-xs text-[#58685D]">{{ w("溯源方向：") }}</span>
             <el-radio-group v-model="traceDirection" size="small">
-              <el-radio-button value="forward">正向追溯 (采购批次 → 家庭领取)</el-radio-button>
-              <el-radio-button value="backward">反向倒查 (家庭凭证 → 采购批次)</el-radio-button>
+              <el-radio-button value="forward">{{ w("正向追溯 (采购批次 → 家庭领取)") }}</el-radio-button>
+              <el-radio-button value="backward">{{ w("反向倒查 (家庭凭证 → 采购批次)") }}</el-radio-button>
             </el-radio-group>
           </div>
         </div>
@@ -55,7 +51,7 @@
           <div class="flex-1">
             <el-input
               v-model="traceQueryInput"
-              :placeholder="traceDirection === 'forward' ? '输入采购批次号 (如 BATCH-20261012-EXP202710-RC01)' : '输入家庭核销凭证号 (如 CLM-20261012-8821)'"
+              :placeholder="traceDirection === 'forward' ? w('输入采购批次号 (如 BATCH-20261012-EXP202710-RC01)') : w('输入家庭核销凭证号 (如 CLM-20261012-8821)')"
               clearable
             >
               <template #prefix>
@@ -64,24 +60,20 @@
             </el-input>
           </div>
           <el-button type="primary" @click="handleRunTrace">
-            <el-icon class="me-1"><Search /></el-icon>
-            执行穿透追溯
-          </el-button>
+            <el-icon class="me-1"><Search /></el-icon> {{ w("执行穿透追溯") }} </el-button>
         </div>
 
         <!-- 追溯可视化拓扑节点链 -->
         <div v-if="traceChainData" class="space-y-4 pt-2">
           <div class="flex items-center justify-between text-xs">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-[#1F3326]">{{ traceChainData.itemName }}</span>
-              <el-tag size="small" type="primary" effect="plain" class="font-mono">
-                批次: {{ traceChainData.batchNo }}
+              <span class="font-bold text-[#1F3326]">{{ w(traceChainData.itemName) }}</span>
+              <el-tag size="small" type="primary" effect="plain" class="font-mono"> {{ w("批次:") }} {{ traceChainData.batchNo }}
               </el-tag>
-              <el-tag size="small" type="success" effect="plain" class="font-mono">
-                一物一码: {{ traceChainData.uniqueTraceCode }}
+              <el-tag size="small" type="success" effect="plain" class="font-mono"> {{ w("一物一码:") }} {{ traceChainData.uniqueTraceCode }}
               </el-tag>
             </div>
-            <span class="text-[#8A9A8F] text-[11px]">全流程 5 级节点已校验锁定</span>
+            <span class="text-[#8A9A8F] text-[11px]">{{ w("全流程 5 级节点已校验锁定") }}</span>
           </div>
 
           <!-- 步骤节点卡片横向/纵向排布 -->
@@ -96,11 +88,11 @@
                   <div class="w-6 h-6 rounded-full bg-[#326445] text-white flex items-center justify-center font-bold text-xs">
                     {{ node.step }}
                   </div>
-                  <span class="font-bold text-[#1B3123] text-xs">{{ node.title }}</span>
-                  <el-tag size="small" type="info" effect="dark" class="scale-90">{{ node.nodeType }}</el-tag>
+                  <span class="font-bold text-[#1B3123] text-xs">{{ w(node.title) }}</span>
+                  <el-tag size="small" type="info" effect="dark" class="scale-90">{{ w(node.nodeType) }}</el-tag>
                 </div>
                 <div class="font-mono text-[#58685D] text-[11px] flex items-center gap-2">
-                  <span>单据: <strong class="text-[#326445]">{{ node.keyDocNo }}</strong></span>
+                  <span>{{ w("单据:") }} <strong class="text-[#326445]">{{ node.keyDocNo }}</strong></span>
                   <span>·</span>
                   <span>{{ node.time }}</span>
                 </div>
@@ -108,17 +100,16 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2">
                 <div>
-                  <span class="text-[#8A9A8F] text-[11px] block">经办地点与网点：</span>
-                  <span class="text-[#43554B] font-medium">{{ node.location }}</span>
+                  <span class="text-[#8A9A8F] text-[11px] block">{{ w("经办地点与网点：") }}</span>
+                  <span class="text-[#43554B] font-medium">{{ w(node.location) }}</span>
                 </div>
                 <div>
-                  <span class="text-[#8A9A8F] text-[11px] block">经办人员与签名：</span>
-                  <span class="text-[#43554B] font-medium">{{ node.handler }}</span>
+                  <span class="text-[#8A9A8F] text-[11px] block">{{ w("经办人员与签名：") }}</span>
+                  <span class="text-[#43554B] font-medium">{{ w(node.handler) }}</span>
                 </div>
               </div>
 
-              <div class="mt-2 pt-2 border-t border-[#E9F1EB] text-[11px] text-[#58685D]">
-                ● 明细与存证存根：{{ node.desc }}
+              <div class="mt-2 pt-2 border-t border-[#E9F1EB] text-[11px] text-[#58685D]"> {{ w("● 明细与存证存根：") }}{{ w(node.desc) }}
               </div>
             </div>
           </div>
@@ -143,7 +134,7 @@
       <el-table :data="paginatedReports" v-loading="loading" border style="width: 100%" class="text-xs">
         <el-table-column prop="province" label="重点行政省区 / 争议区" min-width="190">
           <template #default="{ row }">
-            <span class="font-bold text-[#1F3326]">{{ row.province }}</span>
+            <span class="font-bold text-[#1F3326]">{{ w(row.province) }}</span>
             <el-tag v-if="row.province.includes('第140号')" size="small" type="warning" effect="plain" class="scale-90 ms-1">
               宪法第140号决议区
             </el-tag>
@@ -255,7 +246,7 @@
           </div>
           <div class="p-3 bg-white rounded-lg border border-[#D9E5DB] flex items-center justify-between">
             <span class="text-[#58685D]">在办核查异常差异工单</span>
-            <span class="font-mono font-bold text-[#C04442] text-sm">{{ lossStats.auditedDiscrepancyCount }} 笔</span>
+            <span class="font-mono font-bold text-[#C04442] text-sm">{{ lossStats.auditedDiscrepancyCount }} {{ w("笔") }}</span>
           </div>
           <div class="p-3 bg-white rounded-lg border border-[#D9E5DB] flex items-center justify-between">
             <span class="text-[#58685D]">已认定追回/索赔价值</span>
@@ -268,6 +259,8 @@
 </template>
 
 <script setup>
+import { useWarehouseI18n } from '../../../utils/warehouseI18n.js';
+const { w } = useWarehouseI18n();
 import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, onMounted } from 'vue';
 import {
@@ -327,7 +320,7 @@ async function loadData() {
 }
 
 function handleRunTrace() {
-  ElMessage.success((isEnNow() ? `End-to-end penetration traceability search succeeded! Full lifecycle chain constructed` : `端到端穿透溯源检索成功！已构建全生命周期链路`));
+  ElMessage.success(w('端到端穿透溯源检索成功！已构建全生命周期链路'));
 }
 
 onMounted(() => {
