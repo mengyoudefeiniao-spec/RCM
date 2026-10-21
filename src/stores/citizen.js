@@ -62,7 +62,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function changeHead(payload) {
     const res = await submitChangeHouseholdHead(payload);
-    ElMessage.success(res.message || (isEnNow() ? 'Change-head application submitted' : '户主变更申请已提交'));
+    ElMessage.success(i18n.global.t('changeHead.submitSuccess'));
     await fetchFamilies();
     return res;
   }

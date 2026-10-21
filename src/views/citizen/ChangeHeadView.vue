@@ -7,7 +7,7 @@
         <ModuleDescTip
           :title="$t('changeHead.title')"
           :content="$t('changeHead.subtitle')"
-          badge="法定继承与变更"
+          :badge="$t('changeHead.legalBadge')"
           badge-type="primary"
           title-class="text-base font-bold text-[#1B3123]"
         >
@@ -73,7 +73,7 @@
               <el-option
                 v-for="m in eligibleCandidates"
                 :key="m.id"
-                :label="`${m.name} (${m.relation} · ${m.nationalId})`"
+                :label="`${m.name} (${formatRelation(m.relation)} · ${m.nationalId})`"
                 :value="m.id"
               />
             </el-select>
@@ -93,7 +93,7 @@
             <el-button
               type="primary"
               size="large"
-              class="w-full font-bold shadow-md"
+              class="w-full font-bold shadow-md !h-auto min-h-10 !whitespace-normal py-2"
               :loading="submitting"
               @click="handleStartChangeHead"
             >
@@ -177,13 +177,27 @@ onUnmounted(() => {
   }
 });
 
+const relationKeys = {
+  '户主': 'relationHead', head: 'relationHead', 'رب الأسرة': 'relationHead', 'سەرۆکی خێزان': 'relationHead',
+  '配偶': 'relationSpouse', spouse: 'relationSpouse', wife: 'relationSpouse', husband: 'relationSpouse', 'الزوجة': 'relationSpouse', 'زوج / زوجة': 'relationSpouse', 'هاوسەر': 'relationSpouse',
+  '子女': 'relationChild', child: 'relationChild', son: 'relationChild', daughter: 'relationChild', 'ابن': 'relationChild', 'ابنة': 'relationChild', 'ابن/ابنة': 'relationChild', 'ابن / ابنة': 'relationChild', 'منداڵ': 'relationChild',
+  '父亲': 'relationFather', father: 'relationFather', 'أب': 'relationFather', 'الأب': 'relationFather', 'باوک': 'relationFather',
+  '母亲': 'relationMother', mother: 'relationMother', 'أم': 'relationMother', 'الأم': 'relationMother', 'دایک': 'relationMother',
+  '受抚养人': 'relationDependent', dependent: 'relationDependent', 'معال': 'relationDependent', 'مُعال': 'relationDependent', 'بژێویپێدراو': 'relationDependent', 'بەپێندەوەر': 'relationDependent'
+};
+const relationKey = (relation) => relationKeys[String(relation || '').trim().toLowerCase()];
+function formatRelation(relation) {
+  const key = relationKey(relation);
+  return key ? t(`citizenCard.${key}`) : relation;
+}
+
 const currentHead = computed(() => {
-  return citizenStore.currentFamily?.members?.find((m) => m.relation === '户主' || m.relation === 'Head');
+  return citizenStore.currentFamily?.members?.find((m) => relationKey(m.relation) === 'relationHead');
 });
 
 const eligibleCandidates = computed(() => {
   return (citizenStore.currentFamily?.members || []).filter(
-    (m) => m.relation !== '户主' && m.relation !== 'Head' && (m.status === '正常' || m.status === 'Active')
+    (m) => relationKey(m.relation) !== 'relationHead' && ['正常', 'active', 'نشط', 'ساري المفعول', 'چالاک', 'چالاکە'].includes(String(m.status || '').trim().toLowerCase())
   );
 });
 
@@ -220,12 +234,12 @@ async function handlePaymentSuccess(paymentInfo) {
       id: res.ticketId,
       sourceCode: 'HED',
       reviewMode: 'manual',
-      source: '变更户主',
-      appType: '法定户主更替申办 (继承轮替)',
+      source: t('citizen.applyChangeHead'),
+      appType: t('changeHead.applicationType'),
       cardNo: citizenStore.currentFamily?.rationCardNo,
-      applicantName: currentCandidateName.value || '艾哈迈德·哈桑·萨利赫',
+      applicantName: currentCandidateName.value,
       targetMemberName: currentCandidateName.value,
-      reason: `原户主亡故注销，依据死亡证明 #${deathProofNo.value} 申办户主继承轮替。`,
+      reason: t('changeHead.applicationReason', { reference: deathProofNo.value }),
       payload: {
         newHeadId: replacementHeadId.value,
         deathProofNo: deathProofNo.value,
@@ -233,7 +247,6 @@ async function handlePaymentSuccess(paymentInfo) {
       }
     });
 
-    ElMessage.success(t('changeHead.submitSuccess'));
     handleGoBack();
   } finally {
     submitting.value = false;

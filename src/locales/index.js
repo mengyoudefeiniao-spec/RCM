@@ -19,10 +19,11 @@ import mailCenterMessages from './mailCenter.js';
 import memberRegistrationMessages from './memberRegistration.js';
 import citizenApplicationMessages from './citizenApplications.js';
 import citizenTransferMessages from './citizenTransfer.js';
+import changeHeadMessages from './changeHead.js';
 
 function withCitizenApplications(messages, lang) {
   const merged = { ...messages };
-  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang]]) {
+  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };
     }
