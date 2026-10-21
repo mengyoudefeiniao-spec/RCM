@@ -816,6 +816,7 @@
 </template>
 
 <script setup>
+import { useRationI18n } from '../../../utils/rationI18n.js';
 import { isEnNow } from '../../../utils/langHint.js';
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -853,67 +854,16 @@ import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoStat
 import { deliveryPriority, sortDeliveryOrders } from '@/utils/deliveryPriority';
 
 const { t, locale } = useI18n();
+const { w, formatRationItem } = useRationI18n();
 const authStore = useAuthStore();
 const isEn = computed(() => locale.value === 'en');
 
 function formatItemName(name) {
-  if (!name) return '';
-  const lang = locale.value;
-  if (lang === 'en') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'Wheat Flour (Grade 1)';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'Long-Grain Rice (Imported)';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'Vegetable Oil';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'White Sugar';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'Milk Powder';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'Black Tea';
-  } else if (lang === 'ar') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'طحين قمح ممتاز (درجة 1)';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'أرز بسمتي مستورد';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'زيت نباتي مكرر';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود';
-  } else if (lang === 'ckb') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'شەکری سپی';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'شیری وشککراو';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'چای ڕەش';
-  } else {
-    if (name.includes('Flour') || name.includes('طحين') || name.includes('ئارد')) return '战略储备优质小麦面粉';
-    if (name.includes('Rice') || name.includes('أرز') || name.includes('برنج')) return '一级进口长粒大米';
-    if (name.includes('Oil') || name.includes('زيت') || name.includes('ڕۆن')) return '一级精炼食用油';
-    if (name.includes('Sugar') || name.includes('سكر') || name.includes('شەکر')) return '纯正战略白砂糖';
-    if (name.includes('Milk') || name.includes('حليب') || name.includes('شیر')) return '全脂强化配方奶粉';
-    if (name.includes('Tea') || name.includes('شاي') || name.includes('چای')) return '特选高山红茶';
-  }
-  return name;
+  return formatRationItem(name);
 }
 
 function formatHeadName(name) {
-  if (!name) return '';
-  const lang = locale.value;
-  if (lang === 'en') {
-    if (name.includes('艾哈迈德')) return 'Ahmed Hassan Saleh';
-    if (name.includes('阿里')) return 'Ali Hussein Al-Bayati';
-    if (name.includes('穆罕默德')) return 'Mohammed Jabbar Al-Rasheed';
-    if (name.includes('法蒂玛')) return 'Fatima Zahra Al-Kinani';
-    if (name.includes('扎伊德')) return 'Zaid Qasim Al-Saadi';
-  } else if (lang === 'ar') {
-    if (name.includes('艾哈迈德')) return 'أحمد حسن صالح';
-    if (name.includes('阿里')) return 'علي حسين البياتي';
-    if (name.includes('穆罕默德')) return 'محمد جبار الرشيد';
-    if (name.includes('法蒂玛')) return 'فاطمة الزهراء الكناني';
-    if (name.includes('扎伊德')) return 'زيد قاسم السعدي';
-  } else if (lang === 'ckb') {
-    if (name.includes('艾哈迈德')) return 'ئەحمەد حەسەن ساڵح';
-    if (name.includes('阿里')) return 'عەلی حوسێن بەیاتی';
-    if (name.includes('穆罕默德')) return 'محەممەد جەبار ڕەشید';
-    if (name.includes('法蒂玛')) return 'فاتمە زەهرا کینانی';
-    if (name.includes('扎伊德')) return 'زەید قاسم سەعدی';
-  }
-  return name;
+  return w(name);
 }
 
 function formatDeliveryAddress(addr) {
@@ -935,6 +885,8 @@ function formatDeliveryAddress(addr) {
 
 function formatAgentName(name) {
   if (!name) return '';
+  const translated = w(name);
+  if (translated !== name) return translated;
   const lang = locale.value;
   if (lang === 'en') {
     if (name.includes('卡尔赫第一')) return 'Karkh 1st Central Ration Station (Mansour)';

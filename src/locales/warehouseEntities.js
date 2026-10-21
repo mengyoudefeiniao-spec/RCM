@@ -163,5 +163,8 @@ export const warehouseEntityAliases = {
   'الزوجة': 'spouse', 'الزوج': 'spouse', 'ابن': 'child', 'ابنة': 'child',
   '在途': 'transit', 'In-Transit': 'transit',
   '迪亚拉哈奈根前置战略保供仓': 'diyalaWarehouse',
-  '海德尔·阿卜杜勒-拉赫曼': 'haiderAbdul', '优素福·恩卜拉欣·卡西姆': 'youssefQasim'
+  '海德尔·阿卜杜勒-拉赫曼': 'haiderAbdul', '优素福·恩卜拉欣·卡西姆': 'youssefQasim',
+  '底格里斯精炼食用油厂': 'tigrisRefinery', '米桑糖业联合储备库': 'maysanReserve',
+  'National Grain Import & Export Directorate': 'grainDirectorate', 'Maysan Grain & Sugar State Reserve': 'maysanReserve',
+  'محطة الكرخ الأولى ببغداد (محمد جبار)': 'karkhPickup', 'وێستگەی یەکەمی کەرخی بەغدا (محەممەد جەبار)': 'karkhPickup'
 };

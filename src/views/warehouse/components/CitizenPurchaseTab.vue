@@ -621,8 +621,8 @@
       :amount="finalTotalPayAmount"
       currency="IQD"
       :business-no="quotaInfo.cardNo || 'RC-10029381'"
-      :applicant-name="quotaInfo.headName || '持卡公民'"
-      :description="`购买2026年10月配给口粮(${totalSelectedWeight}kg/L)`"
+      :applicant-name="w(quotaInfo.headName) || w('持卡公民')"
+      :description="w('购买{period}配给口粮（{quantity}kg/L）', { period: displayQuotaPeriod, quantity: totalSelectedWeight })"
       @success="handlePaymentSuccess"
       @cancel="showPaymentDialog = false"
     />
@@ -734,6 +734,7 @@
 </template>
 
 <script setup>
+import { useRationI18n } from '../../../utils/rationI18n.js';
 import { isEnNow } from '../../../utils/langHint.js';
 import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
@@ -783,102 +784,35 @@ import {
 } from '@element-plus/icons-vue';
 
 const { t, locale } = useI18n();
-const isEn = computed(() => locale.value === 'en');
+const { w, formatRationItem, formatQuotaPeriod } = useRationI18n();
 
 function formatItemName(name) {
-  if (!name) return '';
-  const lang = locale.value;
-  if (lang === 'en') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'Special Wheat Flour (Grade 1)';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'Long-Grain Rice (Imported)';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'Pure Refined Vegetable Oil';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'Refined Pure White Sugar';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'Full Cream Milk Powder';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'Selected Black Tea';
-  } else if (lang === 'ar') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'طحين قمح ممتاز (درجة 1)';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'أرز بسمتي طويل الحبة';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'زيت نباتي مكرر نقي';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'سكر أبيض نقي مكرر';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'حليب مجفف كامل الدسم';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'شاي أسود فاخر';
-  } else if (lang === 'ckb') {
-    if (name.includes('面粉') || name.includes('Flour') || name.includes('طحين')) return 'ئاردی گەنمی پلە یەک';
-    if (name.includes('米') || name.includes('Rice') || name.includes('أرز')) return 'برنجی دەنک درێژ';
-    if (name.includes('油') || name.includes('Oil') || name.includes('زيت')) return 'ڕۆنی ڕووەکی پاڵاوتە';
-    if (name.includes('糖') || name.includes('Sugar') || name.includes('سكر')) return 'شەکری سپی پاڵاوتە';
-    if (name.includes('奶') || name.includes('Milk') || name.includes('حليب')) return 'شیری وشککراوی پڕ چەوری';
-    if (name.includes('茶') || name.includes('Tea') || name.includes('شاي')) return 'چای ڕەشی هەڵبژێردراو';
-  } else {
-    if (name.includes('Flour') || name.includes('طحين') || name.includes('ئارد')) return '特级小麦面粉 (一等粉)';
-    if (name.includes('Rice') || name.includes('أرز') || name.includes('برنج')) return '进口长粒大米';
-    if (name.includes('Oil') || name.includes('زيت') || name.includes('ڕۆن')) return '精炼食用植物油';
-    if (name.includes('Sugar') || name.includes('سكر') || name.includes('شەکر')) return '精制纯白细砂糖';
-    if (name.includes('Milk') || name.includes('حليب') || name.includes('شیر')) return '全脂强化配方奶粉';
-    if (name.includes('Tea') || name.includes('شاي') || name.includes('چای')) return '特选高山红茶';
-  }
-  return name;
+  return formatRationItem(name);
 }
 
-function formatItemShort(it) {
-  if (!it) return '';
-  const name = it.itemName || '';
-  if (name) {
-    if (name.includes('面粉') || name.toLowerCase().includes('flour') || name.includes('طحين')) return isEn.value ? 'Flour' : '面粉';
-    if (name.includes('米') || name.toLowerCase().includes('rice') || name.includes('أرز')) return isEn.value ? 'Rice' : '大米';
-    if (name.includes('油') || name.toLowerCase().includes('oil') || name.includes('زيت')) return isEn.value ? 'Oil' : '食用油';
-    if (name.includes('糖') || name.toLowerCase().includes('sugar') || name.includes('سكر')) return isEn.value ? 'Sugar' : '白糖';
-    return name;
-  }
-  const code = (it.itemCode || '').toUpperCase();
-  if (code.includes('FLOUR')) return isEn.value ? 'Flour' : '面粉';
-  if (code.includes('RICE')) return isEn.value ? 'Rice' : '大米';
-  if (code.includes('OIL')) return isEn.value ? 'Oil' : '食用油';
-  if (code.includes('SUGAR')) return isEn.value ? 'Sugar' : '白糖';
-  return isEn.value ? 'Ration' : '口粮';
+function formatItemShort(item) {
+  return formatRationItem(item, true);
 }
 
 function formatStockStatus(status) {
-  if (isEn.value) {
-    if (!status || status === '有现货' || status === '充足') return 'In Stock';
-    if (status === '紧缺' || status === '紧张') return 'Low Stock';
-    return 'In Stock';
-  }
-  return status || '有现货';
+  if (!status || ['充足', '有现货', 'In Stock'].includes(status)) return w('有现货');
+  if (['紧缺', '紧张', 'Low Stock'].includes(status)) return w('紧缺');
+  if (['缺货', '无货', 'Out of Stock'].includes(status)) return w('缺货');
+  return w(status);
 }
 
 function formatOriginPack(item) {
   if (!item) return '';
-  if (isEn.value) {
-    const originMap = {
-      '伊拉克中央保供面粉厂': 'Iraq Central Strategic Flour Mill',
-      '国家粮食进出口总局': 'National Grain Import & Export Directorate',
-      '米桑粮油制糖企业国库': 'Maysan Grain & Sugar State Reserve',
-      '底格里斯食用油脂厂': 'Tigris Edible Oil Refinery'
-    };
-    const packMap = {
-      '50kg/袋': '50kg/Bag',
-      '25kg/袋': '25kg/Bag',
-      '10kg/袋': '10kg/Bag',
-      '1L/瓶': '1L/Bottle',
-      '5L/桶': '5L/Can'
-    };
-    const origin = originMap[item.origin] || item.origin || 'Ministry of Trade Mill';
-    const pack = packMap[item.packSize] || item.packSize || '';
-    return pack ? `${origin} · ${pack}` : origin;
-  }
-  return `${item.origin || ''} · ${item.packSize || ''}`;
+  const origin = w(item.origin);
+  const rawPack = item.packSize || '';
+  const match = /^\s*([\d.]+)\s*(kg|l)\s*\/\s*(袋|bag|瓶|bottle|桶|can)\s*$/i.exec(rawPack);
+  const pack = match
+    ? w(/^(袋|bag)$/i.test(match[3]) ? '{quantity}kg/袋' : /^(瓶|bottle)$/i.test(match[3]) ? '{quantity}L/瓶' : '{quantity}L/桶', { quantity: match[1] })
+    : w(rawPack);
+  return [origin, pack].filter(Boolean).join(' · ');
 }
 
-const displayQuotaPeriod = computed(() => {
-  const p = quotaInfo.quotaPeriod || '2026-10';
-  if (isEn.value) {
-    if (p.includes('年') || p.includes('月')) {
-      return 'Oct 2026';
-    }
-  }
-  return p;
-});
+const displayQuotaPeriod = computed(() => formatQuotaPeriod(quotaInfo.quotaPeriod || '2026-10'));
 
 // 核心流程步骤控制: 1=选购 -> 2=配送方式 -> 3=付款
 const currentProcessStep = ref(1);

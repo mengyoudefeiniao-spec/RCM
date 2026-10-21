@@ -3455,7 +3455,7 @@ export async function mockDispatch(config) {
     const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId);
 
     if (!targetOrder) {
-      return createResponse({}, 404, isEn ? `Ration order with No. ${orderId} not found` : `未找到编号为 ${orderId} 的配给订单`);
+      return createResponse({}, 404, i18n.global.t('agentDelivery.orderNotFoundById', { orderId }));
     }
 
     const {
