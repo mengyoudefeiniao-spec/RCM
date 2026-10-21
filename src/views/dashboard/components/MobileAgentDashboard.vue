@@ -347,49 +347,6 @@
 
 
     <!-- ======================================================== -->
-    <!-- 模拟现场扫码核销仿真弹窗 (带激光扫描线) -->
-    <!-- ======================================================== -->
-    <!-- 模拟现场扫码核销仿真弹窗 (严控宽度不超过 412px 视口，居中展示) -->
-    <el-dialog
-      v-model="scanDialogVisible"
-      :title="$t('mobileAgent.scanModalTitle')"
-      width="350px"
-      align-center
-      append-to-body
-      class="mobile-scan-dialog"
-    >
-      <div class="space-y-3.5 text-center" data-demo-target="scan-viewfinder">
-        <!-- 扫码取景框模拟 -->
-        <div class="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto rounded-lg bg-black/95 overflow-hidden border-2 border-[#D3AF62] shadow-inner flex items-center justify-center">
-          <!-- 激光扫描线 -->
-          <div class="absolute w-full h-1 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-[#D3AF62] to-transparent shadow-[0_0_12px_#D3AF62] animate-scanBeam"></div>
-          
-          <!-- 取景角标 -->
-          <div class="absolute top-2 start-2 w-3.5 h-3.5 border-t-2 border-s-2 border-[#D3AF62]"></div>
-          <div class="absolute top-2 end-2 w-3.5 h-3.5 border-t-2 border-e-2 border-[#D3AF62]"></div>
-          <div class="absolute bottom-2 start-2 w-3.5 h-3.5 border-b-2 border-s-2 border-[#D3AF62]"></div>
-          <div class="absolute bottom-2 end-2 w-3.5 h-3.5 border-b-2 border-e-2 border-[#D3AF62]"></div>
-
-          <div class="text-white/70 text-xs font-mono space-y-1">
-            <el-icon :size="28" class="text-[#D3AF62] animate-pulse"><FullScreen /></el-icon>
-            <div class="text-[11px]">{{ $t('mobileAgent.scanModalAlignQr') }}</div>
-          </div>
-        </div>
-
-        <div class="text-[11px] text-[#58685D]">
-          {{ $t('mobileAgent.scanModalTips') }}
-        </div>
-
-        <div class="pt-1 flex items-center justify-center gap-2">
-          <el-button size="small" @click="scanDialogVisible = false">{{ $t('common.cancel') }}</el-button>
-          <el-button size="small" type="primary" color="#326445" class="font-bold" @click="handleConfirmSimulatedScan">
-            {{ $t('mobileAgent.simulateSuccessBtn') }}
-          </el-button>
-        </div>
-      </div>
-    </el-dialog>
-
-    <!-- ======================================================== -->
     <!-- 分发流水抽屉 (历史分发记录) -->
     <!-- ======================================================== -->
     <el-drawer
@@ -512,7 +469,6 @@ import { onTabMessage } from '../../../utils/crossTabBus.js';
 const activeTab = ref('home');
 
 // 弹窗状态
-const scanDialogVisible = ref(false);
 const showHistoryDrawer = ref(false);
 const showProfileDrawer = ref(false);
 
@@ -631,19 +587,18 @@ const distributionRecords = computed(() => {
 
 function handleTriggerScan() {
   triggerPressEffect();
-  scanDialogVisible.value = true;
-  // 演示模式 06-1：点击「扫码核销」弹出扫描窗口后，推进至 06-2
   if (isDemoActive.value && demoSubStep.value === 'step6_1') setDemoStep('step6_2');
-}
-
-function handleConfirmSimulatedScan() {
-  scanDialogVisible.value = false;
-  ElMessage.success(t('mobileAgent.toastVerifySuccess'));
-  // 演示模式 06-2：扫描公民二维码确认收货完成后，进入全流程演示完成提示
-  if (isDemoActive.value && demoSubStep.value === 'step6_2') setDemoStep('step6_done');
-  // 动效增加发放数
-  countDispatched.animateTo(129);
-  countRemaining.animateTo(341);
+  const query = {
+    role: 'agent',
+    layout: 'app',
+    tab: 'delivery',
+    action: 'scan'
+  };
+  if (route.query.demo === 'true') {
+    query.demo = 'true';
+    query.demoStep = 'step6_2';
+  }
+  router.push({ path: '/warehouse', query });
 }
 
 function goToOverview() {

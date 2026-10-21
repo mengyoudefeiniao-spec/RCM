@@ -784,67 +784,16 @@
           </div>
 
           <!-- 高保真防伪二维码容器 -->
-          <div class="relative w-48 h-48 mx-auto p-2.5 rounded-lg bg-white border-2 border-[#326445] shadow-md flex flex-col items-center justify-center overflow-hidden">
-            <!-- 动态扫描光束 -->
-            <div class="absolute inset-x-2 h-0.5 bg-[#D3AF62] shadow-[0_0_12px_#D3AF62] animate-scan-card-qr z-20"></div>
-
-            <!-- SVG 矢量精细二维码 -->
-            <svg viewBox="0 0 200 200" class="w-full h-full text-[#326445]" fill="currentColor">
-              <rect width="200" height="200" fill="#ffffff" />
-              <!-- 三个定位角标 -->
-              <rect x="14" y="14" width="46" height="46" fill="#326445" rx="6" />
-              <rect x="22" y="22" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="28" y="28" width="18" height="18" fill="#326445" rx="2" />
-              <rect x="140" y="14" width="46" height="46" fill="#326445" rx="6" />
-              <rect x="148" y="22" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="154" y="28" width="18" height="18" fill="#326445" rx="2" />
-              <rect x="14" y="140" width="46" height="46" fill="#326445" rx="6" />
-              <rect x="22" y="148" width="30" height="30" fill="#ffffff" rx="4" />
-              <rect x="28" y="154" width="18" height="18" fill="#326445" rx="2" />
-              <!-- 数据点阵 -->
-              <rect x="74" y="18" width="12" height="12" />
-              <rect x="94" y="18" width="12" height="12" />
-              <rect x="114" y="18" width="12" height="12" />
-              <rect x="74" y="38" width="12" height="12" />
-              <rect x="104" y="44" width="12" height="12" />
-              <rect x="18" y="74" width="12" height="12" />
-              <rect x="38" y="74" width="12" height="12" />
-              <rect x="58" y="74" width="12" height="12" />
-              <rect x="78" y="74" width="12" height="12" />
-              <rect x="98" y="74" width="12" height="12" />
-              <rect x="118" y="74" width="12" height="12" />
-              <rect x="138" y="74" width="12" height="12" />
-              <rect x="158" y="74" width="12" height="12" />
-              <rect x="18" y="94" width="12" height="12" />
-              <rect x="44" y="104" width="12" height="12" />
-              <rect x="74" y="100" width="12" height="12" />
-              <rect x="114" y="94" width="12" height="12" />
-              <rect x="144" y="104" width="12" height="12" />
-              <rect x="164" y="94" width="12" height="12" />
-              <rect x="24" y="118" width="12" height="12" />
-              <rect x="64" y="118" width="12" height="12" />
-              <rect x="84" y="118" width="12" height="12" />
-              <rect x="124" y="118" width="12" height="12" />
-              <rect x="154" y="118" width="12" height="12" />
-              <rect x="74" y="144" width="12" height="12" />
-              <rect x="104" y="144" width="12" height="12" />
-              <rect x="134" y="144" width="12" height="12" />
-              <rect x="164" y="144" width="12" height="12" />
-              <rect x="74" y="164" width="12" height="12" />
-              <rect x="94" y="164" width="12" height="12" />
-              <rect x="124" y="164" width="12" height="12" />
-              <rect x="154" y="164" width="12" height="12" />
-              <!-- 中心徽章 -->
-              <rect x="80" y="80" width="40" height="40" fill="#326445" rx="8" />
-              <rect x="84" y="84" width="32" height="32" fill="#D3AF62" rx="6" />
-              <text x="100" y="104" font-size="11" font-weight="900" fill="#326445" text-anchor="middle" font-family="monospace">RCM</text>
-            </svg>
-
-            <!-- 动态时间戳水印 -->
-            <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#58685D] bg-white/95 py-0.5 rounded border border-[#D9E5DB]">
-              {{ liveCardClock }}
-            </div>
+          <div class="w-48 h-48 mx-auto p-2.5 rounded-lg bg-white border-2 border-[#326445] shadow-md flex items-center justify-center">
+            <img
+              v-if="cardQrDataUrl"
+              :src="cardQrDataUrl"
+              :alt="$t('citizenCard.qrVerifyTitle')"
+              class="w-full h-full object-contain"
+            />
+            <el-icon v-else class="text-2xl text-[#8A9A8F] is-loading"><Loading /></el-icon>
           </div>
+          <div class="text-[9px] text-[#58685D] font-mono">{{ liveCardClock }}</div>
 
           <!-- 动态验证密文与刷新控制 -->
           <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB]">
@@ -904,11 +853,14 @@ import {
   ArrowLeft,
   ArrowRight,
   Right,
-  Check
+  Check,
+  Loading
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import QRCode from 'qrcode';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 import { localizeFreezeReason } from '../../utils/freezeReason.js';
+import { createCitizenCardQrPayload } from '../../utils/qrPayload.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -930,6 +882,27 @@ const cardModalVisible = ref(false);
 const liveCardClock = ref('');
 let cardClockTimer = null;
 const dynamicCardCode = ref('');
+const cardQrDataUrl = ref('');
+let cardQrGeneration = 0;
+
+watch([cardModalVisible, dynamicCardCode, () => citizenStore.currentFamily], async ([visible, verificationCode, family]) => {
+  const generation = ++cardQrGeneration;
+  cardQrDataUrl.value = '';
+  if (!visible || !verificationCode) return;
+
+  try {
+    const dataUrl = await QRCode.toDataURL(createCitizenCardQrPayload(family, verificationCode), {
+      width: 480,
+      margin: 3,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#1F3326', light: '#FFFFFF' }
+    });
+    if (generation === cardQrGeneration) cardQrDataUrl.value = dataUrl;
+  } catch (error) {
+    console.error('生成电子配给卡二维码失败', error);
+    ElMessage.error(isEnNow() ? 'Failed to generate the digital ration card QR code.' : '电子配给卡二维码生成失败。');
+  }
+}, { deep: true });
 
 function openCardQrModal() {
   refreshDynamicCode();

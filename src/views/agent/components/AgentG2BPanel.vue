@@ -590,104 +590,16 @@
           </div>
         </div>
 
-        <!-- 高清晰度矢量 SVG 二维码展示区 -->
+        <!-- 可由代理 APP 摄像头识别的真实订单二维码 -->
         <div class="p-4 sm:p-5 bg-white border-2 border-dashed border-[#C7DED0] rounded-lg flex flex-col items-center justify-center space-y-2.5 sm:space-y-3 shadow-inner">
-          <div class="relative p-2.5 sm:p-3 bg-white rounded-lg shadow-xs border border-[#D9E5DB]">
-            <!-- 矢量 SVG 二维码图形 -->
-            <svg class="w-40 h-40 sm:w-48 sm:h-48" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="160" height="160" fill="#FFFFFF" />
-
-              <rect x="10" y="10" width="36" height="36" rx="4" fill="#1F3326" />
-              <rect x="16" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="22" y="22" width="12" height="12" rx="2" fill="#326445" />
-
-              <rect x="114" y="10" width="36" height="36" rx="4" fill="#1F3326" />
-              <rect x="120" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="126" y="22" width="12" height="12" rx="2" fill="#326445" />
-
-              <rect x="10" y="114" width="36" height="36" rx="4" fill="#1F3326" />
-              <rect x="16" y="120" width="24" height="24" rx="2" fill="#FFFFFF" />
-              <rect x="22" y="126" width="12" height="12" rx="2" fill="#326445" />
-
-              <g fill="#2A3A30">
-                <rect x="52" y="12" width="6" height="6" rx="1" />
-                <rect x="64" y="12" width="6" height="6" rx="1" />
-                <rect x="76" y="12" width="6" height="6" rx="1" />
-                <rect x="88" y="12" width="6" height="6" rx="1" />
-                <rect x="100" y="12" width="6" height="6" rx="1" />
-                
-                <rect x="58" y="22" width="6" height="6" rx="1" />
-                <rect x="70" y="22" width="6" height="6" rx="1" />
-                <rect x="94" y="22" width="6" height="6" rx="1" />
-
-                <rect x="52" y="32" width="6" height="6" rx="1" />
-                <rect x="64" y="32" width="6" height="6" rx="1" />
-                <rect x="82" y="32" width="6" height="6" rx="1" />
-                <rect x="100" y="32" width="6" height="6" rx="1" />
-
-                <rect x="12" y="52" width="6" height="6" rx="1" />
-                <rect x="24" y="52" width="6" height="6" rx="1" />
-                <rect x="36" y="52" width="6" height="6" rx="1" />
-                <rect x="48" y="52" width="6" height="6" rx="1" />
-                <rect x="60" y="52" width="6" height="6" rx="1" />
-                <rect x="72" y="52" width="6" height="6" rx="1" />
-                <rect x="84" y="52" width="6" height="6" rx="1" />
-                <rect x="96" y="52" width="6" height="6" rx="1" />
-                <rect x="108" y="52" width="6" height="6" rx="1" />
-                <rect x="120" y="52" width="6" height="6" rx="1" />
-                <rect x="132" y="52" width="6" height="6" rx="1" />
-                <rect x="144" y="52" width="6" height="6" rx="1" />
-
-                <rect x="18" y="64" width="6" height="6" rx="1" />
-                <rect x="30" y="64" width="6" height="6" rx="1" />
-                <rect x="54" y="64" width="6" height="6" rx="1" />
-                <rect x="90" y="64" width="6" height="6" rx="1" />
-                <rect x="114" y="64" width="6" height="6" rx="1" />
-                <rect x="138" y="64" width="6" height="6" rx="1" />
-
-                <rect x="12" y="76" width="6" height="6" rx="1" />
-                <rect x="42" y="76" width="6" height="6" rx="1" />
-                <rect x="66" y="76" width="6" height="6" rx="1" />
-                <rect x="78" y="76" width="6" height="6" rx="1" />
-                <rect x="102" y="76" width="6" height="6" rx="1" />
-                <rect x="126" y="76" width="6" height="6" rx="1" />
-                <rect x="144" y="76" width="6" height="6" rx="1" />
-
-                <rect x="52" y="88" width="6" height="6" rx="1" />
-                <rect x="64" y="88" width="6" height="6" rx="1" />
-                <rect x="88" y="88" width="6" height="6" rx="1" />
-                <rect x="100" y="88" width="6" height="6" rx="1" />
-                <rect x="112" y="88" width="6" height="6" rx="1" />
-                <rect x="136" y="88" width="6" height="6" rx="1" />
-
-                <rect x="12" y="100" width="6" height="6" rx="1" />
-                <rect x="36" y="100" width="6" height="6" rx="1" />
-                <rect x="60" y="100" width="6" height="6" rx="1" />
-                <rect x="84" y="100" width="6" height="6" rx="1" />
-                <rect x="108" y="100" width="6" height="6" rx="1" />
-                <rect x="132" y="100" width="6" height="6" rx="1" />
-
-                <rect x="52" y="114" width="6" height="6" rx="1" />
-                <rect x="76" y="114" width="6" height="6" rx="1" />
-                <rect x="100" y="114" width="6" height="6" rx="1" />
-                <rect x="124" y="114" width="6" height="6" rx="1" />
-                <rect x="144" y="114" width="6" height="6" rx="1" />
-
-                <rect x="64" y="126" width="6" height="6" rx="1" />
-                <rect x="88" y="126" width="6" height="6" rx="1" />
-                <rect x="112" y="126" width="6" height="6" rx="1" />
-                <rect x="136" y="126" width="6" height="6" rx="1" />
-
-                <rect x="52" y="138" width="6" height="6" rx="1" />
-                <rect x="76" y="138" width="6" height="6" rx="1" />
-                <rect x="94" y="138" width="6" height="6" rx="1" />
-                <rect x="118" y="138" width="6" height="6" rx="1" />
-                <rect x="142" y="138" width="6" height="6" rx="1" />
-              </g>
-
-              <rect x="65" y="65" width="30" height="30" rx="6" fill="#24483A" stroke="#FFFFFF" stroke-width="2" />
-              <text x="80" y="83" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle" font-family="sans-serif">RCM</text>
-            </svg>
+          <div class="w-48 h-48 sm:w-56 sm:h-56 p-2 bg-white rounded-lg shadow-xs border border-[#D9E5DB] flex items-center justify-center">
+            <img
+              v-if="qrDataUrl"
+              :src="qrDataUrl"
+              :alt="$t('agentG2B.qrModalTitle')"
+              class="w-full h-full object-contain"
+            />
+            <el-icon v-else class="text-2xl text-[#2F5B44] animate-spin"><Loading /></el-icon>
           </div>
 
           <div class="space-y-1">
@@ -698,7 +610,6 @@
           </div>
           <span class="text-[10px] text-[#8A9A8F]">{{ $t('agentG2B.qrScanHint') }}</span>
         </div>
-
         <!-- 采购明细与金额汇总 -->
         <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 space-y-1.5 text-start">
           <div class="flex justify-between items-center font-semibold text-[#43554B]">
@@ -752,10 +663,13 @@ import {
   Location,
   Tickets,
   View,
-  Money
+  Money,
+  Loading
 } from '@element-plus/icons-vue';
+import QRCode from 'qrcode';
 import { getG2BPurchaseOrders, createG2BPurchaseOrder } from '../../../api/agent.js';
 import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymentDialog.vue';
+import { createAgentGovernmentOrderQrPayload } from '../../../utils/qrPayload.js';
 
 const props = defineProps({
   selectedCenter: { type: Object, required: true },
@@ -879,6 +793,8 @@ const createModalVisible = ref(false);
 const paymentDialogVisible = ref(false);
 const qrModalVisible = ref(false);
 const activeQRRow = ref(null);
+const qrDataUrl = ref('');
+let qrGenerationToken = 0;
 
 const currentCenterName = computed(() => props.selectedCenterName);
 
@@ -1101,7 +1017,12 @@ const handlePaymentCancel = () => {
 
 // 3. 点击操作栏展示二维码
 const showOrderQRCode = (row) => {
-  activeQRRow.value = row;
+  activeQRRow.value = {
+    ...row,
+    pickupVoucherCode: row?.pickupVoucherCode || row?.voucherCode || '',
+    centerName: row?.centerName || props.selectedCenterName,
+    centerId: row?.centerId || props.selectedCenter?.centerId || ''
+  };
   qrModalVisible.value = true;
 };
 
@@ -1133,5 +1054,23 @@ watch(() => props.selectedCenter.id, () => {
   orders.value = [];
   currentPage.value = 1;
   loadOrders();
+});
+
+watch([qrModalVisible, activeQRRow], async ([isVisible, order]) => {
+  const token = ++qrGenerationToken;
+  qrDataUrl.value = '';
+  if (!isVisible || !order) return;
+  try {
+    const dataUrl = await QRCode.toDataURL(createAgentGovernmentOrderQrPayload(order), {
+      width: 480,
+      margin: 3,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#1F3326', light: '#FFFFFF' }
+    });
+    if (token === qrGenerationToken) qrDataUrl.value = dataUrl;
+  } catch (error) {
+    console.error('生成代理政府采购订单二维码失败', error);
+    if (token === qrGenerationToken) ElMessage.error(t('agentG2B.qrGenerateError'));
+  }
 });
 </script>

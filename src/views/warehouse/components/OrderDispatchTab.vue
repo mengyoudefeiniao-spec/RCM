@@ -164,7 +164,10 @@
           v-for="order in filteredOrders"
           :key="order.orderId"
           class="bg-white border border-[#D9E5DB]/90 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-2.5"
-          :class="isAppMode ? 'p-3 rounded-lg' : 'p-4 rounded-lg'"
+          :class="[
+            isAppMode ? 'p-3 rounded-lg' : 'p-4 rounded-lg',
+            selectedOrderId === order.orderId ? 'ring-2 ring-[#D3AF62]' : ''
+          ]"
           role="button"
           tabindex="0"
           @click="openOrderDetails(order)"
@@ -462,12 +465,6 @@
           ? 'bg-[#12241A]/80 text-white border-[#43554B]/60 backdrop-blur-2xl'
           : 'bg-[#F3F8F4]/85 text-[#1F3326] border-white/70 backdrop-blur-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)]'"
       >
-        <!-- 模拟快门白闪动画遮罩 -->
-        <div
-          v-if="isShutterFlashing"
-          class="absolute inset-0 bg-white z-50 pointer-events-none animate-shutter-flash"
-        ></div>
-
         <!-- APP 沉浸式顶部标题栏 (根据步骤自适应黑白半透明磨砂效果) -->
         <div
           class="px-4 py-2.5 border-b flex items-center justify-between shrink-0 z-20 backdrop-blur-md transition-colors"
@@ -482,7 +479,7 @@
               type="button"
               class="w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer"
               :class="isFlashOn ? 'bg-[#DFC08B] text-[#1B3123] shadow-[0_0_12px_#D9B567]' : 'bg-[#1F3326] text-[#C9DBCE] hover:bg-[#43554B]'"
-              @click="isFlashOn = !isFlashOn"
+              @click="toggleFlashlight"
             >
               <span>⚡</span>
             </button>
@@ -494,7 +491,7 @@
             </div>
             <div>
               <div class="text-xs font-bold flex items-center gap-1" :class="claimStep === 'camera' ? 'text-white' : 'text-[#1B3123]'">
-                <span>{{ claimStep === 'camera' ? $t('agentOrders.scanCameraModalTitle') : claimStep === 'confirm' ? $t('agentOrders.confirmOrderModalTitle') : $t('agentOrders.officialVoucherModalTitle') }}</span>
+                <span>{{ claimStep === 'camera' ? $t('agentOrders.scanCameraModalTitle') : claimStep === 'citizen-card' ? $t('citizenCard.qrVerifyTitle') : claimStep === 'government-order' ? $t('agentG2B.qrModalTitle') : claimStep === 'confirm' ? $t('agentOrders.confirmOrderModalTitle') : $t('agentOrders.officialVoucherModalTitle') }}</span>
                 <span
                   class="text-[9px] px-1 rounded font-mono"
                   :class="claimStep === 'camera' ? 'bg-[#12241A] text-[#6FBF92] border border-[#3E9B68]/40' : 'bg-[#E1F4E4] text-[#24483A] border border-[#A7D9BC]'"
@@ -550,7 +547,9 @@
               <div class="w-20 h-20 rounded-lg border-2 border-[#3E9B68]/20 flex items-center justify-center text-[#3E9B68]/40 text-3xl mb-1.5">
                 <el-icon><Camera /></el-icon>
               </div>
-              <p class="text-[10px] text-[#58685D]">{{ $t('agentOrders.cameraReadyHint') }}</p>
+              <p class="text-[10px] text-center px-3" :class="cameraError ? 'text-[#FCA5A5]' : 'text-[#A7D9BC]'">
+                {{ cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
+              </p>
             </div>
 
             <!-- 取景器四角定位框 -->
@@ -573,34 +572,21 @@
             </div>
           </div>
 
-          <!-- 取景器下半部分：手机相机大圆快门按钮与快捷操作 (紧凑安全区，绝对不被底部遮挡) -->
+          <!-- 取景器下半部分：自动扫码状态与手动输入 -->
           <div class="pt-2 pb-1 shrink-0 space-y-2 z-20">
-            <!-- 手机快门拍照大按钮 (居中大圆) -->
             <div class="flex flex-col items-center justify-center">
-              <button
-                type="button"
-                class="w-14 h-14 rounded-full border-4 border-white/90 bg-[#3E9B68] hover:bg-[#6FBF92] active:scale-95 transition-all shadow-[0_0_16px_rgba(62, 155, 104,0.5)] flex items-center justify-center cursor-pointer group"
-                @click="takePhotoAndVerify"
-              >
-                <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#2F5B44] font-bold text-base group-hover:scale-105 transition-transform">
-                  📸
-                </div>
-              </button>
-              <span class="text-[10px] text-[#8A9A8F] mt-1 tracking-wider font-medium">{{ $t('agentOrders.clickShutterHint') }}</span>
+              <div class="w-12 h-12 rounded-full border-2 border-white/70 bg-[#3E9B68] flex items-center justify-center text-white shadow-[0_0_16px_rgba(62,155,104,0.5)]">
+                <el-icon class="text-2xl" :class="cameraActive ? 'animate-pulse' : ''"><Camera /></el-icon>
+              </div>
+              <span class="text-[10px] text-[#A7D9BC] mt-1 tracking-wider font-medium">
+                {{ cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
+              </span>
+              <el-button v-if="cameraError" size="small" type="success" plain class="mt-1" @click="startCamera">
+                {{ $t('common.refresh') }}
+              </el-button>
             </div>
 
-            <!-- 辅助功能：模拟扫码快捷键与手动输入抽屉 -->
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#1F3326]/80">
-              <el-button
-                size="small"
-                type="success"
-                plain
-                class="text-[11px] font-bold border-[#3E9B68]/40 text-[#6FBF92] bg-[#12241A]/40 hover:bg-[#12241A]/50"
-                @click="simulateScanCurrentCitizenCode"
-              >
-                <span>⚡ {{ $t('orderClaim.simulateScanBtn') }}</span>
-              </el-button>
-
               <button
                 type="button"
                 class="text-[11px] text-[#8A9A8F] hover:text-white underline cursor-pointer"
@@ -626,8 +612,103 @@
           </div>
         </div>
 
+        <!-- 扫描代理向政府下单凭证后展示订单信息 -->
+        <div
+          v-else-if="claimStep === 'government-order' && verifiedGovernmentOrder"
+          class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
+        >
+          <div class="rounded-xl bg-[#E1F4E4] border border-[#C7E0CE] p-4 text-center">
+            <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#326445] flex items-center justify-center">
+              <el-icon class="text-2xl"><CircleCheck /></el-icon>
+            </div>
+            <div class="text-lg font-bold text-[#1F3326]">{{ verifiedGovernmentOrder.orderNo }}</div>
+            <div class="text-xs text-[#58685D] font-mono mt-1">{{ verifiedGovernmentOrder.voucherCode }}</div>
+          </div>
+
+          <div class="rounded-xl bg-white border border-[#D9E5DB] divide-y divide-[#E9F1EB] text-xs">
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrAgentLabel') }}</span>
+              <span class="font-mono text-end">{{ verifiedGovernmentOrder.agentId || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrCenterLabel') }}</span>
+              <span class="text-end">{{ verifiedGovernmentOrder.centerName || '—' }}<span v-if="verifiedGovernmentOrder.centerId"> ({{ verifiedGovernmentOrder.centerId }})</span></span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrTimeSlotLabel') }}</span>
+              <span class="text-end">{{ verifiedGovernmentOrder.timeSlot || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrVehicleLabel') }}</span>
+              <span class="text-end">{{ verifiedGovernmentOrder.deliveryVehicleNo || '—' }} ({{ verifiedGovernmentOrder.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }})</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrPaidAmountLabel') }}</span>
+              <span class="font-mono font-bold text-[#2F5B44]">{{ $t('agentG2B.qrPaidAmountVal', { amount: Number(verifiedGovernmentOrder.totalAmount || 0).toLocaleString() }) }}</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white border border-[#D9E5DB] p-3 text-xs">
+            <div class="font-bold text-[#43554B] mb-2">{{ $t('agentG2B.qrIncludeItems') }}</div>
+            <div v-for="(item, index) in verifiedGovernmentOrder.items || []" :key="index" class="flex justify-between gap-3 py-1 border-t border-[#E9F1EB]">
+              <span>{{ item.itemName ? formatItemName(item.itemName) : '—' }}</span>
+              <strong class="font-mono">{{ item.qty }}{{ item.unit }}</strong>
+            </div>
+          </div>
+
+          <el-button type="success" class="w-full" @click="retakePhoto">
+            {{ $t('agentOrders.retakePhotoBtn') }}
+          </el-button>
+        </div>
+
+        <!-- 扫描电子配给卡后展示持卡人信息 -->
+        <div
+          v-else-if="claimStep === 'citizen-card' && verifiedCitizenCard"
+          class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
+        >
+          <div class="rounded-xl bg-[#E1F4E4] border border-[#C7E0CE] p-4 text-center">
+            <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#326445] flex items-center justify-center">
+              <el-icon class="text-2xl"><CircleCheck /></el-icon>
+            </div>
+            <div class="text-lg font-bold text-[#1F3326]">{{ verifiedCitizenCard.headName || $t('citizenCard.legalHeadName') }}</div>
+            <div class="text-xs text-[#58685D] font-mono mt-1">{{ verifiedCitizenCard.cardNo }}</div>
+            <div class="text-xs text-[#326445] mt-1">{{ $t('citizenCard.totalMembersRegistered', { count: verifiedCitizenCard.memberCount || 0 }) }}</div>
+          </div>
+
+          <div class="rounded-xl bg-white border border-[#D9E5DB] divide-y divide-[#E9F1EB] text-xs">
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizenCard.linkedPaperBook') }}</span>
+              <span class="font-mono text-end">{{ verifiedCitizenCard.paperCardNo || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizen.province') }} / {{ $t('citizen.district') }}</span>
+              <span class="text-end">{{ [verifiedCitizenCard.province, verifiedCitizenCard.district].filter(Boolean).join(' · ') || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizenCard.agentStore') }}</span>
+              <span class="text-end">{{ verifiedCitizenCard.agentName || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizenCard.agentCodePrefix') }}</span>
+              <span class="font-mono">{{ verifiedCitizenCard.agentId || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizenCard.securityCipherLabel') }}</span>
+              <span class="font-mono text-end">{{ verifiedCitizenCard.verificationCode || '—' }}</span>
+            </div>
+            <div class="p-3 flex justify-between gap-3">
+              <span class="text-[#8A9A8F]">{{ $t('citizenCard.recordActive') }}</span>
+              <span class="font-bold text-[#326445]">{{ verifiedCitizenCard.status || $t('citizenCard.statusActive') }}</span>
+            </div>
+          </div>
+
+          <el-button type="success" class="w-full" @click="retakePhoto">
+            {{ $t('agentOrders.retakePhotoBtn') }}
+          </el-button>
+        </div>
+
         <!-- ====================================================== -->
-        <!-- 页面 2：拍照核验成功后的【实物交割核销确认单】 (Step 2) -->
+        <!-- 页面 2：核验成功后的【实物交割核销确认单】 (Step 2) -->
         <!-- ====================================================== -->
         <div
           v-else-if="claimStep === 'confirm' && verifiedOrder"
@@ -818,11 +899,13 @@
 <script setup>
 import { useRationI18n } from '../../../utils/rationI18n.js';
 import { isEnNow } from '../../../utils/langHint.js';
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { BrowserQRCodeReader } from '@zxing/browser';
+import { parseRcmQrPayload } from '@/utils/qrPayload';
 
 const route = useRoute();
 const router = useRouter();
@@ -1067,118 +1150,145 @@ async function loadManagedCouriers() {
 // 阶段 4 核心：高纵深 APP 风格扫码与拍照核验状态
 // ==========================================
 const scanVerifyModalVisible = ref(false);
-const claimStep = ref('camera'); // 'camera' | 'confirm' | 'receipt'
+const claimStep = ref('camera'); // 'camera' | 'citizen-card' | 'confirm' | 'receipt'
 const targetPresetOrder = ref(null);
 const showManualInput = ref(false);
 const isFlashOn = ref(false);
-const isShutterFlashing = ref(false);
 const lookupLoading = ref(false);
 const claiming = ref(false);
 const scanInputCode = ref('');
 const verifiedOrder = ref(null);
+const verifiedCitizenCard = ref(null);
+const verifiedGovernmentOrder = ref(null);
 const claimReceipt = ref(null);
+const selectedOrderId = ref('');
+const cameraError = ref('');
 
-// 真实摄像机流控制
+// 摄像头实时二维码扫描控制
 const videoRef = ref(null);
 const cameraActive = ref(false);
-let mediaStream = null;
+const qrReader = new BrowserQRCodeReader();
+let scannerControls = null;
+let cameraStartToken = 0;
+let scanHandled = false;
 
 async function startCamera() {
-  if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      mediaStream = stream;
-      if (videoRef.value) {
-        videoRef.value.srcObject = stream;
-        videoRef.value.play().catch(() => {});
-        cameraActive.value = true;
+  if (!videoRef.value || !scanVerifyModalVisible.value) return;
+  const token = ++cameraStartToken;
+  cameraError.value = '';
+  cameraActive.value = false;
+  scanHandled = false;
+
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    cameraError.value = t('agentOrders.cameraUnavailable');
+    ElMessage.error(cameraError.value);
+    return;
+  }
+
+  try {
+    const controls = await qrReader.decodeFromConstraints({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
       }
-    } catch (err) {
-      console.warn('无法开启物理摄像头，平滑切换至高保真模拟扫描界面:', err);
+    }, videoRef.value, (result, _error, decodeControls) => {
+      if (!result || scanHandled) return;
+      scanHandled = true;
+      decodeControls?.stop();
+      if (scannerControls === decodeControls) scannerControls = null;
       cameraActive.value = false;
+      void handleScannedQr(result.getText());
+    });
+
+    if (token !== cameraStartToken || scanHandled || !scanVerifyModalVisible.value) {
+      controls.stop();
+      return;
     }
-  } else {
+    scannerControls = controls;
+    cameraActive.value = true;
+  } catch (err) {
+    if (token !== cameraStartToken) return;
+    console.warn('启动二维码扫描摄像头失败:', err);
     cameraActive.value = false;
+    cameraError.value = err?.name === 'NotAllowedError' || err?.name === 'SecurityError'
+      ? t('agentOrders.cameraPermissionDenied')
+      : t('agentOrders.cameraUnavailable');
+    ElMessage.error(cameraError.value);
   }
 }
 
 function stopCamera() {
-  if (mediaStream) {
-    mediaStream.getTracks().forEach((track) => track.stop());
-    mediaStream = null;
+  cameraStartToken += 1;
+  scannerControls?.stop();
+  scannerControls = null;
+  if (videoRef.value) {
+    videoRef.value.pause?.();
+    videoRef.value.srcObject = null;
   }
   cameraActive.value = false;
 }
 
-// 打开扫码核验弹窗 (无论从顶部还是卡片进入，都必须先打开相机拍照扫码)
+async function toggleFlashlight() {
+  if (!scannerControls?.switchTorch) {
+    ElMessage.info(t('agentOrders.flashUnavailable'));
+    return;
+  }
+  try {
+    await scannerControls.switchTorch(!isFlashOn.value);
+    isFlashOn.value = !isFlashOn.value;
+  } catch {
+    ElMessage.info(t('agentOrders.flashUnavailable'));
+  }
+}
+
+// 打开扫码核验弹窗并开始连续识别二维码
 function openScanVerifyModal(order = null) {
   scanInputCode.value = '';
   verifiedOrder.value = null;
+  verifiedCitizenCard.value = null;
+  verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
   targetPresetOrder.value = order; // 暂存目标订单
+  selectedOrderId.value = order?.orderId || '';
   showManualInput.value = false;
   isFlashOn.value = false;
-  claimStep.value = 'camera'; // 第一步严格展示摄像头取景器！
+  cameraError.value = '';
+  claimStep.value = 'camera';
   scanVerifyModalVisible.value = true;
 
-  // 延迟启动摄像头，确保 DOM 已挂载
-  setTimeout(() => {
-    startCamera();
-  }, 100);
+  nextTick(() => startCamera());
 }
 
-// 点击快门拍照并识别二维码
-async function takePhotoAndVerify() {
-  // 触发快门闪烁特效
-  isShutterFlashing.value = true;
-  setTimeout(() => {
-    isShutterFlashing.value = false;
-  }, 300);
-
-  // 1. 如果是从特定订单卡片点击进入的，直接精准识别该目标订单
-  if (targetPresetOrder.value) {
-    stopCamera();
-    verifiedOrder.value = targetPresetOrder.value;
-    claimStep.value = 'confirm';
-    ElMessage.success((isEnNow() ? 'Photo scan succeeded! The dynamic citizen QR voucher matched; please check the handover order.' : '拍照扫描成功！已核验匹配公民动态二维码凭证，请核对交接单。'));
+async function handleScannedQr(rawValue) {
+  const decoded = parseRcmQrPayload(rawValue);
+  if (!decoded) {
+    ElMessage.warning(t('orderClaim.scanError'));
     return;
   }
 
-  // 2. 如果手动输入了提货码，调用检索
-  if (scanInputCode.value.trim()) {
-    await handleLookupCode();
+  if (decoded.type === 'citizen-card') {
+    stopCamera();
+    verifiedCitizenCard.value = decoded.payload;
+    verifiedOrder.value = null;
+    claimStep.value = 'citizen-card';
+    ElMessage.success(t('citizenCard.qrVerifyTitle'));
     return;
   }
 
-  // 3. 否则自动识别当前最新待核验订单
-  const candidate = orders.value.find(
-    (o) => o.status === 'DISPATCHED' || o.status === 'READY_FOR_PICKUP' || o.status === 'PENDING_DELIVERY' || o.status === 'PENDING_PICKUP'
-  ) || orders.value[0];
-
-  if (candidate) {
+  if (decoded.type === 'agent-government-order') {
     stopCamera();
-    verifiedOrder.value = candidate;
-    claimStep.value = 'confirm';
-    ElMessage.success((isEnNow() ? `Photo scan succeeded! Pickup code [${candidate.pickupCode}] recognized; please check the handover order.` : `拍照扫描成功！已识别提货码【${candidate.pickupCode}】，请核对交接单。`));
-  } else {
-    ElMessage.warning((isEnNow() ? 'No valid QR code recognized; point the camera at the citizen phone or enter the pickup code manually' : '未能识别到有效二维码，请将镜头对准公民手机或手动输入提货码'));
+    verifiedGovernmentOrder.value = decoded.payload;
+    verifiedCitizenCard.value = null;
+    verifiedOrder.value = null;
+    claimStep.value = 'government-order';
+    ElMessage.success(t('agentG2B.qrScanResultTitle'));
+    return;
   }
-}
 
-// 模拟快捷识别公民动态二维码
-function simulateScanCurrentCitizenCode() {
-  const candidate = targetPresetOrder.value || orders.value.find(
-    (o) => o.status === 'DISPATCHED' || o.status === 'READY_FOR_PICKUP' || o.status === 'PENDING_DELIVERY' || o.status === 'PENDING_PICKUP'
-  ) || orders.value[0];
-
-  if (candidate) {
-    scanInputCode.value = candidate.pickupCode;
-    takePhotoAndVerify();
-  } else {
-    ElMessage.info((isEnNow() ? 'No recognizable pickup voucher available' : '暂无可识别的提货凭证'));
-  }
+  scanInputCode.value = decoded.pickupCode;
+  await handleLookupCode();
 }
 
 // 查询提货码对应的订单
@@ -1192,7 +1302,17 @@ async function handleLookupCode() {
   try {
     const res = await lookupCitizenOrderByCode(code);
     stopCamera();
-    verifiedOrder.value = res?.data || res;
+    const order = res?.data || res;
+    if (!order?.orderId || !order?.pickupCode) throw new Error('订单查询结果不完整');
+    if (targetPresetOrder.value && targetPresetOrder.value.orderId !== order.orderId) {
+      scanInputCode.value = '';
+      ElMessage.warning(t('agentOrders.qrTargetMismatch'));
+      return;
+    }
+    verifiedCitizenCard.value = null;
+    verifiedGovernmentOrder.value = null;
+    verifiedOrder.value = order;
+    selectedOrderId.value = order.orderId;
     claimStep.value = 'confirm';
     ElMessage.success((isEnNow() ? 'Pickup voucher matched successfully! Please verify materials against physical stock and sign the handover.' : '提货凭证核验匹配成功！请核对物资与实物库存并签署交接。'));
   } catch (err) {
@@ -1200,16 +1320,21 @@ async function handleLookupCode() {
     ElMessage.error(t('orderClaim.scanError'));
   } finally {
     lookupLoading.value = false;
+    if (scanVerifyModalVisible.value && claimStep.value === 'camera') {
+      scanHandled = false;
+      window.setTimeout(() => startCamera(), 250);
+    }
   }
 }
 
 function retakePhoto() {
   verifiedOrder.value = null;
+  verifiedCitizenCard.value = null;
+  verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
+  scanInputCode.value = '';
   claimStep.value = 'camera';
-  setTimeout(() => {
-    startCamera();
-  }, 100);
+  nextTick(() => startCamera());
 }
 
 // 确认交付并核销扣库
@@ -1258,6 +1383,8 @@ function closeScanVerifyModal() {
   stopCamera();
   targetPresetOrder.value = null;
   verifiedOrder.value = null;
+  verifiedCitizenCard.value = null;
+  verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
   claimStep.value = 'camera';
 }
@@ -1473,6 +1600,11 @@ onMounted(() => {
   // 全流程演示 04 阶段：URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点）
   if (route.query.demo === 'true') {
     activateDemo(String(route.query.demoStep || 'step4_1'));
+  }
+
+  if (route.query.action === 'scan') {
+    openScanVerifyModal();
+    router.replace({ query: { ...route.query, action: undefined } });
   }
 
   // 跨标签页监听公民端下单通知

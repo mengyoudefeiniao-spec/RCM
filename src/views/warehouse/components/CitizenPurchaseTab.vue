@@ -652,62 +652,16 @@
         </div>
 
         <!-- 核心动态二维码 -->
-        <div class="relative w-60 h-60 mx-auto p-3.5 rounded-lg bg-white border-2 border-[#1F3326] shadow-xl flex flex-col items-center justify-center overflow-hidden">
-          <div class="absolute inset-x-2 h-0.5 bg-[#3E9B68] shadow-[0_0_12px_#3E9B68] animate-scan-qr z-20"></div>
-
-          <!-- SVG 高保真二维码矩阵 -->
-          <svg viewBox="0 0 200 200" class="w-full h-full text-[#1B3123]" fill="currentColor">
-            <rect width="200" height="200" fill="#ffffff" />
-            <rect x="15" y="15" width="45" height="45" fill="#1F3326" rx="6" />
-            <rect x="23" y="23" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="29" y="29" width="17" height="17" fill="#1F3326" rx="2" />
-            <rect x="140" y="15" width="45" height="45" fill="#1F3326" rx="6" />
-            <rect x="148" y="23" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="154" y="29" width="17" height="17" fill="#1F3326" rx="2" />
-            <rect x="15" y="140" width="45" height="45" fill="#1F3326" rx="6" />
-            <rect x="23" y="148" width="29" height="29" fill="#ffffff" rx="4" />
-            <rect x="29" y="154" width="17" height="17" fill="#1F3326" rx="2" />
-            <rect x="75" y="20" width="12" height="12" />
-            <rect x="95" y="20" width="12" height="12" />
-            <rect x="115" y="20" width="12" height="12" />
-            <rect x="75" y="40" width="12" height="12" />
-            <rect x="105" y="45" width="12" height="12" />
-            <rect x="20" y="75" width="12" height="12" />
-            <rect x="40" y="75" width="12" height="12" />
-            <rect x="60" y="75" width="12" height="12" />
-            <rect x="80" y="75" width="12" height="12" />
-            <rect x="100" y="75" width="12" height="12" />
-            <rect x="120" y="75" width="12" height="12" />
-            <rect x="140" y="75" width="12" height="12" />
-            <rect x="160" y="75" width="12" height="12" />
-            <rect x="20" y="95" width="12" height="12" />
-            <rect x="45" y="105" width="12" height="12" />
-            <rect x="75" y="100" width="12" height="12" />
-            <rect x="115" y="95" width="12" height="12" />
-            <rect x="145" y="105" width="12" height="12" />
-            <rect x="165" y="95" width="12" height="12" />
-            <rect x="25" y="120" width="12" height="12" />
-            <rect x="65" y="120" width="12" height="12" />
-            <rect x="85" y="120" width="12" height="12" />
-            <rect x="125" y="120" width="12" height="12" />
-            <rect x="155" y="120" width="12" height="12" />
-            <rect x="75" y="145" width="12" height="12" />
-            <rect x="105" y="145" width="12" height="12" />
-            <rect x="135" y="145" width="12" height="12" />
-            <rect x="165" y="145" width="12" height="12" />
-            <rect x="75" y="165" width="12" height="12" />
-            <rect x="95" y="165" width="12" height="12" />
-            <rect x="125" y="165" width="12" height="12" />
-            <rect x="155" y="165" width="12" height="12" />
-            <rect x="82" y="82" width="36" height="36" fill="#1F3326" rx="8" />
-            <rect x="86" y="86" width="28" height="28" fill="#3E9B68" rx="6" />
-            <text x="100" y="105" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="monospace">RCM</text>
-          </svg>
-
-          <div class="absolute bottom-1 inset-x-2 text-[9px] font-mono text-[#58685D] bg-white/90 py-0.5 rounded">
-            {{ liveTimerString }}
-          </div>
+        <div class="w-60 h-60 mx-auto p-3.5 rounded-lg bg-white border-2 border-[#1F3326] shadow-xl flex items-center justify-center">
+          <img
+            v-if="pickupQrDataUrl"
+            :src="pickupQrDataUrl"
+            :alt="$t('citizenPurchase.qrVoucherTitle')"
+            class="w-full h-full object-contain"
+          />
+          <el-icon v-else class="text-3xl text-[#8A9A8F] is-loading"><Loading /></el-icon>
         </div>
+        <div class="text-[10px] text-[#8A9A8F] font-mono">{{ liveTimerString }}</div>
 
         <!-- 提货核验码 -->
         <div class="p-3 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] text-xs space-y-1">
@@ -741,6 +695,8 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
+import QRCode from 'qrcode';
+import { createPickupOrderQrPayload } from '../../../utils/qrPayload.js';
 
 const processContainerRef = ref(null);
 const route = useRoute();
@@ -779,6 +735,7 @@ import {
   CreditCard,
   Tickets,
   FullScreen,
+  Loading,
   Right,
   Back
 } from '@element-plus/icons-vue';
@@ -888,7 +845,28 @@ watch(locale, (val) => {
 const showPaymentDialog = ref(false);
 const showQrDialog = ref(false);
 const currentQrOrder = ref(null);
+const pickupQrDataUrl = ref('');
 const myOrders = ref([]);
+
+let pickupQrGeneration = 0;
+watch([showQrDialog, () => currentQrOrder.value?.pickupCode], async ([visible, pickupCode]) => {
+  const generation = ++pickupQrGeneration;
+  pickupQrDataUrl.value = '';
+  if (!visible || !pickupCode) return;
+
+  try {
+    const dataUrl = await QRCode.toDataURL(createPickupOrderQrPayload(pickupCode), {
+      width: 480,
+      margin: 3,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#1B3123', light: '#FFFFFF' }
+    });
+    if (generation === pickupQrGeneration) pickupQrDataUrl.value = dataUrl;
+  } catch (error) {
+    console.error('生成提货二维码失败', error);
+    ElMessage.error(t('citizenPurchase.orderError'));
+  }
+});
 
 // 动态防伪时钟
 const liveTimerString = ref('');
