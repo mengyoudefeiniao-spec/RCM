@@ -327,12 +327,19 @@
             <!-- 步骤 3: 第 140 号决议合规核验 (特定争议领土强制要求) -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 3" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
-                <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">3</span>
-                  <span>{{ $t('transfer.article140Title') }}</span>
+              <div
+                class="flex gap-2 pb-2 border-b border-[#E9F1EB]"
+                :class="isAppMode ? 'flex-col items-stretch' : 'flex-row items-center justify-between'"
+              >
+                <label class="min-w-0 text-sm font-bold text-[#1F3326] flex items-center gap-2">
+                  <span class="w-6 h-6 shrink-0 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">3</span>
+                  <span class="min-w-0 break-words leading-snug">{{ $t('transfer.article140Title') }}</span>
                 </label>
-                <el-tag :type="requiresArticle140 ? 'danger' : 'success'" size="small">
+                <el-tag
+                  :type="requiresArticle140 ? 'danger' : 'success'"
+                  size="small"
+                  :class="isAppMode ? 'w-full !h-auto !whitespace-normal !py-1 text-start leading-snug break-words' : ''"
+                >
                   {{ requiresArticle140 ? $t('transfer.article140Warning') : $t('transfer.article140Exempted') }}
                 </el-tag>
               </div>
@@ -441,7 +448,8 @@
                 <el-button
                   type="success"
                   size="large"
-                  class="px-8 font-bold shadow-md bg-[#2F7A50] border-[#2F7A50] hover:bg-[#3E9B68]"
+                  class="font-bold shadow-md bg-[#2F7A50] border-[#2F7A50] hover:bg-[#3E9B68]"
+                  :class="isAppMode ? 'w-full !h-auto min-h-[40px] px-3 whitespace-normal leading-snug' : 'px-8'"
                   :loading="submitting"
                   @click="handleOpenPaymentDialog"
                 >

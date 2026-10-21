@@ -136,15 +136,24 @@
 
       <!-- 3. 家庭在册成员卡片流 (Mobile Card Flow) -->
       <div class="bg-white rounded-lg p-4 border border-[#D9E5DB] shadow-xs space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
-          <div class="flex items-center gap-1.5">
-            <span class="w-1.5 h-3.5 bg-[#326445] rounded-full"></span>
-            <span class="text-xs font-bold text-[#1F3326]">{{ $t('citizenCard.registeredMemberList') }}</span>
-            <span class="px-2 py-0.5 rounded-full bg-[#FDF3E0] text-[#D3AF62] font-bold text-[10px]">
+        <div
+          class="flex gap-2 pb-2 border-b border-[#E9F1EB]"
+          :class="isAppMode ? 'flex-col items-stretch' : 'flex-row items-center justify-between'"
+        >
+          <div class="min-w-0 flex items-center gap-1.5" :class="isAppMode ? 'flex-wrap' : ''">
+            <span class="w-1.5 h-3.5 shrink-0 bg-[#326445] rounded-full"></span>
+            <span class="min-w-0 text-xs font-bold text-[#1F3326] break-words">{{ $t('citizenCard.registeredMemberList') }}</span>
+            <span class="shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full bg-[#FDF3E0] text-[#D3AF62] font-bold text-[10px]">
               {{ citizenStore.currentFamily?.members?.length || 0 }} {{ $t('citizenCard.unitPerson') }}
             </span>
           </div>
-          <el-button type="primary" size="small" class="!px-2.5 !py-1 text-xs font-bold" @click="openAddMemberDialog">
+          <el-button
+            type="primary"
+            size="small"
+            class="!px-2.5 !py-1 text-xs font-bold"
+            :class="isAppMode ? 'self-start max-w-full !h-auto !whitespace-normal' : ''"
+            @click="openAddMemberDialog"
+          >
             <el-icon class="me-1"><Plus /></el-icon>
             {{ $t('citizenCard.registerNewMember') }}
           </el-button>
