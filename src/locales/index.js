@@ -17,6 +17,18 @@ import adminCenterMessages from './adminCenter.js';
 import systemExtras from './systemExtras.js';
 import mailCenterMessages from './mailCenter.js';
 import memberRegistrationMessages from './memberRegistration.js';
+import citizenApplicationMessages from './citizenApplications.js';
+import citizenTransferMessages from './citizenTransfer.js';
+
+function withCitizenApplications(messages, lang) {
+  const merged = { ...messages };
+  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang]]) {
+    for (const [scope, entries] of Object.entries(pack)) {
+      merged[scope] = { ...merged[scope], ...entries };
+    }
+  }
+  return merged;
+}
 
 // ku/kmr is Kurmanji (Latin script); the existing Arabic-script catalog is Sorani.
 // sdh is recorded here for future catalogs, but is not offered without translations.
@@ -42,10 +54,10 @@ export const i18n = createI18n({
   locale: savedLang,
   fallbackLocale: 'zh',
   messages: {
-    zh: { ...zh, my: myMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh, ...mailCenterMessages.zh, memberRegistration: memberRegistrationMessages.zh },
-    en: { ...en, my: myMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en, ...mailCenterMessages.en, memberRegistration: memberRegistrationMessages.en },
-    ar: { ...ar, my: myMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar, ...mailCenterMessages.ar, memberRegistration: memberRegistrationMessages.ar },
-    ckb: { ...ckb, my: myMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb, ...mailCenterMessages.ckb, memberRegistration: memberRegistrationMessages.ckb }
+    zh: withCitizenApplications({ ...zh, my: myMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh, ...mailCenterMessages.zh, memberRegistration: memberRegistrationMessages.zh }, 'zh'),
+    en: withCitizenApplications({ ...en, my: myMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en, ...mailCenterMessages.en, memberRegistration: memberRegistrationMessages.en }, 'en'),
+    ar: withCitizenApplications({ ...ar, my: myMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar, ...mailCenterMessages.ar, memberRegistration: memberRegistrationMessages.ar }, 'ar'),
+    ckb: withCitizenApplications({ ...ckb, my: myMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb, ...mailCenterMessages.ckb, memberRegistration: memberRegistrationMessages.ckb }, 'ckb')
   }
 });
 

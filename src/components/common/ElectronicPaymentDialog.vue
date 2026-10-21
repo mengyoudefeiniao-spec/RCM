@@ -44,7 +44,7 @@
         >
           <div class="flex items-center justify-between gap-2">
             <div class="space-y-0.5 truncate">
-              <div class="text-xs font-bold text-[#D3E2D6] truncate">{{ title || '法定业务公文规费' }}</div>
+              <div class="text-xs font-bold text-[#D3E2D6] truncate">{{ title || $t('payment.defaultFeeTitle') }}</div>
               <div class="text-[10px] text-white/60 font-mono">{{ $t('payment.orderNo') || '单号' }}: {{ orderId }}</div>
             </div>
             <div class="text-end shrink-0">
@@ -76,7 +76,7 @@
               @click="selectedChannel = ch.id"
             >
               <span :class="isAppMode ? 'text-xs' : 'text-base'">{{ ch.icon }}</span>
-              <span class="truncate">{{ ch.name.split(' ')[0] }}</span>
+              <span class="truncate">{{ ch.shortName }}</span>
             </button>
           </div>
         </div>
@@ -329,7 +329,7 @@
         <div class="text-center space-y-1">
           <h3 class="text-base font-bold text-[#1F3326]">{{ $t('payment.processing') }}</h3>
           <p class="text-xs text-[#8A9A8F] font-mono">
-            Channel: {{ currentChannelName }} · Verify: {{ currentVerifyLabel }} · Order: {{ orderId }}
+            {{ $t('payment.processingDetails', { channel: currentChannelName, method: currentVerifyLabel, order: orderId }) }}
           </p>
         </div>
       </div>
@@ -342,7 +342,7 @@
 
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-[#1B3123]">{{ $t('payment.success') }}</h3>
-          <p class="text-xs text-[#2F5B44] font-medium">CBI E-Payment Clearance Verified · {{ $t('payment.treasuryBooked') }}</p>
+          <p class="text-xs text-[#2F5B44] font-medium">{{ $t('payment.clearanceVerified') }} · {{ $t('payment.treasuryBooked') }}</p>
           <div class="font-mono text-xs text-[#8A9A8F] mt-2">
             TXN-{{ successTxnNo || '883921' }}-IQD ({{ currentVerifyLabel }})
           </div>
@@ -372,8 +372,7 @@ import {
   Loading
 } from '@element-plus/icons-vue';
 
-const { t, locale } = useI18n();
-const isEn = computed(() => locale.value === 'en');
+const { t } = useI18n();
 const route = useRoute();
 
 // 自动检测是否处于 APP 视口模式 (优先检查 query，兼容会话记忆)
@@ -395,7 +394,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '法定业务公文规费'
+    default: ''
   },
   amount: {
     type: Number,
@@ -435,20 +434,17 @@ const faceScanning = ref(false);
 const successTxnNo = ref('');
 
 const channels = computed(() => [
-  { id: 'qi_card', name: isEn.value ? 'Qi Card (Mastercard)' : 'Qi Card (万事达)', icon: '💳' },
-  { id: 'zain_cash', name: isEn.value ? 'ZainCash Wallet' : 'ZainCash 钱包', icon: '📱' },
-  { id: 'cbi_switch', name: isEn.value ? 'Switch CBI Gateway' : 'Switch 银联通道', icon: '🏦' }
+  { id: 'qi_card', name: t('payment.channels.qi'), shortName: 'Qi', icon: '💳' },
+  { id: 'zain_cash', name: t('payment.channels.zain'), shortName: 'ZainCash', icon: '📱' },
+  { id: 'cbi_switch', name: t('payment.channels.switch'), shortName: 'Switch', icon: '🏦' }
 ]);
 
 const currentChannelName = computed(() => {
-  return channels.value.find((c) => c.id === selectedChannel.value)?.name || (isEn.value ? 'E-Wallet' : '电子钱包');
+  return channels.value.find((c) => c.id === selectedChannel.value)?.name || t('payment.fallbackWallet');
 });
 
 const currentVerifyLabel = computed(() => {
-  if (verifyMode.value === 'pin') return isEn.value ? 'PIN Secured Debit' : 'PIN密码安全扣款';
-  if (verifyMode.value === 'fingerprint') return isEn.value ? 'Touch ID Biometric Debit' : '生物指纹免密扣款';
-  if (verifyMode.value === 'face') return isEn.value ? 'Face ID Visual Debit' : 'Face ID 刷脸支付';
-  return isEn.value ? 'Secure Debit' : '在线安全扣款';
+  return t(`payment.verifyLabels.${['pin', 'fingerprint', 'face'].includes(verifyMode.value) ? verifyMode.value : 'secure'}`);
 });
 
 const countdownFormatted = computed(() => {
@@ -526,7 +522,7 @@ function handleFastFillPin() {
 // 提交密码支付
 function handleSubmitPinPay() {
   if (pinCode.value.length < 6) {
-    ElMessage.warning('请输入完整的 6 位支付密码');
+    ElMessage.warning(t('payment.pinIncomplete'));
     return;
   }
   executePaymentProcess('pin');
@@ -561,7 +557,7 @@ function executePaymentProcess(method) {
 
   setTimeout(() => {
     paymentStatus.value = 'success';
-    ElMessage.success(t('payment.paidToast', { channel: currentVerifyLabel.value }));
+    ElMessage.success(t('payment.paidToast', { channel: currentChannelName.value }));
 
     setTimeout(() => {
       stopTimer();

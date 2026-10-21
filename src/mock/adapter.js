@@ -1127,6 +1127,7 @@ export async function mockDispatch(config) {
         : '拟分立成员组合非标准夫妻结构，系统自动判别未通过。';
       return createResponse({
         passed: false,
+        reasonCode: selectedMembers.length === 1 ? 'SINGLE_MEMBER' : 'NON_SPOUSAL_GROUP',
         reason,
         message: reason
       });

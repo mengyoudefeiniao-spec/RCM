@@ -31,7 +31,7 @@
         </div>
         <div>
           <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentProvince') }}：</span>
-          <span class="font-medium text-[#1F3326]">{{ currentFromProvince }}</span>
+          <span class="font-medium text-[#1F3326]">{{ locationLabel(currentFromProvince) }}</span>
         </div>
         <div>
           <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentAgent') }}：</span>
@@ -135,7 +135,7 @@
                     <el-option
                       v-for="prov in provinceOptions"
                       :key="prov.province"
-                      :label="prov.province"
+                      :label="locationLabel(prov.province)"
                       :value="prov.province"
                     />
                   </el-select>
@@ -147,7 +147,7 @@
                     <el-option
                       v-for="branch in currentBranchList"
                       :key="branch.branchName"
-                      :label="branch.branchName"
+                      :label="locationLabel(branch.branchName)"
                       :value="branch.branchName"
                     />
                   </el-select>
@@ -159,7 +159,7 @@
                     <el-option
                       v-for="cnt in currentCenterList"
                       :key="cnt.centerId"
-                      :label="`${cnt.centerName} (#${cnt.centerId})`"
+                      :label="`${locationLabel(cnt.centerName)} (#${cnt.centerId})`"
                       :value="cnt.centerId"
                     />
                   </el-select>
@@ -174,7 +174,7 @@
                 <div class="flex items-center gap-2">
                   <el-icon><Compass /></el-icon>
                   <span>
-                    {{ $t('transfer.routeNotice', { prov: targetProvince, route: isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute'), approval: isSameProvince ? $t('transfer.autoPathNotice') : $t('transfer.reviewPathNotice') }) }}
+                    {{ $t('transfer.routeNotice', { prov: locationLabel(targetProvince), route: isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute'), approval: isSameProvince ? $t('transfer.autoPathNotice') : $t('transfer.reviewPathNotice') }) }}
                   </span>
                 </div>
                 <el-tag :type="isSameProvince ? 'success' : 'warning'" size="small">
@@ -206,8 +206,8 @@
                       ]"
                     >
                       <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500" class="!h-auto items-start [&_.el-radio__label]:whitespace-normal [&_.el-radio__label]:break-words [&_.el-radio__label]:leading-snug">
-                        <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
-                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                        <span class="font-bold text-[#1F3326]">{{ locationLabel(ag.name) }}</span>
+                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ locationLabel(ag.manager) }}</span>
                       </el-radio>
 
                       <div class="text-end shrink-0">
@@ -254,8 +254,8 @@
                       ]"
                     >
                       <el-radio :value="ag.id" :disabled="ag.currentHouseholds >= 1500" class="!h-auto items-start [&_.el-radio__label]:whitespace-normal [&_.el-radio__label]:break-words [&_.el-radio__label]:leading-snug">
-                        <span class="font-bold text-[#1F3326]">{{ ag.name }}</span>
-                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ ag.manager }}</span>
+                        <span class="font-bold text-[#1F3326]">{{ locationLabel(ag.name) }}</span>
+                        <span class="text-[11px] text-[#8A9A8F] block mt-0.5">{{ $t('transfer.manager') }}: {{ locationLabel(ag.manager) }}</span>
                       </el-radio>
 
                       <div class="text-end shrink-0">
@@ -286,7 +286,7 @@
             <!-- 步骤 2: 录入新居住信息与上传居住证明 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 2" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E9F1EB]">
                 <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
                   <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">2</span>
                   <span>{{ $t('transfer.step2Title') }}</span>
@@ -318,7 +318,7 @@
                   is-required
                   :category-badge="$t('transfer.residenceProofBadge')"
                   :issuer="$t('transfer.residenceProofIssuer')"
-                  :default-file-name="isEn ? 'Residence_Confirmation_Certificate_2026.pdf' : '公民常住新地址居住确认公函_2026.pdf'"
+                  :default-file-name="$t('transfer.residenceFileName')"
                 />
               </div>
             </div>
@@ -356,7 +356,7 @@
                   is-required
                   :category-badge="$t('transfer.art140DocBadge')"
                   :issuer="$t('transfer.art140DocIssuer')"
-                  :default-file-name="isEn ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议无异议执行批文_2026.pdf'"
+                  :default-file-name="$t('transfer.article140FileName')"
                 />
               </div>
 
@@ -379,12 +379,12 @@
             <!-- 步骤 4: 确认信息与规费电子支付 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 4" class="space-y-5 animate-fade-in">
-              <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
+              <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#E9F1EB]" :class="isAppMode ? 'flex-col items-stretch' : ''">
                 <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
                   <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">4</span>
                   <span>{{ $t('transfer.step4Title') }}</span>
                 </label>
-                <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark">
+                <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark" class="max-w-full !h-auto !whitespace-normal !py-1 text-start leading-snug">
                   {{ isSameProvince ? $t('transfer.intraProvinceAuto') : $t('transfer.interProvinceReview') }}
                 </el-tag>
               </div>
@@ -393,15 +393,15 @@
               <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid gap-4 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.summaryTarget') }}：</span>
-                  <span class="font-bold text-[#1F3326]">{{ targetProvince }} / {{ targetBranchName }}</span>
+                  <span class="font-bold text-[#1F3326]">{{ locationLabel(targetProvince) }} / {{ locationLabel(targetBranchName) }}</span>
                 </div>
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.flourAgent') }}：</span>
-                  <span class="font-bold text-[#6B5321]">{{ currentSelectedFlourAgent?.name }}</span>
+                  <span class="font-bold text-[#6B5321]">{{ locationLabel(currentSelectedFlourAgent?.name) }}</span>
                 </div>
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.foodAgent') }}：</span>
-                  <span class="font-bold text-[#24483A]">{{ currentSelectedFoodAgent?.name }}</span>
+                  <span class="font-bold text-[#24483A]">{{ locationLabel(currentSelectedFoodAgent?.name) }}</span>
                 </div>
                 <div>
                   <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.summaryLandmark') }}：</span>
@@ -467,7 +467,7 @@
                   {{ transferResult?.autoApproved ? $t('transfer.autoSuccessTitle') : $t('transfer.reviewSuccessTitle') }}
                 </h3>
                 <p class="text-xs text-[#58685D] max-w-lg mx-auto">
-                  {{ transferResult?.message || (transferResult?.autoApproved ? $t('transfer.autoSuccessDesc') : $t('transfer.reviewSuccessDesc')) }}
+                  {{ transferResult?.autoApproved ? $t('transfer.autoSuccessDesc') : $t('transfer.reviewSuccessDesc') }}
                 </p>
               </div>
 
@@ -483,8 +483,8 @@
                   <div>{{ $t('transfer.ticketNo') }}：<span class="font-mono font-bold text-[#1F3326]">{{ transferResult?.ticketId || 'TR-2026-BAG-0918' }}</span></div>
                   <div>{{ $t('citizen.headName') }}：<span class="font-bold text-[#1F3326]">{{ citizenStore.currentFamily?.headName }}</span></div>
                   <div>{{ $t('transfer.originalAgent') }}：<span class="text-[#1F3326]">{{ citizenStore.currentFamily?.agentName }}</span></div>
-                  <div>{{ $t('transfer.flourAgent') }}：<span class="font-bold text-[#7A5F21]">{{ currentSelectedFlourAgent?.name }}</span></div>
-                  <div>{{ $t('transfer.foodAgent') }}：<span class="font-bold text-[#2A5440]">{{ currentSelectedFoodAgent?.name }}</span></div>
+                  <div>{{ $t('transfer.flourAgent') }}：<span class="font-bold text-[#7A5F21]">{{ locationLabel(currentSelectedFlourAgent?.name) }}</span></div>
+                  <div>{{ $t('transfer.foodAgent') }}：<span class="font-bold text-[#2A5440]">{{ locationLabel(currentSelectedFoodAgent?.name) }}</span></div>
                   <div>{{ $t('transfer.feePaid') }}：<span class="font-mono text-[#2F7A50] font-bold">{{ $t('transfer.feePaidAmount') }}</span></div>
                 </div>
               </div>
@@ -564,9 +564,11 @@ import {
   Check
 } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import { localizeTransferLocation, transferProvinceKey } from '../../utils/transferLocationLabels.js';
 import { ElMessage } from 'element-plus';
 
 const { t, locale } = useI18n();
+const locationLabel = (value) => localizeTransferLocation(t, value);
 const isEn = computed(() => locale.value === 'en');
 const router = useRouter();
 const route = useRoute();
@@ -621,15 +623,13 @@ const residenceForm = reactive({
   nearestLandmark: ''
 });
 
+const residenceDefaults = {};
 function initResidenceForm() {
-  if (locale.value === 'en') {
-    residenceForm.district = 'Al-Mansour District, Karkh';
-    residenceForm.subDistrict = 'Street 14, Sector 6';
-    residenceForm.nearestLandmark = 'West of Grand Mosque';
-  } else {
-    residenceForm.district = '卡尔赫区曼苏尔街区';
-    residenceForm.subDistrict = '第14住宅大街';
-    residenceForm.nearestLandmark = '中央大清真寺西侧';
+  for (const [field, key] of Object.entries({ district: 'demoDistrict', subDistrict: 'demoSubDistrict', nearestLandmark: 'demoLandmark' })) {
+    const previousDefault = residenceDefaults[field];
+    const nextDefault = t('transfer.' + key);
+    if (!residenceForm[field] || residenceForm[field] === previousDefault) residenceForm[field] = nextDefault;
+    residenceDefaults[field] = nextDefault;
   }
 }
 
@@ -667,8 +667,8 @@ const currentFromProvince = computed(() => {
 
 // 是否为省内转移
 const isSameProvince = computed(() => {
-  const fromP = currentFromProvince.value.split(' ')[0];
-  const toP = targetProvince.value.split(' ')[0];
+  const fromP = transferProvinceKey(currentFromProvince.value);
+  const toP = transferProvinceKey(targetProvince.value);
   return fromP === toP;
 });
 
@@ -710,14 +710,30 @@ const ARTICLE_140_KEYWORDS = ['迪亚拉', '尼尼微', '萨拉赫丁', '基尔�
 const requiresArticle140 = computed(() => {
   const from = currentFromProvince.value;
   const to = `${targetProvince.value} ${targetBranchName.value}`;
+  if (['province1', 'province2', 'province3'].includes(transferProvinceKey(from)) || selectedProvinceObj.value?.isArticle140) return true;
   return ARTICLE_140_KEYWORDS.some((kw) => from.includes(kw) || to.includes(kw));
 });
 
 // 加载省市区网点树形元数据
 async function loadTransferOptions() {
   try {
+    const previousCenterId = targetCenterId.value;
+    const previousFlourId = selectedFlourAgentId.value;
+    const previousFoodId = selectedFoodAgentId.value;
     const list = await getTransferOptions();
     provinceOptions.value = list || [];
+    for (const province of provinceOptions.value) {
+      for (const branch of province.branches || []) {
+        const center = branch.centers?.find((item) => item.centerId === previousCenterId);
+        if (!center) continue;
+        targetProvince.value = province.province;
+        targetBranchName.value = branch.branchName;
+        targetCenterId.value = center.centerId;
+        selectedFlourAgentId.value = center.flourAgents?.some((item) => item.id === previousFlourId) ? previousFlourId : center.flourAgents?.[0]?.id || '';
+        selectedFoodAgentId.value = center.foodAgents?.some((item) => item.id === previousFoodId) ? previousFoodId : center.foodAgents?.[0]?.id || '';
+        return;
+      }
+    }
     if (provinceOptions.value.length > 0) {
       if (!targetProvince.value || !provinceOptions.value.some(p => p.province === targetProvince.value)) {
         targetProvince.value = provinceOptions.value[0].province;
@@ -833,8 +849,8 @@ async function handlePaymentSuccess(paymentInfo) {
       district: residenceForm.district,
       subDistrict: residenceForm.subDistrict,
       nearestLandmark: residenceForm.nearestLandmark,
-      residenceProofDoc: isEn.value ? 'Residence_Confirmation_Certificate_2026.pdf' : '新居所官方确认公函_2026.pdf',
-      article140Doc: requiresArticle140.value ? (isEn.value ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议无异议执行批文_2026.pdf') : '',
+      residenceProofDoc: t('transfer.residenceFileName'),
+      article140Doc: requiresArticle140.value ? t('transfer.article140FileName') : '',
       paymentInfo
     };
 

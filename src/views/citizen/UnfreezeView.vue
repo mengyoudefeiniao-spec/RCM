@@ -7,7 +7,7 @@
         <ModuleDescTip
           :title="$t('unfreeze.title')"
           :content="$t('unfreeze.subtitle')"
-          badge="第140号决议申诉"
+          :badge="$t('unfreeze.resolutionBadge')"
           badge-type="warning"
           title-class="text-base font-bold text-[#1B3123]"
         >
@@ -84,7 +84,7 @@
             <el-button
               type="warning"
               size="large"
-              class="w-full font-bold shadow-md rounded-lg text-sm py-3"
+              class="w-full font-bold shadow-md rounded-lg text-sm !h-auto min-h-11 !whitespace-normal !py-3 [&>span]:whitespace-normal [&>span]:leading-snug"
               :loading="submitting"
               @click="handleStartUnfreeze"
             >
@@ -99,7 +99,7 @@
     <!-- 电子支付二维码收银台 -->
     <ElectronicPaymentDialog
       v-model="paymentDialogVisible"
-      :title="$t('unfreeze.paymentTitle', { type: unfreezeType })"
+      :title="$t('unfreeze.paymentTitle', { type: currentCaseLabel })"
       :amount="5000"
       currency="IQD"
       :business-no="citizenStore.currentFamily?.rationCardNo"
@@ -198,171 +198,29 @@ const unfreezeStatement = ref(STATEMENTS_BY_TYPE['商业'][locale.value === 'ckb
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
 
-const isEn = computed(() => locale.value === 'en');
+
 
 watch(locale, (newLang) => {
   if (allDefaultTexts.includes(unfreezeStatement.value)) {
     const caseObj = STATEMENTS_BY_TYPE[unfreezeType.value] || STATEMENTS_BY_TYPE['商业'];
-    unfreezeStatement.value = caseObj[newLang] || caseObj.en;
+    unfreezeStatement.value = caseObj[newLang === 'ckb' ? 'ku' : newLang] || caseObj.en;
   }
 });
 
-const DOC_CONFIGS = computed(() => {
-  if (isEn.value) {
-    return {
-      商业: {
-        title: 'Commercial Deregistration & Tax Clearance Certificate',
-        subtitle: 'Ministry of Trade Deregistration Deed & Tax Clearance Receipt',
-        badge: 'Commercial Deregistration',
-        issuer: 'Ministry of Trade Companies Directorate & General Commission for Taxes',
-        fileName: 'Commercial_Chamber_Tax_Clearance_Deed_COM-2026-0914.pdf',
-        refNo: 'COM-TAX-2026-9901',
-        ocrSummary: 'Commercial entity registration annulled; zero-liability tax clearance verified.'
-      },
-      旅行: {
-        title: 'Customs Entry Stamp & Permanent Return Affidavit',
-        subtitle: 'Border control passport stamps & permanent domestic resettlement proof',
-        badge: 'Customs & Return Deed',
-        issuer: 'Ministry of Interior Residency & Border Directorate',
-        fileName: 'Border_Control_Passport_Entry_Stamp_TRV-2026-5521.pdf',
-        refNo: 'CUST-TRV-2026-4418',
-        ocrSummary: 'Baghdad International Airport entry stamp verified; permanent residency affidavit confirmed.'
-      },
-      高收入: {
-        title: 'Income Assessment Deed & Employer Payroll Statement',
-        subtitle: 'Ministry of Finance civil payroll assessment deed',
-        badge: 'Income Statement',
-        issuer: 'Ministry of Finance & Employer',
-        fileName: 'Ministry_of_Finance_Salary_Audit_Sheet_INC-2026-3108.pdf',
-        refNo: 'FIN-SAL-2026-7821',
-        ocrSummary: 'Monthly income evaluated below state subsidy ceiling threshold.'
-      },
-      住址不明: {
-        title: 'Community Grid In-Person Residency Verification Deed',
-        subtitle: 'Municipal neighborhood grid chief residency certificate and utility invoices',
-        badge: 'Residency Verification',
-        issuer: 'Provincial Administrative Council & Local Grid Division',
-        fileName: 'Community_Grid_Residency_Verification_LOC-2026-7740.pdf',
-        refNo: 'LOC-GRD-2026-1193',
-        ocrSummary: 'On-site verification completed; applicant confirmed residing over 6 months continuously.'
-      },
-      更新: {
-        title: 'National Unified Card Correction Approval Letter',
-        subtitle: 'Civil Status General Directorate archive correction decree',
-        badge: 'Civil Archive Correction',
-        issuer: 'Ministry of Interior Civil Status Directorate',
-        fileName: 'Civil_Status_Record_Correction_Decree_UPD-2026-6219.pdf',
-        refNo: 'MOI-UPD-2026-1102',
-        ocrSummary: 'Civil profile corrections verified; identity status synchronised.'
-      },
-      重复: {
-        title: 'Civil Registration Duplicate Cancellation Decree',
-        subtitle: 'Court of Personal Status unique identity affidavit and duplicate cancellation',
-        badge: 'Duplicate Cancellation',
-        issuer: 'Supreme Judicial Council Court of Personal Status',
-        fileName: 'Court_Decree_Cancelling_Duplicate_Card_DUP-2026-9041.pdf',
-        refNo: 'JUD-DUP-2026-3391',
-        ocrSummary: 'Judicial confirmation of unique identity; redundant registration deleted.'
-      },
-      临时: {
-        title: 'Order Lifting Temporary Ration Suspension',
-        subtitle: 'Strategic Reserve Directorate temporary restriction termination notice',
-        badge: 'Lifting Suspension Order',
-        issuer: 'Ministry of Trade Grain Reserve Directorate',
-        fileName: 'Notice_Lifting_Temporary_Suspension_TMP-2026-2810.pdf',
-        refNo: 'TRD-TMP-2026-8820',
-        ocrSummary: 'Temporary restriction cause resolved; full quota restoration instructed.'
-      },
-      地理位置: {
-        title: 'Geographic Residential Relocation & GPS Audit Deed',
-        subtitle: 'Spatial coordinates verification and lease notarization',
-        badge: 'Spatial Location Audit',
-        issuer: 'Urban Planning Commission & Territorial Supply Division',
-        fileName: 'GIS_Location_Audit_Deed_GEO-2026-6102.pdf',
-        refNo: 'GEO-LOC-2026-5509',
-        ocrSummary: 'GPS spatial coordinates confirmed within target distribution center zone.'
-      }
-    };
-  }
-
-  return {
-    商业: {
-      title: '商业登记注销公文与税务清算核定函',
-      subtitle: '贸易部企业注册总局注销证明及税务局清税证明',
-      badge: '商业登记与税务清算',
-      issuer: '伊拉克贸易部企业注册总局 & 国家税务局',
-      fileName: '商业总商会与税务局_商户执照注销与清税核定公函_COM-2026-0914.pdf',
-      refNo: 'COM-TAX-2026-9901',
-      ocrSummary: '企业法人营业执照名额已注销，纳税零申报及税务清算完毕，符合配给补贴恢复标准'
-    },
-    旅行: {
-      title: '海关出入境与永久回国居留公证书',
-      subtitle: '海关边检入境戳记及出入境常住定居证明',
-      badge: '海关出入境与永久居留',
-      issuer: '伊拉克内政部居留与边境总局',
-      fileName: '内政部海关边检_入境戳记护照扫描件及回国定居申明_TRV-2026-5521.pdf',
-      refNo: 'CUST-TRV-2026-4418',
-      ocrSummary: '巴格达国际机场入境戳记核实属实，居留常驻伊拉克境内声明经公证生效'
-    },
-    高收入: {
-      title: '财政薪资核定单与雇主证明',
-      subtitle: '财政部薪资发放底册核算公文',
-      badge: '财政薪资核定与雇主证明',
-      issuer: '财政部公共薪资核准司 & 雇主单位',
-      fileName: '财政部与雇主用人单位_最新月收入核定单与社保证明_INC-2026-3108.pdf',
-      refNo: 'FIN-SAL-2026-7821',
-      ocrSummary: '月度核算收入低于国家配给补助门槛标准，雇主公章与税单一致'
-    },
-    住址不明: {
-      title: '社区网格户籍实地核查公函',
-      subtitle: '社区网格长连续居住证明与水电账单',
-      badge: '社区网格户籍实地核查',
-      issuer: '巴格达省地方行政委员会 & 社区网格处',
-      fileName: '地方社区行政处_网格长常住户籍确认公函与水电账单_LOC-2026-7740.pdf',
-      refNo: 'LOC-GRD-2026-1193',
-      ocrSummary: '社区网格员现场入户核验属实，已连续常住超过6个月，地址有效激活'
-    },
-    更新: {
-      title: '统一国民卡数据校正批准通知书',
-      subtitle: '内政部户政总局个人底账信息已完成更正核实公文',
-      badge: '内政部户籍更正公文',
-      issuer: '伊拉克内政部户政总局',
-      fileName: '内政部户政总局_国家统一国民卡数据校正批准通知书_UPD-2026-6219.pdf',
-      refNo: 'MOI-UPD-2026-1102',
-      ocrSummary: '国民卡档案信息与配给底册完成双向对齐，系统更正生效记录比对属实'
-    },
-    重复: {
-      title: '户籍身份唯一性司法公证书及销重批文',
-      subtitle: '民事身份法院出具的无多重档案唯一人身地位证明',
-      badge: '司法唯一身份公证',
-      issuer: '最高司法委员会民事身份法庭',
-      fileName: '司法法庭_配给卡唯一登记与多重底册销重裁定书_DUP-2026-9041.pdf',
-      refNo: 'JUD-DUP-2026-3391',
-      ocrSummary: '司法裁定明确家庭成员人身唯一合法性，重复登记条目已正式注销'
-    },
-    临时: {
-      title: '临时限制解除通知函及合规证明',
-      subtitle: '贸易部粮食总署撤销临时管制清单公函',
-      badge: '临时限制解除批文',
-      issuer: '贸易部国家粮食与物资总署',
-      fileName: '国家粮食总署_关于解除数字配给卡临时管制决定的批函_TMP-2026-2810.pdf',
-      refNo: 'TRD-TMP-2026-8820',
-      ocrSummary: '解除临时口粮配额暂停发放管制，指令属地代销点即日恢复核销'
-    },
-    地理位置: {
-      title: '属地不动产权属公证书及现场定位核验单',
-      subtitle: '不动产登记处合法住所证明及网点经纬度核验公函',
-      badge: '属地不动产与定位核验',
-      issuer: '司法部不动产登记总局 & 属地配给中心',
-      fileName: '不动产登记总局_合法居所所有权登记证与GPS定位件_GEO-2026-6102.pdf',
-      refNo: 'GEO-LOC-2026-5509',
-      ocrSummary: '现场地理位置核验通过，家庭居住地址位于该配给中心标准服务辐射半径内'
-    }
-  };
-});
-
+const unfreezeDocumentTypes = {
+  商业: ['commercial', 'COM-TAX-2026-9901'], 旅行: ['travel', 'CUST-TRV-2026-4418'],
+  高收入: ['income', 'FIN-SAL-2026-7821'], 住址不明: ['address', 'LOC-GRD-2026-1193'],
+  更新: ['update', 'MOI-UPD-2026-1102'], 重复: ['duplicate', 'JUD-DUP-2026-3391'],
+  临时: ['temporary', 'TRD-TMP-2026-8820'], 地理位置: ['location', 'GEO-LOC-2026-5509']
+};
+const currentCaseKey = computed(() => (unfreezeDocumentTypes[unfreezeType.value] || unfreezeDocumentTypes.商业)[0]);
+const currentCaseLabel = computed(() => t('unfreeze.caseNames.' + currentCaseKey.value));
 const currentDocConfig = computed(() => {
-  return DOC_CONFIGS.value[unfreezeType.value] || DOC_CONFIGS.value['商业'];
+  const fields = ['title', 'subtitle', 'badge', 'issuer', 'fileName', 'ocrSummary'];
+  return {
+    ...Object.fromEntries(fields.map((field) => [field, t('unfreeze.documents.' + currentCaseKey.value + '.' + field)])),
+    refNo: (unfreezeDocumentTypes[unfreezeType.value] || unfreezeDocumentTypes.商业)[1]
+  };
 });
 
 function handleTypeChange() {
@@ -388,9 +246,9 @@ function handleStartUnfreeze() {
 async function handlePaymentSuccess(paymentInfo) {
   submitting.value = true;
   try {
-    const res = await citizenStore.unfreezeCard({
+    const res = await citizenStore.applyUnfreeze({
       cardNo: citizenStore.currentFamily?.rationCardNo,
-      type: unfreezeType.value,
+      unfreezeType: unfreezeType.value,
       statement: unfreezeStatement.value,
       docName: currentDocConfig.value?.fileName,
       paymentInfo
@@ -401,9 +259,9 @@ async function handlePaymentSuccess(paymentInfo) {
       id: res.ticketId,
       sourceCode: 'UNF',
       reviewMode: 'manual',
-      source: '配给卡解冻复核申请',
-      categoryType: '异常状态解除类',
-      appType: '配给卡解冻公文',
+      source: t('my.applicationTypes.UNF'),
+      categoryType: currentCaseLabel.value,
+      appType: t('unfreeze.title'),
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
       applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
       reason: unfreezeStatement.value || '公民提交配给卡解冻材料及合规陈述，申请撤销冻结状态。',

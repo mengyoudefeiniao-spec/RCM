@@ -145,11 +145,11 @@
                   <div class="font-bold flex items-center gap-1.5">
                     <span>{{ m.name }}</span>
                     <el-tag size="small" type="purple" effect="plain" class="scale-90 origin-left rtl:origin-right">
-                      {{ m.relation }}
+                      {{ memberRelation(m.relation) }}
                     </el-tag>
                   </div>
                   <div class="text-[11px] text-[#8A9A8F] font-mono mt-0.5">
-                    {{ m.gender }} · NID: {{ m.nationalId }}
+                    {{ memberGender(m.gender) }} · {{ $t('citizen.nationalId') }}: <bdi dir="ltr">{{ m.nationalId }}</bdi>
                   </div>
                 </div>
                 <el-checkbox
@@ -168,9 +168,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
               <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
                 <span class="w-6 h-6 rounded-full bg-[#FDF3E0] text-[#C9A13B] text-xs flex items-center justify-center font-bold">2</span>
-                <span>上传分户法定证明文件 (支持两份材料各自独立上传)</span>
+                <span>{{ $t('split.documentsTitle') }}</span>
               </label>
-              <span class="text-xs text-[#C04442]">* 为法定必需材料</span>
+              <span class="text-xs text-[#C04442]">{{ $t('split.requiredHint') }}</span>
             </div>
 
             <div class="grid gap-4" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'">
@@ -178,13 +178,13 @@
               <div class="p-4 rounded-lg border border-[#F2E3C6] bg-[#FDF3E0]/20 space-y-2">
                 <DocumentUploader
                   v-model="marriageCertUploaded"
-                  title="1. 结婚证明或同等效力公文"
-                  subtitle="民政婚姻登记证书或最高司法委员会法院判决文书（系统自动判别夫妻合法关系的核心依据）"
-                  category-badge="民政结婚证书 / 司法判决书"
-                  issuer="伊拉克最高司法委员会 · 卡尔赫民事法庭"
-                  default-file-name="最高司法委员会_民事结婚证书与分立公函_MC-2026-BAG-09921.pdf"
+                  :title="$t('split.documents.marriage.title')"
+                  :subtitle="$t('split.documents.marriage.subtitle')"
+                  :category-badge="$t('split.documents.marriage.badge')"
+                  :issuer="$t('split.documents.marriage.issuer')"
+                  :default-file-name="$t('split.documents.marriage.fileName')"
                   default-ref-no="MC-2026-BAG-09921"
-                  ocr-summary="已识别民政婚姻公证印鉴，配偶身份核验属实，符合婚姻分户立卡规定"
+                  :ocr-summary="$t('split.documents.marriage.ocrSummary')"
                   :is-required="true"
                 />
               </div>
@@ -193,13 +193,13 @@
               <div class="p-4 rounded-lg border border-[#D9E5DB] bg-[#F3F8F4]/40 space-y-2">
                 <DocumentUploader
                   v-model="otherDocUploaded"
-                  title="2. 其他辅助证明文件"
-                  subtitle="如独立常住住宅产权证/房屋租赁合同、独立水电气户头单据或社区常住网格证明（可选提交）"
-                  category-badge="住所产权 / 租赁合同 / 补充公文"
-                  issuer="地方市政规划委员会 & 房屋所有权登记局"
-                  default-file-name="市政规划委员会_独立常住住宅不动产权公证书与租约_ADD-2026-7810.pdf"
+                  :title="$t('split.documents.residence.title')"
+                  :subtitle="$t('split.documents.residence.subtitle')"
+                  :category-badge="$t('split.documents.residence.badge')"
+                  :issuer="$t('split.documents.residence.issuer')"
+                  :default-file-name="$t('split.documents.residence.fileName')"
                   default-ref-no="ADD-DOC-2026-7810"
-                  ocr-summary="已识别房屋租赁合同及独立网格电费编号，具备独立常住生活居住条件"
+                  :ocr-summary="$t('split.documents.residence.ocrSummary')"
                   :is-required="false"
                 />
               </div>
@@ -213,34 +213,34 @@
             <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
               <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
                 <span class="w-6 h-6 rounded-full bg-[#FDF3E0] text-[#C9A13B] text-xs flex items-center justify-center font-bold">3</span>
-                <span>分立合规研判与业务流转路径</span>
+                <span>{{ $t('split.assessmentTitle') }}</span>
               </label>
-              <el-tag type="purple" size="small" effect="dark">优先智能判别</el-tag>
+              <el-tag type="purple" size="small" effect="dark">{{ $t('split.automaticPriority') }}</el-tag>
             </div>
 
             <div class="p-4 rounded-lg border border-[#F2E3C6] bg-[#FDF3E0]/40 space-y-3 text-xs">
               <div class="flex items-center justify-between">
                 <span class="font-bold text-[#5A4718] text-sm flex items-center gap-1.5">
                   <el-icon><Compass /></el-icon>
-                  <span>预审合规匹配状态</span>
+                  <span>{{ $t('split.precheckStatus') }}</span>
                 </span>
-                <el-tag type="success" size="small">就绪 ✓</el-tag>
+                <el-tag type="success" size="small">{{ $t('split.ready') }}</el-tag>
               </div>
 
               <div class="grid gap-3 text-[#58685D]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'">
-                <div>拟分出成员数：<span class="font-bold text-[#7A5F21]">{{ selectedMemberIds.length }} 人</span></div>
-                <div>婚姻关系材料：<span class="font-bold text-[#2F7A50]">已上传验证 ✓</span></div>
-                <div>独立居住证明：<span class="text-[#58685D]">{{ otherDocUploaded ? '已附辅助公文 ✓' : '免交 / 依户主住所' }}</span></div>
+                <div>{{ $t('split.movingMembers') }} <span class="font-bold text-[#7A5F21]">{{ $t('split.peopleCount', { count: selectedMemberIds.length }) }}</span></div>
+                <div>{{ $t('split.marriageEvidence') }} <span class="font-bold text-[#2F7A50]">{{ $t('split.uploadedVerified') }}</span></div>
+                <div>{{ $t('split.residenceEvidence') }} <span class="text-[#58685D]">{{ $t(otherDocUploaded ? 'split.supportingAttached' : 'split.residenceExempt') }}</span></div>
               </div>
 
               <p class="text-[#6B5321] leading-relaxed border-t border-[#F2E3C6]/60 pt-2 text-[11px]">
-                ● <strong>业务流转规则</strong>：提交支付后，系统将优先进行规则库自动比对。如夫妻双方婚姻合法存续且无名下其他活动配给卡，将<strong>全自动审批通过并签发新卡</strong>；如不满足自动标准，将自动转入分部两级人工复核。
+                <strong>{{ $t('split.routingRulesTitle') }}</strong> {{ $t('split.routingRules') }}
               </p>
             </div>
 
             <!-- 选中的成员名单标签展示 -->
             <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] space-y-1.5 text-xs">
-              <span class="font-medium text-[#43554B] block text-[11px]">拟分入独立新户的成员清单：</span>
+              <span class="font-medium text-[#43554B] block text-[11px]">{{ $t('split.newHouseholdMembers') }}</span>
               <div class="flex flex-wrap gap-1.5">
                 <el-tag
                   v-for="m in selectedMembers"
@@ -248,7 +248,7 @@
                   type="info"
                   size="small"
                 >
-                  {{ m.name }} ({{ m.relation }})
+                  {{ m.name }} ({{ memberRelation(m.relation) }})
                 </el-tag>
               </div>
             </div>
@@ -261,27 +261,27 @@
             <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB]">
               <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2">
                 <span class="w-6 h-6 rounded-full bg-[#FDF3E0] text-[#C9A13B] text-xs flex items-center justify-center font-bold">4</span>
-                <span>核对申请摘要并完成电子支付</span>
+                <span>{{ $t('split.paymentSummaryTitle') }}</span>
               </label>
-              <el-tag type="purple" effect="dark">规费 10,000 IQD</el-tag>
+              <el-tag type="purple" effect="dark">{{ $t('split.feeBadge', { amount: '10,000 IQD' }) }}</el-tag>
             </div>
 
             <!-- 摘要核对卡片 -->
             <div class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-4 grid gap-4 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
               <div>
-                <span class="text-[#8A9A8F] block text-[11px]">原配给卡号：</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.originalCardNo') }}</span>
                 <span class="font-mono font-bold text-[#1F3326]">{{ citizenStore.currentFamily?.rationCardNo }}</span>
               </div>
               <div>
-                <span class="text-[#8A9A8F] block text-[11px]">原法定户主：</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.originalHead') }}</span>
                 <span class="font-bold text-[#1F3326]">{{ citizenStore.currentFamily?.headName }}</span>
               </div>
               <div>
-                <span class="text-[#8A9A8F] block text-[11px]">分出成员人口：</span>
-                <span class="font-bold text-[#7A5F21]">{{ selectedMemberIds.length }} 人</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.movingMembers') }}</span>
+                <span class="font-bold text-[#7A5F21]">{{ $t('split.peopleCount', { count: selectedMemberIds.length }) }}</span>
               </div>
               <div>
-                <span class="text-[#8A9A8F] block text-[11px]">分立规费标准：</span>
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.feeStandard') }}</span>
                 <span class="font-mono font-bold text-[#2F7A50]">10,000 IQD</span>
               </div>
             </div>
@@ -289,17 +289,17 @@
             <!-- 规费提示 -->
             <div class="p-4 bg-[#1B3123] text-white rounded-lg flex flex-col justify-between gap-4" :class="isAppMode ? '' : 'sm:flex-row sm:items-center'">
               <div class="space-y-1">
-                <div class="text-xs text-[#8A9A8F]">数字配给卡家庭分立分户与独立建卡行政规费：</div>
+                <div class="text-xs text-[#8A9A8F]">{{ $t('split.administrativeFee') }}</div>
                 <div class="text-2xl font-bold font-mono text-[#6FBF92]">
-                  10,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">(伊拉克第纳尔)</span>
+                  10,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('split.iraqiDinar') }})</span>
                 </div>
                 <div class="text-[11px] text-[#8A9A8F]">
-                  支持 Qi Card、ZainCash、Switch 在线支付 (密码 / 指纹 / 刷脸)
+                  {{ $t('split.paymentMethods') }}
                 </div>
               </div>
               <div>
                 <el-tag type="success" effect="dark" size="small">
-                  规费核定就绪 ✓
+                  {{ $t('split.feeReady') }}
                 </el-tag>
               </div>
             </div>
@@ -310,9 +310,9 @@
                 <el-icon :size="24"><CreditCard /></el-icon>
               </div>
               <div>
-                <h4 class="text-sm font-bold text-[#1B3123]">最后一步：进行在线支付并执行申报</h4>
+                <h4 class="text-sm font-bold text-[#1B3123]">{{ $t('split.payAndSubmitTitle') }}</h4>
                 <p class="text-xs text-[#58685D] mt-1">
-                  点击下方按钮将打开在线收银台，支持输入密码、感应指纹或刷脸免密支付，付款完成后系统将即刻启动智能判别与流转
+                  {{ $t('split.payAndSubmitHint') }}
                 </p>
               </div>
               <el-button
@@ -323,7 +323,7 @@
                 @click="handleStartSplitPayment"
               >
                 <el-icon class="me-1.5"><CreditCard /></el-icon>
-                打开在线收银台并完成支付
+                {{ $t('split.openCheckout') }}
               </el-button>
             </div>
           </div>
@@ -344,35 +344,35 @@
 
             <div class="space-y-2">
               <h3 class="text-lg font-bold text-[#1B3123]">
-                {{ splitResult?.passed ? '家庭分立分户已全自动核准生效！' : '系统自动判别未通过，已转入分部电子审核' }}
+                {{ $t(splitResult?.passed ? 'split.resultApproved' : 'split.resultManualReview') }}
               </h3>
               <p class="text-xs text-[#58685D] max-w-lg mx-auto">
-                {{ splitResult?.passed ? (splitResult?.message || '已成功为分出成员设立全新独立电子配给卡，配给定额已自动剥离独立。') : splitResult?.reason }}
+                {{ splitResultDescription }}
               </p>
             </div>
 
             <!-- 凭证卡片 -->
             <div class="max-w-xl mx-auto bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-5 text-start space-y-3 text-xs">
               <div class="flex items-center justify-between border-b border-[#D9E5DB]/80 pb-2">
-                <span class="font-bold text-[#1F3326]">分立建卡存根凭证</span>
+                <span class="font-bold text-[#1F3326]">{{ $t('split.receiptTitle') }}</span>
                 <el-tag :type="splitResult?.passed ? 'success' : 'warning'" size="small">
-                  {{ splitResult?.passed ? '自动建卡生效' : '分部审核受理' }}
+                  {{ $t(splitResult?.passed ? 'split.cardActivated' : 'split.branchReview') }}
                 </el-tag>
               </div>
               <div class="grid grid-cols-2 gap-3 text-[#58685D]">
-                <div>业务流水单号：<span class="font-mono font-bold text-[#1F3326]">{{ splitResult?.ticketId || 'SPLIT-2026-BAG-0182' }}</span></div>
-                <div>新独立配给卡号：<span class="font-mono font-bold text-[#7A5F21]">{{ splitResult?.newCardNo || 'RC-10029399' }}</span></div>
-                <div>原家庭配给卡：<span class="font-mono text-[#43554B]">{{ citizenStore.currentFamily?.rationCardNo }}</span></div>
-                <div>分立成员人数：<span class="font-bold text-[#1F3326]">{{ selectedMemberIds.length }} 人</span></div>
-                <div>分立公文规费：<span class="font-mono text-[#2F7A50] font-bold">10,000 IQD (已实缴)</span></div>
-                <div>办理处理模式：<span class="font-bold" :class="splitResult?.passed ? 'text-[#2F7A50]' : 'text-[#C9A13B]'">{{ splitResult?.passed ? '优先智能自动核准' : '分部两级人工复核' }}</span></div>
+                <div>{{ $t('split.referenceNo') }} <bdi dir="ltr" class="font-mono font-bold text-[#1F3326]">{{ splitResult?.ticketId || 'SPLIT-2026-BAG-0182' }}</bdi></div>
+                <div>{{ $t('split.newCardNo') }} <bdi dir="ltr" class="font-mono font-bold text-[#7A5F21]">{{ splitResult?.newCardNo || 'RC-10029399' }}</bdi></div>
+                <div>{{ $t('split.originalCardNo') }} <bdi dir="ltr" class="font-mono text-[#43554B]">{{ citizenStore.currentFamily?.rationCardNo }}</bdi></div>
+                <div>{{ $t('split.movingMembers') }} <span class="font-bold text-[#1F3326]">{{ $t('split.peopleCount', { count: selectedMemberIds.length }) }}</span></div>
+                <div>{{ $t('split.documentFee') }} <span class="font-mono text-[#2F7A50] font-bold">{{ $t('split.feePaid', { amount: '10,000 IQD' }) }}</span></div>
+                <div>{{ $t('split.processingMode') }} <span class="font-bold" :class="splitResult?.passed ? 'text-[#2F7A50]' : 'text-[#C9A13B]'">{{ $t(splitResult?.passed ? 'split.automaticApproval' : 'split.twoTierReview') }}</span></div>
               </div>
             </div>
 
-            <div class="flex items-center justify-center gap-3 pt-2">
+            <div class="flex flex-wrap items-center justify-center gap-3 pt-2 [&_.el-button]:!ms-0 [&_.el-button]:max-w-full [&_.el-button]:h-auto [&_.el-button]:whitespace-normal [&_.el-button]:py-3 [&_.el-button_span]:whitespace-normal">
               <template v-if="splitResult?.passed">
                 <el-button type="primary" size="large" class="px-8 font-bold bg-[#C9A13B] border-[#C9A13B] hover:bg-[#D3AF62]" @click="handleGoBack">
-                  返回我的家庭配给卡
+                  {{ $t('split.returnToCard') }}
                 </el-button>
               </template>
               <template v-else>
@@ -384,10 +384,10 @@
                   @click="handleTransferToElectronicReview"
                 >
                   <el-icon class="me-1.5"><Stamp /></el-icon>
-                  转入分部电子审核 (提交分部门人员手动复核)
+                  {{ $t('split.transferReview') }}
                 </el-button>
                 <el-button size="large" @click="currentStep = 1">
-                  重新调整成员
+                  {{ $t('split.adjustMembers') }}
                 </el-button>
               </template>
             </div>
@@ -429,7 +429,7 @@
   <!-- 电子支付二维码收银台 -->
   <ElectronicPaymentDialog
     v-model="paymentDialogVisible"
-    title="数字配给卡家庭分立分户与独立建卡规费"
+    :title="$t('split.paymentTitle')"
     :amount="10000"
     currency="IQD"
     :business-no="citizenStore.currentFamily?.rationCardNo"
@@ -440,8 +440,7 @@
 </template>
 
 <script setup>
-import { isEnNow } from '../../utils/langHint.js';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
@@ -531,6 +530,26 @@ const selectedMembers = computed(() => {
   return currentMembers.value.filter((m) => selectedMemberIds.value.includes(m.id));
 });
 
+const splitResultDescription = computed(() => {
+  const result = splitResult.value;
+  if (!result) return '';
+  if (result.passed) return t('split.resultSuccessDescription', { cardNo: result.newCardNo || '' });
+  const reasonCode = result.reasonCode || (/单独一人|single person/i.test(result.reason || '') ? 'SINGLE_MEMBER' : 'NON_SPOUSAL_GROUP');
+  return t(reasonCode === 'SINGLE_MEMBER' ? 'split.singleMemberReason' : 'split.nonCoupleReason');
+});
+
+function memberRelation(value) {
+  const key = { '户主': 'head', Head: 'head', '配偶': 'spouse', Spouse: 'spouse', '子女': 'child', Child: 'child', '父亲': 'father', Father: 'father', '母亲': 'mother', Mother: 'mother', '受抚养人': 'dependent', Dependent: 'dependent' }[value];
+  return key ? t(`split.relations.${key}`) : value;
+}
+
+function memberGender(value) {
+  const key = { '男': 'male', Male: 'male', '女': 'female', Female: 'female' }[value];
+  return key ? t(`split.genders.${key}`) : value;
+}
+
+onUnmounted(() => window.removeEventListener('rcm-language-changed', handleLangChanged));
+
 function toggleMember(memberId) {
   splitResult.value = null;
   if (selectedMemberIds.value.includes(memberId)) {
@@ -549,7 +568,7 @@ function handlePrevStep() {
 function handleNextStep() {
   if (currentStep.value === 1) {
     if (selectedMemberIds.value.length === 0) {
-      ElMessage.warning((isEnNow() ? 'Please select family members to move into the new independent household!' : '请勾选移入独立新户的家庭成员！'));
+      ElMessage.warning(t('split.errorSelectMembers'));
       return;
     }
     currentStep.value = 2;
@@ -557,7 +576,7 @@ function handleNextStep() {
   }
   if (currentStep.value === 2) {
     if (!marriageCertUploaded.value) {
-      ElMessage.warning((isEnNow() ? 'A marriage certificate or equivalent official document is legally required; please upload it and retry!' : '结婚证明或同等效力公文为法定必需材料，请上传后重试！'));
+      ElMessage.warning(t('split.errorMarriageDocument'));
       return;
     }
     currentStep.value = 3;
@@ -573,12 +592,12 @@ function handleNextStep() {
  */
 function handleStartSplitPayment() {
   if (selectedMemberIds.value.length === 0) {
-    ElMessage.error((isEnNow() ? 'Please select family members to move into the new household!' : '请勾选移入新户的家庭成员！'));
+    ElMessage.error(t('split.errorSelectMembers'));
     return;
   }
 
   if (!marriageCertUploaded.value) {
-    ElMessage.error((isEnNow() ? 'A marriage certificate or equivalent document is required; please upload it and retry!' : '结婚证明或同等效力公文为必需材料，请上传后重试！'));
+    ElMessage.error(t('split.errorMarriageDocument'));
     return;
   }
 
@@ -604,22 +623,22 @@ async function handlePaymentSuccess(paymentInfo) {
         sourceCode: 'SPL',
         applicationStatus: 'approved',
         reviewMode: 'automatic',
-        applicationResult: res.message || '',
-        source: '申请分户',
-        appType: '公民分户申请',
+        applicationResult: splitResultDescription.value,
+        source: t('my.applicationTypes.SPL'),
+        appType: t('split.title'),
         cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
         applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
-        targetMemberName: `${selectedMemberIds.value.length} 名家庭成员`,
-        reason: res.reason || '提交家庭分户申请',
+        targetMemberName: t('split.peopleCount', { count: selectedMemberIds.value.length }),
+        reason: splitResultDescription.value,
         payload: { memberIds: selectedMemberIds.value, newCardNo: res.newCardNo || '' }
       });
     }
     await citizenStore.fetchFamilies();
 
     if (res.passed) {
-      ElMessage.success(res.message || (isEnNow() ? 'Household split succeeded; a new card has been issued for you!' : '分户成功，已为您签发新卡！'));
+      ElMessage.success(t('split.resultSuccessDescription', { cardNo: res.newCardNo || '' }));
     } else {
-      ElMessage.warning((isEnNow() ? 'Automatic judge failed; the branch electronic review entrance has been opened for you' : '系统自动判别未通过，已为您开启分部电子审核入口'));
+      ElMessage.warning(t('split.manualReviewAvailable'));
     }
   } finally {
     judging.value = false;
@@ -635,7 +654,7 @@ async function handleTransferToElectronicReview() {
     const res = await citizenStore.submitSplitReview({
       currentCardNo: citizenStore.currentFamily?.rationCardNo,
       memberIds: selectedMemberIds.value,
-      reason: splitResult.value?.reason || '系统自动判别未通过，转交分部门人员手动审核'
+      reason: splitResultDescription.value
     });
 
     // 跨标签页共享与广播新公文
@@ -643,18 +662,18 @@ async function handleTransferToElectronicReview() {
       id: res.ticketId,
       sourceCode: 'SPL',
       reviewMode: 'manual',
-      source: '分户申请公文',
-      categoryType: '分户与配给卡拆分',
-      appType: '公民分户申请',
+      source: t('my.applicationTypes.SPL'),
+      categoryType: t('split.title'),
+      appType: t('split.title'),
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
       applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
-      reason: `拟分出成员 ${selectedMemberIds.value.length} 人，转交分部两级人工审核。`,
+      reason: splitResultDescription.value,
       attachments: [
-        { name: '结婚证明与分户申请文件_SPL-2026.pdf', type: 'required', verified: true }
+        { name: t('split.documents.marriage.fileName'), type: 'required', verified: true }
       ]
     });
 
-    ElMessage.success((isEnNow() ? 'Routed to the target branch two-tier electronic audit workbench' : '已转入目标分部两级电子审核工作台'));
+    ElMessage.success(t('split.reviewSubmitted'));
     handleGoBack();
   } finally {
     reviewSubmitting.value = false;

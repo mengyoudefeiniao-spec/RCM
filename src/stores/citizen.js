@@ -11,6 +11,7 @@ import {
   addFamilyMember
 } from '../api/citizen.js';
 import { ElMessage } from 'element-plus';
+import { i18n } from '../locales/index.js';
 
 export const useCitizenStore = defineStore('citizen', () => {
   const families = ref([]);
@@ -71,7 +72,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function applyUnfreeze(payload) {
     const res = await submitApplyUnfreeze(payload);
-    ElMessage.success(res.message || (isEnNow() ? 'Unfreeze application submitted' : '解冻申请已提交'));
+    ElMessage.success(i18n.global.t('unfreeze.submitSuccess'));
     await fetchFamilies();
     return res;
   }
@@ -90,7 +91,7 @@ export const useCitizenStore = defineStore('citizen', () => {
    */
   async function submitSplitReview(payload) {
     const res = await submitSplitHouseholdForReview(payload);
-    ElMessage.success(res.message || (isEnNow() ? 'Submitted to branch electronic review' : '已提交分部电子审核'));
+    ElMessage.success(i18n.global.t('split.reviewSubmitted'));
     await fetchFamilies();
     return res;
   }

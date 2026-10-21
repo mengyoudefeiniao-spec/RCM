@@ -23,7 +23,7 @@
       <!-- 当前接收卡家庭概览 (布局弹性优化，适配多语言长文本) -->
       <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-3 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'">
         <div class="min-w-0">
-          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('common.rationCardNo') }} ({{ $t('memberTransfer.receivingCard') }})：</span>
+          <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.rationCardNo') }} ({{ $t('memberTransfer.receivingCard') }})：</span>
           <span class="font-mono font-bold text-[#326445] truncate block">{{ citizenStore.currentFamily.rationCardNo }}</span>
         </div>
         <div class="min-w-0">
@@ -251,7 +251,7 @@
                   </div>
                   <div class="min-w-0">
                     <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('memberTransfer.fatherNameLabel') }}：</span>
-                    <span class="font-bold text-[#1F3326] truncate block">{{ selectedMember.fatherName }}</span>
+                    <span class="font-bold text-[#1F3326] truncate block">{{ samplePersonLabel(selectedMember.fatherName) }}</span>
                   </div>
                   <div class="min-w-0">
                     <span class="text-[#8A9A8F] block text-[11px] truncate">{{ $t('citizen.familyCode') }}：</span>
@@ -349,8 +349,8 @@
                     <span>{{ $t('memberTransfer.wifeMatchTitle') }}</span>
                   </div>
                   <div class="grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
-                    <div>{{ $t('memberTransfer.familyCodeCompare') }}：<span class="font-mono font-bold">{{ selectedMember?.familyCode }} vs {{ currentFamilyCode }}</span> ({{ selectedMember?.familyCode === currentFamilyCode ? $t('memberTransfer.consistent') : $t('memberTransfer.inconsistent') }})</div>
-                    <div>{{ $t('memberTransfer.fatherNameCompare') }}：<span class="font-bold">{{ selectedMember?.fatherName }} vs {{ currentHeadFatherName }}</span> ({{ selectedMember?.fatherName !== currentHeadFatherName ? $t('memberTransfer.notSisters') : $t('memberTransfer.sameSister') }})</div>
+                    <div>{{ $t('memberTransfer.familyCodeCompare') }}：<span class="font-mono font-bold">{{ $t('memberTransfer.comparison', { first: selectedMember?.familyCode, second: currentFamilyCode }) }}</span> ({{ selectedMember?.familyCode === currentFamilyCode ? $t('memberTransfer.consistent') : $t('memberTransfer.inconsistent') }})</div>
+                    <div>{{ $t('memberTransfer.fatherNameCompare') }}：<span class="font-bold">{{ $t('memberTransfer.comparison', { first: samplePersonLabel(selectedMember?.fatherName), second: samplePersonLabel(currentHeadFatherName) }) }}</span> ({{ selectedMember?.fatherName !== currentHeadFatherName ? $t('memberTransfer.notSisters') : $t('memberTransfer.sameSister') }})</div>
                   </div>
                   <p class="font-medium pt-1">
                     {{ wifeRecognized ? $t('memberTransfer.wifeMatchSuccess') : $t('memberTransfer.wifeMatchFail') }}
@@ -365,7 +365,7 @@
                   </div>
                   <div class="grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'">
                     <div>{{ $t('memberTransfer.childFamilyCodeCompare') }}：<span class="font-mono font-bold">{{ selectedMember?.familyCode === currentFamilyCode ? $t('memberTransfer.consistent') : $t('memberTransfer.inconsistent') }}</span></div>
-                    <div>{{ $t('memberTransfer.childFatherCompare') }}：<span class="font-bold">{{ selectedMember?.fatherName }} vs {{ currentHeadName }}</span> ({{ selectedMember?.fatherName === currentHeadName ? $t('memberTransfer.perfectMatch') : $t('memberTransfer.notMatch') }})</div>
+                    <div>{{ $t('memberTransfer.childFatherCompare') }}：<span class="font-bold">{{ $t('memberTransfer.comparison', { first: samplePersonLabel(selectedMember?.fatherName), second: samplePersonLabel(currentHeadName) }) }}</span> ({{ selectedMember?.fatherName === currentHeadName ? $t('memberTransfer.perfectMatch') : $t('memberTransfer.notMatch') }})</div>
                   </div>
                   <p class="font-medium pt-1">
                     {{ childRecognized ? $t('memberTransfer.childMatchSuccess') : $t('memberTransfer.childMatchFail') }}
@@ -393,7 +393,7 @@
                   is-required
                   :category-badge="$t('memberTransfer.proofCategoryBadge')"
                   :issuer="$t('memberTransfer.proofIssuer')"
-                  :default-file-name="isEn ? 'Kinship_Relationship_Proof_2026.pdf' : (selectedMember?.proofDocName || '法定关系证明公文_2026.pdf')"
+                  :default-file-name="$t('memberTransfer.proofFileName')"
                 />
               </div>
             </div>
@@ -431,7 +431,7 @@
                   is-required
                   :category-badge="$t('transfer.art140DocBadge')"
                   :issuer="$t('transfer.art140DocIssuer')"
-                  :default-file-name="isEn ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议转移无异议批函_2026.pdf'"
+                  :default-file-name="$t('memberTransfer.article140FileName')"
                 />
               </div>
 
@@ -553,7 +553,7 @@
                   {{ finalPathDecision === 'auto' ? $t('memberTransfer.autoSuccessTitle') : $t('memberTransfer.reviewSuccessTitle') }}
                 </h3>
                 <p class="text-xs text-[#58685D] max-w-lg mx-auto">
-                  {{ transferMemberResult?.message || (finalPathDecision === 'auto' ? $t('memberTransfer.autoSuccessDesc') : $t('memberTransfer.reviewSuccessDesc')) }}
+                  {{ finalPathDecision === 'auto' ? $t('memberTransfer.autoSuccessDesc') : $t('memberTransfer.reviewSuccessDesc') }}
                 </p>
               </div>
 
@@ -751,6 +751,17 @@ function handleSelectFamilyMember(item) {
 
 const currentHeadName = computed(() => citizenStore.currentFamily?.headName || (isEn.value ? 'Ahmed Hassan' : '艾哈迈德·哈桑'));
 const currentHeadFatherName = computed(() => isEn.value ? 'Hassan Saleh' : '哈桑·萨利赫');
+function samplePersonLabel(value) {
+  const key = {
+    '哈桑·萨利赫': 'demoHeadFatherName', 'Hassan Saleh': 'demoHeadFatherName',
+    '卡西姆·哈米德': 'demoQasimName', 'Qasim Hamid': 'demoQasimName',
+    '马吉德·卡利勒': 'demoMajidName', 'Majid Khalil': 'demoMajidName',
+    '萨利赫·阿卜杜拉': 'demoSalehName', 'Saleh Abdullah': 'demoSalehName',
+    '努尔·丁': 'demoNourName', 'Nour Al-Din': 'demoNourName',
+    '艾哈迈德·哈桑·萨利赫': 'demoAhmedName', 'Ahmed Hassan Saleh': 'demoAhmedName'
+  }[value];
+  return key ? t(`memberTransfer.${key}`) : value;
+}
 const currentFamilyCode = computed(() => citizenStore.currentFamily?.familyCode || 'FAM-10029381');
 
 // 规则引擎研判
@@ -875,8 +886,8 @@ async function handlePaymentSuccess(paymentInfo) {
       transferReasonType: transferReasonType.value,
       finalPathDecision: finalPathDecision.value,
       isArticle140: isArticle140Area.value,
-      proofDoc: isEn.value ? 'Kinship_Relationship_Proof_2026.pdf' : (selectedMember.value?.proofDocName || '法定关系证明公文_2026.pdf'),
-      article140Doc: isArticle140Area.value ? (isEn.value ? 'Article_140_No_Objection_Letter_2026.pdf' : '第140号决议转移无异议批函_2026.pdf') : '',
+      proofDoc: t('memberTransfer.proofFileName'),
+      article140Doc: isArticle140Area.value ? t('memberTransfer.article140FileName') : '',
       paymentInfo
     };
 

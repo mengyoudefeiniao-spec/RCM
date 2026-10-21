@@ -399,13 +399,13 @@
     >
       <div class="space-y-3.5 text-xs">
         <!-- 流程化步骤条导航 (移动端极简紧凑) -->
-        <div class="py-1">
-          <el-steps :active="addMemberStep - 1" finish-status="success" align-center>
-            <el-step :title="isAppMode ? (isEn ? 'Basic' : '基本') : $t('citizen.stepBasic')" :description="isAppMode ? '' : $t('citizen.stepBasicDesc')" />
-            <el-step :title="isAppMode ? (isEn ? 'Verify' : '核验') : $t('citizen.stepVerify')" :description="isAppMode ? '' : $t('citizen.stepVerifyDesc')" />
-            <el-step :title="isAppMode ? (isEn ? 'Confirm' : '确认') : $t('citizen.stepConfirm')" :description="isAppMode ? '' : $t('citizen.stepConfirmDesc')" />
-          </el-steps>
-        </div>
+        <ol class="member-registration-steps py-1" :aria-label="$t('citizen.addMemberTitle')">
+          <li v-for="(step, index) in ['Basic', 'Verify', 'Confirm']" :key="step" class="member-registration-step" :class="{ 'is-complete': index + 1 < addMemberStep, 'is-current': index + 1 === addMemberStep }" :aria-current="index + 1 === addMemberStep ? 'step' : undefined">
+            <span class="member-registration-step__circle"><el-icon v-if="index + 1 < addMemberStep"><Check /></el-icon><span v-else>{{ index + 1 }}</span></span>
+            <span class="member-registration-step__title">{{ $t(`citizen.step${step}${isAppMode ? 'Short' : ''}`) }}</span>
+            <span v-if="!isAppMode" class="mt-1 text-[10px] text-[#8A9A8F]">{{ $t(`citizen.step${step}Desc`) }}</span>
+          </li>
+        </ol>
 
         <!-- 步骤 1: 填写基本身份信息 -->
         <div v-show="addMemberStep === 1" class="space-y-3">
@@ -442,19 +442,19 @@
               </el-form-item>
               <el-form-item :label="$t('citizen.gender')" required class="!mb-1">
                 <el-select v-model="newMemberForm.gender" class="w-full">
-                  <el-option :label="$t('citizen.male')" :value="isEn ? 'Male' : '男'" />
-                  <el-option :label="$t('citizen.female')" :value="isEn ? 'Female' : '女'" />
+                  <el-option :label="$t('citizen.male')" value="男" />
+                  <el-option :label="$t('citizen.female')" value="女" />
                 </el-select>
               </el-form-item>
             </div>
 
             <el-form-item :label="$t('citizen.specifyRelation')" required class="!mb-1">
               <el-select v-model="newMemberForm.relation" :placeholder="$t('citizen.selectRelation')" class="w-full">
-                <el-option :label="$t('citizen.relationChild')" :value="isEn ? 'Child' : '子女'" />
-                <el-option :label="$t('citizen.relationSpouse')" :value="isEn ? 'Spouse' : '配偶'" />
-                <el-option :label="$t('citizen.relationFather')" :value="isEn ? 'Father' : '父亲'" />
-                <el-option :label="$t('citizen.relationMother')" :value="isEn ? 'Mother' : '母亲'" />
-                <el-option :label="$t('citizen.relationDependent')" :value="isEn ? 'Dependent' : '受抚养人'" />
+                <el-option :label="$t('citizen.relationChild')" value="子女" />
+                <el-option :label="$t('citizen.relationSpouse')" value="配偶" />
+                <el-option :label="$t('citizen.relationFather')" value="父亲" />
+                <el-option :label="$t('citizen.relationMother')" value="母亲" />
+                <el-option :label="$t('citizen.relationDependent')" value="受抚养人" />
               </el-select>
             </el-form-item>
 
@@ -543,7 +543,7 @@
             </div>
             <div>
               <span class="text-[#8A9A8F] block">{{ $t('citizen.relation') }}：</span>
-              <span class="font-bold text-[#2A5440]">{{ newMemberForm.relation }} ({{ newMemberForm.gender }})</span>
+              <span class="font-bold text-[#2A5440]">{{ formatRelation(newMemberForm.relation) }} ({{ formatGender(newMemberForm.gender) }})</span>
             </div>
             <div>
               <span class="text-[#8A9A8F] block">{{ $t('citizen.ageJudge') }}：</span>
@@ -1097,6 +1097,12 @@ const newMemberForm = reactive({
   relation: '子女',
   phone: ''
 });
+let lastDemoMemberName = '';
+watch(locale, () => {
+  const nextName = t('citizen.demoMemberName');
+  if (newMemberForm.name === lastDemoMemberName) newMemberForm.name = nextName;
+  lastDemoMemberName = nextName;
+});
 
 // 计算是否未满 12 岁
 const isUnder12 = computed(() => {
@@ -1114,12 +1120,12 @@ function handleBirthDateChange() {
 
 function openAddMemberDialog() {
   addMemberStep.value = 1;
-  const isEnglish = locale.value === 'en';
-  newMemberForm.name = isEnglish ? 'Omar Ahmed Hassan' : '奥马尔·艾哈迈德·哈桑';
+  newMemberForm.name = t('citizen.demoMemberName');
+  lastDemoMemberName = newMemberForm.name;
   newMemberForm.nationalId = '201982910488';
   newMemberForm.birthDate = '2019-05-15';
-  newMemberForm.gender = isEnglish ? 'Male' : '男';
-  newMemberForm.relation = isEnglish ? 'Child' : '子女';
+  newMemberForm.gender = '男';
+  newMemberForm.relation = '子女';
   newMemberForm.phone = '';
 
   // 初始化前提核验为就绪状态
@@ -1205,6 +1211,52 @@ async function handleSubmitAddMember() {
 </script>
 
 <style scoped>
+.member-registration-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  margin: 0;
+  padding-inline: 0;
+  list-style: none;
+}
+.member-registration-step {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: 4px;
+  text-align: center;
+  color: #8A9A8F;
+}
+.member-registration-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(50% + 14px);
+  top: 13px;
+  width: calc(100% - 28px);
+  height: 2px;
+  background: #D9E5DB;
+}
+.member-registration-step.is-complete::after { background: #3E9B68; }
+.member-registration-step__circle {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #C9DBCE;
+  border-radius: 50%;
+  background: white;
+  font-weight: bold;
+}
+.member-registration-step.is-current { color: #326445; font-weight: bold; }
+.member-registration-step.is-current .member-registration-step__circle { border-color: #326445; }
+.member-registration-step.is-complete .member-registration-step__circle { border-color: #3E9B68; background: #3E9B68; color: white; }
+.member-registration-step__title { margin-top: 6px; max-width: 100%; line-height: 1.4; overflow-wrap: anywhere; }
+
 @keyframes scanCardQrAnimation {
   0% {
     top: 5%;

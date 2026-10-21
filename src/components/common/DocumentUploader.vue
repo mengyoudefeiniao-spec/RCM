@@ -79,22 +79,22 @@
           <div class="space-y-1 min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs font-bold text-[#1F3326] font-mono truncate max-w-[190px] sm:max-w-none block">
-                {{ currentFile.fileName }}
+                {{ displayedFile.fileName }}
               </span>
               <el-tag type="success" size="small" effect="light" class="font-bold scale-90 origin-left rtl:origin-right shrink-0">
                 {{ $t('uploader.verifiedBadge') }}
               </el-tag>
             </div>
             <div class="text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono">
-              <span>{{ currentFile.fileSize }}</span>
+              <span>{{ displayedFile.fileSize }}</span>
               <span>•</span>
-              <span class="truncate max-w-[120px] sm:max-w-none">REF: {{ currentFile.referenceNo }}</span>
+              <span class="truncate max-w-[120px] sm:max-w-none">{{ $t('uploader.refNoLabel') }} <bdi dir="ltr">{{ displayedFile.referenceNo }}</bdi></span>
               <span>•</span>
               <span class="text-[#2F7A50] font-semibold">{{ $t('uploader.confidence') }}</span>
             </div>
             <div class="p-1 px-2 bg-[#F3F8F4] rounded border border-[#D9E5DB] text-[10px] text-[#58685D] line-clamp-1">
               <span class="font-semibold text-[#1F3326]">{{ $t('uploader.antiCounterfeit') }}</span>
-              <span>{{ currentFile.ocrSummary }}</span>
+              <span>{{ displayedFile.ocrSummary }}</span>
             </div>
           </div>
         </div>
@@ -162,10 +162,7 @@
         <div class="p-4 sm:p-5 bg-[#FDF3E0]/40 rounded-lg border border-[#F2E3C6]/60 relative overflow-hidden">
           <div class="text-center pb-3 border-b border-[#F2E3C6]/60 space-y-1">
             <div class="text-xs font-bold tracking-widest text-[#1F3326]">
-              جمهورية العراق · وزارة التجارة / وزارة العدل / وزارة الصحة
-            </div>
-            <div class="text-[11px] text-[#58685D] font-semibold">
-              REPUBLIC OF IRAQ · MINISTRY OF TRADE / JUSTICE / HEALTH
+              {{ $t('uploader.previewAuthority') }}
             </div>
             <div class="text-sm font-bold text-[#2A5440] pt-1">
               {{ title }}
@@ -179,7 +176,7 @@
             </div>
             <div>
               <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.refNoLabel') }}</span>
-              <span class="font-mono font-bold text-[#1F3326]">{{ currentFile.referenceNo }}</span>
+              <span class="font-mono font-bold text-[#1F3326]" dir="ltr">{{ displayedFile.referenceNo }}</span>
             </div>
             <div>
               <span class="text-[#8A9A8F] block text-[11px]">{{ $t('uploader.verifiedAtLabel') }}</span>
@@ -193,7 +190,7 @@
 
           <div class="mt-4 p-3 bg-white/90 rounded-lg border border-[#F2E3C6]/80 text-[11px] text-[#43554B]">
             <span class="font-bold text-[#1B3123]">{{ $t('uploader.antiCounterfeit') }}</span>
-            {{ currentFile.ocrSummary }}
+            {{ displayedFile.ocrSummary }}
           </div>
         </div>
       </div>
@@ -269,6 +266,7 @@ const ocrSummaryText = computed(() => props.ocrSummary || t('uploader.defaultOcr
 
 function buildTemplateFile() {
   return {
+    isTemplate: true,
     fileName: defaultFileLabel.value,
     fileSize: '2.8 MB',
     referenceNo: props.defaultRefNo,
@@ -285,6 +283,12 @@ const uploadStage = ref('');
 const previewModalVisible = ref(false);
 
 const currentFile = ref(props.modelValue ? buildTemplateFile() : null);
+// Translate generated samples and OCR labels on demand; retain user-selected filenames.
+const displayedFile = computed(() => {
+  if (!currentFile.value) return null;
+  if (currentFile.value.isTemplate) return buildTemplateFile();
+  return { ...currentFile.value, ocrSummary: t('uploader.localOcrSummary', { name: currentFile.value.fileName }) };
+});
 
 watch(
   () => props.modelValue,
