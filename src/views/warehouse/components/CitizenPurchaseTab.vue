@@ -464,7 +464,7 @@
               class="p-2 rounded-lg bg-white border border-[#D9E5DB]/60 flex items-center justify-between"
             >
               <div>
-                <span class="font-semibold text-[#1F3326]">{{ it.name }}</span>
+                <span class="font-semibold text-[#1F3326]">{{ formatItemName(it.name) }}</span>
                 <span class="text-[10px] text-[#8A9A8F] block">{{ it.unitPrice.toLocaleString() }} IQD/{{ it.unit }}</span>
               </div>
               <span class="font-mono font-bold text-[#326445]">{{ it.qty }} {{ it.unit }}</span>
@@ -1149,7 +1149,7 @@ async function handlePaymentSuccess(payResult) {
     // + broadcastTabMessage ORDER_PURCHASED)；此处不再重复写入共享池，
     // 否则会产生一条无 orderId 的重复订单 (三端各多出一条幽灵订单)
 
-    ElMessage.success(res.message || (isEnNow() ? 'Ration order placed and electronic payment completed successfully!' : '配给品下单成功并完成电子缴费！'));
+    ElMessage.success(t('citizenPurchase.orderSuccess', { code: res.order?.pickupCode || res.pickupCode || '' }));
 
     // 清空当前所选并重置回步骤 1
     handleClearSelected();
@@ -1165,7 +1165,7 @@ async function handlePaymentSuccess(payResult) {
       showQrDialog.value = true;
     }
   } catch (err) {
-    ElMessage.error(err.message || (isEnNow() ? 'Order submission error' : '下单提交异常'));
+    ElMessage.error(t('citizenPurchase.orderError'));
   } finally {
     submitting.value = false;
   }

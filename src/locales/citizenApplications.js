@@ -188,6 +188,10 @@ export default {
       "stepVerifyShort": "核验",
       "stepConfirmShort": "确认",
       "demoMemberName": "奥马尔·艾哈迈德·哈桑"
+    },
+    "citizenPurchase": {
+      "orderSuccess": "配给品选购成功并已完成电子支付！专属防伪取货码：{code}",
+      "orderError": "订单提交失败，请重试。"
     }
   },
   "en": {
@@ -378,6 +382,10 @@ export default {
       "stepVerifyShort": "Verify",
       "stepConfirmShort": "Confirm",
       "demoMemberName": "Omar Ahmed Hassan"
+    },
+    "citizenPurchase": {
+      "orderSuccess": "Ration purchase and electronic payment succeeded! Your secure pickup code is {code}.",
+      "orderError": "Order submission failed. Please try again."
     }
   },
   "ar": {
@@ -610,6 +618,10 @@ export default {
       "stepVerifyShort": "التحقق",
       "stepConfirmShort": "التأكيد",
       "demoMemberName": "عمر أحمد حسن"
+    },
+    "citizenPurchase": {
+      "orderSuccess": "تم شراء المواد التموينية وإتمام الدفع الإلكتروني بنجاح! رمز الاستلام الآمن الخاص بك هو: {code}",
+      "orderError": "تعذر تقديم الطلب. يرجى المحاولة مرة أخرى."
     }
   },
   "ckb": {
@@ -842,6 +854,10 @@ export default {
       "stepVerifyShort": "پشکنین",
       "stepConfirmShort": "پەسەند",
       "demoMemberName": "عومەر ئەحمەد حەسەن"
+    },
+    "citizenPurchase": {
+      "orderSuccess": "کڕینی بەشەخۆراک و پارەدانی ئەلیکترۆنی بە سەرکەوتوویی تەواو بوو! کۆدی پارێزراوی وەرگرتن: {code}",
+      "orderError": "نەتوانرا داواکارییەکە بنێردرێت. تکایە دووبارە هەوڵ بدەرەوە."
     }
   }
 };
