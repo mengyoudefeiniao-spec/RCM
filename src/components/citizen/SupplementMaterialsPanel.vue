@@ -7,8 +7,12 @@
     <div v-if="request.attachments?.length" class="text-xs text-[#326445] space-y-1">
       <div v-for="file in request.attachments" :key="file.id">{{ $t('my.materialSubmitted') }}: <bdi dir="ltr">{{ file.name }}</bdi></div>
     </div>
-    <label class="block text-sm font-semibold text-[#43554B]" for="supplement-file">{{ $t('my.chooseMaterial') }}</label>
-    <input id="supplement-file" ref="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="block w-full text-sm" @change="pickFile" />
+    <span class="block text-sm font-semibold text-[#43554B]">{{ $t('my.chooseMaterial') }}</span>
+    <input id="supplement-file" ref="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="sr-only" tabindex="-1" aria-hidden="true" @change="pickFile" />
+    <div class="flex min-w-0 items-center gap-2 rounded-lg border border-[#D9E5DB] bg-white p-2">
+      <span class="min-w-0 flex-1 truncate text-sm text-[#58685D]" aria-live="polite">{{ selectedFile?.name || $t('my.noFileSelected') }}</span>
+      <el-button id="supplement-file-trigger" plain @click="fileInput?.click()">{{ $t('my.chooseFile') }}</el-button>
+    </div>
     <p class="text-xs text-[#8A9A8F]">{{ $t('my.materialFileHint') }}</p>
     <el-button type="primary" :loading="uploading" :disabled="!selectedFile" @click="submitFile">{{ $t('my.submitSupplement') }}</el-button>
   </section>

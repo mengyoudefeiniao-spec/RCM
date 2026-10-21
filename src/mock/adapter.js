@@ -1,5 +1,6 @@
 // 中文测试数据源
 import { i18n } from '../locales/index.js';
+import { transferProvinceKey } from '../utils/transferLocationLabels.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import * as zhAuth from './data/authData.js';
@@ -469,6 +470,7 @@ export async function mockDispatch(config) {
 
   const reqLang = getActiveLang(config);
   const isEn = reqLang === 'en';
+  const localeCode = reqLang === 'ku' ? 'ckb' : reqLang;
   const activeStores = multiLangStores[reqLang] || multiLangStores.en || multiLangStores.zh;
 
   // 解构当前语言环境下对应的测试数据
@@ -509,7 +511,40 @@ export async function mockDispatch(config) {
   // 绑定当前语言的常量集合
   const MOCK_USERS = isEn ? enAuth.MOCK_USERS : zhAuth.MOCK_USERS;
   const MOCK_CURRENT_AGENT_PROFILE = isEn ? enAgent.MOCK_CURRENT_AGENT_PROFILE : zhAgent.MOCK_CURRENT_AGENT_PROFILE;
-  const TRANSFER_BRANCH_OPTIONS = isEn ? enTransfer.TRANSFER_BRANCH_OPTIONS : zhTransfer.TRANSFER_BRANCH_OPTIONS;
+  const baseTransferOptions = isEn ? enTransfer.TRANSFER_BRANCH_OPTIONS : zhTransfer.TRANSFER_BRANCH_OPTIONS;
+  const transferLabels = i18n.global.getLocaleMessage(localeCode)?.transferLocations || {};
+  const TRANSFER_BRANCH_OPTIONS = baseTransferOptions.map((province, provinceIndex) => ({
+    ...province,
+    province: transferLabels[`province${provinceIndex}`] || province.province,
+    branches: province.branches.map((branch, branchIndex) => ({
+      ...branch,
+      branchName: transferLabels[`branch${provinceIndex}_${branchIndex}`] || branch.branchName,
+      centers: branch.centers.map((center) => ({
+        ...center,
+        centerName: transferLabels[`center${center.centerId}`] || center.centerName,
+        flourAgents: center.flourAgents.map((agent) => {
+          const id = agent.id.replaceAll('-', '_');
+          return { ...agent, name: transferLabels[`agent${id}`] || agent.name, manager: transferLabels[`manager${id}`] || agent.manager };
+        }),
+        foodAgents: center.foodAgents.map((agent) => {
+          const id = agent.id.replaceAll('-', '_');
+          return { ...agent, name: transferLabels[`agent${id}`] || agent.name, manager: transferLabels[`manager${id}`] || agent.manager };
+        })
+      }))
+    }))
+  }));
+  const localizeFamilyAgentNames = (familyList) => {
+    if (!Array.isArray(familyList)) return familyList;
+    const agentNames = new Map();
+    TRANSFER_BRANCH_OPTIONS.forEach((province) => province.branches.forEach((branch) => branch.centers.forEach((center) => {
+      [...center.flourAgents, ...center.foodAgents].forEach((agent) => agentNames.set(agent.id, agent.name));
+    })));
+    return familyList.map((family) => {
+      const ids = String(family.agentId || '').match(/(?:FA|FD)-[A-Z]+-\d+/g) || [];
+      const names = ids.map((id) => agentNames.get(id)).filter(Boolean);
+      return names.length ? { ...family, agentName: names.join(' ＆ ') } : family;
+    });
+  };
   const MOCK_DASHBOARD_STATS = isEn ? enDashboard.MOCK_DASHBOARD_STATS : zhDashboard.MOCK_DASHBOARD_STATS;
   const MOCK_ADMIN_DASHBOARD_DATA = isEn ? enDashboard.MOCK_ADMIN_DASHBOARD_DATA : zhDashboard.MOCK_ADMIN_DASHBOARD_DATA;
   const MOCK_AGENT_DASHBOARD_DATA = isEn ? enDashboard.MOCK_AGENT_DASHBOARD_DATA : zhDashboard.MOCK_AGENT_DASHBOARD_DATA;
@@ -922,13 +957,15 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/citizen/families') && method === 'GET') {
     const sharedFams = getSharedFamilies();
-    return createResponse(sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore);
+    const familyList = sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore;
+    return createResponse(localizeFamilyAgentNames(familyList));
   }
 
   if (url.match(/\/citizen\/family\/([^/]+)/) && method === 'GET') {
     const cardNo = url.split('/').pop();
     const sharedFam = getSharedFamily(cardNo);
-    return createResponse(sharedFam || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0]);
+    const family = sharedFam || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
+    return createResponse(localizeFamilyAgentNames([family])[0]);
   }
 
   // 申报添加新家庭成员 (POST)
@@ -1194,7 +1231,13 @@ export async function mockDispatch(config) {
     }
 
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
-    const isIntraProvince = fromProvince && toProvince && (fromProvince.split(' ')[0] === toProvince.split(' ')[0]);
+    const fromProvinceKey = transferProvinceKey(fromProvince);
+    const toProvinceKey = transferProvinceKey(toProvince);
+    const isIntraProvince = fromProvince && toProvince && (
+      fromProvinceKey !== fromProvince && toProvinceKey !== toProvince
+        ? fromProvinceKey === toProvinceKey
+        : fromProvince.split(' ')[0] === toProvince.split(' ')[0]
+    );
 
     if (isIntraProvince) {
       // 路径 A: 省内转移 (全自动批准)

@@ -237,28 +237,26 @@
     <!-- 弹窗 2: 新设备登录二次核验选择弹窗 (用户需求 2.2) -->
     <el-dialog
       v-model="newDeviceVerifyDialogVisible"
-      title="新设备安全登录二次身份核验"
+      :title="$t('login.newDeviceTitle')"
       width="480px"
       align-center
     >
       <div class="space-y-4">
         <div class="bg-[#FDF3E0] border border-[#F2E3C6] p-3 rounded-lg text-xs text-[#5A4718] space-y-1">
-          <div class="font-bold">检测到未授信新设备终端接入</div>
-          <p>
-            依据《国家配给安全与反冒领条例》，新终端首次登录已注册账户，必须执行二次身份核验以绑定设备硬件指纹。
-          </p>
+          <div class="font-bold">{{ $t('login.newDeviceDetected') }}</div>
+          <p>{{ $t('login.newDeviceExplanation') }}</p>
         </div>
 
         <div class="space-y-2">
-          <div class="text-xs font-semibold text-[#43554B]">请选择二次身份核验方式：</div>
+          <div class="text-xs font-semibold text-[#43554B]">{{ $t('login.chooseVerificationMethod') }}</div>
           <div class="grid grid-cols-2 gap-3">
             <div
               class="border rounded-lg p-3 text-center cursor-pointer hover:border-[#5C8A6B] hover:bg-[#EFF5F1]/50 transition-all space-y-1"
               @click="openBiometricVerify"
             >
               <el-icon :size="24" class="text-[#326445]"><Camera /></el-icon>
-              <div class="text-xs font-bold text-[#1F3326]">人脸与国民卡核验</div>
-              <div class="text-[10px] text-[#8A9A8F]">现场自拍与芯片对碰</div>
+              <div class="text-xs font-bold text-[#1F3326]">{{ $t('login.faceAndNationalCard') }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('login.selfieChipMatch') }}</div>
             </div>
 
             <div
@@ -266,14 +264,14 @@
               @click="openRemoteVerify"
             >
               <el-icon :size="24" class="text-[#C9A13B]"><Location /></el-icon>
-              <div class="text-xs font-bold text-[#1F3326]">异地成员远程核验</div>
-              <div class="text-[10px] text-[#8A9A8F]">异地手机 GPS 核查</div>
+              <div class="text-xs font-bold text-[#1F3326]">{{ $t('login.remoteFamilyVerify') }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('login.remoteGpsCheck') }}</div>
             </div>
           </div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="newDeviceVerifyDialogVisible = false">取消</el-button>
+        <el-button @click="newDeviceVerifyDialogVisible = false">{{ $t('login.cancel') }}</el-button>
       </template>
     </el-dialog>
 
@@ -320,6 +318,7 @@
 
 <script setup>
 import { isEnNow } from '../../utils/langHint.js';
+import { i18n } from '../../locales/index.js';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
@@ -402,11 +401,11 @@ function toggleDeviceTrust() {
   if (isTrustedDevice.value) {
     localStorage.removeItem('rcm_trusted_device');
     isTrustedDevice.value = false;
-    ElMessage.warning((isEnNow() ? 'Switched to [Untrusted New Device]; secondary identity verification will be enforced at login!' : '已切换为【未授信新设备】状态，登录时将强制触发二次身份认证！'));
+    ElMessage.warning(i18n.global.t('login.switchedToUntrusted'));
   } else {
     localStorage.setItem('rcm_trusted_device', 'true');
     isTrustedDevice.value = true;
-    ElMessage.success((isEnNow() ? 'Switched to [Trusted Device] status' : '已切换为【已授信设备】状态'));
+    ElMessage.success(i18n.global.t('login.switchedToTrusted'));
   }
 }
 
@@ -559,7 +558,7 @@ function openRemoteVerify() {
 async function handleSecondaryVerifySuccess() {
   localStorage.setItem('rcm_trusted_device', 'true');
   isTrustedDevice.value = true;
-  ElMessage.success((isEnNow() ? 'New device identity verification passed; this terminal has been added to the trusted whitelist!' : '新设备身份认证通过，已将本终端加入授信白名单！'));
+  ElMessage.success(i18n.global.t('login.newDeviceVerificationPassed'));
   executeDirectLogin();
 }
 

@@ -208,7 +208,13 @@ export const useAuthStore = defineStore('auth', () => {
       sessionStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
       localStorage.setItem('rcm_auth_token', res.token);
 
-      ElMessage.success((isEnNow() ? `Welcome to the system, ${res.user.name}` : `欢迎进入系统，${res.user.name}`));
+      const demoNameKey = res.user.role === 'citizen'
+        ? 'login.demoCitizenName'
+        : res.user.role === 'agent'
+          ? 'login.demoAgentName'
+          : null;
+      const displayName = demoNameKey ? i18n.global.t(demoNameKey) : res.user.name;
+      ElMessage.success(i18n.global.t('login.welcomeMessage', { name: displayName }));
       return true;
     } catch (err) {
       return false;

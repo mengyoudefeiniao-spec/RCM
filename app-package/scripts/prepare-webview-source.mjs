@@ -5,10 +5,8 @@ import { fileURLToPath } from 'node:url';
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.resolve(packageRoot, '..');
 const sourcePath = path.join(sourceRoot, 'src', 'components', 'layout', 'AppLayout.vue');
-const adapterSourcePath = path.join(sourceRoot, 'src', 'mock', 'adapter.js');
 const overrideDir = path.join(packageRoot, 'source-overrides');
 const overridePath = path.join(overrideDir, 'AppLayout.vue');
-const adapterOverridePath = path.join(overrideDir, 'adapter.js');
 let source = await readFile(sourcePath, 'utf8');
 
 function replaceOnce(input, before, after, description) {

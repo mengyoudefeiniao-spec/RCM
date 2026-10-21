@@ -9,8 +9,6 @@ const packageRoot = path.dirname(fileURLToPath(import.meta.url));
 const sourceRoot = path.resolve(packageRoot, '..');
 const sourceAppLayout = path.resolve(sourceRoot, 'src/components/layout/AppLayout.vue');
 const overrideAppLayout = path.join(packageRoot, 'source-overrides', 'AppLayout.vue');
-const sourceMockAdapter = path.resolve(sourceRoot, 'src/mock/adapter.js');
-const overrideMockAdapter = path.join(packageRoot, 'source-overrides', 'adapter.js');
 
 export default defineConfig({
   root: sourceRoot,
@@ -23,7 +21,6 @@ export default defineConfig({
         if (!id.includes('?')) {
           const resolvedId = path.resolve(id);
           if (resolvedId === sourceAppLayout) return readFile(overrideAppLayout, 'utf8');
-          if (resolvedId === sourceMockAdapter) return readFile(overrideMockAdapter, 'utf8');
         }
         return null;
       },

@@ -45,9 +45,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Generating launcher icons failed.' }
 node (Join-Path $packageRoot 'scripts\prepare-webview-source.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Preparing the APK-specific responsive layout failed.' }
 
-node (Join-Path $packageRoot 'scripts\prepare-arabic-adapter.mjs')
-if ($LASTEXITCODE -ne 0) { throw 'Preparing the APK-specific Arabic transfer data failed.' }
-
 & $vite build --config (Join-Path $packageRoot 'vite.config.mjs')
 if ($LASTEXITCODE -ne 0) { throw 'Android frontend build failed.' }
 
