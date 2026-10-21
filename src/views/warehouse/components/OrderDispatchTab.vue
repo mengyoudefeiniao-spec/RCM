@@ -458,9 +458,9 @@
       destroy-on-close
       @closed="handleModalClosed"
     >
-      <!-- 高纵深手机容器 (整体高度 78vh 适配各种屏幕，半透明磨砂亚克力玻璃材质) -->
+      <!-- 固定在可视高度内；详情区滚动，底部操作区保持可见 -->
       <div
-        class="flex flex-col h-[78vh] max-h-[690px] min-h-[480px] select-none relative overflow-hidden rounded-[28px] border shadow-2xl transition-all duration-300"
+        class="flex flex-col h-full min-h-0 select-none relative overflow-hidden rounded-[28px] border shadow-2xl transition-all duration-300"
         :class="claimStep === 'camera'
           ? 'bg-[#12241A]/80 text-white border-[#43554B]/60 backdrop-blur-2xl'
           : 'bg-[#F3F8F4]/85 text-[#1F3326] border-white/70 backdrop-blur-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)]'"
@@ -615,8 +615,9 @@
         <!-- 扫描代理向政府下单凭证后展示订单信息 -->
         <div
           v-else-if="claimStep === 'government-order' && verifiedGovernmentOrder"
-          class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
+          class="flex-1 min-h-0 flex flex-col overflow-hidden"
         >
+          <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 custom-scrollbar">
           <div class="rounded-xl bg-[#E1F4E4] border border-[#C7E0CE] p-4 text-center">
             <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#326445] flex items-center justify-center">
               <el-icon class="text-2xl"><CircleCheck /></el-icon>
@@ -656,16 +657,20 @@
             </div>
           </div>
 
-          <el-button type="success" class="w-full" @click="retakePhoto">
-            {{ $t('agentOrders.retakePhotoBtn') }}
-          </el-button>
+          </div>
+          <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
+            <el-button type="success" class="w-full whitespace-normal leading-snug" @click="retakePhoto">
+              {{ $t('agentOrders.retakePhotoBtn') }}
+            </el-button>
+          </div>
         </div>
 
         <!-- 扫描电子配给卡后展示持卡人信息 -->
         <div
           v-else-if="claimStep === 'citizen-card' && verifiedCitizenCard"
-          class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
+          class="flex-1 min-h-0 flex flex-col overflow-hidden"
         >
+          <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 custom-scrollbar">
           <div class="rounded-xl bg-[#E1F4E4] border border-[#C7E0CE] p-4 text-center">
             <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#326445] flex items-center justify-center">
               <el-icon class="text-2xl"><CircleCheck /></el-icon>
@@ -702,9 +707,12 @@
             </div>
           </div>
 
-          <el-button type="success" class="w-full" @click="retakePhoto">
-            {{ $t('agentOrders.retakePhotoBtn') }}
-          </el-button>
+          </div>
+          <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
+            <el-button type="success" class="w-full whitespace-normal leading-snug" @click="retakePhoto">
+              {{ $t('agentOrders.retakePhotoBtn') }}
+            </el-button>
+          </div>
         </div>
 
         <!-- ====================================================== -->
@@ -715,7 +723,7 @@
           class="flex-1 min-h-0 flex flex-col overflow-hidden"
         >
           <!-- 中间自适应可滚动信息区 (带细微滚动条，不会挤压底部按钮) -->
-          <div class="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-2.5 custom-scrollbar">
+          <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-2.5 custom-scrollbar">
             <!-- 识别成功绿色彩条 -->
             <div class="p-2.5 rounded-lg bg-[#3E9B68]/10 border border-[#3E9B68]/30 backdrop-blur-sm flex items-center justify-between shadow-sm">
               <div class="flex items-center gap-2">
@@ -797,9 +805,9 @@
               <div class="p-2 bg-white/90 rounded-lg border border-[#E1F4E4] flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="text-base">✍️</span>
-                  <span class="font-mono italic font-bold text-[#1F3326] text-xs">{{ verifiedOrder.headName }} ({{ $t('agentOrders.citizenSignedNote') }})</span>
+                  <span class="min-w-0 break-words font-mono italic font-bold text-[#1F3326] text-xs">{{ verifiedOrder.headName }} ({{ $t('agentOrders.citizenSignedNote') }})</span>
                 </div>
-                <span class="text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</span>
+                <span class="shrink-0 ms-2 text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</span>
               </div>
               <div class="text-[10px] text-[#2A5440]/80">
                 {{ $t('orderClaim.signCitizenConfirmed') }}
@@ -808,12 +816,12 @@
           </div>
 
           <!-- 底部固定操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
-          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
+          <div class="scan-action-tray shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
             <el-button
               type="success"
               size="large"
               :loading="claiming"
-              class="w-full font-bold shadow-md rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white text-sm py-2.5"
+              class="w-full h-auto min-h-12 whitespace-normal text-center leading-snug font-bold shadow-md rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white text-sm py-2.5"
               @click="submitConfirmClaim"
             >
               <el-icon class="me-1.5"><Check /></el-icon>
@@ -834,7 +842,7 @@
           class="flex-1 min-h-0 flex flex-col overflow-hidden"
         >
           <!-- 中间自适应可滚动小票单据区 (带细微滚动条，不会挤压底部按钮) -->
-          <div class="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3 custom-scrollbar">
+          <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 space-y-3 custom-scrollbar">
             <!-- 成功标头 -->
             <div class="text-center space-y-1 pt-1">
               <div class="w-12 h-12 bg-[#E1F4E4] text-[#2F7A50] rounded-full flex items-center justify-center mx-auto text-2xl shadow-sm">
@@ -881,7 +889,7 @@
           </div>
 
           <!-- 底部固定打印与完成操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
-          <div class="shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
+          <div class="scan-action-tray shrink-0 p-3 bg-white/95 backdrop-blur-md border-t border-[#D9E5DB]/90 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] space-y-1.5 z-20">
             <el-button class="w-full font-bold" @click="printReceipt">
               <el-icon class="me-1"><Printer /></el-icon>
               {{ $t('orderClaim.printReceiptBtn') }}
@@ -1273,7 +1281,7 @@ async function handleScannedQr(rawValue) {
     verifiedCitizenCard.value = decoded.payload;
     verifiedOrder.value = null;
     claimStep.value = 'citizen-card';
-    ElMessage.success(t('citizenCard.qrVerifyTitle'));
+    ElMessage.success(t('citizenCard.qrScanSuccessMsg'));
     return;
   }
 
@@ -1283,7 +1291,7 @@ async function handleScannedQr(rawValue) {
     verifiedCitizenCard.value = null;
     verifiedOrder.value = null;
     claimStep.value = 'government-order';
-    ElMessage.success(t('agentG2B.qrScanResultTitle'));
+    ElMessage.success(t('agentG2B.qrScanSuccessMsg'));
     return;
   }
 
@@ -1314,7 +1322,7 @@ async function handleLookupCode() {
     verifiedOrder.value = order;
     selectedOrderId.value = order.orderId;
     claimStep.value = 'confirm';
-    ElMessage.success((isEnNow() ? 'Pickup voucher matched successfully! Please verify materials against physical stock and sign the handover.' : '提货凭证核验匹配成功！请核对物资与实物库存并签署交接。'));
+    ElMessage.success(t('orderClaim.pickupOrderMatchedMsg'));
   } catch (err) {
     console.error('检索提货订单失败', err);
     ElMessage.error(t('orderClaim.scanError'));
@@ -1363,7 +1371,7 @@ async function submitConfirmClaim() {
       });
     }
 
-    ElMessage.success(res?.message || (isEnNow() ? 'Handover verification succeeded! Station on-hand stock deducted synchronously.' : '交接核销成功！代销站现货库存已同步扣减。'));
+    ElMessage.success(t('orderClaim.handoverSuccessMsg'));
     await loadOrders();
   } catch (err) {
     console.error('确认交货核销失败', err);
@@ -1675,7 +1683,12 @@ onBeforeUnmount(() => {
   margin: auto !important;
   display: flex !important;
   flex-direction: column !important;
-  max-height: 85vh !important;
+  height: min(78vh, 690px) !important;
+  height: min(78dvh, 690px) !important;
+  max-height: calc(100vh - 24px) !important;
+  max-height: calc(100dvh - 24px) !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
   overflow: hidden !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -1689,8 +1702,20 @@ onBeforeUnmount(() => {
 :deep(.app-scan-dialog .el-dialog__body) {
   padding: 0 !important;
   height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
   overflow: hidden !important;
   background: transparent !important;
+}
+
+:deep(.app-scan-dialog .el-dialog__body > div) {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.scan-action-tray {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
