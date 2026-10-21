@@ -89,8 +89,8 @@ export default {
     "transferAgent": "طلب نقل الوكيل",
     "memberTransfer": "طلب نقل الأفراد",
     "complaint": "الشكاوى والمعالجة",
-    "agentScanVerify": "مسح وتحقق",
-    "agentDistribution": "التوزيع واللوجستيات",
+    "agentScanVerify": "نظرة تشغيلية",
+    "agentDistribution": "تسليم الحصص",
     "agentProfile": "ملف المنفذ",
     "logout": "تسجيل الخروج",
     "langSwitch": "تغيير اللغة"

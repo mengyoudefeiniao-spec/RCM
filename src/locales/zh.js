@@ -89,8 +89,8 @@ export default {
     "transferAgent": "申请代理转移",
     "memberTransfer": "申请成员转移",
     "complaint": "投诉和处理",
-    "agentScanVerify": "现场核销",
-    "agentDistribution": "配给配送",
+    "agentScanVerify": "运营概览",
+    "agentDistribution": "配给交货",
     "agentProfile": "网点档案",
     "logout": "退出登录",
     "langSwitch": "语言切换"

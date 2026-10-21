@@ -89,7 +89,7 @@ export default {
     "transferAgent": "Transfer Agent",
     "memberTransfer": "Transfer Member",
     "complaint": "Complaints & Handling",
-    "agentScanVerify": "Scan & Verify",
+    "agentScanVerify": "Operations Overview",
     "agentDistribution": "Ration Delivery",
     "agentProfile": "Station Profile",
     "logout": "Sign Out",

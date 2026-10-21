@@ -89,8 +89,8 @@ export default {
     "transferAgent": "گواستنەوەی بریکار",
     "memberTransfer": "گواستنەوەی ئەندام",
     "complaint": "سکاڵا و چارەسەرکردن",
-    "agentScanVerify": "سکاکردن و پشتڕاستکردنەوە",
-    "agentDistribution": "دابەشکردن و گەیاندن",
+    "agentScanVerify": "پوختەی کارەکان",
+    "agentDistribution": "گەیاندنی حەصەکان",
     "agentProfile": "پرۆفایلی بنکە",
     "logout": "چوونەدەرەوە",
     "langSwitch": "گۆڕینی زمان"

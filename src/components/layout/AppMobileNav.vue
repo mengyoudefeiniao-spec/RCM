@@ -64,7 +64,7 @@
         :class="$route.path === '/dashboard' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><FullScreen /></el-icon>
-        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentScanVerify') || '现场核销' }}</span>
+        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentScanVerify') || '运营概览' }}</span>
       </router-link>
 
       <!-- 2. 配给配送 (物资排程与计划) -->
@@ -74,7 +74,7 @@
         :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><Van /></el-icon>
-        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentDistribution') || '配给配送' }}</span>
+        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentDistribution') || '配给交货' }}</span>
       </router-link>
 
       <!-- 3. 代理订单记录 (拆分后的代理端独立大模块：集中采购订货流水) -->
