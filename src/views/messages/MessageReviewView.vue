@@ -217,14 +217,14 @@ function reviewStatusLabel(ticket) {
   const status = String(ticket?.status || '');
   if (status.includes('初审') || status === 'Pending Staff Review') return t('review.statusPendingStaff');
   if (status.includes('终审') || status === 'Pending Manager Review') return t('review.statusPendingManager');
-  if (status.includes('批准') || status === 'Approved') return t('review.statusApproved');
+  if (status.includes('批准') || status.includes('办结') || status === 'Approved') return t('review.statusApproved');
   if (status.includes('驳回') || status === 'Rejected') return t('review.statusRejected');
   return status || '—';
 }
 
 function reviewStatusType(ticket) {
   const status = String(ticket?.status || '');
-  if (status.includes('批准') || status === 'Approved') return 'success';
+  if (status.includes('批准') || status.includes('办结') || status === 'Approved') return 'success';
   if (status.includes('驳回') || status === 'Rejected') return 'danger';
   return 'warning';
 }
