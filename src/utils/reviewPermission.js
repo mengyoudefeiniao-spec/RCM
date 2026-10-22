@@ -4,7 +4,7 @@
  * 背景：消息通知新增「待审核消息」审核流程，审核权限在
  * 系统管理-角色-关联功能权限中配置；功能权限目录采用三级结构
  * (模块 → 功能 → 权限项)，审核权限按业务类型划分，并支持
- * 关联角色或区域两种范围限定。
+ * 当前角色按审核事项配置可办理区域。
  */
 
 // 三级功能权限目录：模块(一级) → 功能(二级) → 权限项(三级)
@@ -58,19 +58,16 @@ const SOURCE_TO_CODE = {
   'Transfer Agent': 'review.process.agentTransfer'
 };
 
-// 审核范围划分模式
-export const REVIEW_SCOPE_MODES = ['role', 'region'];
-
 // 审核范围可选区域（伊拉克省级行政区）
 export const REVIEW_SCOPE_REGIONS = [
-  '巴格达省',
-  '巴士拉省',
-  '尼尼微省',
-  '迪亚拉省',
-  '基尔库克省',
-  '安巴尔省',
-  '埃尔比勒省',
-  '苏莱曼尼亚省'
+  { value: '巴格达省', labelKey: 'regionBaghdad' },
+  { value: '巴士拉省', labelKey: 'regionBasra' },
+  { value: '尼尼微省', labelKey: 'regionNineveh' },
+  { value: '迪亚拉省', labelKey: 'regionDiyala' },
+  { value: '基尔库克省', labelKey: 'regionKirkuk' },
+  { value: '安巴尔省', labelKey: 'regionAnbar' },
+  { value: '埃尔比勒省', labelKey: 'regionErbil' },
+  { value: '苏莱曼尼亚省', labelKey: 'regionSulaymaniyah' }
 ];
 
 const ADMIN_ROLES = ['admin', 'minister_center', 'deputy_minister', 'director_planning'];
@@ -123,21 +120,26 @@ export function resolveEffectiveCodes(codes = []) {
  * 解析当前用户的审核权限
  * @param {object} profile 用户画像 (auth store userProfile)
  * @returns {{ isAdmin: boolean, canView: boolean, canProcess: boolean,
- *   types: string[], mode: 'role'|'region', roles: string[], regions: string[] }}
+ *   types: string[], regionsByType: Record<string, string[]> }}
  */
 export function resolveReviewAccess(profile) {
   const isAdmin = ADMIN_ROLES.includes(profile?.role);
   const codes = resolveEffectiveCodes(profile?.permissionCodes);
   const scope = profile?.reviewScope && typeof profile.reviewScope === 'object' ? profile.reviewScope : {};
-  const types = isAdmin ? [...REVIEW_TYPE_CODES] : codes.filter((code) => REVIEW_TYPE_CODES.includes(code));
+  const configuredTypes = Array.isArray(scope.types) ? scope.types : null;
+  const types = isAdmin && !configuredTypes
+    ? [...REVIEW_TYPE_CODES]
+    : codes.filter((code) => REVIEW_TYPE_CODES.includes(code) && (!configuredTypes || configuredTypes.includes(code)));
+  const legacyRegions = Array.isArray(scope.regions) ? scope.regions : [];
+  const regionsByType = scope.regionsByType && typeof scope.regionsByType === 'object'
+    ? scope.regionsByType
+    : Object.fromEntries(types.map((type) => [type, legacyRegions.length ? legacyRegions : isAdmin ? REVIEW_SCOPE_REGIONS.map((region) => region.value) : []]));
   return {
     isAdmin,
     canView: isAdmin || codes.includes('review.view'),
     canProcess: types.length > 0,
     types,
-    mode: REVIEW_SCOPE_MODES.includes(scope.mode) ? scope.mode : 'role',
-    roles: Array.isArray(scope.roles) ? scope.roles : [],
-    regions: Array.isArray(scope.regions) ? scope.regions : []
+    regionsByType
   };
 }
 
@@ -158,27 +160,20 @@ export function reviewSourceToCode(source) {
  */
 export function isTicketInReviewScope(ticket, access) {
   if (!access?.canProcess) return false;
-  if (access.isAdmin) return true;
   const typeCode = reviewSourceToCode(ticket?.source);
   if (!typeCode || !access.types.includes(typeCode)) return false;
-  // 按区域划分时，工单所属省须在授权区域内（未配置区域视为不限）
-  if (access.mode === 'region' && access.regions.length) {
-    return access.regions.some((region) => String(ticket?.province || '').includes(region));
-  }
-  return true;
+  const regions = access.regionsByType?.[typeCode] || [];
+  return regions.some((region) => String(ticket?.province || '').includes(region));
 }
 
 /**
  * 审核权限范围摘要（用于角色列表展示）
  * @param {object} scope 角色 reviewScope
- * @returns {{ typeCount: number, mode: string, regionCount: number, roleCount: number }}
+ * @returns {{ typeCount: number, regionCount: number }}
  */
 export function summarizeReviewScope(scope) {
   const safe = scope && typeof scope === 'object' ? scope : {};
-  return {
-    typeCount: Array.isArray(safe.types) ? safe.types.length : 0,
-    mode: REVIEW_SCOPE_MODES.includes(safe.mode) ? safe.mode : '',
-    roleCount: Array.isArray(safe.roles) ? safe.roles.length : 0,
-    regionCount: Array.isArray(safe.regions) ? safe.regions.length : 0
-  };
+  const assignments = safe.regionsByType && typeof safe.regionsByType === 'object' ? safe.regionsByType : {};
+  const regions = Object.values(assignments).flat().filter(Boolean);
+  return { typeCount: Array.isArray(safe.types) ? safe.types.length : 0, regionCount: new Set(regions).size };
 }

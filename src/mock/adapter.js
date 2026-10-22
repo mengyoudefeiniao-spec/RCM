@@ -16,7 +16,7 @@ import {
 } from '../utils/businessRules.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
-import { PERMISSION_CATALOG } from '../utils/reviewPermission.js';
+import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES } from '../utils/reviewPermission.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -698,13 +698,18 @@ export async function mockDispatch(config) {
   const systemSeed = {
     users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
     roles: [
-      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'], reviewScope: { types: ['review.process.unfreeze','review.process.split','review.process.changeHead','review.process.memberEntry','review.process.memberTransfer','review.process.agentTransfer'], mode: 'role', roles: ['role-admin','role-auditor'], regions: [] } },
-      { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], mode: 'region', roles: [], regions: ['巴格达省'] } },
-      { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], mode: 'role', roles: [], regions: [] } }
+      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries(REVIEW_TYPE_CODES.map((type) => [type, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
+      { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], regionsByType: { 'review.process.unfreeze': ['巴格达省'], 'review.process.split': ['巴格达省'] } } },
+      { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], regionsByType: {} } }
     ],
     permissions: PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' })),
     organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Central Office', phone: '+964 1 000 0000' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Baghdad Office', phone: '+964 1 000 0001' }],
-    'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', ip: '127.0.0.1', time: new Date().toISOString() }]
+    'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', type: 'login', businessNo: 'admin', terminal: 'Web console', ip: '127.0.0.1', before: null, after: { result: 'success' }, time: new Date().toISOString() }]
+  };
+  const appendSystemAudit = ({ actor = 'System', type, details, businessNo = '', object = businessNo, before = null, after = null }) => {
+    const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
+    logs.unshift({ id: `log-${crypto.randomUUID()}`, actor, time: new Date().toISOString(), terminal: navigator.userAgent, ip: '127.0.0.1', type, details, businessNo, object, before, after });
+    writeCenter('system_audit-logs', logs);
   };
   // 业务规则配置（版本化）：每次发布生成新版本号，历史版本保留全量快照
   if (url.includes('/admin/business-rules')) {
@@ -745,6 +750,10 @@ export async function mockDispatch(config) {
     if (!hasSystemGrant) return createResponse({}, 403, i18n.global.t('api.forbidden'));
     const [section, recordId] = (url.split('/admin/system/')[1]?.split('?')[0] || '').split('/');
     if (!Object.hasOwn(systemSeed, section)) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    if (section === 'audit-logs' && recordId === 'export' && method === 'POST') {
+      appendSystemAudit({ actor: profile.name || profile.username || 'Administrator', type: 'data_export', details: 'Exported audit log records', businessNo: 'audit-logs', after: data.filters || {} });
+      return createResponse({ success: true });
+    }
     let records = readCenter(`system_${section}`, systemSeed[section]);
     if (section === 'permissions') {
       const extras = records.filter((row) => row.code && !systemSeed.permissions.some((seed) => seed.code === row.code));
@@ -766,27 +775,50 @@ export async function mockDispatch(config) {
       records = records.map((row) => ({ ...row, address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
       writeCenter(`system_${section}`, records);
     }
-    if (method === 'GET') return createResponse(records);
+    if (method === 'GET' && section !== 'audit-logs') return createResponse(records);
+    if (section === 'audit-logs' && (method === 'POST' || method === 'DELETE')) return createResponse({}, 405, i18n.global.t('api.businessError'));
+    if (method === 'GET' && section === 'audit-logs') {
+      const businessAuditLogs = (auditLogsStore || []).map((log) => {
+        const action = String(log.action || '');
+        const type = /PAY|SETTLE/i.test(action) ? 'payment' : /REVIEW|APPROV|AUDIT/i.test(action) ? 'review' : /STATUS|ENABLE|DISABLE|BLOCK/i.test(action) ? 'status_change' : /EXPORT/i.test(action) ? 'data_export' : 'application';
+        const businessNo = String(log.actionDesc || '').match(/[A-Z]{2,}[-\w]{3,}/)?.[0] || '';
+        return { ...log, actor: log.actor || log.operatorName || 'System', time: log.time || log.timestamp, terminal: log.terminal || 'Warehouse terminal', ip: log.ip || log.terminalIp || '', type: log.type || type, businessNo: log.businessNo || businessNo, object: log.object || log.module || businessNo, details: log.details || log.actionDesc, before: log.before ?? log.beforeSnapshot, after: log.after ?? log.afterSnapshot };
+      });
+      const allRecords = [...records, ...businessAuditLogs.filter((log) => !records.some((row) => row.id === log.id))];
+      const cutoffDate = new Date(); cutoffDate.setFullYear(cutoffDate.getFullYear() - 5);
+      const cutoff = cutoffDate.getTime();
+      const filteredLogs = allRecords.filter((log) => {
+        const time = new Date(log.time || log.timestamp).getTime();
+        return Number.isNaN(time) || time >= cutoff;
+      }).filter((log) => {
+        const time = new Date(log.time || log.timestamp).getTime();
+        return (!params.actor || String(log.actor || log.operatorName || '').toLowerCase().includes(String(params.actor).toLowerCase()))
+          && (!params.type || log.type === params.type)
+          && (!params.businessNo || String(log.businessNo || '').toLowerCase().includes(String(params.businessNo).toLowerCase()))
+          && (!params.from || time >= new Date(params.from).getTime())
+          && (!params.to || time <= new Date(params.to).getTime() + 999);
+      });
+      return createResponse(filteredLogs);
+    }
     if (method === 'DELETE' && recordId) {
       const index = records.findIndex((row) => row.id === decodeURIComponent(recordId));
       if (index < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
       const [removed] = records.splice(index, 1); writeCenter(`system_${section}`, records);
-      const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
-      logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'System Administrator', details: data.auditDetails || `Deleted ${section} ${removed.name || removed.username || removed.code || removed.id}`, ip: '127.0.0.1', time: new Date().toISOString() });
-      writeCenter('system_audit-logs', logs);
+      appendSystemAudit({ actor: profile.name || profile.username || 'System Administrator', type: 'configuration', details: data.auditDetails || `Deleted ${section} ${removed.name || removed.username || removed.code || removed.id}`, businessNo: removed.businessNo || removed.code || removed.id, object: removed.name || removed.username || removed.code || section, before: removed, after: null });
       return createResponse({ success: true });
     }
     if (method === 'POST') {
       const next = { ...data, id: data.id || `rec-${crypto.randomUUID()}`, time: data.time || new Date().toISOString() };
       const auditDetails = next.auditDetails;
+      const auditType = next.auditType || 'configuration';
       delete next.auditDetails;
+      delete next.auditType;
       const index = records.findIndex((row) => row.id === next.id);
+      const before = index >= 0 ? { ...records[index] } : null;
       if (index >= 0) records.splice(index, 1, next); else records.unshift(next);
       writeCenter(`system_${section}`, records);
       if (section !== 'audit-logs') {
-        const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
-        logs.unshift({ id: `log-${crypto.randomUUID()}`, actor: JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}').name || 'Administrator', details: auditDetails || `${index >= 0 ? 'Updated' : 'Created'} ${section} ${next.name || next.username || next.code || next.id}`, ip: '127.0.0.1', time: new Date().toISOString() });
-        writeCenter('system_audit-logs', logs);
+        appendSystemAudit({ actor: profile.name || profile.username || 'Administrator', details: auditDetails || `${index >= 0 ? 'Updated' : 'Created'} ${section} ${next.name || next.username || next.code || next.id}`, type: auditType, businessNo: next.businessNo || next.code || next.id, object: next.name || next.username || next.code || section, before, after: next });
       }
       return createResponse(next);
     }
@@ -850,10 +882,14 @@ export async function mockDispatch(config) {
     const managedUsers = readCenter('system_users', systemSeed.users);
     const managedUser = managedUsers.find((entry) => entry.username === username);
     if (managedUser) {
-      if (managedUser.status === 'disabled') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      if (managedUser.status === 'disabled') {
+        appendSystemAudit({ actor: managedUser.name || username, type: 'login', details: 'Disabled account login rejected', businessNo: username, after: { result: 'rejected' } });
+        return createResponse({}, 403, i18n.global.t('api.forbidden'));
+      }
       const roleRows = readCenter('system_roles', systemSeed.roles);
       const assignedRole = roleRows.find((entry) => entry.id === managedUser.roleId || entry.code === managedUser.role);
       const profile = { id: managedUser.id, username: managedUser.username, name: managedUser.name, role: assignedRole?.code || managedUser.role || 'operator', department: managedUser.organization, permissionCodes: assignedRole?.permissionCodes || [], reviewScope: assignedRole?.reviewScope || null };
+      appendSystemAudit({ actor: profile.name, type: 'login', details: 'Web console login', businessNo: managedUser.username, after: { result: 'success', role: profile.role } });
       return createResponse({ token: `mock-token-${managedUser.id}`, user: profile });
     }
     const user = MOCK_USERS.find(
@@ -865,9 +901,13 @@ export async function mockDispatch(config) {
       const matches = changedDigest
         ? await passwordDigest(data.password || '') === changedDigest
         : data.password === 'iq-pass-2026';
-      if (!matches) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+      if (!matches) {
+        appendSystemAudit({ actor: user.name || username, type: 'login', details: 'Login rejected: invalid credentials', businessNo: username, after: { result: 'rejected' } });
+        return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+      }
     }
 
+    appendSystemAudit({ actor: user.name || user.username || username, type: 'login', details: 'Web console login', businessNo: user.username || username, after: { result: 'success', role: user.role } });
     return createResponse({
       token: user.token,
       user

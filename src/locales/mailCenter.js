@@ -102,7 +102,7 @@ export default {
       "reviewNotes": "终审批注",
       "reviewSubmit": "提交审核",
       "reviewTextRequired": "请填写审核意见",
-      "reviewScopeHint": "仅显示您权限范围内的审核工单（按业务类型与关联角色/区域划分，可在系统管理-角色-关联功能权限中配置）"
+      "reviewScopeHint": "仅显示您权限范围内的审核工单（按审核事项和授权区域划分，可在系统管理-角色-关联功能权限中配置）"
     }
   },
   "en": {
@@ -208,7 +208,7 @@ export default {
       "reviewNotes": "Manager notes",
       "reviewSubmit": "Submit",
       "reviewTextRequired": "Please enter your review opinion",
-      "reviewScopeHint": "Only review tickets within your permission scope are shown (by business type and associated role/region; configurable in System Management - Roles - Assigned permissions)"
+      "reviewScopeHint": "Only review tickets within your permission scope are shown (by review type and authorized region; configured in System Management - Roles - Assigned permissions)"
     }
   },
   "ar": {
@@ -314,7 +314,7 @@ export default {
       "reviewNotes": "ملاحظات المدير",
       "reviewSubmit": "إرسال",
       "reviewTextRequired": "يُرجى إدخال رأي التدقيق",
-      "reviewScopeHint": "تُعرض فقط طلبات التدقيق الواقعة ضمن صلاحياتك (حسب نوع العمل والدور/المنطقة المرتبطة؛ يمكن ضبطها من إدارة النظام - الأدوار - الصلاحيات المرتبطة)"
+      "reviewScopeHint": "تُعرض فقط طلبات التدقيق الواقعة ضمن صلاحياتك (حسب نوع المراجعة والمنطقة المصرح بها؛ يمكن ضبطها من إدارة النظام - الأدوار - الصلاحيات المرتبطة)"
     }
   },
   "ckb": {
@@ -420,7 +420,7 @@ export default {
       "reviewNotes": "تێبینی بەڕێوەبەر",
       "reviewSubmit": "ناردن",
       "reviewTextRequired": "تکایە ڕای پشکنین بنووسە",
-      "reviewScopeHint": "تەنها داخوازییەکانی پشکنین لەناو مۆڵەتی تۆدا دەردەکەون (بەپێی جۆری کار و ڕۆڵ/ناوچەی پەیوەندیدار؛ لە بەڕێوەبردنی سیستەم - ڕۆڵەکان - مۆڵەتە پەیوەستەکان دەستکاری بکە)"
+      "reviewScopeHint": "تەنها داخوازییەکانی پشکنین لەناو مۆڵەتی تۆدا دەردەکەون (بەپێی جۆری پشکنین و ناوچەی مۆڵەتدراو؛ لە بەڕێوەبردنی سیستەم - ڕۆڵەکان - مۆڵەتە پەیوەستەکان ڕێکبخرێت)"
     }
   }
 };

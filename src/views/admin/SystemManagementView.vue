@@ -77,7 +77,28 @@
                   >
                     {{ t('systemExtras.' + feature.featureKey) }}
                   </el-checkbox>
-                  <!-- 二级功能：有子级时作为三级权限分组开关 -->
+                  <!-- 审核权限按当前角色直接展开为：审核事项 → 授权区域 -->
+                  <template v-else-if="module.moduleKey === 'moduleReview' && feature.code === 'review.process'">
+                    <div class="space-y-2 ps-3">
+                      <div v-for="type in feature.children" :key="type.code" class="rounded-md border border-[#E8EDEA] px-3 py-2">
+                        <el-checkbox
+                          :model-value="(form.permissionCodes || []).includes(type.code)"
+                          @change="(checked) => toggleReviewType(type.code, checked)"
+                        >{{ t('systemExtras.' + type.featureKey) }}</el-checkbox>
+                        <div v-if="(form.permissionCodes || []).includes(type.code)" class="mt-1 border-s-2 border-[#D9E5DB] ps-5">
+                          <div class="mb-1 text-xs text-[#75837A]">{{ t('systemExtras.reviewScopeRegions') }}</div>
+                          <el-checkbox-group
+                            :model-value="reviewRegionsFor(type.code)"
+                            class="flex flex-wrap gap-x-4 gap-y-1"
+                            @change="(regions) => setReviewRegions(type.code, regions)"
+                          >
+                            <el-checkbox v-for="region in reviewRegionOptions" :key="region.value" :value="region.value">{{ t('systemExtras.' + region.labelKey) }}</el-checkbox>
+                          </el-checkbox-group>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                  <!-- 其他二级功能：有子级时作为分组开关 -->
                   <template v-else>
                     <el-checkbox
                       :model-value="isFeatureFullyChecked(feature)"
@@ -98,36 +119,6 @@
                     </div>
                   </template>
                 </div>
-              </div>
-            </div>
-          </el-form-item>
-          <!-- 审核权限划分：按业务类型授权，并限定关联角色或区域 -->
-          <el-form-item :label="t('systemExtras.reviewPermission')">
-            <div class="w-full space-y-3 rounded-lg border border-[#E3ECE5] p-3">
-              <div>
-                <div class="mb-1 text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.reviewTypes') }}</div>
-                <el-checkbox-group v-model="reviewScopeTypes">
-                  <el-checkbox v-for="type in reviewTypeOptions" :key="type.code" :value="type.code">{{ t('systemExtras.' + type.featureKey) }}</el-checkbox>
-                </el-checkbox-group>
-              </div>
-              <div>
-                <div class="mb-1 text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.reviewScopeMode') }}</div>
-                <el-radio-group v-model="reviewScopeMode">
-                  <el-radio value="role">{{ t('systemExtras.reviewScopeByRole') }}</el-radio>
-                  <el-radio value="region">{{ t('systemExtras.reviewScopeByRegion') }}</el-radio>
-                </el-radio-group>
-              </div>
-              <div v-if="reviewScopeMode === 'role'">
-                <div class="mb-1 text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.reviewScopeRoles') }}</div>
-                <el-select v-model="reviewScopeRoles" multiple clearable class="w-full" :placeholder="t('systemExtras.reviewScopeRolesPlaceholder')">
-                  <el-option v-for="role in roleRows" :key="role.id" :value="role.id" :label="role.name + ' (' + role.code + ')'" />
-                </el-select>
-              </div>
-              <div v-else>
-                <div class="mb-1 text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.reviewScopeRegions') }}</div>
-                <el-select v-model="reviewScopeRegions" multiple clearable class="w-full" :placeholder="t('systemExtras.reviewScopeRegionsPlaceholder')">
-                  <el-option v-for="region in reviewRegionOptions" :key="region" :value="region" :label="region" />
-                </el-select>
               </div>
             </div>
           </el-form-item>
@@ -200,26 +191,33 @@ const filteredRows = computed(() => {
   return rows.value.filter((row) => !appliedQuery.value || Object.values(row).some((value) => String(JSON.stringify(value) ?? value ?? '').toLowerCase().includes(appliedQuery.value.toLowerCase())));
 });
 const permissionTree = computed(() => buildPermissionTree(permissionRows.value.length ? permissionRows.value : catalog));
-const reviewTypeOptions = computed(() => permissionRows.value.filter((item) => REVIEW_TYPE_CODES.includes(item.code)));
 const reviewRegionOptions = computed(() => REVIEW_SCOPE_REGIONS);
-// 审核权限划分表单绑定（读写均落至 form.reviewScope）
-const reviewScopeTypes = computed({
-  get: () => form.value.reviewScope?.types || [],
-  set: (value) => { form.value.reviewScope = { ...(form.value.reviewScope || {}), types: value }; }
-});
-const reviewScopeMode = computed({
-  get: () => form.value.reviewScope?.mode || 'role',
-  set: (value) => { form.value.reviewScope = { ...(form.value.reviewScope || {}), mode: value }; }
-});
-const reviewScopeRoles = computed({
-  get: () => form.value.reviewScope?.roles || [],
-  set: (value) => { form.value.reviewScope = { ...(form.value.reviewScope || {}), roles: value }; }
-});
-const reviewScopeRegions = computed({
-  get: () => form.value.reviewScope?.regions || [],
-  set: (value) => { form.value.reviewScope = { ...(form.value.reviewScope || {}), regions: value }; }
-});
-function emptyReviewScope() { return { types: [], mode: 'role', roles: [], regions: [] }; }
+function emptyReviewScope() { return { types: [], regionsByType: {} }; }
+function normalizeReviewScope(scope = {}, permissionCodes = [], roleCode = '') {
+  const types = Array.isArray(scope.types)
+    ? scope.types.filter((type) => REVIEW_TYPE_CODES.includes(type))
+    : permissionCodes.filter((type) => REVIEW_TYPE_CODES.includes(type));
+  const legacyRegions = Array.isArray(scope.regions) ? scope.regions : [];
+  const regionsByType = scope.regionsByType && typeof scope.regionsByType === 'object'
+    ? { ...scope.regionsByType }
+    : Object.fromEntries(types.map((type) => [type, legacyRegions.length ? legacyRegions : roleCode === 'admin' ? reviewRegionOptions.value.map((region) => region.value) : []]));
+  return { types, regionsByType };
+}
+function reviewRegionsFor(type) { return form.value.reviewScope?.regionsByType?.[type] || []; }
+function setReviewRegions(type, regions) {
+  const scope = normalizeReviewScope(form.value.reviewScope);
+  scope.regionsByType[type] = [...regions];
+  form.value.reviewScope = scope;
+}
+function toggleReviewType(type, checked) {
+  const codes = new Set(form.value.permissionCodes || []);
+  const scope = normalizeReviewScope(form.value.reviewScope);
+  const types = new Set(scope.types);
+  if (checked) { codes.add(type); types.add(type); }
+  else { codes.delete(type); types.delete(type); delete scope.regionsByType[type]; }
+  form.value.permissionCodes = [...codes];
+  form.value.reviewScope = { ...scope, types: [...types] };
+}
 function togglePermission(code, checked) {
   const codes = new Set(form.value.permissionCodes || []);
   if (checked) codes.add(code); else codes.delete(code);
@@ -240,20 +238,17 @@ function toggleFeature(feature, checked) {
   form.value.permissionCodes = [...codes];
 }
 function reviewScopeSummary(row) {
-  const summary = summarizeReviewScope(row.reviewScope);
+  const summary = summarizeReviewScope(normalizeReviewScope(row.reviewScope || {}, resolveEffectiveCodes(row.permissionCodes || []), row.code));
   if (!summary.typeCount) return t('systemExtras.reviewScopeNone');
   const typeText = t('systemExtras.reviewTypesShort', { count: summary.typeCount });
-  if (summary.mode === 'region') {
-    return `${typeText} · ${t('systemExtras.reviewScopeByRegion')}${summary.regionCount ? ` (${summary.regionCount})` : ` (${t('systemExtras.reviewScopeAllRegions')})`}`;
-  }
-  return `${typeText} · ${t('systemExtras.reviewScopeByRole')}${summary.roleCount ? ` (${summary.roleCount})` : ''}`;
+  return `${typeText} · ${t('systemExtras.reviewRegionCount', { count: summary.regionCount })}`;
 }
 function columnLabel(column) { return column.key === 'permissionCodes' || column.key === 'reviewScope' || column.key === 'details' || column.key === 'ip' || column.key === 'moduleKey' || column.key === 'featureKey' || column.key === 'address' || column.key === 'contact' || column.key === 'phone' ? t('systemExtras.' + column.label) : t('system.' + column.label); }
 function permissionLabel(code) { const item = permissionRows.value.find((permission) => permission.code === code); return item ? t('systemExtras.' + item.moduleKey) + ' · ' + t('systemExtras.' + item.featureKey) : code; }
 function roleLabel(user) { const role = roleRows.value.find((item) => item.id === user.roleId || item.code === user.role); return role?.name || user.role || '—'; }
 function formatTime(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'; }
 async function load() { loading.value = true; try { rows.value = section.value === 'permissions' ? permissionRows.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
-async function loadReferences() { [roleRows.value, permissionRows.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions')]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], mode: 'role', roles: [], regions: [] } }]; }
+async function loadReferences() { [roleRows.value, permissionRows.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions')]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
 async function changeSection() { keyword.value = ''; appliedQuery.value = ''; await load(); }
 function resetAuditFilters() { auditFilters.value = { actor: '', range: null, type: '', businessNo: '' }; load(); }
 function auditTypeLabel(type) { return type ? t('system.auditType_' + type) : '—'; }
@@ -269,7 +264,7 @@ async function exportAuditLogs() {
 function runSearch() { appliedQuery.value = keyword.value.trim(); }
 function resetSearch() { keyword.value = ''; appliedQuery.value = ''; }
 function openCreate() { editing.value = false; form.value = section.value === 'roles' ? { permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { status: 'active', enabled: true } : {}; dialog.value = true; }
-function openEdit(row) { editing.value = true; form.value = { ...row, enabled: row.status !== 'disabled', permissionCodes: resolveEffectiveCodes(row.permissionCodes || []), reviewScope: { ...emptyReviewScope(), ...(row.reviewScope || {}) } }; dialog.value = true; }
+function openEdit(row) { editing.value = true; const permissionCodes = resolveEffectiveCodes(row.permissionCodes || []); form.value = { ...row, enabled: row.status !== 'disabled', permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
 function auditMessage(key, entityKey, name, extra = {}) { return t('systemExtras.' + key, { actor: actor(), entity: t('systemExtras.' + entityKey), name, ...extra }); }
 async function save() {
   const name = form.value.name || form.value.username || form.value.code;

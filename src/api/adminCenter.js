@@ -1,6 +1,7 @@
 import { request } from './client.js';
 
-export const getSystemRecords = (section) => request({ url: `/admin/system/${section}`, method: 'GET' });
+export const getSystemRecords = (section, params = {}) => request({ url: `/admin/system/${section}`, method: 'GET', params });
+export const logAuditExport = (filters = {}) => request({ url: '/admin/system/audit-logs/export', method: 'POST', data: { filters } });
 export const saveSystemRecord = (section, data) => request({ url: `/admin/system/${section}`, method: 'POST', data });
 export const deleteSystemRecord = (section, id, data = {}) => request({ url: `/admin/system/${section}/${encodeURIComponent(id)}`, method: 'DELETE', data });
 export const getMessages = (box = 'inbox') => request({ url: `/messages/${box}`, method: 'GET' });
