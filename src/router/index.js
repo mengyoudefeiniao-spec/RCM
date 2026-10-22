@@ -161,6 +161,12 @@ const routes = [
         meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view' }
       },
       {
+        path: 'messages/review',
+        name: 'MessageReview',
+        component: () => import('../views/messages/MessageReviewView.vue'),
+        meta: { titleKey: 'mail.reviewPageTitle', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view' }
+      },
+      {
         path: 'access-denied',
         name: 'AccessDenied',
         component: () => import('../views/common/AccessDeniedView.vue'),

@@ -102,7 +102,24 @@ export default {
       "reviewNotes": "终审批注",
       "reviewSubmit": "提交审核",
       "reviewTextRequired": "请填写审核意见",
-      "reviewScopeHint": "仅显示您权限范围内的审核工单（按审核事项和授权区域划分，可在系统管理-角色-关联功能权限中配置）"
+      "reviewScopeHint": "仅显示您权限范围内的审核工单（按审核事项和授权区域划分，可在系统管理-角色-关联功能权限中配置）",
+      "sectionNavigation": "消息通知页面导航",
+      "reviewPageTitle": "审核队列",
+      "reviewPageSubtitle": "按审核状态查看和处理您授权范围内的申请。",
+      "reviewEmptyProcessed": "暂无已处理的审核工单",
+      "reviewStatPending": "待处理",
+      "reviewStatProcessed": "已处理",
+      "reviewStatTotal": "工单总数",
+      "reviewFilter": "审核状态筛选",
+      "reviewSearch": "搜索申请人、工单编号或申请内容",
+      "reviewType": "申请类型",
+      "reviewActions": "操作",
+      "reviewViewDetails": "查看详情",
+      "reviewDetails": "申请详情",
+      "reviewHistory": "审核记录",
+      "reviewStatus": "审核状态",
+      "reviewNoAccess": "当前账号没有查看或处理审核队列的权限。",
+      "reviewClose": "关闭"
     }
   },
   "en": {
@@ -208,7 +225,24 @@ export default {
       "reviewNotes": "Manager notes",
       "reviewSubmit": "Submit",
       "reviewTextRequired": "Please enter your review opinion",
-      "reviewScopeHint": "Only review tickets within your permission scope are shown (by review type and authorized region; configured in System Management - Roles - Assigned permissions)"
+      "reviewScopeHint": "Only review tickets within your permission scope are shown (by review type and authorized region; configured in System Management - Roles - Assigned permissions)",
+      "sectionNavigation": "Notification page navigation",
+      "reviewPageTitle": "Review Queue",
+      "reviewPageSubtitle": "Review and process applications within your authorized scope.",
+      "reviewEmptyProcessed": "No processed review tickets",
+      "reviewStatPending": "Pending",
+      "reviewStatProcessed": "Processed",
+      "reviewStatTotal": "Total tickets",
+      "reviewFilter": "Filter by review status",
+      "reviewSearch": "Search applicant, ticket number or application",
+      "reviewType": "Application type",
+      "reviewActions": "Actions",
+      "reviewViewDetails": "View details",
+      "reviewDetails": "Application details",
+      "reviewHistory": "Review history",
+      "reviewStatus": "Review status",
+      "reviewNoAccess": "Your account does not have permission to view or process the review queue.",
+      "reviewClose": "Close"
     }
   },
   "ar": {
@@ -314,7 +348,24 @@ export default {
       "reviewNotes": "ملاحظات المدير",
       "reviewSubmit": "إرسال",
       "reviewTextRequired": "يُرجى إدخال رأي التدقيق",
-      "reviewScopeHint": "تُعرض فقط طلبات التدقيق الواقعة ضمن صلاحياتك (حسب نوع المراجعة والمنطقة المصرح بها؛ يمكن ضبطها من إدارة النظام - الأدوار - الصلاحيات المرتبطة)"
+      "reviewScopeHint": "تُعرض فقط طلبات التدقيق الواقعة ضمن صلاحياتك (حسب نوع المراجعة والمنطقة المصرح بها؛ يمكن ضبطها من إدارة النظام - الأدوار - الصلاحيات المرتبطة)",
+      "sectionNavigation": "التنقل بين صفحات الإشعارات",
+      "reviewPageTitle": "قائمة التدقيق",
+      "reviewPageSubtitle": "راجع الطلبات وعالجها ضمن نطاق الصلاحيات الممنوحة لك.",
+      "reviewEmptyProcessed": "لا توجد طلبات تدقيق تمت معالجتها",
+      "reviewStatPending": "قيد الانتظار",
+      "reviewStatProcessed": "تمت معالجتها",
+      "reviewStatTotal": "إجمالي الطلبات",
+      "reviewFilter": "تصفية حسب حالة التدقيق",
+      "reviewSearch": "ابحث عن مقدم الطلب أو رقم الطلب أو تفاصيله",
+      "reviewType": "نوع الطلب",
+      "reviewActions": "الإجراءات",
+      "reviewViewDetails": "عرض التفاصيل",
+      "reviewDetails": "تفاصيل الطلب",
+      "reviewHistory": "سجل التدقيق",
+      "reviewStatus": "حالة التدقيق",
+      "reviewNoAccess": "لا يملك حسابك صلاحية عرض قائمة التدقيق أو معالجتها.",
+      "reviewClose": "إغلاق"
     }
   },
   "ckb": {
@@ -420,7 +471,24 @@ export default {
       "reviewNotes": "تێبینی بەڕێوەبەر",
       "reviewSubmit": "ناردن",
       "reviewTextRequired": "تکایە ڕای پشکنین بنووسە",
-      "reviewScopeHint": "تەنها داخوازییەکانی پشکنین لەناو مۆڵەتی تۆدا دەردەکەون (بەپێی جۆری پشکنین و ناوچەی مۆڵەتدراو؛ لە بەڕێوەبردنی سیستەم - ڕۆڵەکان - مۆڵەتە پەیوەستەکان ڕێکبخرێت)"
+      "reviewScopeHint": "تەنها داخوازییەکانی پشکنین لەناو مۆڵەتی تۆدا دەردەکەون (بەپێی جۆری پشکنین و ناوچەی مۆڵەتدراو؛ لە بەڕێوەبردنی سیستەم - ڕۆڵەکان - مۆڵەتە پەیوەستەکان ڕێکبخرێت)",
+      "sectionNavigation": "گەشتکردن لە پەڕەکانی ئاگادارکردنەوە",
+      "reviewPageTitle": "لیستی پشکنین",
+      "reviewPageSubtitle": "داواکارییەکان لەناو سنووری مۆڵەتەکانتدا پشکنین و چارەسەر بکە.",
+      "reviewEmptyProcessed": "هیچ داواکارییەکی پشکنینی چارەسەرکراو نییە",
+      "reviewStatPending": "چاوەڕوان",
+      "reviewStatProcessed": "چارەسەرکراو",
+      "reviewStatTotal": "کۆی داواکارییەکان",
+      "reviewFilter": "پاڵاوتن بەپێی دۆخی پشکنین",
+      "reviewSearch": "گەڕان بۆ داواکەر، ژمارەی داواکاری یان ناوەڕۆک",
+      "reviewType": "جۆری داواکاری",
+      "reviewActions": "کردارەکان",
+      "reviewViewDetails": "بینینی وردەکاری",
+      "reviewDetails": "وردەکاری داواکاری",
+      "reviewHistory": "مێژووی پشکنین",
+      "reviewStatus": "دۆخی پشکنین",
+      "reviewNoAccess": "هەژمارەکەت مۆڵەتی بینین یان چارەسەرکردنی لیستی پشکنینی نییە.",
+      "reviewClose": "داخستن"
     }
   }
 };
