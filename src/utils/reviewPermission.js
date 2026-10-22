@@ -10,14 +10,20 @@
 // 三级功能权限目录：模块(一级) → 功能(二级) → 权限项(三级)
 // parentCode 指向二级权限码；二级权限若存在子级，界面中作为分组开关
 export const PERMISSION_CATALOG = [
-  { moduleKey: 'moduleDashboard', code: 'dashboard.view', featureKey: 'view' },
-  { moduleKey: 'moduleAgents', code: 'agents.view', featureKey: 'view' },
-  { moduleKey: 'moduleAgents', code: 'agents.create', featureKey: 'create' },
-  { moduleKey: 'moduleAgents', code: 'agents.edit', featureKey: 'editFeature' },
-  { moduleKey: 'moduleAgents', code: 'agents.delete', featureKey: 'remove' },
-  { moduleKey: 'moduleRation', code: 'ration.view', featureKey: 'view' },
-  { moduleKey: 'moduleRation', code: 'ration.dispatch', featureKey: 'dispatch' },
-  { moduleKey: 'moduleReview', code: 'review.view', featureKey: 'view' },
+  { moduleKey: 'moduleDashboard', code: 'dashboard.view', featureKey: 'dashboardOverview' },
+  { moduleKey: 'moduleAgents', code: 'agents.view', featureKey: 'agentsList' },
+  { moduleKey: 'moduleAgents', code: 'agents.create', featureKey: 'agentsCreate' },
+  { moduleKey: 'moduleAgents', code: 'agents.edit', featureKey: 'agentsEdit' },
+  { moduleKey: 'moduleAgents', code: 'agents.delete', featureKey: 'agentsDelete' },
+  { moduleKey: 'moduleRation', code: 'ration.view', featureKey: 'rationOverview' },
+  { moduleKey: 'moduleRation', code: 'ration.dispatch', featureKey: 'rationDispatch' },
+  { moduleKey: 'moduleRation', code: 'warehouse.inboundOutbound', featureKey: 'warehouseInboundOutbound' },
+  { moduleKey: 'moduleRation', code: 'warehouse.inventoryLedger', featureKey: 'warehouseInventoryLedger' },
+  { moduleKey: 'moduleRation', code: 'warehouse.deliveryVerification', featureKey: 'warehouseDeliveryVerification' },
+  { moduleKey: 'moduleRation', code: 'warehouse.citizenClaim', featureKey: 'warehouseCitizenClaim' },
+  { moduleKey: 'moduleRation', code: 'warehouse.traceability', featureKey: 'warehouseTraceability' },
+  { moduleKey: 'moduleRation', code: 'warehouse.securityAudit', featureKey: 'warehouseSecurityAudit' },
+  { moduleKey: 'moduleReview', code: 'review.view', featureKey: 'reviewOverview' },
   { moduleKey: 'moduleReview', code: 'review.process', featureKey: 'process' },
   // 三级权限项：审核处理 → 业务类型
   { moduleKey: 'moduleReview', code: 'review.process.unfreeze', featureKey: 'reviewTypeUnfreeze', parentCode: 'review.process' },
@@ -26,21 +32,26 @@ export const PERMISSION_CATALOG = [
   { moduleKey: 'moduleReview', code: 'review.process.memberEntry', featureKey: 'reviewTypeMemberEntry', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.memberTransfer', featureKey: 'reviewTypeMemberTransfer', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.agentTransfer', featureKey: 'reviewTypeAgentTransfer', parentCode: 'review.process' },
-  { moduleKey: 'moduleComplaints', code: 'complaints.view', featureKey: 'view' },
-  { moduleKey: 'moduleComplaints', code: 'complaints.process', featureKey: 'process' },
-  { moduleKey: 'moduleSystem', code: 'system.users', featureKey: 'manage' },
-  { moduleKey: 'moduleSystem', code: 'system.roles', featureKey: 'manage' },
-  { moduleKey: 'moduleSystem', code: 'system.permissions', featureKey: 'manage' },
-  { moduleKey: 'moduleSystem', code: 'system.organizations', featureKey: 'manage' },
-  { moduleKey: 'moduleSystem', code: 'system.audit', featureKey: 'view' },
-  { moduleKey: 'moduleMessages', code: 'messages.view', featureKey: 'view' },
-  { moduleKey: 'moduleMessages', code: 'messages.send', featureKey: 'send' }
+  { moduleKey: 'moduleComplaints', code: 'complaints.view', featureKey: 'complaintsOverview' },
+  { moduleKey: 'moduleComplaints', code: 'complaints.process', featureKey: 'complaintsProcess' },
+  { moduleKey: 'moduleSystem', code: 'system.users', featureKey: 'systemManageUsers' },
+  { moduleKey: 'moduleSystem', code: 'system.roles', featureKey: 'systemManageRoles' },
+  { moduleKey: 'moduleSystem', code: 'system.permissions', featureKey: 'systemManagePermissions' },
+  { moduleKey: 'moduleSystem', code: 'system.organizations', featureKey: 'systemManageOrganizations' },
+  { moduleKey: 'moduleSystem', code: 'system.audit', featureKey: 'systemViewAudit' },
+  { moduleKey: 'moduleMessages', code: 'messages.view', featureKey: 'messagesOverview' },
+  { moduleKey: 'moduleMessages', code: 'messages.send', featureKey: 'messagesSend' }
 ];
+
+export const WAREHOUSE_PERMISSION_CODES = PERMISSION_CATALOG
+  .filter((item) => item.code.startsWith('warehouse.'))
+  .map((item) => item.code);
 
 // 审核业务类型三级权限码
 export const REVIEW_TYPE_CODES = PERMISSION_CATALOG
   .filter((item) => item.parentCode === 'review.process')
   .map((item) => item.code);
+export const REGION_SCOPED_PERMISSION_CODES = [...REVIEW_TYPE_CODES, ...WAREHOUSE_PERMISSION_CODES];
 
 // 审核工单来源（中英文）→ 三级审核权限码
 const SOURCE_TO_CODE = {

@@ -68,10 +68,27 @@
             <div class="w-full space-y-3 rounded-lg border border-[#E3ECE5] p-3">
               <div v-for="module in permissionTree" :key="module.moduleKey" class="space-y-1.5">
                 <div class="text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.' + module.moduleKey) }}</div>
-                <div v-for="feature in module.features" :key="feature.code" class="ps-3">
+                <div class="flex flex-wrap items-start gap-2 ps-3">
+                <div v-for="feature in module.features" :key="feature.code" :class="feature.children.length || isWarehouseScopedPermission(feature.code) ? 'w-full' : 'rounded-md border border-[#E8EDEA] px-3 py-1.5'">
+                  <template v-if="isWarehouseScopedPermission(feature.code)">
+                    <el-checkbox
+                      :model-value="(form.permissionCodes || []).includes(feature.code)"
+                      @change="(checked) => toggleWarehousePermission(feature.code, checked)"
+                    >{{ t('systemExtras.' + feature.featureKey) }} <el-tag size="small" type="warning">PRO</el-tag></el-checkbox>
+                    <div v-if="(form.permissionCodes || []).includes(feature.code)" class="mt-1 border-s-2 border-[#D9E5DB] ps-5">
+                      <div class="mb-1 text-xs text-[#75837A]">{{ t('systemExtras.reviewScopeRegions') }}</div>
+                      <el-checkbox-group
+                        :model-value="regionsForPermission(feature.code)"
+                        class="flex flex-wrap gap-x-4 gap-y-1"
+                        @change="(regions) => setPermissionRegions(feature.code, regions)"
+                      >
+                        <el-checkbox v-for="region in reviewRegionOptions" :key="region.value" :value="region.value">{{ t('systemExtras.' + region.labelKey) }}</el-checkbox>
+                      </el-checkbox-group>
+                    </div>
+                  </template>
                   <!-- 二级功能：无子级为可勾选权限项 -->
                   <el-checkbox
-                    v-if="!feature.children.length"
+                    v-else-if="!feature.children.length"
                     :model-value="(form.permissionCodes || []).includes(feature.code)"
                     @change="(checked) => togglePermission(feature.code, checked)"
                   >
@@ -119,6 +136,7 @@
                     </div>
                   </template>
                 </div>
+                </div>
               </div>
             </div>
           </el-form-item>
@@ -157,6 +175,7 @@ import {
   resolveEffectiveCodes,
   REVIEW_TYPE_CODES,
   REVIEW_SCOPE_REGIONS,
+  WAREHOUSE_PERMISSION_CODES,
   summarizeReviewScope
 } from '../../utils/reviewPermission.js';
 const { t } = useI18n();
@@ -204,9 +223,22 @@ function normalizeReviewScope(scope = {}, permissionCodes = [], roleCode = '') {
   return { types, regionsByType };
 }
 function reviewRegionsFor(type) { return form.value.reviewScope?.regionsByType?.[type] || []; }
+function regionsForPermission(code) { return form.value.reviewScope?.regionsByType?.[code] || []; }
 function setReviewRegions(type, regions) {
   const scope = normalizeReviewScope(form.value.reviewScope);
   scope.regionsByType[type] = [...regions];
+  form.value.reviewScope = scope;
+}
+function setPermissionRegions(code, regions) {
+  const scope = normalizeReviewScope(form.value.reviewScope);
+  scope.regionsByType[code] = [...regions];
+  form.value.reviewScope = scope;
+}
+function isWarehouseScopedPermission(code) { return WAREHOUSE_PERMISSION_CODES.includes(code); }
+function toggleWarehousePermission(code, checked) {
+  togglePermission(code, checked);
+  const scope = normalizeReviewScope(form.value.reviewScope);
+  if (!checked) delete scope.regionsByType[code];
   form.value.reviewScope = scope;
 }
 function toggleReviewType(type, checked) {

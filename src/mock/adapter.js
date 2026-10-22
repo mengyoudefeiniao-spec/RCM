@@ -16,7 +16,7 @@ import {
 } from '../utils/businessRules.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
-import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES } from '../utils/reviewPermission.js';
+import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -698,7 +698,7 @@ export async function mockDispatch(config) {
   const systemSeed = {
     users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
     roles: [
-      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries(REVIEW_TYPE_CODES.map((type) => [type, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
+      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch',...WAREHOUSE_PERMISSION_CODES,'review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries([...REVIEW_TYPE_CODES, ...WAREHOUSE_PERMISSION_CODES].map((code) => [code, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
       { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], regionsByType: { 'review.process.unfreeze': ['巴格达省'], 'review.process.split': ['巴格达省'] } } },
       { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], regionsByType: {} } }
     ],

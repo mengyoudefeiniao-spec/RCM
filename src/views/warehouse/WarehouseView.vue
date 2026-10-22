@@ -46,42 +46,42 @@
         </el-tab-pane>
 
         <!-- 仓储执行与库存台账：供管理人员、代理端按职责使用 -->
-        <el-tab-pane v-if="isAdmin" name="inboundOutbound">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.inboundOutbound')" name="inboundOutbound">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><Box /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.inboundOutbound') }}</span></div>
           </template>
           <div class="py-4"><InboundOutboundTab /></div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isAdmin || isAgent" name="inventoryLedger">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.inventoryLedger')" name="inventoryLedger">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><DataAnalysis /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.inventoryLedger') }}</span></div>
           </template>
           <div class="py-4"><MultiDimInventoryTab /></div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isAdmin || isAgent" name="deliveryVerification">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.deliveryVerification')" name="deliveryVerification">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><Van /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.deliveryVerification') }}</span></div>
           </template>
           <div class="py-4"><DeliveryVerificationTab /></div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isAgent" name="citizenClaim">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.citizenClaim')" name="citizenClaim">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><ShoppingCart /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.citizenClaim') }}</span></div>
           </template>
           <div class="py-4"><CitizenClaimTab /></div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isAdmin" name="traceability">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.traceability')" name="traceability">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><Connection /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.traceability') }}</span></div>
           </template>
           <div class="py-4"><TraceabilityAnalysisTab /></div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isAdmin" name="securityAudit">
+        <el-tab-pane v-if="canAccessWarehouseFeature('warehouse.securityAudit')" name="securityAudit">
           <template #label>
             <div class="flex items-center gap-1.5 py-1"><el-icon><Lock /></el-icon><span class="warehouse-pro-badge">PRO</span><span class="font-bold">{{ $t('warehouse.securityAudit') }}</span></div>
           </template>
@@ -132,6 +132,12 @@ const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.isAdmin);
 const isAgent = computed(() => authStore.currentRole === 'agent');
 const isCitizen = computed(() => authStore.currentRole === 'citizen');
+function canAccessWarehouseFeature(code) {
+  if (!authStore.hasPermission(code)) return false;
+  if (isAdmin.value) return true;
+  const regions = authStore.userProfile?.reviewScope?.regionsByType?.[code];
+  return Array.isArray(regions) && regions.length > 0;
+}
 
 // APP 仿真视口判定 (与 AppLayout/AppMobileNav 保持一致的三级判定)
 const isAppMode = computed(() => {
