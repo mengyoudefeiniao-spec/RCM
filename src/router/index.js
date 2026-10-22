@@ -71,6 +71,12 @@ const routes = [
         meta: { title: '申请解冻申报', roles: ['citizen'] }
       },
       {
+        path: 'citizen/ration-orders/:orderId',
+        name: 'CitizenOrderDetail',
+        component: () => import('../views/warehouse/CitizenOrderDetail.vue'),
+        meta: { titleKey: 'citizenOrder.title', roles: ['citizen'] }
+      },
+      {
         path: 'citizen/split-household',
         name: 'SplitHousehold',
         component: () => import('../views/citizen/SplitHouseholdView.vue'),

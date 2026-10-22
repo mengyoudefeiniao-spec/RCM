@@ -1737,6 +1737,21 @@ export async function mockDispatch(config) {
   }
 
   // 2. 查询公民购买历史与提货订单列表 (GET)
+  // 单条详情必须放在列表路由之前，否则会被 includes('/citizen/ration/orders') 提前命中
+  const citizenOrderByIdMatch = url.match(/\/citizen\/ration\/orders\/([^/?]+)$/);
+  if (citizenOrderByIdMatch && method === 'GET') {
+    const orderId = decodeURIComponent(citizenOrderByIdMatch[1]);
+    // 订单按语言分池存放，详情按当前语言优先、再回退其它语言池，避免切换语言后详情丢失
+    const pools = isEn ? ['en', 'zh'] : ['zh', 'en'];
+    let found = null;
+    for (const lang of pools) {
+      found = (getSharedOrders(lang) || []).find((item) => item.orderId === orderId || item.id === orderId || item.pickupCode === orderId);
+      if (found) break;
+    }
+    if (!found) return createResponse({}, 404, i18n.global.t('citizenOrder.orderNotFound'));
+    return createResponse(found);
+  }
+
   if (url.includes('/citizen/ration/orders') && method === 'GET') {
     const cardNo = params.cardNo;
     const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');

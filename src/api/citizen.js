@@ -166,6 +166,16 @@ export function getCitizenPurchaseOrders(params) {
 }
 
 /**
+ * 查询单个公民配给订单详情与配送进度 (GET)
+ */
+export function getCitizenPurchaseOrder(orderId) {
+  return request({
+    url: `/citizen/ration/orders/${encodeURIComponent(orderId)}`,
+    method: 'GET'
+  });
+}
+
+/**
  * 查询家庭当月核定配额及剩余可用配额 (GET)
  */
 export function getCitizenQuotaBalance(cardNo) {

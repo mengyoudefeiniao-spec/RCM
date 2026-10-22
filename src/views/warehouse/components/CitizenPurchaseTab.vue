@@ -552,7 +552,13 @@
         <div
           v-for="ord in myOrders"
           :key="ord.orderId"
-          class="p-3 sm:p-3.5 rounded-lg border border-[#D9E5DB]/90 bg-white hover:border-[#C9DBCE] transition space-y-2 text-xs shadow-2xs"
+          role="button"
+          tabindex="0"
+          class="p-3 sm:p-3.5 rounded-lg border border-[#D9E5DB]/90 bg-white hover:border-[#C9DBCE] hover:shadow-xs transition space-y-2 text-xs shadow-2xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F7A50]/40"
+          :aria-label="`${$t('citizenOrder.viewDetail')} ${ord.orderId}`"
+          @click="openOrderDetail(ord)"
+          @keydown.enter.prevent="openOrderDetail(ord)"
+          @keydown.space.prevent="openOrderDetail(ord)"
         >
           <!-- 头部：左侧单号与时间，右侧履约模式与状态标签 -->
           <div class="flex items-center justify-between gap-1.5 border-b border-[#E9F1EB] pb-2">
@@ -601,12 +607,18 @@
                 size="small"
                 class="font-bold rounded-lg px-2.5 flex items-center gap-1"
                 data-demo-target="btn-show-qr"
-                @click="openQrModal(ord)"
+                @click.stop="openQrModal(ord)"
               >
                 <el-icon><FullScreen /></el-icon>
                 <span>{{ $t('citizenPurchase.showQrBtn') }}</span>
               </el-button>
             </div>
+          </div>
+
+          <!-- 订单详情入口提示（整卡可点击） -->
+          <div class="flex items-center justify-end gap-0.5 pt-1.5 border-t border-[#E9F1EB] text-[10px] font-bold text-[#2F7A50]">
+            <span>{{ $t('citizenOrder.viewDetail') }}</span>
+            <el-icon :size="12" class="rtl:scale-x-[-1]"><Right /></el-icon>
           </div>
         </div>
       </div>
@@ -692,7 +704,7 @@ import { useRationI18n } from '../../../utils/rationI18n.js';
 import { isEnNow } from '../../../utils/langHint.js';
 import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import QRCode from 'qrcode';
@@ -700,6 +712,7 @@ import { createPickupOrderQrPayload } from '../../../utils/qrPayload.js';
 
 const processContainerRef = ref(null);
 const route = useRoute();
+const router = useRouter();
 const isAppMode = computed(() => {
   return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
 });
@@ -1147,6 +1160,16 @@ async function handlePaymentSuccess(payResult) {
   } finally {
     submitting.value = false;
   }
+}
+
+// 打开订单详情页（含配送进度），沿用当前视口模式
+function openOrderDetail(order) {
+  if (!order?.orderId) return;
+  router.push({
+    name: 'CitizenOrderDetail',
+    params: { orderId: order.orderId },
+    query: { layout: isAppMode.value ? 'app' : 'web' }
+  });
 }
 
 // 打开某个订单的二维码弹窗
