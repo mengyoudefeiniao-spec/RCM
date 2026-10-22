@@ -85,8 +85,19 @@ export const REVIEW_SCOPE_REGIONS = [
   { code: 'DIY', value: '迪亚拉省', labelKey: 'regionDiyala' },
   { code: 'KIR', value: '基尔库克省', labelKey: 'regionKirkuk' },
   { code: 'ANB', value: '安巴尔省', labelKey: 'regionAnbar' },
+  { code: 'BAB', value: '巴比伦省', labelKey: 'regionBabil' },
+  { code: 'KAR', value: '卡尔巴拉省', labelKey: 'regionKarbala' },
+  { code: 'NAJ', value: '纳杰夫省', labelKey: 'regionNajaf' },
+  { code: 'QAD', value: '卡迪西亚省', labelKey: 'regionQadisiyyah' },
+  { code: 'MUT', value: '穆萨纳省', labelKey: 'regionMuthanna' },
+  { code: 'DHQ', value: '济加尔省', labelKey: 'regionDhiQar' },
+  { code: 'MAY', value: '米桑省', labelKey: 'regionMaysan' },
+  { code: 'WAS', value: '瓦西特省', labelKey: 'regionWasit' },
+  { code: 'SAL', value: '萨拉赫丁省', labelKey: 'regionSalahAlDin' },
   { code: 'ERB', value: '埃尔比勒省', labelKey: 'regionErbil' },
-  { code: 'SLY', value: '苏莱曼尼亚省', labelKey: 'regionSulaymaniyah' }
+  { code: 'SLY', value: '苏莱曼尼亚省', labelKey: 'regionSulaymaniyah' },
+  { code: 'DOH', value: '杜胡克省', labelKey: 'regionDuhok' },
+  { code: 'HAL', value: '哈莱卜杰省', labelKey: 'regionHalabja' }
 ];
 
 const ADMIN_ROLES = ['admin', 'minister_center', 'deputy_minister', 'director_planning'];

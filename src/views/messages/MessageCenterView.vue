@@ -2,7 +2,11 @@
   <section class="mail-shell p-2 sm:p-4">
     <MessageCenterNav :can-view="canViewMessages" :can-review="canReview" />
     <div class="mail-toolbar rcm-card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-      <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" :aria-label="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"><template #prefix><el-icon><Search /></el-icon></template></el-input><el-button circle :title="t('mail.refresh')" :aria-label="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
+      <div class="flex w-full items-center gap-2 sm:w-auto">
+        <el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button>
+        <el-input v-model="search" :placeholder="t('mail.search')" :aria-label="t('mail.search')" clearable class="!w-0 !min-w-0 !flex-1 sm:!w-64 sm:!flex-none" @keyup.enter="load"><template #prefix><el-icon><Search /></el-icon></template></el-input>
+        <el-button circle :title="t('mail.refresh')" :aria-label="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button>
+      </div>
     </div>
 
     <div class="mail-grid rcm-card mt-3 overflow-hidden">
