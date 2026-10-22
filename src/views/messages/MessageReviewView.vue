@@ -6,7 +6,7 @@
       <div class="review-heading">
         <span class="rcm-icon-box rcm-icon-box--primary review-heading-icon"><el-icon><Stamp /></el-icon></span>
         <div class="min-w-0">
-          <h1>{{ t('mail.reviewPageTitle') }}</h1>
+          <h1>{{ t('mail.reviewPageTitle') }}<span v-if="messageStore.unreadReviewCount" class="review-unread-badge" :aria-label="t('mail.unreadCount', { count: messageStore.unreadReviewCount })">{{ messageStore.unreadReviewCount > 99 ? '99+' : messageStore.unreadReviewCount }}</span></h1>
           <p>{{ t('mail.reviewPageSubtitle') }}</p>
         </div>
       </div>
@@ -294,6 +294,7 @@ onMounted(loadMessages);
 .review-heading { display: flex; min-width: 0; align-items: center; gap: .875rem; }
 .review-heading-icon { width: 2.75rem; height: 2.75rem; font-size: 1.25rem; }
 .review-heading h1 { margin: 0; color: var(--el-text-color-primary); font-size: 1.125rem; font-weight: 700; line-height: 1.5; }
+.review-unread-badge { display: inline-flex; min-width: 1.25rem; height: 1.25rem; align-items: center; justify-content: center; margin-inline-start: .5rem; border-radius: 9999px; background: #c04442; padding-inline: .35rem; color: #fff; font-size: .6875rem; font-weight: 700; line-height: 1; vertical-align: middle; }
 .review-heading p { margin: .25rem 0 0; color: var(--el-text-color-secondary); font-size: .8125rem; line-height: 1.5; }
 .review-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .875rem; margin-top: .875rem; }
 .review-stat { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.125rem; }
