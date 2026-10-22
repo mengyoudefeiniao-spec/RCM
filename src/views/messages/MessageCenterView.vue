@@ -69,6 +69,15 @@
             <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><div class="flex min-h-8 items-center gap-2"><el-tag v-if="draft.siteId">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><el-tag v-else-if="draft.regionId">{{ selectedRegionLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseRegion') }}</span></div></el-form-item>
           </el-form>
         </div>
+        <div v-else-if="draft.recipientType === 'web'" class="recipient-fields">
+          <el-form label-position="top" class="recipient-grid">
+            <el-form-item :label="t('mail.selectRecipients')" class="!mb-0 recipient-users">
+              <el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.selectRecipients')">
+                <el-option v-for="admin in allowedAdminRecipients" :key="admin.id" :value="String(admin.id)" :label="adminAccountLabel(admin)" />
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
         <div class="compose-row subject-line"><label class="compose-label">{{ t('mail.subject') }}</label><el-input v-model="draft.subject" maxlength="160" :placeholder="t('mail.subjectPlaceholder')" show-word-limit class="compose-control"/></div>
         <div class="attachment-row"><el-button text @click="fileInput?.click()"><el-icon><Paperclip/></el-icon>{{ t('mail.attach') }}</el-button><span class="compose-hint">{{ t('mail.attachmentLimit') }}</span><input ref="fileInput" class="hidden" type="file" multiple @change="addFiles"/><div class="attachment-files"><el-tag v-for="(file,index) in draft.attachments" :key="file.name + file.size" closable @close="draft.attachments.splice(index,1)"><span class="attachment-filename">{{ file.name }}</span> · {{ formatSize(file.size) }}</el-tag></div></div>
         <div class="rich-toolbar flex flex-wrap items-center gap-1 border-x border-t border-[#DFE7E1] bg-[#F7F9F7] p-2">
@@ -92,7 +101,7 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { getAgentFamilies } from '../../api/agent.js';
-import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage, setMessageFavorite } from '../../api/adminCenter.js';
+import { getMessageAttachment, getMessageRecipientTree, getMessages, getSystemRecords, sendMessage, setMessageFavorite } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
 import { isMessageInSendScope, resolveMessageAccess } from '../../utils/messagePermissions.js';
@@ -101,13 +110,13 @@ import { REVIEW_SCOPE_REGIONS } from '../../utils/reviewPermission.js';
 import MessageCenterNav from './MessageCenterNav.vue';
 
 const { t, locale } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
-const activeFolder = ref(authStore.hasPermission('messages.view') ? 'inbox' : 'sent'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
-const recipientTree = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
+const activeFolder = ref(resolveMessageAccess(authStore.userProfile).canView ? 'inbox' : 'sent'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
+const recipientTree = ref([]), adminUsers = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
 const favoriteCount = ref(0), favoritePending = ref([]);
 const receivedUnreadCount = computed(() => messageStore.inbox.filter((item) => !item.read && !item.favorite).length);
 const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
 const canReview = computed(() => messageAccess.value.canReview);
-const canViewMessages = computed(() => authStore.hasPermission('messages.view'));
+const canViewMessages = computed(() => messageAccess.value.canView);
 let loadVersion = 0;
 const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
 const canSend = computed(() => messageAccess.value.canSend);
@@ -116,6 +125,7 @@ const recipientTypeOptions = computed(() => [
   { value: 'agents', label: t('mail.agents') },
   { value: 'web', label: t('mail.webUsers') },
 ].filter((option) => messageAccess.value.sendTypes.includes(option.value)));
+const allowedAdminRecipients = computed(() => adminUsers.value.filter((admin) => messageAccess.value.sendAllWebUsers || messageAccess.value.sendWebUsers.includes(String(admin.id))));
 const folders = computed(() => [...(canViewMessages.value ? [{ id: 'inbox', icon: 'MessageBox' }] : []), ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), ...(canViewMessages.value || canSend.value ? [{ id: 'favorites', icon: 'FolderChecked' }] : [])]);
 function hasRecipientScope(item, type = 'agent') {
   const access = messageAccess.value;
@@ -125,9 +135,10 @@ function hasRecipientScope(item, type = 'agent') {
   return regionGranted || access.sendAllAgents || access.sendAgents.includes(String(item.id))
     || (item.children || []).some((site) => access.sendAllSites || access.sendSites.includes(String(site.id)));
 }
-const regionOptions = computed(() => REVIEW_SCOPE_REGIONS.map((region) => {
-  const root = recipientTree.value.find((item) => item.regionCode === region.code || String(item.province || item.name || '').includes(region.value));
-  return { ...region, id: region.code, label: t('systemExtras.' + region.labelKey), children: root?.children || [] };
+const regionOptions = computed(() => recipientTree.value.map((root) => {
+  const region = REVIEW_SCOPE_REGIONS.find((item) => item.code === root.regionCode || String(root.province || root.name || '').includes(item.value));
+  const value = region?.value || String(root.province || root.name || root.regionCode || '').split(/[（(]/)[0].trim();
+  return { ...region, code: root.regionCode, id: root.regionCode, value, label: region ? t('systemExtras.' + region.labelKey) : value, children: root.children || [] };
 }).filter((region) => {
   if (draft.value.recipientType === 'citizens') return messageAccess.value.directSend || messageAccess.value.sendAllCardAppUsers || messageAccess.value.sendCardAppUserRegions.includes(region.code);
   if (draft.value.recipientType === 'agents') return messageAccess.value.directSend || messageAccess.value.sendAllRegions || messageAccess.value.sendRegions.includes(region.code) || region.children.some((agent) => hasRecipientScope({ ...agent, regionCode: region.code }));
@@ -261,7 +272,7 @@ async function toggleFavorite(item) {
     ElMessage.success(t(favorite ? 'mail.favoriteAdded' : 'mail.favoriteRemoved'));
   } finally { favoritePending.value = favoritePending.value.filter((id) => id !== item.id); }
 }
-async function loadTree() { recipientsLoading.value = true; try { recipientTree.value = await getMessageRecipientTree(); } finally { recipientsLoading.value = false; } }
+async function loadTree() { recipientsLoading.value = true; try { [recipientTree.value, adminUsers.value] = await Promise.all([getMessageRecipientTree(), getSystemRecords('users').catch(() => [])]); adminUsers.value = adminUsers.value.filter((user) => user.status !== 'disabled' && user.enabled !== false); } finally { recipientsLoading.value = false; } }
 function openCompose() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('rcm_message_draft') || '{}'); } catch { saved = {}; }
@@ -309,9 +320,13 @@ function recipientPayload() {
   } else if (draft.value.recipientType === 'citizens') {
     recipientLabel = draft.value.siteId ? selectedSiteLabel.value : draft.value.agentId ? selectedAgentLabel.value : selectedRegionLabel.value;
     if (draft.value.allAtSite) recipientIds = families.value.map((family) => family.rationCardNo);
+  } else if (draft.value.recipientType === 'web') {
+    recipientIds = draft.value.recipientIds.map(String);
+    recipientLabel = recipientIds.length ? allowedAdminRecipients.value.filter((admin) => recipientIds.includes(String(admin.id))).map(adminAccountLabel).join(', ') : recipientTypeLabel('web');
   } else recipientLabel = recipientTypeLabel(draft.value.recipientType);
   return { recipientIds, recipientLabel };
 }
+function adminAccountLabel(admin) { return [admin.name, admin.username && `@${admin.username}`].filter(Boolean).join(' ') || String(admin.id); }
 function saveDraft() {
   const { attachments, ...draftData } = draft.value;
   localStorage.setItem('rcm_message_draft', JSON.stringify(draftData));
@@ -324,9 +339,10 @@ async function sendDraft() {
   const { recipientIds, recipientLabel } = recipientPayload();
   if (!recipientTypeOptions.value.some((option) => option.value === draft.value.recipientType)) { ElMessage.warning(t('mail.recipientTypeNotAllowed')); return; }
   if (!draft.value.subject.trim() || !bodyText) { ElMessage.warning(t('mail.subjectRequired')); return; }
-  const target = { recipientType: draft.value.recipientType, regionCode: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId };
+  const target = { recipientType: draft.value.recipientType, regionCode: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId, recipientIds };
   if (!isMessageInSendScope(target, messageAccess.value)) { ElMessage.warning(t('mail.recipientsRequired')); return; }
   if (draft.value.recipientType === 'citizens' && draft.value.siteId && !recipientIds.length && !draft.value.allAtSite) { ElMessage.warning(t('mail.recipientsRequired')); return; }
+  if (draft.value.recipientType === 'web' && !messageAccess.value.sendAllWebUsers && !recipientIds.length) { ElMessage.warning(t('mail.recipientsRequired')); return; }
   sending.value = true;
   try {
     await sendMessage({ category: draft.value.category, recipientType: draft.value.recipientType, regionId: draft.value.regionId, regionCode: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId, recipientIds, recipientLabel, subject: draft.value.subject.trim(), bodyHtml: cleanHtml, bodyText, attachments: draft.value.attachments });

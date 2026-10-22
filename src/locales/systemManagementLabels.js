@@ -3,7 +3,7 @@ export default {
   zh: {
     system: {
       subtitle: '管理管理员账号、角色、功能权限、配给中心与审计日志',
-      adminAccounts: '管理员账号', rationCenters: '配给中心', rationCenter: '所属配给中心', province: '所属省份',
+      adminAccounts: '管理员账号', rationCenters: '配给中心', rationCenter: '所属配给中心', province: '所属省份', roleName: '角色姓名', roleCode: '角色编码',
       adminRoleDescription: '管理管理员账号、角色与系统权限', operatorRoleDescription: '办理日常业务并维护配给数据', auditorRoleDescription: '查看审计记录并监督系统操作',
       roleUpdated: '角色已更新', rationCenterCreated: '配给中心已添加', rationCenterUpdated: '配给中心已更新',
       demoBaghdadCenter: '巴格达卡尔赫配给中心', demoBasraCenter: '巴士拉中央配给中心',
@@ -12,13 +12,16 @@ export default {
     },
     systemExtras: {
       systemManageUsers: '管理员账号管理', systemManageOrganizations: '配给中心管理', entityOrganization: '配给中心',
+      reviewScopeRegions: '授权省份', reviewScopeByRegion: '按省份', reviewRegionCount: '{count} 个授权省份', messageScopeRegion: '省份', messageTargetWebUsers: '管理员用户',
+      messagePermissionOptionsPlaceholder: '搜索并选择授权对象', messageProvinceEntry: '省份：{name}', messageAdminUserEntry: '管理员用户：{name}',
       regionBaghdad: '巴格达省', regionBasra: '巴士拉省', regionNineveh: '尼尼微省', regionDiyala: '迪亚拉省', regionKirkuk: '基尔库克省', regionAnbar: '安巴尔省', regionErbil: '埃尔比勒省', regionSulaymaniyah: '苏莱曼尼亚省', regionDhiQar: '济加尔省', regionBabil: '巴比伦省', regionWasit: '瓦西特省', regionKarbala: '卡尔巴拉省', regionNajaf: '纳杰夫省', regionQadisiyyah: '卡迪西亚省', regionMaysan: '迈桑省', regionMuthanna: '穆萨纳省', regionSalahAlDin: '萨拉赫丁省', regionDuhok: '杜胡克省', regionHalabja: '哈莱卜杰省'
-    }
+    },
+    mail: { webUsers: '管理员用户' }
   },
   en: {
     system: {
       subtitle: 'Manage administrator accounts, roles, permissions, ration centers and audit logs',
-      adminAccounts: 'Administrator Accounts', rationCenters: 'Ration Centers', rationCenter: 'Ration Center', province: 'Province',
+      adminAccounts: 'Administrator Accounts', rationCenters: 'Ration Centers', rationCenter: 'Ration Center', province: 'Province', roleName: 'Role Name', roleCode: 'Role Code',
       adminRoleDescription: 'Manage administrator accounts, roles and system permissions', operatorRoleDescription: 'Process daily operations and maintain ration records', auditorRoleDescription: 'Review audit records and monitor system activity',
       roleUpdated: 'Role updated', rationCenterCreated: 'Ration center added', rationCenterUpdated: 'Ration center updated',
       demoBaghdadCenter: 'Baghdad Karkh Ration Center', demoBasraCenter: 'Basra Central Ration Center',
@@ -27,13 +30,16 @@ export default {
     },
     systemExtras: {
       systemManageUsers: 'Administrator Account Management', systemManageOrganizations: 'Ration Center Management', entityOrganization: 'ration center',
+      reviewScopeRegions: 'Authorized Provinces', reviewScopeByRegion: 'By Province', reviewRegionCount: '{count} authorized provinces', messageScopeRegion: 'Province', messageTargetWebUsers: 'Administrator Users',
+      messagePermissionOptionsPlaceholder: 'Search and select authorized targets', messageProvinceEntry: 'Province: {name}', messageAdminUserEntry: 'Administrator: {name}',
       regionBaghdad: 'Baghdad', regionBasra: 'Basra', regionNineveh: 'Nineveh', regionDiyala: 'Diyala', regionKirkuk: 'Kirkuk', regionAnbar: 'Anbar', regionErbil: 'Erbil', regionSulaymaniyah: 'Sulaymaniyah', regionDhiQar: 'Dhi Qar', regionBabil: 'Babil', regionWasit: 'Wasit', regionKarbala: 'Karbala', regionNajaf: 'Najaf', regionQadisiyyah: 'Al-Qadisiyyah', regionMaysan: 'Maysan', regionMuthanna: 'Al-Muthanna', regionSalahAlDin: 'Saladin', regionDuhok: 'Duhok', regionHalabja: 'Halabja'
-    }
+    },
+    mail: { webUsers: 'Administrator Users' }
   },
   ar: {
     system: {
       subtitle: 'إدارة حسابات المسؤولين والأدوار والصلاحيات ومراكز التموين وسجلات التدقيق',
-      adminAccounts: 'حسابات المسؤولين', rationCenters: 'مراكز التموين', rationCenter: 'مركز التموين التابع له', province: 'المحافظة',
+      adminAccounts: 'حسابات المسؤولين', rationCenters: 'مراكز التموين', rationCenter: 'مركز التموين التابع له', province: 'المحافظة', roleName: 'اسم الدور', roleCode: 'رمز الدور',
       adminRoleDescription: 'إدارة حسابات المسؤولين والأدوار وصلاحيات النظام', operatorRoleDescription: 'تنفيذ العمليات اليومية وتحديث بيانات التموين', auditorRoleDescription: 'مراجعة سجلات التدقيق ومراقبة عمليات النظام',
       roleUpdated: 'تم تحديث الدور', rationCenterCreated: 'تمت إضافة مركز التموين', rationCenterUpdated: 'تم تحديث مركز التموين',
       demoBaghdadCenter: 'مركز تموين الكرخ في بغداد', demoBasraCenter: 'مركز التموين المركزي في البصرة',
@@ -42,13 +48,16 @@ export default {
     },
     systemExtras: {
       systemManageUsers: 'إدارة حسابات المسؤولين', systemManageOrganizations: 'إدارة مراكز التموين', entityOrganization: 'مركز التموين',
+      reviewScopeRegions: 'المحافظات المصرح بها', reviewScopeByRegion: 'حسب المحافظة', reviewRegionCount: '{count} محافظة مصرح بها', messageScopeRegion: 'المحافظة', messageTargetWebUsers: 'مستخدمو الإدارة',
+      messagePermissionOptionsPlaceholder: 'ابحث عن الجهات المصرح بها واخترها', messageProvinceEntry: 'المحافظة: {name}', messageAdminUserEntry: 'المسؤول: {name}',
       regionBaghdad: 'بغداد', regionBasra: 'البصرة', regionNineveh: 'نينوى', regionDiyala: 'ديالى', regionKirkuk: 'كركوك', regionAnbar: 'الأنبار', regionErbil: 'أربيل', regionSulaymaniyah: 'السليمانية', regionDhiQar: 'ذي قار', regionBabil: 'بابل', regionWasit: 'واسط', regionKarbala: 'كربلاء', regionNajaf: 'النجف', regionQadisiyyah: 'القادسية', regionMaysan: 'ميسان', regionMuthanna: 'المثنى', regionSalahAlDin: 'صلاح الدين', regionDuhok: 'دهوك', regionHalabja: 'حلبجة'
-    }
+    },
+    mail: { webUsers: 'مستخدمو الإدارة' }
   },
   ckb: {
     system: {
       subtitle: 'بەڕێوەبردنی هەژماری بەڕێوەبەران، ڕۆڵ و مۆڵەت و ناوەندی بەشەخۆراک و تۆماری پشکنین',
-      adminAccounts: 'هەژمارەکانی بەڕێوەبەران', rationCenters: 'ناوەندەکانی بەشەخۆراک', rationCenter: 'ناوەندی بەشەخۆراکی پەیوەست', province: 'پارێزگا',
+      adminAccounts: 'هەژمارەکانی بەڕێوەبەران', rationCenters: 'ناوەندەکانی بەشەخۆراک', rationCenter: 'ناوەندی بەشەخۆراکی پەیوەست', province: 'پارێزگا', roleName: 'ناوی ڕۆڵ', roleCode: 'کۆدی ڕۆڵ',
       adminRoleDescription: 'بەڕێوەبردنی هەژماری بەڕێوەبەران و ڕۆڵ و مۆڵەتەکانی سیستەم', operatorRoleDescription: 'ئەنجامدانی کاری ڕۆژانە و نوێکردنەوەی داتای بەشەخۆراک', auditorRoleDescription: 'پشکنینی تۆمارەکان و چاودێریکردنی کردارەکانی سیستەم',
       roleUpdated: 'ڕۆڵ نوێکرایەوە', rationCenterCreated: 'ناوەندی بەشەخۆراک زیادکرا', rationCenterUpdated: 'ناوەندی بەشەخۆراک نوێکرایەوە',
       demoBaghdadCenter: 'ناوەندی بەشەخۆراکی کەرخی بەغدا', demoBasraCenter: 'ناوەندی ناوەندیی بەشەخۆراکی بەسرە',
@@ -57,7 +66,10 @@ export default {
     },
     systemExtras: {
       systemManageUsers: 'بەڕێوەبردنی هەژمارەکانی بەڕێوەبەران', systemManageOrganizations: 'بەڕێوەبردنی ناوەندەکانی بەشەخۆراک', entityOrganization: 'ناوەندی بەشەخۆراک',
+      reviewScopeRegions: 'پارێزگاکانی مۆڵەتدراو', reviewScopeByRegion: 'بەپێی پارێزگا', reviewRegionCount: '{count} پارێزگای مۆڵەتدراو', messageScopeRegion: 'پارێزگا', messageTargetWebUsers: 'بەکارهێنەرانی بەڕێوەبەری',
+      messagePermissionOptionsPlaceholder: 'گەڕان و هەڵبژاردنی ئامانجە مۆڵەتدراوەکان', messageProvinceEntry: 'پارێزگا: {name}', messageAdminUserEntry: 'بەڕێوەبەر: {name}',
       regionBaghdad: 'بەغدا', regionBasra: 'بەسرە', regionNineveh: 'نەینەوا', regionDiyala: 'دیالە', regionKirkuk: 'کەرکووک', regionAnbar: 'ئەنبار', regionErbil: 'هەولێر', regionSulaymaniyah: 'سلێمانی', regionDhiQar: 'زیقار', regionBabil: 'بابل', regionWasit: 'واست', regionKarbala: 'کەربەلا', regionNajaf: 'نەجەف', regionQadisiyyah: 'قادسیە', regionMaysan: 'مەیسان', regionMuthanna: 'موسەننا', regionSalahAlDin: 'سەلاحەدین', regionDuhok: 'دهۆک', regionHalabja: 'هەڵەبجە'
-    }
+    },
+    mail: { webUsers: 'بەکارهێنەرانی بەڕێوەبەری' }
   }
 };

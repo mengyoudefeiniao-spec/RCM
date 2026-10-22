@@ -22,15 +22,16 @@ function groupValues(rawCodes, group, isAdmin) {
 }
 
 /** Add entity-specific message permissions from the same hierarchy used by the composer. */
-export function buildMessagePermissionEntries(recipientTree = [], regions = REVIEW_SCOPE_REGIONS) {
+export function buildMessagePermissionEntries(recipientTree = [], regions = REVIEW_SCOPE_REGIONS, adminUsers = []) {
   const entries = [];
   const addRegions = (action, group) => regions.forEach((region) => entries.push({
     moduleKey: 'moduleMessages',
     code: `${groupCode(action, group)}.${region.code}`,
-    featureKey: region.labelKey,
+    featureKey: region.labelKey || 'messageProvinceEntry',
     parentCode: groupCode(action, group),
     entityKind: 'region',
-    entityId: region.code
+    entityId: region.code,
+    displayName: region.label || region.value || region.name || region.code
   }));
   const addTreeEntities = (action, group, featureKey, kind, nodes, regionCode, counter) => nodes.forEach((node) => {
     if (!node?.id) return;
@@ -49,12 +50,12 @@ export function buildMessagePermissionEntries(recipientTree = [], regions = REVI
 
   for (const action of ['send', 'review']) {
     addRegions(action, 'region');
-    addRegions(action, 'cardAppUser');
     const agents = [];
     const sites = [];
     for (const root of recipientTree) {
       const region = regions.find((item) => root.regionCode === item.code
-        || String(root.province || root.name || '').includes(item.value));
+        || String(root.province || root.name || '').includes(item.value)
+        || String(item.value || '').includes(String(root.province || root.name || '').split(/[（(]/)[0].trim()));
       if (!region) continue;
       const collect = (nodes, regionCode) => (nodes || []).forEach((node) => {
         const children = Array.isArray(node.children) ? node.children : [];
@@ -71,6 +72,21 @@ export function buildMessagePermissionEntries(recipientTree = [], regions = REVI
     const siteCounter = { value: 0 };
     addTreeEntities(action, 'agent', 'messageAgentEntry', 'agent', agents, undefined, agentCounter);
     addTreeEntities(action, 'site', 'messageSiteEntry', 'site', sites, undefined, siteCounter);
+    adminUsers.forEach((user, index) => {
+      if (!user?.id || user.status === 'disabled' || user.enabled === false) return;
+      const username = String(user.username || user.email || user.id);
+      const name = String(user.name || username);
+      entries.push({
+        moduleKey: 'moduleMessages',
+        code: `${groupCode(action, 'web')}.${user.id}`,
+        featureKey: 'messageAdminUserEntry',
+        parentCode: groupCode(action, 'web'),
+        entityKind: 'adminUser',
+        entityId: String(user.id),
+        displayIndex: index,
+        displayName: `${name} · ${username}`
+      });
+    });
   }
   return entries;
 }
@@ -81,15 +97,17 @@ function actionAccess(rawCodes, action, isAdmin) {
   const agentAll = groupGranted(rawCodes, code('agent'), isAdmin);
   const siteAll = groupGranted(rawCodes, code('site'), isAdmin);
   const cardAppUserAll = groupGranted(rawCodes, code('cardAppUser'), isAdmin);
-  const web = granted(rawCodes, code('web'), isAdmin);
+  const direct = isAdmin || rawCodes.includes(`messages.${action}`);
+  const webAll = groupGranted(rawCodes, code('web'), isAdmin) || direct;
+  const webUsers = webAll ? ['*'] : groupValues(rawCodes, code('web'), isAdmin);
+  const web = webAll || webUsers.length > 0;
   const regionValues = groupValues(rawCodes, code('region'), isAdmin);
   const agentValues = groupValues(rawCodes, code('agent'), isAdmin);
   const siteValues = groupValues(rawCodes, code('site'), isAdmin);
   const cardAppUserValues = groupValues(rawCodes, code('cardAppUser'), isAdmin);
   const activeRegions = REVIEW_SCOPE_REGIONS.map((region) => region.code);
-  const sendRegions = regionAll ? activeRegions : regionValues.filter((value) => activeRegions.includes(value));
-  const cardAppUserRegions = cardAppUserAll ? activeRegions : cardAppUserValues.filter((value) => activeRegions.includes(value));
-  const direct = isAdmin || rawCodes.includes(`messages.${action}`);
+  const sendRegions = regionAll ? activeRegions : regionValues;
+  const cardAppUserRegions = cardAppUserAll ? activeRegions : cardAppUserValues;
   const hasAnyScope = direct || regionAll || agentAll || siteAll || cardAppUserAll || web
     || regionValues.length > 0 || agentValues.length > 0 || siteValues.length > 0 || cardAppUserValues.length > 0;
   return {
@@ -103,6 +121,8 @@ function actionAccess(rawCodes, action, isAdmin) {
     agentAll,
     siteAll,
     cardAppUserAll,
+    webAll,
+    webUsers,
     web
   };
 }
@@ -138,7 +158,8 @@ export function resolveMessageAccess(profile) {
     sendAllAgents: send.agentAll,
     sendAllSites: send.siteAll,
     sendAllCardAppUsers: send.cardAppUserAll,
-    sendWebUsers: send.web,
+    sendWebUsers: send.webUsers,
+    sendAllWebUsers: send.webAll,
     reviewRegions: review.regions,
     reviewAgents: review.agents,
     reviewSites: review.sites,
@@ -147,7 +168,8 @@ export function resolveMessageAccess(profile) {
     reviewAllAgents: review.agentAll,
     reviewAllSites: review.siteAll,
     reviewAllCardAppUsers: review.cardAppUserAll,
-    reviewWebUsers: review.web
+    reviewWebUsers: review.webUsers,
+    reviewAllWebUsers: review.webAll
   };
 }
 
@@ -169,7 +191,12 @@ function scopeAllows(message, access, action, recipientType) {
   if (!canPerformAction) return false;
   if (access.direct) return true;
   if (!RECIPIENT_TYPES.includes(recipientType)) return false;
-  if (recipientType === 'web') return access[`${action}WebUsers`];
+  if (recipientType === 'web') {
+    if (access[`${action}AllWebUsers`]) return true;
+    const allowedUsers = (access[`${action}WebUsers`] || []).map(String);
+    const recipientIds = Array.isArray(message?.recipientIds) ? message.recipientIds.map(String) : [];
+    return recipientIds.length > 0 && recipientIds.every((id) => allowedUsers.includes(id));
+  }
   const regionCode = messageRegionCode(message);
   if (recipientType === 'citizens') {
     return access[`${action}AllCardAppUsers`]

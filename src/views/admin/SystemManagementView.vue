@@ -68,8 +68,8 @@
           <el-form-item :label="t('system.rationCenter')"><el-select v-model="form.organization" class="w-full" filterable><el-option v-for="center in centerRows" :key="center.id" :value="center.name" :label="rationCenterOptionLabel(center)" /></el-select></el-form-item>
         </template>
         <template v-else-if="section === 'roles'">
-          <el-form-item :label="t('system.name')"><el-input v-model="formRoleName" /></el-form-item>
-          <el-form-item :label="t('system.code')"><el-input v-model="form.code" /></el-form-item>
+          <el-form-item :label="t('system.roleName')"><el-input v-model="formRoleName" /></el-form-item>
+          <el-form-item :label="t('system.roleCode')"><el-input v-model="form.code" /></el-form-item>
           <el-form-item :label="t('system.description')"><el-input v-model="formRoleDescription" type="textarea" /></el-form-item>
           <el-form-item :label="t('systemExtras.rolePermissions')">
             <div class="w-full space-y-3 rounded-lg border border-[#E3ECE5] p-3">
@@ -84,13 +84,18 @@
                     >{{ t('systemExtras.' + feature.featureKey) }} <el-tag size="small" type="warning">PRO</el-tag></el-checkbox>
                     <div v-if="(form.permissionCodes || []).includes(feature.code)" class="mt-1 border-s-2 border-[#D9E5DB] ps-5">
                       <div class="mb-1 text-xs text-[#75837A]">{{ t('systemExtras.reviewScopeRegions') }}</div>
-                      <el-checkbox-group
+                      <el-select
                         :model-value="regionsForPermission(feature.code)"
-                        class="flex flex-wrap gap-x-4 gap-y-1"
+                        class="w-full"
+                        multiple
+                        filterable
+                        collapse-tags
+                        collapse-tags-tooltip
+                        :placeholder="t('systemExtras.reviewScopeRegionsPlaceholder')"
                         @change="(regions) => setPermissionRegions(feature.code, regions)"
                       >
-                        <el-checkbox v-for="region in reviewRegionOptions" :key="region.value" :value="region.value">{{ t('systemExtras.' + region.labelKey) }}</el-checkbox>
-                      </el-checkbox-group>
+                        <el-option v-for="region in reviewRegionOptions" :key="region.value" :value="region.value" :label="region.label" />
+                      </el-select>
                     </div>
                   </template>
                   <!-- 二级功能：无子级为可勾选权限项 -->
@@ -111,13 +116,18 @@
                         >{{ t('systemExtras.' + type.featureKey) }}</el-checkbox>
                         <div v-if="(form.permissionCodes || []).includes(type.code)" class="mt-1 border-s-2 border-[#D9E5DB] ps-5">
                           <div class="mb-1 text-xs text-[#75837A]">{{ t('systemExtras.reviewScopeRegions') }}</div>
-                          <el-checkbox-group
+                          <el-select
                             :model-value="reviewRegionsFor(type.code)"
-                            class="flex flex-wrap gap-x-4 gap-y-1"
+                            class="w-full"
+                            multiple
+                            filterable
+                            collapse-tags
+                            collapse-tags-tooltip
+                            :placeholder="t('systemExtras.reviewScopeRegionsPlaceholder')"
                             @change="(regions) => setReviewRegions(type.code, regions)"
                           >
-                            <el-checkbox v-for="region in reviewRegionOptions" :key="region.value" :value="region.value">{{ t('systemExtras.' + region.labelKey) }}</el-checkbox>
-                          </el-checkbox-group>
+                            <el-option v-for="region in reviewRegionOptions" :key="region.value" :value="region.value" :label="region.label" />
+                          </el-select>
                         </div>
                       </div>
                     </div>
@@ -142,13 +152,19 @@
                           :model-value="(form.permissionCodes || []).includes(scope.code)"
                           @change="(checked) => togglePermission(scope.code, checked)"
                         >{{ t('systemExtras.' + scope.featureKey) }}</el-checkbox>
-                        <div v-if="scope.children.length" class="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-s-2 border-[#D9E5DB] ps-5">
-                          <el-checkbox
-                            v-for="target in scope.children"
-                            :key="target.code"
-                            :model-value="(form.permissionCodes || []).includes(target.code)"
-                            @change="(checked) => togglePermission(target.code, checked)"
-                          >{{ permissionItemLabel(target) }}</el-checkbox>
+                        <div v-if="scope.children.length" class="mt-1 border-s-2 border-[#D9E5DB] ps-5">
+                          <el-select
+                            :model-value="selectedPermissionChildren(scope)"
+                            class="w-full"
+                            multiple
+                            filterable
+                            collapse-tags
+                            collapse-tags-tooltip
+                            :placeholder="t('systemExtras.messagePermissionOptionsPlaceholder')"
+                            @change="(codes) => setPermissionChildren(scope, codes)"
+                          >
+                            <el-option v-for="target in scope.children" :key="target.code" :value="target.code" :label="permissionItemLabel(target)" />
+                          </el-select>
                         </div>
                       </div>
                     </div>
@@ -219,7 +235,7 @@ import {
 import { buildMessagePermissionEntries } from '../../utils/messagePermissions.js';
 const { t } = useI18n();
 const tabs = [{ key: 'users', label: 'adminAccounts' }, { key: 'roles', label: 'roles' }, { key: 'organizations', label: 'rationCenters' }, { key: 'audit-logs', label: 'logs' }];
-const section = ref('users'), rows = ref([]), roleRows = ref([]), centerRows = ref([]), permissionRows = ref([]), loading = ref(false), keyword = ref(''), appliedQuery = ref(''), dialog = ref(false), locationDialog = ref(false), editing = ref(false), form = ref({});
+const section = ref('users'), rows = ref([]), roleRows = ref([]), centerRows = ref([]), adminUserRows = ref([]), permissionRows = ref([]), loading = ref(false), keyword = ref(''), appliedQuery = ref(''), dialog = ref(false), locationDialog = ref(false), editing = ref(false), form = ref({});
 const currentPage = ref(1), pageSize = ref(10);
 const roleNameEdited = ref(false), roleDescriptionEdited = ref(false);
 const auditFilters = ref({ actor: '', range: null, type: '', businessNo: '' });
@@ -250,10 +266,43 @@ const provinceOptions = [
 const actor = () => JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}').name || 'System Administrator';
 const catalog = PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' }));
 const messageRecipientTree = ref([]);
-const legacyMessagePermission = (code) => /^messages\.(send|review)\.(region|agent|site|cardAppUser)\./.test(code) || /^messages\.(send|review)\.everyone$/.test(code);
+const legacyMessagePermission = (code) => /^messages\.(send|review)\.(region|agent|site|cardAppUser|web)\./.test(code) || /^messages\.(send|review)\.everyone$/.test(code);
+function resolveRolePermissionCodes(codes = []) {
+  const cardAppGroups = new Set(codes.map((code) => String(code).match(/^(messages\.(?:send|review)\.cardAppUser)\./)?.[1]).filter(Boolean));
+  const normalized = codes.filter((code) => !/^messages\.(send|review)\.cardAppUser\./.test(String(code)));
+  return resolveEffectiveCodes([...normalized, ...cardAppGroups], permissionCatalog.value);
+}
+const dynamicProvinceOptions = computed(() => {
+  const options = new Map();
+  for (const root of messageRecipientTree.value || []) {
+    const code = String(root.regionCode || '').trim();
+    if (!code) continue;
+    const known = REVIEW_SCOPE_REGIONS.find((region) => region.code === code);
+    const rawName = String(root.province || root.name || code).split(/[（(]/)[0].trim();
+    const value = known?.value || rawName;
+    options.set(code, { code, value, labelKey: known?.labelKey, label: known ? t('systemExtras.' + known.labelKey) : rawName });
+  }
+  for (const center of centerRows.value || []) {
+    const raw = String(center.province || '').trim();
+    if (!raw) continue;
+    const known = REVIEW_SCOPE_REGIONS.find((region) => region.code.toLowerCase() === raw.toLowerCase() || region.value.toLowerCase() === raw.toLowerCase());
+    const lowerCode = raw.toLowerCase();
+    const province = provinceOptions.find((option) => option.code.toLowerCase() === lowerCode);
+    if (!known && !province) continue;
+    const rootMatch = (messageRecipientTree.value || []).find((root) => {
+      const rootName = String(root.province || '').split(/[（(]/)[0].trim().toLowerCase();
+      return String(root.regionCode || '').toLowerCase() === lowerCode || (rootName && (rootName.includes(lowerCode) || lowerCode.includes(rootName)));
+    });
+    const code = known?.code || rootMatch?.regionCode || ({ baghdad: 'BAG', basra: 'BAS' }[lowerCode] || raw);
+    const canonical = known || REVIEW_SCOPE_REGIONS.find((region) => region.code === code);
+    const value = canonical?.value || String(rootMatch?.province || raw).split(/[（(]/)[0].trim();
+    options.set(code, { code, value, labelKey: canonical?.labelKey || province?.labelKey, label: canonical ? t('systemExtras.' + canonical.labelKey) : province ? t('systemExtras.' + province.labelKey) : raw });
+  }
+  return [...options.values()];
+});
 const permissionCatalog = computed(() => {
   const base = (permissionRows.value.length ? permissionRows.value : catalog).filter((item) => !legacyMessagePermission(item.code));
-  const dynamic = buildMessagePermissionEntries(messageRecipientTree.value).map((item) => ({ ...item, id: 'perm-' + item.code }));
+  const dynamic = buildMessagePermissionEntries(messageRecipientTree.value, dynamicProvinceOptions.value, adminUserRows.value).map((item) => ({ ...item, id: 'perm-' + item.code }));
   const dynamicCodes = new Set(dynamic.map((item) => item.code));
   return [...base.filter((item) => !dynamicCodes.has(item.code)), ...dynamic];
 });
@@ -291,7 +340,7 @@ const filteredRows = computed(() => {
   });
 });
 const permissionTree = computed(() => buildPermissionTree(permissionCatalog.value));
-const reviewRegionOptions = computed(() => REVIEW_SCOPE_REGIONS);
+const reviewRegionOptions = computed(() => dynamicProvinceOptions.value);
 function emptyReviewScope() { return { types: [], regionsByType: {} }; }
 function normalizeReviewScope(scope = {}, permissionCodes = [], roleCode = '') {
   const types = Array.isArray(scope.types)
@@ -356,6 +405,13 @@ function togglePermissionNode(node, checked) {
   permissionLeafCodes(node).forEach((code) => { if (checked) codes.add(code); else codes.delete(code); });
   form.value.permissionCodes = [...codes];
 }
+function selectedPermissionChildren(node) { return node.children.filter((child) => (form.value.permissionCodes || []).includes(child.code)).map((child) => child.code); }
+function setPermissionChildren(node, selectedCodes) {
+  const selected = new Set(selectedCodes);
+  const codes = new Set(form.value.permissionCodes || []);
+  node.children.forEach((child) => { if (selected.has(child.code)) codes.add(child.code); else codes.delete(child.code); });
+  form.value.permissionCodes = [...codes];
+}
 function isFeatureFullyChecked(feature) {
   return isPermissionNodeFullyChecked(feature);
 }
@@ -382,6 +438,7 @@ function entityLetter(index = 0) { let value = Math.max(0, Number(index) || 0), 
 function permissionItemLabel(item) {
   if (item.entityKind === 'agent') return `${t('systemExtras.messageAgentEntry', { letter: entityLetter(item.displayIndex) })} · ${item.entityId}`;
   if (item.entityKind === 'site') return `${t('systemExtras.messageSiteEntry', { letter: entityLetter(item.displayIndex) })} · ${item.entityId}`;
+  if (item.entityKind === 'adminUser' || item.entityKind === 'region') return item.displayName || (item.featureKey ? t('systemExtras.' + item.featureKey) : item.entityId);
   return t('systemExtras.' + item.featureKey);
 }
 function permissionLabel(code) { const item = permissionCatalog.value.find((permission) => permission.code === code); return item ? t('systemExtras.' + item.moduleKey) + ' · ' + permissionItemLabel(item) : code; }
@@ -446,7 +503,7 @@ function localizedCenterName(name) {
 }
 function formatTime(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'; }
 async function load() { loading.value = true; currentPage.value = 1; try { rows.value = section.value === 'permissions' ? permissionCatalog.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
-async function loadReferences() { [roleRows.value, permissionRows.value, centerRows.value, messageRecipientTree.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions'), getSystemRecords('organizations'), getMessageRecipientTree().catch(() => [])]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
+async function loadReferences() { [roleRows.value, permissionRows.value, centerRows.value, adminUserRows.value, messageRecipientTree.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions'), getSystemRecords('organizations'), getSystemRecords('users').catch(() => []), getMessageRecipientTree().catch(() => [])]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
 async function changeSection() { keyword.value = ''; appliedQuery.value = ''; await load(); }
 function resetAuditFilters() { auditFilters.value = { actor: '', range: null, type: '', businessNo: '' }; load(); }
 function auditTypeLabel(type) { return type ? t('system.auditType_' + type) : '—'; }
@@ -462,7 +519,7 @@ async function exportAuditLogs() {
 function runSearch() { appliedQuery.value = keyword.value.trim(); currentPage.value = 1; }
 function resetSearch() { keyword.value = ''; appliedQuery.value = ''; currentPage.value = 1; }
 function openCreate() { editing.value = false; roleNameEdited.value = true; roleDescriptionEdited.value = true; form.value = section.value === 'roles' ? { permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { status: 'active' } : section.value === 'organizations' ? { province: '', latitude: '', longitude: '' } : {}; dialog.value = true; }
-function openEdit(row) { editing.value = true; roleNameEdited.value = false; roleDescriptionEdited.value = false; const permissionCodes = resolveEffectiveCodes(row.permissionCodes || [], permissionCatalog.value).filter((code) => !legacyMessagePermission(code)); form.value = { ...row, permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
+function openEdit(row) { editing.value = true; roleNameEdited.value = false; roleDescriptionEdited.value = false; const permissionCodes = resolveRolePermissionCodes(row.permissionCodes || []); form.value = { ...row, permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
 function auditMessage(key, entityKey, name, extra = {}) { return t('systemExtras.' + key, { actor: actor(), entity: t('systemExtras.' + entityKey), name, ...extra }); }
 async function save() {
   const name = form.value.name || form.value.username || form.value.code;
