@@ -86,9 +86,9 @@
             <div v-else class="grid gap-2 sm:grid-cols-2">
               <div v-for="center in form.article140Centers" :key="center.id" class="flex items-center justify-between gap-2 rounded-lg border border-[#D9E5DB] bg-[#F8FAF8] px-3 py-2">
                 <div class="min-w-0">
-                  <div class="truncate text-sm font-semibold">{{ center.name }}</div>
+                  <div class="truncate text-sm font-semibold">{{ centerName(center) }}</div>
                   <div class="mt-0.5 text-[11px] text-[#8A9A8F]">
-                    <bdi dir="ltr" class="font-mono">{{ center.id }}</bdi> · {{ center.province || '—' }}
+                    <bdi dir="ltr" class="font-mono">{{ center.id }}</bdi> · {{ centerProvince(center) }}
                   </div>
                 </div>
                 <el-button size="small" text type="danger" :aria-label="$t('businessRules.removeCenter')" @click="removeCenter(center)">
@@ -224,11 +224,13 @@ import {
   RULE_LEVELS,
   defaultBusinessRules,
   readBusinessRulesDocument,
+  normalizeBusinessRulesDocument,
+  inferArticle140ProvinceCode,
   getArticle140Centers as getConfiguredCenters
 } from '../../../utils/businessRules.js';
 
 const emit = defineEmits(['saved']);
-const { t } = useI18n();
+const { t, te, locale } = useI18n();
 
 const sectionTabs = ['autoAcceptance', 'article140Centers', 'householdThresholds', 'feeStandards', 'quotaStandards', 'approvalMatrix'];
 const thresholdFields = [
@@ -257,6 +259,19 @@ function loadFormFromDoc() {
   form.value = clone(doc.value.rules || defaultBusinessRules());
 }
 
+function centerName(center) {
+  const localizedName = center?.nameI18n?.[locale.value];
+  const fallbackKey = `businessRules.centerNames.${center?.id}`;
+  return localizedName || (te(fallbackKey) ? t(fallbackKey) : center?.name || '');
+}
+
+function centerProvince(center) {
+  const localizedProvince = center?.provinceI18n?.[locale.value];
+  const provinceCode = center?.provinceCode || inferArticle140ProvinceCode(center?.province);
+  const fallbackKey = provinceCode ? `businessRules.provinceNames.${provinceCode}` : '';
+  return localizedProvince || (fallbackKey && te(fallbackKey) ? t(fallbackKey) : center?.province || '—');
+}
+
 const dirty = computed(() => JSON.stringify(form.value) !== JSON.stringify(doc.value.rules));
 
 const thresholdOrderValid = computed(() => {
@@ -275,7 +290,7 @@ async function loadDocument() {
   try {
     const result = await getBusinessRulesDocument();
     if (result?.rules) {
-      doc.value = result;
+      doc.value = normalizeBusinessRulesDocument(result);
       loadFormFromDoc();
     }
   } catch {
@@ -298,7 +313,7 @@ async function publish() {
   saving.value = true;
   try {
     const result = await saveBusinessRulesDocument({ rules: clone(form.value) });
-    doc.value = result;
+    doc.value = normalizeBusinessRulesDocument(result);
     loadFormFromDoc();
     ElMessage.success(t('businessRules.saved', { version: result.version }));
     emit('saved', result);
@@ -336,7 +351,10 @@ function confirmAddCenter() {
   form.value.article140Centers.push({
     id: String(selectedCenter.value.centerId),
     name: selectedCenter.value.centerName,
-    province: selectedCenter.value.province || ''
+    province: selectedCenter.value.province || '',
+    provinceCode: selectedCenter.value.provinceCode || inferArticle140ProvinceCode(selectedCenter.value.province),
+    nameI18n: selectedCenter.value.nameI18n || selectedCenter.value.centerNameI18n || {},
+    provinceI18n: selectedCenter.value.provinceI18n || {}
   });
   addCenterOpen.value = false;
 }

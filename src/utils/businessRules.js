@@ -1,3 +1,5 @@
+import businessRulesMessages from '../locales/businessRules.js';
+
 /**
  * 业务规则配置中心（前端共享层）
  *
@@ -21,6 +23,29 @@ export const RULE_LEVEL_LABEL_KEYS = {
   deputy: 'businessRules.levels.deputy',
   director: 'businessRules.levels.director'
 };
+
+const BUSINESS_RULE_LANGUAGES = Object.keys(businessRulesMessages);
+
+export function inferArticle140ProvinceCode(value) {
+  const province = String(value || '').toLocaleLowerCase();
+  if (/(baghdad|巴格达|بغداد|بەغدا)/u.test(province)) return 'BAG';
+  if (/(nineveh|نينوى|نەینەوا|尼尼微)/u.test(province)) return 'NIN';
+  if (/(diyala|ديالى|دیالە|迪亚拉)/u.test(province)) return 'DIY';
+  if (/(kirkuk|كركوك|کەرکووک|基尔库克)/u.test(province)) return 'KIR';
+  return '';
+}
+
+function getArticle140CenterTranslations(id) {
+  return Object.fromEntries(BUSINESS_RULE_LANGUAGES
+    .map((language) => [language, businessRulesMessages[language].centerNames?.[String(id)] || ''])
+    .filter(([, value]) => value));
+}
+
+function getArticle140ProvinceTranslations(code) {
+  return Object.fromEntries(BUSINESS_RULE_LANGUAGES
+    .map((language) => [language, businessRulesMessages[language].provinceNames?.[code] || ''])
+    .filter(([, value]) => value));
+}
 
 export const RULE_BUSINESS_LABELS = {
   TRF: 'businessRules.business.TRF',
@@ -57,7 +82,15 @@ const DEFAULT_ARTICLE140_CENTERS = [
   { id: '499', name: '曼德利 (Mandali) 边境便民配给中心', province: '迪亚拉省 (Diyala)' },
   { id: '512', name: '达古格 (Daquq) 南部便民配给中心', province: '基尔库克省 (Kirkuk)' },
   { id: '513', name: '哈维贾 (Hawija) 农业配给中心', province: '基尔库克省 (Kirkuk)' }
-];
+].map((center) => {
+  const provinceCode = inferArticle140ProvinceCode(center.province);
+  return {
+    ...center,
+    provinceCode,
+    nameI18n: getArticle140CenterTranslations(center.id),
+    provinceI18n: getArticle140ProvinceTranslations(provinceCode)
+  };
+});
 
 const DEFAULT_RULES = {
   // 一、双路径条件：各业务的自动受理判定规则
@@ -154,13 +187,23 @@ function normalizeRules(input) {
   const articleCenters = Array.isArray(rules.article140Centers) && rules.article140Centers.length
     ? rules.article140Centers
     : defaults.article140Centers;
+  const defaultArticleCentersById = new Map(defaults.article140Centers.map((item) => [String(item.id), item]));
   return {
     autoAcceptance: Array.isArray(rules.autoAcceptance) && rules.autoAcceptance.length ? rules.autoAcceptance : defaults.autoAcceptance,
-    article140Centers: articleCenters.map((item) => ({
-      id: String(item?.id || '').trim(),
-      name: String(item?.name || '').trim(),
-      province: String(item?.province || '').trim()
-    })).filter((item) => item.id && item.name),
+    article140Centers: articleCenters.map((item) => {
+      const id = String(item?.id || '').trim();
+      const defaultsForCenter = defaultArticleCentersById.get(id);
+      const province = String(item?.province || '').trim();
+      const provinceCode = String(item?.provinceCode || defaultsForCenter?.provinceCode || inferArticle140ProvinceCode(province));
+      return {
+        id,
+        name: String(item?.name || '').trim(),
+        province,
+        provinceCode,
+        nameI18n: { ...(defaultsForCenter?.nameI18n || {}), ...(item?.nameI18n || {}) },
+        provinceI18n: { ...getArticle140ProvinceTranslations(provinceCode), ...(defaultsForCenter?.provinceI18n || {}), ...(item?.provinceI18n || {}) }
+      };
+    }).filter((item) => item.id && item.name),
     householdThresholds: {
       capacityRedline: toPositiveNumber(thresholds.capacityRedline, defaults.householdThresholds.capacityRedline),
       smallOutlet: toPositiveNumber(thresholds.smallOutlet, defaults.householdThresholds.smallOutlet),
@@ -187,6 +230,27 @@ function normalizeRules(input) {
   };
 }
 
+export function normalizeBusinessRules(input) {
+  return normalizeRules(input);
+}
+
+export function normalizeBusinessRulesDocument(input) {
+  const version = Math.max(1, Math.floor(Number(input?.version) || 1));
+  const updatedAt = input?.updatedAt || nowStamp();
+  const updatedBy = input?.updatedBy || '';
+  const rules = normalizeRules(input?.rules);
+  const history = Array.isArray(input?.history) && input.history.length
+    ? input.history.map((entry, index) => ({
+      version: Math.max(1, Math.floor(Number(entry?.version) || index + 1)),
+      savedAt: entry?.savedAt || '',
+      savedBy: entry?.savedBy || '',
+      changedGroups: Array.isArray(entry?.changedGroups) ? entry.changedGroups : [],
+      rules: normalizeRules(entry?.rules)
+    }))
+    : [{ version, savedAt: updatedAt, savedBy: updatedBy, changedGroups: [], rules: normalizeRules(input?.rules) }];
+  return { ...input, version, updatedAt, updatedBy, rules, history };
+}
+
 function createInitialDocument() {
   const rules = defaultBusinessRules();
   return {
@@ -203,22 +267,18 @@ export function readBusinessRulesDocument() {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(BUSINESS_RULES_STORAGE_KEY) : null;
     if (raw) {
       const parsed = JSON.parse(raw);
-      const version = Math.max(1, Math.floor(Number(parsed?.version) || 1));
-      return {
-        version,
-        updatedAt: parsed?.updatedAt || nowStamp(),
-        updatedBy: parsed?.updatedBy || '',
-        rules: normalizeRules(parsed?.rules),
-        history: Array.isArray(parsed?.history) && parsed.history.length
-          ? parsed.history.map((entry, index) => ({
-            version: Math.max(1, Math.floor(Number(entry?.version) || index + 1)),
-            savedAt: entry?.savedAt || '',
-            savedBy: entry?.savedBy || '',
-            changedGroups: Array.isArray(entry?.changedGroups) ? entry.changedGroups : [],
-            rules: normalizeRules(entry?.rules)
-          }))
-          : [{ version, savedAt: parsed?.updatedAt || nowStamp(), savedBy: parsed?.updatedBy || '', changedGroups: [], rules: normalizeRules(parsed?.rules) }]
-      };
+      const document = normalizeBusinessRulesDocument(parsed);
+      const storedCenters = parsed?.rules?.article140Centers || [];
+      const needsArticle140I18nMigration = storedCenters.some((center) => {
+        const knownCenter = DEFAULT_ARTICLE140_CENTERS.find((item) => String(item.id) === String(center?.id));
+        return knownCenter && (!center?.provinceCode || BUSINESS_RULE_LANGUAGES.some((language) => (
+          !center?.nameI18n?.[language] || !center?.provinceI18n?.[language]
+        )));
+      });
+      if (needsArticle140I18nMigration && typeof localStorage !== 'undefined') {
+        localStorage.setItem(BUSINESS_RULES_STORAGE_KEY, JSON.stringify(document));
+      }
+      return document;
     }
   } catch (error) {
     console.warn('[BusinessRules] Failed to parse stored rules, using defaults.', error);

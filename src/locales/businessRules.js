@@ -30,6 +30,13 @@ export default {
     levels: { system: '系统自动', branch: '分部初审', manager: '经理终审', minister: '配给中心部长', deputy: '行政次长', director: '规划与跟进司' },
     article140Count: '当前共 {count} 个中心', addCenter: '新增中心', removeCenter: '移除',
     centerId: '中心编号', centerName: '中心名称', centerProvince: '所属省份', centerPicker: '选择配给中心',
+    centerNames: {
+      '101': '卡尔赫第一配给中心 (曼苏尔)', '102': '卡尔赫区 (Al-Karkh)第1配给储备中心', '103': '鲁萨法区 (Al-Rusafa)第2配给储备中心', '104': '曼苏尔 (Al-Mansour)第3配给储备中心',
+      '105': '卡达米亚 (Kadhimiya)第1配给储备中心', '106': '阿达米亚 (Adhamiyah)第2配给储备中心', '108': '萨德尔城中央配给中心', '304': '祖马尔 (Zummar) 湖畔配给中心',
+      '305': '泰勒阿费尔 (Tal Afar) 西区配给中心', '320': '辛贾尔 (Sinjar) 核心配给中心', '496': '哈奈根 (Khanaqin) 第一配给中心', '497': '贾劳拉 (Jalawla) 干线配给中心',
+      '498': '萨阿迪耶 (Saadiya) 绿洲配给中心', '499': '曼德利 (Mandali) 边境便民配给中心', '512': '达古格 (Daquq) 南部便民配给中心', '513': '哈维贾 (Hawija) 农业配给中心'
+    },
+    provinceNames: { BAG: '巴格达省', NIN: '尼尼微省', DIY: '迪亚拉省', KIR: '基尔库克省' },
     centerAlreadyAdded: '该中心已在清单中', centerRequired: '请选择要新增的配给中心', noCenters: '清单为空，请至少保留一个中心', immediate: '即时生效',
     capacityRedline: '容量红线（户）', smallOutlet: '小型网点上限（户）', newOutletBaseline: '新设网点基准（户）', minAcceptedHouseholds: '最小受理户数（户）',
     householdsUnit: '户', thresholdInvalid: '阈值需满足：最小受理 ≤ 新设基准 ≤ 小型上限 < 容量红线',
@@ -75,6 +82,13 @@ export default {
     levels: { system: 'System automatic', branch: 'Branch review', manager: 'Manager final review', minister: 'Ration center minister', deputy: 'Deputy minister', director: 'Planning & follow-up directorate' },
     article140Count: '{count} centers configured', addCenter: 'Add center', removeCenter: 'Remove',
     centerId: 'Center ID', centerName: 'Center name', centerProvince: 'Governorate', centerPicker: 'Select ration center',
+    centerNames: {
+      '101': 'Al-Karkh 1st Ration Center (Al-Mansour)', '102': 'Al-Karkh 1st Ration Reserve Center', '103': 'Al-Rusafa 2nd Ration Reserve Center', '104': 'Al-Mansour 3rd Ration Center',
+      '105': 'Kadhimiya 1st Ration Reserve Center', '106': 'Adhamiyah 2nd Ration Reserve Center', '108': 'Sadr City Central Ration Center', '304': 'Zummar Lakeside Ration Center',
+      '305': 'Tal Afar West Ration Center', '320': 'Sinjar Core Ration Center', '496': 'Khanaqin 1st Ration Center', '497': 'Jalawla Mainline Ration Center',
+      '498': 'Saadiya Oasis Ration Center', '499': 'Mandali Border Community Ration Center', '512': 'Daquq South Community Ration Center', '513': 'Hawija Agricultural Ration Center'
+    },
+    provinceNames: { BAG: 'Baghdad Governorate', NIN: 'Nineveh Governorate', DIY: 'Diyala Governorate', KIR: 'Kirkuk Governorate' },
     centerAlreadyAdded: 'This center is already in the list', centerRequired: 'Select a center to add', noCenters: 'The list is empty; keep at least one center', immediate: 'Takes effect immediately',
     capacityRedline: 'Capacity redline (households)', smallOutlet: 'Small outlet ceiling (households)', newOutletBaseline: 'New outlet baseline (households)', minAcceptedHouseholds: 'Minimum accepted households',
     householdsUnit: 'households', thresholdInvalid: 'Thresholds must satisfy: minimum ≤ baseline ≤ small ceiling < capacity redline',
@@ -120,6 +134,13 @@ export default {
     levels: { system: 'تلقائي من النظام', branch: 'مراجعة الفرع', manager: 'المراجعة النهائية للمدير', minister: 'وزير مركز التموين', deputy: 'الوكيل الإداري', director: 'مديرية التخطيط والمتابعة' },
     article140Count: '{count} مركزاً مُعدّاً', addCenter: 'إضافة مركز', removeCenter: 'إزالة',
     centerId: 'رقم المركز', centerName: 'اسم المركز', centerProvince: 'المحافظة', centerPicker: 'اختر مركز التموين',
+    centerNames: {
+      '101': 'مركز توزيع الكرخ الأول (المنصور)', '102': 'مركز مخزون التوزيع الأول في الكرخ', '103': 'مركز مخزون التوزيع الثاني في الرصافة', '104': 'مركز توزيع المنصور الثالث',
+      '105': 'مركز مخزون التوزيع الأول في الكاظمية', '106': 'مركز مخزون التوزيع الثاني في الأعظمية', '108': 'مركز التوزيع المركزي في مدينة الصدر', '304': 'مركز التوزيع على ضفاف زمار',
+      '305': 'مركز التوزيع الغربي في تلعفر', '320': 'مركز التوزيع الرئيسي في سنجار', '496': 'مركز التوزيع الأول في خانقين', '497': 'مركز التوزيع الرئيسي في جلولاء',
+      '498': 'مركز التوزيع في واحة السعدية', '499': 'مركز التوزيع الحدودي في مندلي', '512': 'مركز التوزيع الجنوبي في داقوق', '513': 'مركز التوزيع الزراعي في الحويجة'
+    },
+    provinceNames: { BAG: 'محافظة بغداد', NIN: 'محافظة نينوى', DIY: 'محافظة ديالى', KIR: 'محافظة كركوك' },
     centerAlreadyAdded: 'هذا المركز موجود في القائمة', centerRequired: 'اختر مركزاً لإضافته', noCenters: 'القائمة فارغة؛ يجب الاحتفاظ بمركز واحد على الأقل', immediate: 'يسري فوراً',
     capacityRedline: 'الحد الأقصى للسعة (أسرة)', smallOutlet: 'سقف المنفذ الصغير (أسرة)', newOutletBaseline: 'خط الأساس للمنفذ الجديد (أسرة)', minAcceptedHouseholds: 'الحد الأدنى للأسر المقبولة',
     householdsUnit: 'أسرة', thresholdInvalid: 'يجب أن تحقق الحدود: الأدنى ≤ خط الأساس ≤ سقف المنفذ الصغير < الحد الأقصى للسعة',
@@ -165,6 +186,13 @@ export default {
     levels: { system: 'خۆکاری سیستەم', branch: 'پشکنینی لق', manager: 'پشکنینی کۆتایی بەڕێوەبەر', minister: 'وەزیری ناوەندی بەشەخۆراک', deputy: 'جێگری وەزیر', director: 'بەڕێوەبەرایەتی پلاندانان و بەدواداچوون' },
     article140Count: '{count} ناوەند ڕێکخراوە', addCenter: 'زیادکردنی ناوەند', removeCenter: 'لابردن',
     centerId: 'کۆدی ناوەند', centerName: 'ناوی ناوەند', centerProvince: 'پارێزگا', centerPicker: 'ناوەندی بەشەخۆراک هەڵبژێرە',
+    centerNames: {
+      '101': 'ناوەندی دابەشکردنی بەشەخۆراکی یەکەمی کەرخ (مەنسوور)', '102': 'ناوەندی کۆگای بەشەخۆراکی یەکەمی کەرخ', '103': 'ناوەندی کۆگای بەشەخۆراکی دووەمی ڕوسافە', '104': 'ناوەندی دابەشکردنی بەشەخۆراکی سێیەمی مەنسوور',
+      '105': 'ناوەندی کۆگای بەشەخۆراکی یەکەمی کازمیە', '106': 'ناوەندی کۆگای بەشەخۆراکی دووەمی ئەعزەمیە', '108': 'ناوەندی دابەشکردنی بەشەخۆراک لە شاری سەدر', '304': 'ناوەندی بەشەخۆراکی کەناری زومار',
+      '305': 'ناوەندی بەشەخۆراکی ڕۆژئاوای تەلعەفەر', '320': 'ناوەندی سەرەکی بەشەخۆراک لە شنجار', '496': 'ناوەندی یەکەمی بەشەخۆراک لە خانەقین', '497': 'ناوەندی سەرەکی هێڵی بەشەخۆراک لە جەولا',
+      '498': 'ناوەندی بەشەخۆراک لە واحەی سەعدیە', '499': 'ناوەندی بەشەخۆراکی سنووری لە مەندەلی', '512': 'ناوەندی بەشەخۆراکی باشووری داقوق', '513': 'ناوەندی بەشەخۆراکی کشتوکاڵی لە حەویجە'
+    },
+    provinceNames: { BAG: 'پارێزگای بەغدا', NIN: 'پارێزگای نەینەوا', DIY: 'پارێزگای دیالە', KIR: 'پارێزگای کەرکووک' },
     centerAlreadyAdded: 'ئەم ناوەندە پێشتر لە لیستدایە', centerRequired: 'ناوەندێک هەڵبژێرە بۆ زیادکردن', noCenters: 'لیستەکە بەتاڵە؛ لانیکەم یەک ناوەند بهێڵەرەوە', immediate: 'دەستبەجێ کاردەکات',
     capacityRedline: 'سنووری سەرەکی توانا (خێزان)', smallOutlet: 'سنووری بنکەی بچووک (خێزان)', newOutletBaseline: 'بنەمای بنکەی نوێ (خێزان)', minAcceptedHouseholds: 'کەمترین خێزانی وەرگیراو',
     householdsUnit: 'خێزان', thresholdInvalid: 'سنوورەکان دەبێت: کەمترین ≤ بنەما ≤ سنووری بچووک < سنووری سەرەکی',
