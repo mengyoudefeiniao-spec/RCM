@@ -42,30 +42,33 @@
         </el-input>
       </div>
 
-      <el-table v-loading="loading" :data="filteredMessages" row-key="id" class="review-table" :max-height="tableMaxHeight" @row-click="openDetails">
-        <el-table-column prop="id" :label="t('mail.reviewMessageId')" min-width="145">
+      <el-table v-loading="loading" :data="filteredMessages" row-key="id" class="review-table" :class="{ 'review-table--rtl': isRtl }" :max-height="tableMaxHeight" @row-click="openDetails">
+        <el-table-column v-if="isRtl" :label="t('mail.reviewActions')" width="135" align="center">
+          <template #default="{ row }"><el-button link type="primary" class="review-action-button" @click.stop="openDetails(row)">{{ t('mail.reviewViewDetails') }}</el-button></template>
+        </el-table-column>
+        <el-table-column prop="id" :label="t('mail.reviewMessageId')" min-width="130">
           <template #default="{ row }"><span class="font-mono text-xs">{{ row.id }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewMessageSubject')" min-width="200">
+        <el-table-column :label="t('mail.reviewMessageSubject')" min-width="190">
           <template #default="{ row }"><span class="font-medium">{{ messageSubject(row) || t('mail.emptyBody') }}</span></template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewMessageSender')" min-width="150">
-          <template #default="{ row }">{{ row.sender || '—' }}</template>
+        <el-table-column :label="t('mail.reviewMessageSender')" min-width="130">
+          <template #default="{ row }">{{ localizedMessageSender(row, t) || '—' }}</template>
         </el-table-column>
         <el-table-column :label="t('mail.reviewMessageRecipients')" min-width="150">
           <template #default="{ row }">{{ recipientSummary(row) }}</template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewMessageCategory')" min-width="145">
+        <el-table-column :label="t('mail.reviewMessageCategory')" min-width="130">
           <template #default="{ row }">{{ t(row.category === 'system' ? 'mail.system' : 'mail.admin') }}</template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewSubmittedAt')" min-width="170">
+        <el-table-column :label="t('mail.reviewSubmittedAt')" min-width="160">
           <template #default="{ row }"><time :datetime="row.createdAt">{{ formatDate(row.createdAt) }}</time></template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewStatus')" min-width="130">
+        <el-table-column :label="t('mail.reviewStatus')" min-width="120">
           <template #default="{ row }"><el-tag size="small" :type="statusTagType(row.reviewStatus)">{{ statusLabel(row.reviewStatus) }}</el-tag></template>
         </el-table-column>
-        <el-table-column :label="t('mail.reviewActions')" fixed="right" width="145" align="end">
-          <template #default="{ row }"><el-button link type="primary" @click.stop="openDetails(row)">{{ t('mail.reviewViewDetails') }}</el-button></template>
+        <el-table-column v-if="!isRtl" :label="t('mail.reviewActions')" fixed="right" width="145" align="end">
+          <template #default="{ row }"><el-button link type="primary" class="review-action-button" @click.stop="openDetails(row)">{{ t('mail.reviewViewDetails') }}</el-button></template>
         </el-table-column>
         <template #empty><el-empty :description="emptyDescription" :image-size="72" /></template>
       </el-table>
@@ -86,7 +89,7 @@
 
         <h2 class="review-message-title">{{ messageSubject(selectedMessage) || t('mail.emptyBody') }}</h2>
         <el-descriptions :column="1" border class="review-descriptions">
-          <el-descriptions-item :label="t('mail.reviewMessageSender')">{{ selectedMessage.sender || '—' }}</el-descriptions-item>
+          <el-descriptions-item :label="t('mail.reviewMessageSender')">{{ localizedMessageSender(selectedMessage, t) || '—' }}</el-descriptions-item>
           <el-descriptions-item :label="t('mail.reviewMessageRecipients')">{{ recipientSummary(selectedMessage) }}</el-descriptions-item>
           <el-descriptions-item :label="t('mail.reviewSubmittedAt')">{{ formatDate(selectedMessage.createdAt, true) }}</el-descriptions-item>
         </el-descriptions>
@@ -144,9 +147,11 @@ import { decideMessageReview, getMessageAttachment, getMessages } from '../../ap
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
 import { isMessageInReviewScope, resolveMessageAccess } from '../../utils/messagePermissions.js';
+import { localizedMessageSender } from '../../utils/messageDisplay.js';
 import MessageCenterNav from './MessageCenterNav.vue';
 
 const { t, locale } = useI18n();
+const isRtl = computed(() => ['ar', 'ckb'].includes(locale.value));
 const authStore = useAuthStore();
 const messageStore = useMessageCenterStore();
 const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
@@ -173,7 +178,7 @@ const filteredMessages = computed(() => {
     .filter((message) => statusFilter.value === 'all'
       || (statusFilter.value === 'pending' && message.reviewStatus === 'pending')
       || (statusFilter.value === 'processed' && ['approved', 'rejected'].includes(message.reviewStatus)))
-    .filter((message) => !keyword || [messageSubject(message), messageBody(message), message.sender, message.recipientLabelKey && t(message.recipientLabelKey), message.recipientLabel, recipientSummary(message), message.id]
+    .filter((message) => !keyword || [messageSubject(message), messageBody(message), localizedMessageSender(message, t), message.recipientLabelKey && t(message.recipientLabelKey), message.recipientLabel, recipientSummary(message), message.id]
       .some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(keyword)));
 });
 const emptyDescription = computed(() => {
@@ -316,6 +321,8 @@ onMounted(loadMessages);
 .review-table { width: 100%; }
 .review-table :deep(.el-table__row) { cursor: pointer; }
 .review-table :deep(.el-table__row:hover) { color: var(--el-color-primary); }
+.review-table :deep(.cell) { overflow-wrap: anywhere; }
+.review-action-button { white-space: nowrap; }
 .review-scope-note { display: flex; align-items: flex-start; gap: .5rem; border-top: 1px solid var(--el-border-color-light); background: var(--el-fill-color-lighter); padding: .75rem 1rem; color: var(--el-text-color-secondary); font-size: .75rem; line-height: 1.6; }
 .review-scope-note :deep(.el-icon) { flex: 0 0 auto; margin-top: .125rem; color: var(--el-color-primary); }
 .review-no-access { min-height: 280px; margin-top: .875rem; }

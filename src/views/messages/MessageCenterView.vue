@@ -22,7 +22,7 @@
         <div v-else-if="filteredItems.length" class="mail-list-items">
           <div v-for="item in filteredItems" :key="item.id" class="notification-item" :class="{ 'is-selected': selected?.id === item.id }">
             <button type="button" class="notification-content" :aria-pressed="selected?.id === item.id" @click="selectMessage(item)">
-              <div class="flex min-w-0 items-center justify-between gap-2"><span class="min-w-0 truncate text-xs text-[#75837A]">{{ isIncoming(item) ? item.sender : t('mail.to') + ': ' + recipientSummary(item) }}</span><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
+              <div class="flex min-w-0 items-center justify-between gap-2"><span class="min-w-0 truncate text-xs text-[#75837A]">{{ isIncoming(item) ? localizedMessageSender(item, t) : t('mail.to') + ': ' + recipientSummary(item) }}</span><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
               <div class="mt-1.5 flex items-center gap-2"><span v-if="!item.read && isIncoming(item)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3D8A58]" :title="t('mail.unread')"/><span class="min-w-0 flex-1 truncate text-sm" :class="!item.read && isIncoming(item) ? 'font-semibold text-[#24372C]' : 'font-medium text-[#53635A]'">{{ titleOf(item) || t('mail.emptyBody') }}</span><el-tag v-if="item.sourceFolder === 'sent' && item.reviewStatus" size="small" :type="messageReviewTagType(item.reviewStatus)">{{ messageReviewStatus(item.reviewStatus) }}</el-tag><el-icon v-if="item.attachments?.length" class="shrink-0 text-[#819087]" :title="t('mail.attachments')"><Paperclip /></el-icon></div>
               <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
             </button>
@@ -39,7 +39,7 @@
             <div class="flex flex-wrap items-center gap-2"><el-button size="small" :loading="favoritePending.includes(selected.id)" :type="selected.favorite ? 'primary' : 'default'" :plain="selected.favorite" :aria-pressed="!!selected.favorite" @click="toggleFavorite(selected)"><el-icon><component :is="selected.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon>{{ t(selected.favorite ? 'mail.removeFavorite' : 'mail.addFavorite') }}</el-button><el-button v-if="canSend && isIncoming(selected)" size="small" @click="replyTo(selected)"><el-icon><Promotion /></el-icon>{{ t('mail.reply') }}</el-button></div>
           </div>
           <h2 class="mb-5 break-words text-xl font-bold leading-8 text-[#26382D]">{{ titleOf(selected) }}</h2>
-          <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]"><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.from') }}:</b>{{ selected.sender }}</span><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.to') }}:</b>{{ recipientSummary(selected) }}</span><span>{{ fullDate(selected.createdAt) }}</span></div>
+          <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]"><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.from') }}:</b>{{ localizedMessageSender(selected, t) }}</span><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.to') }}:</b>{{ recipientSummary(selected) }}</span><span>{{ fullDate(selected.createdAt) }}</span></div>
           <article class="mail-content min-h-24 break-words text-sm leading-7 text-[#34473A]" v-html="safeBody(selected)" />
           <div v-if="selected.attachments?.length" class="mt-8 border-t border-[#E8EDEA] pt-4"><h3 class="mb-3 text-sm font-semibold text-[#43564A]">{{ t('mail.attachments') }} ({{ selected.attachments.length }})</h3><div class="flex flex-wrap gap-2"><button v-for="attachment in selected.attachments" :key="attachment.id" type="button" class="flex max-w-full items-center gap-2 rounded-lg border border-[#DCE5DF] px-3 py-2 text-start text-sm hover:bg-[#F5F8F5]" @click="downloadAttachment(attachment)"><el-icon class="shrink-0 text-[#548163]"><Paperclip /></el-icon><span class="max-w-64 truncate">{{ attachment.name }}</span><span class="shrink-0 text-xs text-[#86938B]">{{ formatSize(attachment.size) }}</span><el-icon class="shrink-0"><Download /></el-icon></button></div></div>
         </template>
@@ -96,6 +96,7 @@ import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
 import { isMessageInSendScope, resolveMessageAccess } from '../../utils/messagePermissions.js';
+import { localizedMessageSender } from '../../utils/messageDisplay.js';
 import { REVIEW_SCOPE_REGIONS } from '../../utils/reviewPermission.js';
 import MessageCenterNav from './MessageCenterNav.vue';
 
@@ -178,7 +179,7 @@ const filteredItems = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase(locale.value);
   return items.value.filter((item) => {
     const inFolder = activeFolder.value === 'favorites' ? item.favorite : !item.favorite;
-    const matchesSearch = !keyword || [titleOf(item), item.sender, previewText(item), recipientSummary(item)]
+    const matchesSearch = !keyword || [titleOf(item), localizedMessageSender(item, t), previewText(item), recipientSummary(item)]
       .some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(keyword));
     return inFolder && matchesSearch;
   });

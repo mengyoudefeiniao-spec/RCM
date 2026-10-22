@@ -58,6 +58,7 @@ export function createProfileByRole(role) {
         id: 'usr-admin-01',
         username: 'minister_center',
         name: '阿卜杜勒·拉赫曼 (配给中心部长)',
+        displayNameKey: 'mail.senderMinisterCenterName',
         role: ROLE_MINISTER_CENTER,
         department: '贸易部配给中心部',
         title: '配给中心部长'
@@ -67,6 +68,7 @@ export function createProfileByRole(role) {
         id: 'usr-admin-02',
         username: 'deputy_minister',
         name: '法鲁克·卡西姆 (行政次长)',
+        displayNameKey: 'mail.senderDeputyMinisterName',
         role: ROLE_DEPUTY_MINISTER,
         department: '贸易部行政次长室',
         title: '行政次长'
@@ -76,6 +78,7 @@ export function createProfileByRole(role) {
         id: 'usr-admin-03',
         username: 'director_planning',
         name: '塔里克·萨利赫 (规划与跟进司总干事)',
+        displayNameKey: 'mail.senderDirectorPlanningName',
         role: ROLE_DIRECTOR_PLANNING,
         department: '规划与跟进司',
         title: '规划与跟进司总干事'
@@ -85,6 +88,7 @@ export function createProfileByRole(role) {
         id: 'usr-cit-01',
         username: 'citizen_ahmed',
         name: '艾哈迈德·哈桑·萨利赫 (户主)',
+        displayNameKey: 'mail.senderCitizenName',
         role: 'citizen',
         department: '巴格达省卡尔赫区',
         title: '配给卡公民户主'
@@ -94,6 +98,7 @@ export function createProfileByRole(role) {
         id: 'usr-agt-01',
         username: 'agent_jabar',
         name: '穆罕默德·贾巴尔 (第一代销网点)',
+        displayNameKey: 'mail.senderAgentName',
         role: 'agent',
         department: '综合食品面粉代销网点',
         title: '配给代销责任人'
@@ -104,6 +109,7 @@ export function createProfileByRole(role) {
         id: 'usr-admin-01',
         username: 'minister_center',
         name: '阿卜杜勒·拉赫曼 (配给中心部长)',
+        displayNameKey: 'mail.senderMinisterCenterName',
         role: ROLE_MINISTER_CENTER,
         department: '贸易部配给中心部',
         title: '配给中心部长'

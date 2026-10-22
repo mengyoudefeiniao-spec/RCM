@@ -964,7 +964,7 @@ export async function mockDispatch(config) {
       const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'] };
       if (!Object.hasOwn(audienceMap, recipientType)) return createResponse({}, 400, i18n.global.t('api.businessError'));
       const regionCode = messageData.regionCode || messageData.regionId || '';
-      const next = { ...messageData, recipientType, regionCode, id: `msg-${crypto.randomUUID()}`, senderId: userKey, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType], reviewStatus: 'pending', reviewNotes: '', createdAt: new Date().toISOString(), readBy: [] };
+      const next = { ...messageData, recipientType, regionCode, id: `msg-${crypto.randomUUID()}`, senderId: userKey, senderRole: currentRole, sender: profile.name || 'Administrator', ...(profile.displayNameKey ? { senderNameKey: profile.displayNameKey } : {}), audience: audienceMap[recipientType], reviewStatus: 'pending', reviewNotes: '', createdAt: new Date().toISOString(), readBy: [] };
       if (!isMessageInSendScope(next, access)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
       const files = isMultipart ? data.getAll('attachments') : [];
       next.attachments = await Promise.all(files.filter((file) => file instanceof File).map(async (file) => ({ id: await saveMockMessageAttachment(file), name: file.name, size: file.size, type: file.type })));
