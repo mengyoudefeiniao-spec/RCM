@@ -8,7 +8,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $resetScript = Join-Path $repoRoot 'scripts\reset-pocketbase-data.mjs'
 
 Write-Output "Target: $PocketBaseUrl / $Collection"
-Write-Output 'This restores the four localized family records (at most 4 members each) and empties the four ration-order records.'
+Write-Output 'This restores the four localized family records (at most 4 members each), empties the four ration-order records, and adds multilingual Article 140 center names and governorates to the business-rules record.'
 $confirmation = Read-Host 'Type RESET to continue'
 if ($confirmation -cne 'RESET') {
     Write-Output 'Reset cancelled.'

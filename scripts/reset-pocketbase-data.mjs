@@ -1,4 +1,5 @@
 import { getInitialFamilies } from '../src/utils/sharedSession.js';
+import { BUSINESS_RULES_STORAGE_KEY, normalizeBusinessRulesDocument } from '../src/utils/businessRules.js';
 
 const baseUrl = String(process.env.POCKETBASE_URL || process.env.VITE_POCKETBASE_URL || 'https://pb.51xyu.com')
   .replace(/\/_\/$/, '')
@@ -62,13 +63,20 @@ for (const lang of languages) {
 }
 
 const byKey = new Map(records.map((record) => [record.key, record]));
+// Keep the active rules intact while adding any missing Article 140 translations.
+// If the PocketBase record is absent, the normalizer creates the localized defaults.
+const currentBusinessRules = byKey.get(BUSINESS_RULES_STORAGE_KEY)?.value;
+desired.set(BUSINESS_RULES_STORAGE_KEY, normalizeBusinessRulesDocument(currentBusinessRules));
+
 const plan = Array.from(desired, ([key, value]) => ({ key, value, existing: byKey.get(key) }));
 console.log(`PocketBase: ${baseUrl}`);
 console.log(`Collection: ${collection}`);
 for (const { key, value, existing } of plan) {
   const detail = key.includes('_families_')
     ? `${value.length} families; max ${Math.max(0, ...value.map((family) => family.members.length))} members each`
-    : '0 orders';
+    : key.includes('_orders_')
+      ? '0 orders'
+      : `${value.rules.article140Centers.length} Article 140 centers with multilingual names and governorates`;
   console.log(`${existing ? 'UPDATE' : 'CREATE'} ${key} (${detail})`);
 }
 
@@ -100,4 +108,4 @@ for (const { key, value, existing } of plan) {
   }
 }
 
-console.log('PocketBase demo data reset completed. Family records now contain at most four members, and monthly citizen ration orders are empty.');
+console.log('PocketBase demo data reset completed. Family records now contain at most four members, monthly citizen ration orders are empty, and Article 140 centers include multilingual names and governorates.');
