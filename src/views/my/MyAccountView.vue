@@ -143,10 +143,10 @@
       </article>
     </section>
 
-    <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm space-y-2">
-      <el-button class="w-full !justify-start" text @click="openDeviceDialog"><el-icon class="me-2"><Iphone /></el-icon>{{ $t('my.trustedDevices') }}</el-button>
-      <el-button class="w-full !justify-start" text @click="passwordDialogOpen = true"><el-icon class="me-2"><Lock /></el-icon>{{ $t('my.changePassword') }}</el-button>
-      <el-button class="w-full !justify-start !ms-0" text type="danger" @click="handleLogout"><el-icon class="me-2"><SwitchButton /></el-icon>{{ $t('my.logout') }}</el-button>
+    <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm flex flex-col gap-1">
+      <el-button class="w-full !m-0 !justify-start" text @click="openDeviceDialog"><el-icon class="me-2"><Iphone /></el-icon>{{ $t('my.trustedDevices') }}</el-button>
+      <el-button class="w-full !m-0 !justify-start" text @click="passwordDialogOpen = true"><el-icon class="me-2"><Lock /></el-icon>{{ $t('my.changePassword') }}</el-button>
+      <el-button class="w-full !m-0 !justify-start" text type="danger" @click="handleLogout"><el-icon class="me-2"><SwitchButton /></el-icon>{{ $t('my.logout') }}</el-button>
     </section>
 
     <el-dialog v-model="contactDialogOpen" :title="$t('my.editContact')" width="min(92vw, 440px)" append-to-body>
@@ -217,12 +217,28 @@
           <div class="font-semibold">{{ pendingDevice?.name }}</div>
           <div class="mt-0.5 text-xs text-[#58685D]"><span>{{ pendingDevice?.location }}</span> · <bdi dir="ltr">{{ pendingDevice?.ip }}</bdi></div>
         </div>
-        <el-radio-group v-model="deviceVerifyMethod" class="w-full">
-          <div class="grid grid-cols-2 gap-2">
-            <el-radio-button value="sms">{{ $t('my.deviceVerifyMethodSms') }}</el-radio-button>
-            <el-radio-button value="face">{{ $t('my.deviceVerifyMethodFace') }}</el-radio-button>
-          </div>
-        </el-radio-group>
+        <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="$t('my.deviceVerifyMethod')">
+          <button
+            type="button"
+            role="radio"
+            :aria-checked="deviceVerifyMethod === 'sms'"
+            class="flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-sm leading-tight text-center transition-colors"
+            :class="deviceVerifyMethod === 'sms' ? 'border-[#326445] bg-[#E2F4E4] font-bold text-[#326445]' : 'border-[#D9E5DB] bg-white text-[#58685D] hover:border-[#A7D9BC]'"
+            @click="deviceVerifyMethod = 'sms'"
+          >
+            <el-icon class="shrink-0"><Iphone /></el-icon><span class="min-w-0">{{ $t('my.deviceVerifyMethodSms') }}</span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            :aria-checked="deviceVerifyMethod === 'face'"
+            class="flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-sm leading-tight text-center transition-colors"
+            :class="deviceVerifyMethod === 'face' ? 'border-[#326445] bg-[#E2F4E4] font-bold text-[#326445]' : 'border-[#D9E5DB] bg-white text-[#58685D] hover:border-[#A7D9BC]'"
+            @click="deviceVerifyMethod = 'face'"
+          >
+            <el-icon class="shrink-0"><Camera /></el-icon><span class="min-w-0">{{ $t('my.deviceVerifyMethodFace') }}</span>
+          </button>
+        </div>
         <div v-if="deviceVerifyMethod === 'sms'" class="space-y-1.5">
           <div class="flex w-full gap-2">
             <el-input v-model.trim="deviceSmsCode" maxlength="6" inputmode="numeric" dir="ltr" :placeholder="$t('my.smsCode')" />
