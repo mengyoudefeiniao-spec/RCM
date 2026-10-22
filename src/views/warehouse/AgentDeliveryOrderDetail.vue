@@ -57,7 +57,7 @@
           </div>
           <dl class="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 border-t border-[#E5EEE7] pt-4 text-sm">
             <dt class="text-[#718277]">{{ $t('agentDelivery.rationCard') }}</dt><dd><bdi dir="ltr">{{ order.cardNo || '—' }}</bdi></dd>
-            <dt class="text-[#718277]">{{ $t('agentDelivery.orderNotes') }}</dt><dd class="break-words">{{ localizedField('notes', order.notes) }}</dd>
+            <dt class="text-[#718277]">{{ $t('agentDelivery.orderNotes') }}</dt><dd class="break-words">{{ displayNotes }}</dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.orderTime') }}</dt><dd><bdi dir="ltr">{{ order.createdAt || '—' }}</bdi></dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.deliveryMethod') }}</dt><dd>{{ $t(order.deliveryType === 'HOME_DELIVERY' ? 'agentOrders.typeDelivery' : 'agentOrders.typePickup') }}</dd>
             <dt class="text-[#718277]">{{ $t('agentDelivery.paymentAmount') }}</dt><dd><bdi dir="ltr">{{ Number(order.selfPayAmount || 0).toLocaleString() }} IQD</bdi></dd>
@@ -81,6 +81,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getAgentCitizenOrder } from '@/api/agent';
 import { deliveryPriority } from '@/utils/deliveryPriority';
+import { resolveOrderNote } from '@/utils/orderNotes';
 
 const route = useRoute();
 const router = useRouter();
@@ -102,6 +103,13 @@ function localizedField(field, fallback) {
   const key = demoId ? `agentDelivery.demoOrders.${demoId}.${field}` : '';
   return key && te(key) ? t(key) : fallback || '—';
 }
+// 系统默认备注按当前界面语言渲染（演示订单优先使用专属词条）
+const displayNotes = computed(() => {
+  const demoId = String(order.value?.orderId || '').match(/^PO-20261013-(100[123])$/)?.[1];
+  const key = demoId ? `agentDelivery.demoOrders.${demoId}.notes` : '';
+  if (key && te(key)) return t(key);
+  return resolveOrderNote(order.value, t) || '—';
+});
 const statusLabel = computed(() => {
   const key = { PAID: 'filterPending', PENDING_DELIVERY: 'filterPending', PENDING_PICKUP: 'filterPending', DISPATCHED: 'filterDispatched', READY_FOR_PICKUP: 'filterReadyPickup', DELIVERED: 'filterDelivered' }[order.value?.status] || 'filterPending';
   return t(`agentOrders.${key}`);

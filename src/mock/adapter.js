@@ -391,6 +391,23 @@ function listMyDevices(role) {
   return registerCurrentDevice(role).map(item => ({ ...item, current: item.id === fingerprint }));
 }
 
+// 演示坐标：按订单号稳定派生巴格达市区内的收货点与配送网点坐标，保证多次打开地图位置一致
+function demoOrderGeo(orderId) {
+  let hash = 0;
+  for (const ch of String(orderId)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  const dest = {
+    lat: Number((33.276 + ((hash % 97) / 1000)).toFixed(5)),
+    lng: Number((44.296 + (((hash >> 8) % 97) / 1000)).toFixed(5)),
+    accuracy: 'approximate'
+  };
+  const origin = {
+    lat: Number((dest.lat - 0.018 - (((hash >> 16) % 12) / 1000)).toFixed(5)),
+    lng: Number((dest.lng - 0.014 - (((hash >> 20) % 12) / 1000)).toFixed(5)),
+    accuracy: 'approximate'
+  };
+  return { dest, origin };
+}
+
 const multiLangStores = {
   zh: {
     complaintsStore: JSON.parse(JSON.stringify(zhComplaint.MOCK_COMPLAINTS)),
@@ -1749,7 +1766,13 @@ export async function mockDispatch(config) {
       if (found) break;
     }
     if (!found) return createResponse({}, 404, i18n.global.t('citizenOrder.orderNotFound'));
-    return createResponse(found);
+    // 为 GIS 地图补齐收货点与配送网点坐标（已有坐标优先）
+    const geo = demoOrderGeo(orderId);
+    return createResponse({
+      ...found,
+      deliveryLocation: found.deliveryLocation || geo.dest,
+      originLocation: found.dispatchInfo?.originLocation || geo.origin
+    });
   }
 
   if (url.includes('/citizen/ration/orders') && method === 'GET') {
@@ -1863,7 +1886,9 @@ export async function mockDispatch(config) {
       deliveryType, // 'PICKUP' | 'HOME_DELIVERY'
       deliveryAddress: deliveryAddress || family?.address || (isEn ? 'Bldg 3, Apt 201, No.88 Haifa St, Al-Karkh District, Baghdad' : '巴格达省卡尔赫区海法街88号 3号楼201'),
       deliveryFee,
-      notes: notes || (deliveryType === 'PICKUP' ? (isEn ? 'Present the QR code at the station for pickup' : '到店出示二维码提货') : (isEn ? 'Sign for home delivery by presenting the QR code' : '送货上门出示二维码签收')),
+      // 系统默认备注按当前请求语言生成，并打标便于展示层按界面语言重新渲染
+      notes: notes || i18n.global.t(deliveryType === 'PICKUP' ? 'citizenOrder.defaultPickupNote' : 'citizenOrder.defaultDeliveryNote'),
+      notesIsDefault: !notes,
       items: validatedItems,
       totalWeight,
       goodsAmount,

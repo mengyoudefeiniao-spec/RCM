@@ -71,6 +71,31 @@
           </ol>
         </section>
 
+        <!-- GIS 配送实时位置 -->
+        <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm sm:p-6">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="font-bold text-[#183B28]">{{ $t('citizenOrder.mapTitle') }}</h2>
+            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold" :class="mapBadgeClass">
+              <span class="size-1.5 rounded-full" :class="mapBadgeDotClass"></span>
+              {{ mapBadgeLabel }}
+            </span>
+          </div>
+          <div v-if="hasMapData" ref="mapElement" dir="ltr" class="h-[300px] w-full overflow-hidden rounded-lg bg-[#E9F1EB] sm:h-[420px]"></div>
+          <div v-else class="rounded-lg bg-[#F8FAF8] py-10 text-center text-sm text-[#8A9A8F]">{{ $t('citizenOrder.mapUnavailable') }}</div>
+          <template v-if="hasMapData">
+            <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#58685D]">
+              <span v-for="legend in mapLegend" :key="legend.labelKey" class="inline-flex items-center gap-1.5">
+                <span class="size-2.5 rounded-full" :class="legend.dotClass"></span>{{ $t(legend.labelKey) }}
+              </span>
+            </div>
+            <div v-if="isLiveTracking" class="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#F3F8F4] px-3 py-2 text-xs font-semibold text-[#2F5B44]">
+              <span>{{ $t('citizenOrder.mapDistance', { distance: liveDistance.toFixed(1) }) }} · {{ $t('citizenOrder.mapEta', { minutes: liveEta }) }}</span>
+              <bdi dir="ltr" class="font-mono text-[11px] font-normal text-[#718277]">{{ $t('citizenOrder.mapLastUpdate', { time: lastUpdatedAt }) }}</bdi>
+            </div>
+            <p class="mt-2 text-[10px] leading-relaxed text-[#8A9A8F]">{{ $t('citizenOrder.mapDemoNote') }}</p>
+          </template>
+        </section>
+
         <!-- 物资明细与订单信息 -->
         <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm sm:p-6">
           <h2 class="mb-4 font-bold text-[#183B28]">{{ $t('citizenOrder.itemList') }}</h2>
@@ -97,9 +122,9 @@
               <dt class="text-[#718277]">{{ $t('citizenOrder.subsidyAmount') }}</dt>
               <dd><bdi dir="ltr">{{ Number(order.subsidyAmount).toLocaleString() }} IQD</bdi></dd>
             </template>
-            <template v-if="order.notes">
+            <template v-if="displayNotes">
               <dt class="text-[#718277]">{{ $t('citizenOrder.orderNotes') }}</dt>
-              <dd class="break-words">{{ order.notes }}</dd>
+              <dd class="break-words">{{ displayNotes }}</dd>
             </template>
             <template v-if="order.dispatchInfo">
               <dt class="text-[#718277]">{{ $t('citizenOrder.courier') }}</dt>
@@ -123,13 +148,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, Check, CopyDocument } from '@element-plus/icons-vue';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { getCitizenPurchaseOrder } from '../../api/citizen.js';
 import { useRationI18n } from '../../utils/rationI18n.js';
+import { resolveOrderNote } from '../../utils/orderNotes.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -200,6 +228,168 @@ function formatText(value) {
   return String(value || '').replace('T', ' ').slice(0, 16);
 }
 
+// 系统默认备注按当前界面语言渲染，避免跨语言残留
+const displayNotes = computed(() => resolveOrderNote(order.value, t));
+
+// ---------------- GIS 配送实时位置 ----------------
+const TRAVEL_MINUTES = 40;
+const mapElement = ref(null);
+const courierPoint = ref(null);
+const liveDistance = ref(0);
+const liveEta = ref(0);
+const lastUpdatedAt = ref('');
+let map = null;
+let courierMarker = null;
+let routeLine = null;
+let liveTimer = null;
+
+function toPoint(location) {
+  if (!location) return null;
+  const lat = Number(location.lat);
+  const lng = Number(location.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
+const destinationPoint = computed(() => toPoint(order.value?.deliveryLocation));
+const originPoint = computed(() => toPoint(order.value?.originLocation) || toPoint(order.value?.dispatchInfo?.originLocation));
+const isPickupOrder = computed(() => order.value?.deliveryType === 'PICKUP');
+const hasMapData = computed(() => Boolean(destinationPoint.value || originPoint.value));
+const isLiveTracking = computed(() => !isPickupOrder.value && order.value?.status === 'DISPATCHED');
+
+const mapBadgeLabel = computed(() => {
+  if (order.value?.status === 'DELIVERED') return t('citizenOrder.mapDelivered');
+  if (isLiveTracking.value) return t('citizenOrder.mapLive');
+  return t('citizenOrder.mapWaiting');
+});
+const mapBadgeClass = computed(() => {
+  if (order.value?.status === 'DELIVERED') return 'bg-[#E9F3EB] text-[#276141]';
+  if (isLiveTracking.value) return 'bg-[#FDF3E0] text-[#7A5F21]';
+  return 'bg-[#EFF5F1] text-[#58685D]';
+});
+const mapBadgeDotClass = computed(() => {
+  if (order.value?.status === 'DELIVERED') return 'bg-[#2F7A50]';
+  if (isLiveTracking.value) return 'bg-[#C9A13B] animate-pulse';
+  return 'bg-[#8A9A8F]';
+});
+const mapLegend = computed(() => {
+  if (isPickupOrder.value) return [{ labelKey: 'citizenOrder.mapPickup', dotClass: 'bg-[#2F7A50]' }];
+  const items = [
+    { labelKey: 'citizenOrder.mapDestination', dotClass: 'bg-[#2F7A50]' },
+    { labelKey: 'citizenOrder.mapOrigin', dotClass: 'bg-[#8A9A8F]' }
+  ];
+  if (isLiveTracking.value || order.value?.status === 'DELIVERED') {
+    items.push({ labelKey: 'citizenOrder.mapCourier', dotClass: 'bg-[#C9A13B]' });
+  }
+  return items;
+});
+
+function timeLocale() {
+  return { zh: 'zh-CN', en: 'en-GB', ar: 'ar-IQ', ckb: 'ckb-IQ' }[locale.value] || 'en-GB';
+}
+
+function parseTimestamp(value) {
+  if (!value) return null;
+  const time = Date.parse(String(value).replace(' ', 'T'));
+  return Number.isFinite(time) ? time : null;
+}
+
+// 演示环境：按派单时间在 40 分钟行程内线性推演配送位置
+function travelProgress() {
+  const status = order.value?.status;
+  if (status === 'DELIVERED') return 1;
+  if (status !== 'DISPATCHED') return 0;
+  const dispatchedAt = parseTimestamp(order.value?.dispatchInfo?.dispatchedAt);
+  if (!dispatchedAt) return 0.12;
+  const ratio = (Date.now() - dispatchedAt) / (TRAVEL_MINUTES * 60000);
+  return Math.min(0.96, Math.max(0.08, ratio));
+}
+
+function haversineKm(a, b) {
+  const radius = 6371;
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * radius * Math.asin(Math.sqrt(h));
+}
+
+function updateLivePosition() {
+  const dest = destinationPoint.value;
+  if (!dest) return;
+  const origin = originPoint.value || dest;
+  const progress = travelProgress();
+  const point = {
+    lat: origin.lat + (dest.lat - origin.lat) * progress,
+    lng: origin.lng + (dest.lng - origin.lng) * progress
+  };
+  courierPoint.value = point;
+  liveDistance.value = haversineKm(point, dest);
+  liveEta.value = Math.max(1, Math.round((1 - progress) * TRAVEL_MINUTES));
+  lastUpdatedAt.value = new Intl.DateTimeFormat(timeLocale(), { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
+  courierMarker?.setLatLng([point.lat, point.lng]);
+}
+
+function renderMap() {
+  if (map) {
+    map.remove();
+    map = null;
+    courierMarker = null;
+    routeLine = null;
+  }
+  const dest = destinationPoint.value;
+  if (!mapElement.value || !dest) return;
+  const origin = originPoint.value || dest;
+
+  updateLivePosition();
+
+  map = L.map(mapElement.value, { attributionControl: true, zoomControl: true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  if (isPickupOrder.value) {
+    L.circleMarker([origin.lat, origin.lng], { radius: 10, color: '#1F6842', fillColor: '#2F7A50', fillOpacity: 0.95, weight: 2 }).addTo(map);
+    map.setView([origin.lat, origin.lng], 14);
+  } else {
+    L.circleMarker([dest.lat, dest.lng], { radius: 9, color: '#1F6842', fillColor: '#2F7A50', fillOpacity: 0.95, weight: 2 }).addTo(map);
+    L.circleMarker([origin.lat, origin.lng], { radius: 7, color: '#59695F', fillColor: '#8A9A8F', fillOpacity: 0.9, weight: 2 }).addTo(map);
+    routeLine = L.polyline([[origin.lat, origin.lng], [dest.lat, dest.lng]], {
+      color: '#2F7A50', weight: 3, dashArray: '6 8', opacity: 0.75
+    }).addTo(map);
+    if ((isLiveTracking.value || order.value?.status === 'DELIVERED') && courierPoint.value) {
+      courierMarker = L.circleMarker([courierPoint.value.lat, courierPoint.value.lng], {
+        radius: 8, color: '#7A5F21', fillColor: '#C9A13B', fillOpacity: 1, weight: 3
+      }).addTo(map);
+    }
+    map.fitBounds(L.latLngBounds([[origin.lat, origin.lng], [dest.lat, dest.lng]]).pad(0.28), { maxZoom: 15 });
+  }
+  // 容器在首帧后可能因布局变化改变尺寸，重算尺寸并重新定位，避免标记偏移
+  window.setTimeout(() => {
+    if (!map) return;
+    map.invalidateSize();
+    if (isPickupOrder.value) {
+      map.setView([origin.lat, origin.lng], 14);
+    } else {
+      map.fitBounds(L.latLngBounds([[origin.lat, origin.lng], [dest.lat, dest.lng]]).pad(0.28), { maxZoom: 15 });
+    }
+  }, 180);
+}
+
+function startLiveTimer() {
+  stopLiveTimer();
+  if (!isLiveTracking.value) return;
+  liveTimer = window.setInterval(updateLivePosition, 5000);
+}
+
+function stopLiveTimer() {
+  if (liveTimer) {
+    window.clearInterval(liveTimer);
+    liveTimer = null;
+  }
+}
+
 async function copyPickupCode() {
   const code = order.value?.pickupCode;
   if (!code) return;
@@ -217,9 +407,16 @@ async function loadOrder() {
   try {
     order.value = await getCitizenPurchaseOrder(route.params.orderId);
     if (!order.value) throw new Error('Order not found');
+    await nextTick();
+    renderMap();
+    startLiveTimer();
   } catch {
     order.value = null;
     error.value = t('citizenOrder.loadFailed');
+    if (map) {
+      map.remove();
+      map = null;
+    }
   } finally {
     loading.value = false;
   }
@@ -232,4 +429,11 @@ function goBack() {
 
 onMounted(loadOrder);
 watch(() => route.params.orderId, loadOrder);
+onBeforeUnmount(() => {
+  stopLiveTimer();
+  if (map) {
+    map.remove();
+    map = null;
+  }
+});
 </script>
