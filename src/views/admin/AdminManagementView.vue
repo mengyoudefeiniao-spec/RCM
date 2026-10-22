@@ -28,6 +28,13 @@
             </el-button>
             <el-button
               size="small"
+              class="font-bold text-xs shrink-0 ht-btn-secondary"
+              @click="openBusinessRules"
+            >
+              <span>⚙️ {{ $t('businessRules.tabLabel') || '业务规则配置' }}</span>
+            </el-button>
+            <el-button
+              size="small"
               class="font-bold text-xs shrink-0 ht-btn-primary"
               @click="activeTab = 'reconciliation'"
             >
@@ -135,7 +142,7 @@
               </div>
 
               <!-- 配给卡数据表格 (自适应占比优化) -->
-              <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs card-ledger-table" @row-click="openCardDetailDrawer">
+              <el-table :data="paginatedCards" v-loading="cardsLoading" border stripe style="width: 100%" size="small" class="text-xs card-ledger-table" :row-class-name="cardRowClassName" @row-click="openCardDetailDrawer">
                 <el-table-column prop="cardNo" :label="$t('admin.cardNo') || '配给卡号'" width="160" fixed>
                   <template #default="{ row }">
                     <span class="font-mono font-bold text-[#326445]">{{ row.cardNo }}</span>
@@ -570,14 +577,14 @@
               <el-table-column :label="$t('admin.servedHouseholdsCap') || '服务户数 / 法定承载'" min-width="180" align="center">
                 <template #default="{ row }">
                   <div class="space-y-0.5">
-                    <span class="font-mono font-bold" :class="row.servedHouseholds > 1500 ? 'text-[#C04442]' : 'text-[#43554B]'">
+                    <span class="font-mono font-bold" :class="row.servedHouseholds > householdLimits.capacityRedline ? 'text-[#C04442]' : 'text-[#43554B]'">
                       {{ row.servedHouseholds }} {{ $t('admin.householdsUnit') }}
                     </span>
-                    <div v-if="row.servedHouseholds > 1500" class="text-[10px] text-[#C04442] font-bold">
-                      {{ $t('admin.over1500Redline') }}
+                    <div v-if="row.servedHouseholds > householdLimits.capacityRedline" class="text-[10px] text-[#C04442] font-bold">
+                      {{ $t('admin.over1500Redline', { count: householdLimits.capacityRedline }) }}
                     </div>
-                    <div v-else-if="row.servedHouseholds <= 750" class="text-[10px] text-[#C9A13B] font-medium">
-                      {{ $t('admin.under750Small') }}
+                    <div v-else-if="row.servedHouseholds <= householdLimits.smallOutlet" class="text-[10px] text-[#C9A13B] font-medium">
+                      {{ $t('admin.under750Small', { count: householdLimits.smallOutlet }) }}
                     </div>
                   </div>
                 </template>
@@ -591,7 +598,7 @@
                     <template v-if="authStore.isMinisterCenter || authStore.currentRole === 'admin'">
                       <el-tooltip :content="$t('admin.splitLargeOutlet')" placement="top">
                         <el-button
-                          v-if="row.servedHouseholds > 1500"
+                          v-if="row.servedHouseholds > householdLimits.capacityRedline"
                           size="small"
                           type="danger"
                           :icon="Scissor"
@@ -642,7 +649,7 @@
                       </el-tooltip>
                       <el-tooltip :content="$t('admin.mergeOutlets')" placement="top">
                         <el-button
-                          v-if="row.servedHouseholds <= 750 && row.status === '正常营业'"
+                          v-if="row.servedHouseholds <= householdLimits.smallOutlet && row.status === '正常营业'"
                           size="small"
                           type="warning"
                           :icon="Connection"
@@ -846,6 +853,21 @@
             <OfficialRegulationsTab />
           </div>
         </el-tab-pane>
+
+        <!-- ========================================== -->
+        <!-- Tab 7: 业务规则配置 (六类规则 · 版本化发布) -->
+        <!-- ========================================== -->
+        <el-tab-pane name="business-rules">
+          <template #label>
+            <span class="flex items-center gap-1.5">
+              <span>{{ $t('businessRules.tabLabel') || '业务规则配置' }}</span>
+              <el-tag size="small" type="success" effect="plain" class="scale-90 origin-left rtl:origin-right font-mono font-bold">RULES</el-tag>
+            </span>
+          </template>
+          <div class="py-2">
+            <BusinessRulesTab @saved="onBusinessRulesSaved" />
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -857,7 +879,7 @@
     <el-dialog v-model="splitDialogVisible" title="【配给中心部长】拆分大型代理权执行令" width="540px" align-center destroy-on-close>
       <div class="space-y-3 text-xs">
         <div class="p-3 bg-[#FBEAE9] border border-[#F2D5D4] rounded-lg text-[#6E2F2E] leading-relaxed">
-          <strong>法定红线依据</strong>：依据单店 1,500 户容量红线，网点<strong>【{{ activeSplitAgent?.name }}】</strong>当前签约户数已达 <strong>{{ activeSplitAgent?.servedHouseholds }} 户</strong>，超出法定承载力。
+          <strong>法定红线依据</strong>：依据单店 {{ householdLimits.capacityRedline.toLocaleString() }} 户容量红线，网点<strong>【{{ activeSplitAgent?.name }}】</strong>当前签约户数已达 <strong>{{ activeSplitAgent?.servedHouseholds }} 户</strong>，超出法定承载力。
         </div>
         <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] space-y-1.5">
           <div class="flex justify-between">
@@ -910,7 +932,7 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
           <el-form-item label="核定保障服务户数">
-            <el-input-number v-model="establishForm.servedHouseholds" :min="100" :max="1500" class="w-full" />
+            <el-input-number v-model="establishForm.servedHouseholds" :min="householdLimits.minAcceptedHouseholds" :max="householdLimits.capacityRedline" class="w-full" />
           </el-form-item>
           <el-form-item label="规划仓储容积 (吨)">
             <el-input-number v-model="establishForm.storageCapacity" :min="10" :max="200" class="w-full" />
@@ -1231,210 +1253,231 @@
       </template>
     </el-dialog>
     <!-- ========================================== -->
-    <!-- 配给卡用户档案二级抽屉 (点击总账列表记录弹出) -->
+    <!-- 配给卡用户档案全屏覆盖页 (点击总账列表记录弹出) -->
     <!-- 配额快照 / 申请历史 / 领取流水 / 冻结标记 / 异常记录 -->
     <!-- ========================================== -->
-    <el-drawer
-      v-model="cardDetailVisible"
-      :title="$t('adminCardDetail.title') || '配给卡用户档案'"
-      size="760px"
-      append-to-body
-      class="card-detail-drawer"
-      @closed="handleCardDetailClosed"
-    >
-      <div v-loading="cardDetailLoading" class="space-y-4 text-xs">
-        <!-- 头部摘要 -->
-        <div v-if="cardDetailRow" class="bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[#2F5B44] text-white flex items-center justify-center">
-              <el-icon class="text-lg"><CreditCard /></el-icon>
-            </div>
-            <div>
-              <div class="font-bold text-[#1F3326] text-sm flex items-center gap-2">
-                <span>{{ formatHeadName(cardDetailRow.headName) }}</span>
-                <el-tag
-                  size="small"
-                  effect="plain"
-                  :type="cardDetailRow.status === '正常' || cardDetailRow.status === 'Active' ? 'success' : (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen' ? 'danger' : 'warning')"
-                >
-                  {{ formatCardStatus(cardDetailRow.status) }}
-                </el-tag>
-              </div>
-              <div class="text-[11px] text-[#58685D] font-mono mt-0.5">{{ cardDetailRow.cardNo }} · {{ cardDetailRow.nationalId }}</div>
-            </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 text-[11px] text-[#58685D]">
-            <span>{{ $t('adminCardDetail.issueDate') }}: <strong class="font-mono text-[#1F3326]">{{ cardDetailRow.issueDate || '—' }}</strong></span>
-            <span>{{ $t('adminCardDetail.lastVerified') }}: <strong class="font-mono text-[#1F3326]">{{ cardDetailRow.lastVerifiedAt || '—' }}</strong></span>
-            <span>{{ $t('adminCardDetail.nfcUid') }}: <strong class="font-mono text-[#1F3326]">{{ cardDetailRow.rfidChipUid || '—' }}</strong></span>
-          </div>
-        </div>
-
-        <!-- 1. 配额快照 -->
-        <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
-              <el-icon class="text-[#326445]"><ScaleToOriginal /></el-icon>
-              {{ $t('adminCardDetail.sectionQuota') || '配额快照' }}
-            </div>
-            <span class="text-[11px] text-[#8A9A8F]">
-              {{ $t('adminCardDetail.eligibleMembers') || '符合资格成员' }}:
-              <strong class="text-[#2F5B44] font-mono">{{ cardDetailEligibleMembers }}</strong> / {{ cardDetailRow?.memberCount ?? 0 }}
-            </span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div class="p-2.5 rounded-lg bg-[#EFF5F1] border border-[#C7DED0] text-center">
-              <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaFlour') || '面粉 (KG)' }}</div>
-              <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.flour ?? 0 }}</div>
-            </div>
-            <div class="p-2.5 rounded-lg bg-[#FDF3E0] border border-[#F2E3C6] text-center">
-              <div class="text-[10px] text-[#7A5F21]">{{ $t('adminCardDetail.quotaRice') || '大米 (KG)' }}</div>
-              <div class="font-mono font-bold text-[#7A5F21] text-base">{{ cardDetailRow?.quotas?.rice ?? 0 }}</div>
-            </div>
-            <div class="p-2.5 rounded-lg bg-[#EFF5F1] border border-[#C7DED0] text-center">
-              <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaOil') || '食用油 (L)' }}</div>
-              <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.oil ?? 0 }}</div>
-            </div>
-            <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] text-center">
-              <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaSugar') || '白糖 (KG)' }}</div>
-              <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.sugar ?? 0 }}</div>
-            </div>
-          </div>
-          <div class="text-[11px] text-[#58685D]">
-            {{ $t('adminCardDetail.claimedThisPeriod') || '本期已核销' }}:
-            <strong class="font-mono text-[#2A5440]">{{ cardDetailClaimedSummary || '—' }}</strong>
-          </div>
-        </div>
-
-        <!-- 2. 申请历史 -->
-        <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
-          <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
-            <el-icon class="text-[#326445]"><Tickets /></el-icon>
-            {{ $t('adminCardDetail.sectionApplications') || '申请历史' }}
-          </div>
-          <el-table :data="cardDetailData.applications" border size="small" :empty-text="$t('adminCardDetail.noApplications') || '暂无申请记录'">
-            <el-table-column prop="source" :label="$t('adminCardDetail.appType') || '申请类型'" width="110" align="center">
-              <template #default="{ row }">
-                <el-tag size="small" type="primary" effect="plain">{{ w(row.source) }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="applicantName" :label="$t('adminCardDetail.applicant') || '申请人'" min-width="130" show-overflow-tooltip>
-              <template #default="{ row }">{{ w(row.applicantName) }}</template>
-            </el-table-column>
-            <el-table-column prop="status" :label="$t('adminCardDetail.status') || '状态'" width="110" align="center">
-              <template #default="{ row }">
-                <el-tag size="small" :type="row.status === '已批准' || row.status === 'Approved' ? 'success' : (row.status.includes('驳回') || row.status.includes('拒绝') ? 'danger' : 'warning')" effect="plain">
-                  {{ w(row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="submittedAt" :label="$t('adminCardDetail.submittedAt') || '提交时间'" width="140" align="center" />
-            <el-table-column prop="reason" :label="$t('adminCardDetail.summary') || '摘要'" min-width="200" show-overflow-tooltip>
-              <template #default="{ row }">{{ w(row.reason) }}</template>
-            </el-table-column>
-          </el-table>
-        </div>
-
-        <!-- 3. 领取流水 -->
-        <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
-          <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
-            <el-icon class="text-[#326445]"><List /></el-icon>
-            {{ $t('adminCardDetail.sectionClaims') || '领取流水' }}
-          </div>
-          <el-table :data="cardDetailData.claims" border size="small" :empty-text="$t('adminCardDetail.noClaims') || '暂无领取流水'">
-            <el-table-column prop="claimVoucherNo" :label="$t('adminCardDetail.voucherNo') || '核销凭证号'" width="170">
-              <template #default="{ row }">
-                <span class="font-mono font-bold text-[#2A5440]">{{ row.claimVoucherNo }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="claimPeriod" :label="$t('adminCardDetail.claimPeriod') || '核销周期'" width="140" align="center" />
-            <el-table-column prop="claimTime" :label="$t('adminCardDetail.claimTime') || '核销时间'" width="150" align="center" />
-            <el-table-column :label="$t('adminCardDetail.claimedItems') || '核销物资'" min-width="220">
-              <template #default="{ row }">
-                <div class="flex flex-wrap gap-1">
-                  <span
-                    v-for="(it, idx) in (row.claimedItems || [])"
-                    :key="idx"
-                    class="bg-[#F3F8F4] border border-[#D9E5DB] px-1.5 py-0.5 rounded text-[10px] text-[#43554B]"
-                  >
-                    {{ w(it.itemName) }}: <strong>{{ it.qty }}{{ it.unit }}</strong>
-                  </span>
+    <teleport to="body">
+      <transition name="card-detail-page">
+        <div v-if="cardDetailVisible" class="fixed inset-0 z-[2100] bg-[#F3F8F4] overflow-y-auto">
+          <!-- 顶部固定标题栏 -->
+          <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-[#D9E5DB] shadow-sm">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-lg bg-[#2F5B44] text-white flex items-center justify-center shrink-0">
+                  <el-icon class="text-lg"><CreditCard /></el-icon>
                 </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('adminCardDetail.syncLatency') || '云端同步'" width="110" align="center">
-              <template #default="{ row }">
-                <span class="font-mono text-[#2F7A50]">{{ row.cloudSyncLatencyMs ?? 0 }}ms</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-
-        <!-- 4. 冻结标记 -->
-        <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
-          <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
-            <el-icon class="text-[#C04442]"><Lock /></el-icon>
-            {{ $t('adminCardDetail.sectionFreeze') || '冻结标记' }}
-          </div>
-          <!-- 卡片级冻结 -->
-          <div class="flex items-start gap-2 p-2.5 rounded-lg border" :class="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen') ? 'bg-[#FBEAEA] border-[#E5B8B8]' : 'bg-[#F3F8F4] border-[#D9E5DB]'">
-            <el-tag size="small" :type="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen') ? 'danger' : 'success'" effect="plain">
-              {{ $t('adminCardDetail.cardFreeze') || '卡片级冻结' }}
-            </el-tag>
-            <span v-if="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen')" class="text-[#A03E3C] font-medium">
-              {{ cardDetailRow.freezeReason ? localizeFreezeReason(cardDetailRow.freezeReason, t) : $t('adminCardDetail.noFreeze') }}
-            </span>
-            <span v-else class="text-[#2F5B44]">{{ $t('adminCardDetail.noFreeze') || '无冻结标记' }}</span>
-          </div>
-          <!-- 成员级冻结 -->
-          <div class="space-y-1.5">
-            <div class="text-[11px] font-semibold text-[#58685D]">{{ $t('adminCardDetail.memberFreeze') || '成员级冻结' }}</div>
-            <div v-if="cardDetailData.members.length === 0" class="text-[11px] text-[#8A9A8F]">—</div>
-            <div
-              v-for="m in cardDetailData.members"
-              :key="m.id"
-              class="flex items-center justify-between gap-2 p-2 rounded-lg border text-[11px]"
-              :class="m.isFrozen || m.status === '冻结' ? 'bg-[#FBEAEA] border-[#E5B8B8]' : 'bg-[#F7FAF8] border-[#E9F1EB]'"
-            >
-              <div class="flex items-center gap-2 min-w-0">
-                <el-tag size="small" :type="m.isFrozen || m.status === '冻结' ? 'danger' : 'success'" effect="plain" class="scale-90 origin-left rtl:origin-right">
-                  {{ m.isFrozen || m.status === '冻结' ? ($t('adminCardDetail.frozenTag') || '已冻结') : ($t('adminCardDetail.normalTag') || '正常') }}
-                </el-tag>
-                <span class="font-medium text-[#1F3326] truncate">{{ w(m.name) }}</span>
-                <span class="text-[#8A9A8F]">{{ w(m.relation) }}</span>
+                <div class="min-w-0">
+                  <div class="font-bold text-[#1F3326] text-sm flex items-center gap-2">
+                    <span>{{ $t('adminCardDetail.title') || '配给卡用户档案' }}</span>
+                    <span v-if="cardDetailRow" class="text-[#58685D] font-medium truncate">· {{ formatHeadName(cardDetailRow.headName) }}</span>
+                    <el-tag
+                      v-if="cardDetailRow"
+                      size="small"
+                      effect="plain"
+                      :type="cardDetailRow.status === '正常' || cardDetailRow.status === 'Active' ? 'success' : (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen' ? 'danger' : 'warning')"
+                    >
+                      {{ formatCardStatus(cardDetailRow.status) }}
+                    </el-tag>
+                  </div>
+                  <div v-if="cardDetailRow" class="text-[11px] text-[#8A9A8F] font-mono">{{ cardDetailRow.cardNo }} · {{ cardDetailRow.nationalId }}</div>
+                </div>
               </div>
-              <span v-if="(m.isFrozen || m.status === '冻结') && m.freezeReason" class="text-[#A03E3C] truncate">
-                {{ localizeFreezeReason(m.freezeReason, t) }}
-              </span>
+              <el-button :icon="CircleClose" circle size="small" @click="closeCardDetail" />
+            </div>
+          </div>
+
+          <!-- 档案内容区 -->
+          <div v-loading="cardDetailLoading" class="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-4 text-xs">
+            <!-- 基础信息摘要 -->
+            <div v-if="cardDetailRow" class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('admin.population') || '人口' }}</div>
+                <div class="font-bold font-mono text-[#1F3326] text-sm">{{ cardDetailRow.memberCount ?? 0 }} {{ $t('admin.personUnit') || '人' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('adminCardDetail.eligibleMembers') || '符合资格成员' }}</div>
+                <div class="font-bold font-mono text-[#2F5B44] text-sm">{{ cardDetailEligibleMembers }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('adminCardDetail.issueDate') || '签发日期' }}</div>
+                <div class="font-mono text-[#1F3326]">{{ cardDetailRow.issueDate || '—' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('adminCardDetail.lastVerified') || '最近核验' }}</div>
+                <div class="font-mono text-[#1F3326]">{{ cardDetailRow.lastVerifiedAt || '—' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-[#8A9A8F]">{{ $t('adminCardDetail.nfcUid') || 'NFC 芯片标识' }}</div>
+                <div class="font-mono text-[#1F3326] truncate">{{ cardDetailRow.rfidChipUid || '—' }}</div>
+              </div>
+            </div>
+
+            <!-- 1. 配额快照 -->
+            <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                  <el-icon class="text-[#326445]"><ScaleToOriginal /></el-icon>
+                  {{ $t('adminCardDetail.sectionQuota') || '配额快照' }}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div class="p-2.5 rounded-lg bg-[#EFF5F1] border border-[#C7DED0] text-center">
+                  <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaFlour') || '面粉 (KG)' }}</div>
+                  <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.flour ?? 0 }}</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#FDF3E0] border border-[#F2E3C6] text-center">
+                  <div class="text-[10px] text-[#7A5F21]">{{ $t('adminCardDetail.quotaRice') || '大米 (KG)' }}</div>
+                  <div class="font-mono font-bold text-[#7A5F21] text-base">{{ cardDetailRow?.quotas?.rice ?? 0 }}</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#EFF5F1] border border-[#C7DED0] text-center">
+                  <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaOil') || '食用油 (L)' }}</div>
+                  <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.oil ?? 0 }}</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] text-center">
+                  <div class="text-[10px] text-[#58685D]">{{ $t('adminCardDetail.quotaSugar') || '白糖 (KG)' }}</div>
+                  <div class="font-mono font-bold text-[#2F5B44] text-base">{{ cardDetailRow?.quotas?.sugar ?? 0 }}</div>
+                </div>
+              </div>
+              <div class="text-[11px] text-[#58685D]">
+                {{ $t('adminCardDetail.claimedThisPeriod') || '本期已核销' }}:
+                <strong class="font-mono text-[#2A5440]">{{ cardDetailClaimedSummary || '—' }}</strong>
+              </div>
+            </div>
+
+            <!-- 2/4. 申请历史 与 冻结标记 (双栏) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- 2. 申请历史 -->
+              <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
+                <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                  <el-icon class="text-[#326445]"><Tickets /></el-icon>
+                  {{ $t('adminCardDetail.sectionApplications') || '申请历史' }}
+                </div>
+                <el-table :data="cardDetailData.applications" border size="small" :empty-text="$t('adminCardDetail.noApplications') || '暂无申请记录'">
+                  <el-table-column prop="source" :label="$t('adminCardDetail.appType') || '申请类型'" width="110" align="center">
+                    <template #default="{ row }">
+                      <el-tag size="small" type="primary" effect="plain">{{ w(row.source) }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="applicantName" :label="$t('adminCardDetail.applicant') || '申请人'" min-width="120" show-overflow-tooltip>
+                    <template #default="{ row }">{{ w(row.applicantName) }}</template>
+                  </el-table-column>
+                  <el-table-column prop="status" :label="$t('adminCardDetail.status') || '状态'" width="100" align="center">
+                    <template #default="{ row }">
+                      <el-tag size="small" :type="row.status === '已批准' || row.status === 'Approved' ? 'success' : (row.status.includes('驳回') || row.status.includes('拒绝') ? 'danger' : 'warning')" effect="plain">
+                        {{ w(row.status) }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="submittedAt" :label="$t('adminCardDetail.submittedAt') || '提交时间'" width="130" align="center" />
+                  <el-table-column prop="reason" :label="$t('adminCardDetail.summary') || '摘要'" min-width="160" show-overflow-tooltip>
+                    <template #default="{ row }">{{ w(row.reason) }}</template>
+                  </el-table-column>
+                </el-table>
+              </div>
+
+              <!-- 4. 冻结标记 -->
+              <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
+                <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                  <el-icon class="text-[#C04442]"><Lock /></el-icon>
+                  {{ $t('adminCardDetail.sectionFreeze') || '冻结标记' }}
+                </div>
+                <!-- 卡片级冻结 -->
+                <div class="flex items-start gap-2 p-2.5 rounded-lg border" :class="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen') ? 'bg-[#FBEAEA] border-[#E5B8B8]' : 'bg-[#F3F8F4] border-[#D9E5DB]'">
+                  <el-tag size="small" :type="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen') ? 'danger' : 'success'" effect="plain">
+                    {{ $t('adminCardDetail.cardFreeze') || '卡片级冻结' }}
+                  </el-tag>
+                  <span v-if="cardDetailRow && (cardDetailRow.status === '已冻结' || cardDetailRow.status === 'Frozen')" class="text-[#A03E3C] font-medium">
+                    {{ cardDetailRow.freezeReason ? localizeFreezeReason(cardDetailRow.freezeReason, t) : $t('adminCardDetail.noFreeze') }}
+                  </span>
+                  <span v-else class="text-[#2F5B44]">{{ $t('adminCardDetail.noFreeze') || '无冻结标记' }}</span>
+                </div>
+                <!-- 成员级冻结 -->
+                <div class="space-y-1.5">
+                  <div class="text-[11px] font-semibold text-[#58685D]">{{ $t('adminCardDetail.memberFreeze') || '成员级冻结' }}</div>
+                  <div v-if="cardDetailData.members.length === 0" class="text-[11px] text-[#8A9A8F]">—</div>
+                  <div
+                    v-for="m in cardDetailData.members"
+                    :key="m.id"
+                    class="flex items-center justify-between gap-2 p-2 rounded-lg border text-[11px]"
+                    :class="m.isFrozen || m.status === '冻结' ? 'bg-[#FBEAEA] border-[#E5B8B8]' : 'bg-[#F7FAF8] border-[#E9F1EB]'"
+                  >
+                    <div class="flex items-center gap-2 min-w-0">
+                      <el-tag size="small" :type="m.isFrozen || m.status === '冻结' ? 'danger' : 'success'" effect="plain" class="scale-90 origin-left rtl:origin-right">
+                        {{ m.isFrozen || m.status === '冻结' ? ($t('adminCardDetail.frozenTag') || '已冻结') : ($t('adminCardDetail.normalTag') || '正常') }}
+                      </el-tag>
+                      <span class="font-medium text-[#1F3326] truncate">{{ w(m.name) }}</span>
+                      <span class="text-[#8A9A8F]">{{ w(m.relation) }}</span>
+                    </div>
+                    <span v-if="(m.isFrozen || m.status === '冻结') && m.freezeReason" class="text-[#A03E3C] truncate">
+                      {{ localizeFreezeReason(m.freezeReason, t) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 领取流水 -->
+            <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
+              <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                <el-icon class="text-[#326445]"><List /></el-icon>
+                {{ $t('adminCardDetail.sectionClaims') || '领取流水' }}
+              </div>
+              <el-table :data="cardDetailData.claims" border size="small" :empty-text="$t('adminCardDetail.noClaims') || '暂无领取流水'">
+                <el-table-column prop="claimVoucherNo" :label="$t('adminCardDetail.voucherNo') || '核销凭证号'" width="170">
+                  <template #default="{ row }">
+                    <span class="font-mono font-bold text-[#2A5440]">{{ row.claimVoucherNo }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="claimPeriod" :label="$t('adminCardDetail.claimPeriod') || '核销周期'" width="140" align="center" />
+                <el-table-column prop="claimTime" :label="$t('adminCardDetail.claimTime') || '核销时间'" width="150" align="center" />
+                <el-table-column :label="$t('adminCardDetail.claimedItems') || '核销物资'" min-width="220">
+                  <template #default="{ row }">
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(it, idx) in (row.claimedItems || [])"
+                        :key="idx"
+                        class="bg-[#F3F8F4] border border-[#D9E5DB] px-1.5 py-0.5 rounded text-[10px] text-[#43554B]"
+                      >
+                        {{ w(it.itemName) }}: <strong>{{ it.qty }}{{ it.unit }}</strong>
+                      </span>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column :label="$t('adminCardDetail.syncLatency') || '云端同步'" width="110" align="center">
+                  <template #default="{ row }">
+                    <span class="font-mono text-[#2F7A50]">{{ row.cloudSyncLatencyMs ?? 0 }}ms</span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+
+            <!-- 5. 异常记录 -->
+            <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
+              <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
+                <el-icon class="text-[#C04442]"><WarningFilled /></el-icon>
+                {{ $t('adminCardDetail.sectionExceptions') || '异常记录' }}
+              </div>
+              <el-table :data="cardDetailData.exceptions" border size="small" :empty-text="$t('adminCardDetail.noExceptions') || '暂无异常记录'">
+                <el-table-column prop="timestamp" :label="$t('adminCardDetail.exceptionTime') || '发生时间'" width="150" align="center" />
+                <el-table-column prop="operatorName" :label="$t('adminCardDetail.operator') || '操作人'" width="150" show-overflow-tooltip>
+                  <template #default="{ row }">{{ w(row.operatorName) }}</template>
+                </el-table-column>
+                <el-table-column prop="riskLevel" :label="$t('adminCardDetail.riskLevel') || '风险等级'" width="100" align="center">
+                  <template #default="{ row }">
+                    <el-tag size="small" :type="row.riskLevel === 'HIGH' ? 'danger' : (row.riskLevel === 'MEDIUM' ? 'warning' : 'info')" effect="plain">
+                      {{ row.riskLevel }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="actionDesc" :label="$t('adminCardDetail.exceptionDesc') || '异常描述'" min-width="240" show-overflow-tooltip>
+                  <template #default="{ row }">{{ w(row.actionDesc) }}</template>
+                </el-table-column>
+              </el-table>
             </div>
           </div>
         </div>
-
-        <!-- 5. 异常记录 -->
-        <div class="bg-white border border-[#D9E5DB] rounded-lg p-3.5 space-y-2.5">
-          <div class="font-bold text-[#1F3326] flex items-center gap-1.5">
-            <el-icon class="text-[#C04442]"><WarningFilled /></el-icon>
-            {{ $t('adminCardDetail.sectionExceptions') || '异常记录' }}
-          </div>
-          <el-table :data="cardDetailData.exceptions" border size="small" :empty-text="$t('adminCardDetail.noExceptions') || '暂无异常记录'">
-            <el-table-column prop="timestamp" :label="$t('adminCardDetail.exceptionTime') || '发生时间'" width="150" align="center" />
-            <el-table-column prop="operatorName" :label="$t('adminCardDetail.operator') || '操作人'" width="150" show-overflow-tooltip>
-              <template #default="{ row }">{{ w(row.operatorName) }}</template>
-            </el-table-column>
-            <el-table-column prop="riskLevel" :label="$t('adminCardDetail.riskLevel') || '风险等级'" width="100" align="center">
-              <template #default="{ row }">
-                <el-tag size="small" :type="row.riskLevel === 'HIGH' ? 'danger' : (row.riskLevel === 'MEDIUM' ? 'warning' : 'info')" effect="plain">
-                  {{ row.riskLevel }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="actionDesc" :label="$t('adminCardDetail.exceptionDesc') || '异常描述'" min-width="240" show-overflow-tooltip>
-              <template #default="{ row }">{{ w(row.actionDesc) }}</template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
-    </el-drawer>
+      </transition>
+    </teleport>
     <MemberRegistrationDialog
       v-model="memberRegistrationVisible"
       :member="selectedRegistrationMember"
@@ -1454,7 +1497,9 @@ import { localizeFreezeReason, resolveFreezeReasonCode } from '../../utils/freez
 import { useAuthStore } from '../../stores/auth.js';
 import ReconciliationTab from './components/ReconciliationTab.vue';
 import OfficialRegulationsTab from './components/OfficialRegulationsTab.vue';
+import BusinessRulesTab from './components/BusinessRulesTab.vue';
 import MemberRegistrationDialog from './components/MemberRegistrationDialog.vue';
+import { getHouseholdThresholds } from '../../utils/businessRules.js';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
@@ -1569,6 +1614,9 @@ async function openCardDetailDrawer(row) {
   cardDetailData.exceptions = [];
   cardDetailVisible.value = true;
   cardDetailLoading.value = true;
+  // 选中该记录：联动在册家庭成员清单数据（不自动切换视图）
+  selectedCardNo.value = row.cardNo;
+  memberPage.value = 1;
   const cardNo = String(row.cardNo || '');
   try {
     // 家庭成员（冻结标记）：优先匹配家庭档案，回退卡片自带成员
@@ -1601,12 +1649,18 @@ async function openCardDetailDrawer(row) {
   }
 }
 
-function handleCardDetailClosed() {
+function closeCardDetail() {
+  cardDetailVisible.value = false;
   cardDetailRow.value = null;
   cardDetailData.members = [];
   cardDetailData.applications = [];
   cardDetailData.claims = [];
   cardDetailData.exceptions = [];
+}
+
+// 配给卡总账列表选中行高亮（选中记录的在册家庭成员清单同步联动）
+function cardRowClassName({ row }) {
+  return row.cardNo === selectedCardNo.value ? 'card-row-selected' : '';
 }
 
 const currentRoleTitle = computed(() => {
@@ -1823,6 +1877,20 @@ import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
 const authStore = useAuthStore();
 const activeTab = ref('cards');
+
+// 户数阈值来自「业务规则配置」，发布新版本后立即生效
+const rulesRevision = ref(0);
+const householdLimits = computed(() => {
+  rulesRevision.value;
+  return getHouseholdThresholds();
+});
+function onBusinessRulesSaved() {
+  rulesRevision.value += 1;
+}
+function openBusinessRules() {
+  activeTab.value = 'business-rules';
+}
+
 
 const provinceOptions = [
   '巴格达省',
@@ -2404,7 +2472,7 @@ function handleConfirmPlanning(row) {
 
 // 合并代理权
 function handleMergePrompt(row) {
-  ElMessageBox.prompt((isEnNow() ? `Station [${row.name}] serves ${row.servedHouseholds} households (≤750). Please enter the code of the nearby small station to be merged in (e.g. FA-00389):` : `网点【${row.name}】服务户数为 ${row.servedHouseholds} 户（≤750户），请输入待吸收合并的邻近小型网点编号（如 FA-00389）：`), (isEnNow() ? 'Planning & Follow-up Directorate - Merge & Optimize Small Stations' : '【规划与跟进司】合并优化小型代理点'), {
+  ElMessageBox.prompt((isEnNow() ? `Station [${row.name}] serves ${row.servedHouseholds} households (≤${householdLimits.value.smallOutlet}). Please enter the code of the nearby small station to be merged in (e.g. FA-00389):` : `网点【${row.name}】服务户数为 ${row.servedHouseholds} 户（≤${householdLimits.value.smallOutlet}户），请输入待吸收合并的邻近小型网点编号（如 FA-00389）：`), (isEnNow() ? 'Planning & Follow-up Directorate - Merge & Optimize Small Stations' : '【规划与跟进司】合并优化小型代理点'), {
     confirmButtonText: '合并重组',
     cancelButtonText: '取消',
     inputValue: 'FA-00389'
@@ -2619,7 +2687,7 @@ const agentForm = reactive({
   name: '',
   manager: '',
   phone: '',
-  servedHouseholds: 500,
+  servedHouseholds: householdLimits.value.newOutletBaseline,
   storageCapacity: 50
 });
 
@@ -2780,6 +2848,24 @@ onUnmounted(() => {
 <style scoped>
 .card-ledger-table :deep(.el-table__row) {
   cursor: pointer;
+}
+/* 配给卡总账选中行高亮（联动在册家庭成员清单） */
+.card-ledger-table :deep(.card-row-selected),
+.card-ledger-table :deep(.card-row-selected td.el-table__cell) {
+  background-color: #E1F4E4 !important;
+}
+.card-ledger-table :deep(.card-row-selected:hover > td.el-table__cell) {
+  background-color: #D3E9DB !important;
+}
+/* 配给卡用户档案全屏覆盖页过渡 */
+.card-detail-page-enter-active,
+.card-detail-page-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.card-detail-page-enter-from,
+.card-detail-page-leave-to {
+  opacity: 0;
+  transform: translateY(16px);
 }
 /* ========================================================
  * ht.iq 官方绿色系 UI 风格定制
