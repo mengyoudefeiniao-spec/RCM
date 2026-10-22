@@ -158,13 +158,13 @@ const routes = [
         path: 'messages',
         name: 'MessageCenter',
         component: () => import('../views/messages/MessageCenterView.vue'),
-        meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view' }
+        meta: { titleKey: 'messages.title', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view', anyPermissionCodes: ['messages.send'] }
       },
       {
         path: 'messages/review',
         name: 'MessageReview',
         component: () => import('../views/messages/MessageReviewView.vue'),
-        meta: { titleKey: 'mail.reviewPageTitle', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.view' }
+        meta: { titleKey: 'mail.reviewPageTitle', roles: ['admin', 'agent', 'citizen'], permissionCode: 'messages.review' }
       },
       {
         path: 'access-denied',
@@ -254,20 +254,22 @@ router.beforeEach((to, from, next) => {
     return next(getDefaultPathByRole(currentRole));
   }
 
+  const requiredCodes = [to.meta?.permissionCode, ...(to.meta?.anyPermissionCodes || [])].filter(Boolean);
+  const hasExplicitGrant = requiredCodes.length > 0 && (ALL_ADMIN_ROLES.includes(currentRole) || (Array.isArray(userProfile.permissionCodes) && userProfile.permissionCodes.some((code) => requiredCodes.some((requiredCode) => code === requiredCode || String(code).startsWith(`${requiredCode}.`)))));
+
   // 3. 角色路由权限拦截 (支持拆分后的三种管理员自动继承 admin 权限)
   if (token && to.meta?.roles) {
     const allowedRoles = [...to.meta.roles];
     if (allowedRoles.includes('admin')) {
       allowedRoles.push(...ALL_ADMIN_ROLES);
     }
-    const hasExplicitGrant = to.meta.permissionCode && Array.isArray(userProfile.permissionCodes) && userProfile.permissionCodes.includes(to.meta.permissionCode);
     if (!allowedRoles.includes(currentRole) && !hasExplicitGrant) {
       // 越权访问，自动重定向到其合规首页
       return next(getDefaultPathByRole(currentRole));
     }
   }
 
-  if (token && to.meta?.permissionCode && Array.isArray(userProfile.permissionCodes) && !ALL_ADMIN_ROLES.includes(currentRole) && !userProfile.permissionCodes.includes(to.meta.permissionCode)) {
+  if (token && to.meta?.permissionCode && Array.isArray(userProfile.permissionCodes) && !ALL_ADMIN_ROLES.includes(currentRole) && !hasExplicitGrant) {
     return next('/access-denied');
   }
 

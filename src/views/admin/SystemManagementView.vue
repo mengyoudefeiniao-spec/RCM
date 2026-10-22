@@ -28,7 +28,7 @@
           <template v-else-if="column.key === 'permissionCodes'" #default="{ row }"><div class="flex flex-wrap gap-1"><el-tag v-for="code in row.permissionCodes || []" :key="code" size="small">{{ permissionLabel(code) }}</el-tag><span v-if="!row.permissionCodes?.length" class="text-xs text-[#89978E]">{{ t('systemExtras.noPermissions') }}</span></div></template>
           <template v-else-if="column.key === 'reviewScope'" #default="{ row }"><span class="text-xs leading-5">{{ reviewScopeSummary(row) }}</span></template>
           <template v-else-if="column.key === 'moduleKey'" #default="{ row }">{{ t('systemExtras.' + row.moduleKey) }}</template>
-          <template v-else-if="column.key === 'featureKey'" #default="{ row }">{{ t('systemExtras.' + row.featureKey) }}</template>
+          <template v-else-if="column.key === 'featureKey'" #default="{ row }">{{ row.entityKind ? permissionItemLabel(row) : t('systemExtras.' + row.featureKey) }}</template>
           <template v-else-if="column.key === 'type'" #default="{ row }">{{ auditTypeLabel(row.type) }}</template>
           <template v-else-if="column.key === 'terminal'" #default="{ row }">{{ row.terminal || '—' }}</template>
           <template v-else-if="column.key === 'businessNo'" #default="{ row }">{{ row.businessNo || '—' }}</template>
@@ -115,6 +115,37 @@
                       </div>
                     </div>
                   </template>
+                  <!-- 消息权限按接收范围（区域、代理、站点）嵌套消息对象（公民、代理、Web、全部用户） -->
+                  <template v-else-if="module.moduleKey === 'moduleMessages' && feature.children.length">
+                    <el-checkbox
+                      :model-value="isFeatureFullyChecked(feature)"
+                      :indeterminate="isFeatureIndeterminate(feature)"
+                      @change="(checked) => toggleFeature(feature, checked)"
+                    >{{ t('systemExtras.' + feature.featureKey) }}</el-checkbox>
+                    <div class="space-y-1 ps-6">
+                      <div v-for="scope in feature.children" :key="scope.code" class="rounded-md border border-[#E8EDEA] px-3 py-2">
+                        <el-checkbox
+                          v-if="scope.children.length"
+                          :model-value="isPermissionNodeFullyChecked(scope)"
+                          :indeterminate="isPermissionNodeIndeterminate(scope)"
+                          @change="(checked) => togglePermissionNode(scope, checked)"
+                        >{{ permissionItemLabel(scope) }}</el-checkbox>
+                        <el-checkbox
+                          v-else
+                          :model-value="(form.permissionCodes || []).includes(scope.code)"
+                          @change="(checked) => togglePermission(scope.code, checked)"
+                        >{{ t('systemExtras.' + scope.featureKey) }}</el-checkbox>
+                        <div v-if="scope.children.length" class="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-s-2 border-[#D9E5DB] ps-5">
+                          <el-checkbox
+                            v-for="target in scope.children"
+                            :key="target.code"
+                            :model-value="(form.permissionCodes || []).includes(target.code)"
+                            @change="(checked) => togglePermission(target.code, checked)"
+                          >{{ permissionItemLabel(target) }}</el-checkbox>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
                   <!-- 其他二级功能：有子级时作为分组开关 -->
                   <template v-else>
                     <el-checkbox
@@ -168,7 +199,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { deleteSystemRecord, getSystemRecords, logAuditExport, saveSystemRecord } from '../../api/adminCenter.js';
+import { deleteSystemRecord, getMessageRecipientTree, getSystemRecords, logAuditExport, saveSystemRecord } from '../../api/adminCenter.js';
 import {
   PERMISSION_CATALOG,
   buildPermissionTree,
@@ -178,6 +209,7 @@ import {
   WAREHOUSE_PERMISSION_CODES,
   summarizeReviewScope
 } from '../../utils/reviewPermission.js';
+import { buildMessagePermissionEntries } from '../../utils/messagePermissions.js';
 const { t } = useI18n();
 const tabs = [{ key: 'users', label: 'users' }, { key: 'roles', label: 'roles' }, { key: 'organizations', label: 'organizations' }, { key: 'audit-logs', label: 'logs' }];
 const section = ref('users'), rows = ref([]), roleRows = ref([]), permissionRows = ref([]), loading = ref(false), keyword = ref(''), appliedQuery = ref(''), dialog = ref(false), locationDialog = ref(false), editing = ref(false), form = ref({});
@@ -187,6 +219,14 @@ const locationMap = ref(null);
 let mapInstance, locationMarker;
 const actor = () => JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}').name || 'System Administrator';
 const catalog = PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' }));
+const messageRecipientTree = ref([]);
+const legacyMessagePermission = (code) => /^messages\.(send|review)\.(region|agent|site|cardAppUser)\./.test(code) || /^messages\.(send|review)\.everyone$/.test(code);
+const permissionCatalog = computed(() => {
+  const base = (permissionRows.value.length ? permissionRows.value : catalog).filter((item) => !legacyMessagePermission(item.code));
+  const dynamic = buildMessagePermissionEntries(messageRecipientTree.value).map((item) => ({ ...item, id: 'perm-' + item.code }));
+  const dynamicCodes = new Set(dynamic.map((item) => item.code));
+  return [...base.filter((item) => !dynamicCodes.has(item.code)), ...dynamic];
+});
 const bySection = {
   users: [['username','username'],['name','name'],['email','email'],['roleId','role'],['organization','organization'],['status','status']],
   roles: [['name','name'],['code','code'],['reviewScope','reviewPermission'],['permissionCodes','assignedPermissions'],['description','description']],
@@ -209,7 +249,7 @@ const filteredRows = computed(() => {
   }
   return rows.value.filter((row) => !appliedQuery.value || Object.values(row).some((value) => String(JSON.stringify(value) ?? value ?? '').toLowerCase().includes(appliedQuery.value.toLowerCase())));
 });
-const permissionTree = computed(() => buildPermissionTree(permissionRows.value.length ? permissionRows.value : catalog));
+const permissionTree = computed(() => buildPermissionTree(permissionCatalog.value));
 const reviewRegionOptions = computed(() => REVIEW_SCOPE_REGIONS);
 function emptyReviewScope() { return { types: [], regionsByType: {} }; }
 function normalizeReviewScope(scope = {}, permissionCodes = [], roleCode = '') {
@@ -255,18 +295,35 @@ function togglePermission(code, checked) {
   if (checked) codes.add(code); else codes.delete(code);
   form.value.permissionCodes = [...codes];
 }
-function isFeatureFullyChecked(feature) {
+function permissionLeafCodes(node) {
+  if (!node.children?.length) return [node.code];
+  return node.children.flatMap(permissionLeafCodes);
+}
+function isPermissionNodeFullyChecked(node) {
   const codes = form.value.permissionCodes || [];
-  return feature.children.length > 0 && feature.children.every((child) => codes.includes(child.code));
+  const leaves = permissionLeafCodes(node);
+  return leaves.length > 0 && leaves.every((code) => codes.includes(code));
+}
+function isPermissionNodeIndeterminate(node) {
+  const codes = form.value.permissionCodes || [];
+  const leaves = permissionLeafCodes(node);
+  const checkedCount = leaves.filter((code) => codes.includes(code)).length;
+  return checkedCount > 0 && checkedCount < leaves.length;
+}
+function togglePermissionNode(node, checked) {
+  const codes = new Set(form.value.permissionCodes || []);
+  permissionLeafCodes(node).forEach((code) => { if (checked) codes.add(code); else codes.delete(code); });
+  form.value.permissionCodes = [...codes];
+}
+function isFeatureFullyChecked(feature) {
+  return isPermissionNodeFullyChecked(feature);
 }
 function isFeatureIndeterminate(feature) {
-  const codes = form.value.permissionCodes || [];
-  const checked = feature.children.filter((child) => codes.includes(child.code)).length;
-  return checked > 0 && checked < feature.children.length;
+  return isPermissionNodeIndeterminate(feature);
 }
 function toggleFeature(feature, checked) {
   const codes = new Set(form.value.permissionCodes || []);
-  feature.children.forEach((child) => { if (checked) codes.add(child.code); else codes.delete(child.code); });
+  permissionLeafCodes(feature).forEach((code) => { if (checked) codes.add(code); else codes.delete(code); });
   form.value.permissionCodes = [...codes];
 }
 function reviewScopeSummary(row) {
@@ -276,11 +333,17 @@ function reviewScopeSummary(row) {
   return `${typeText} · ${t('systemExtras.reviewRegionCount', { count: summary.regionCount })}`;
 }
 function columnLabel(column) { return column.key === 'permissionCodes' || column.key === 'reviewScope' || column.key === 'details' || column.key === 'ip' || column.key === 'moduleKey' || column.key === 'featureKey' || column.key === 'address' || column.key === 'contact' || column.key === 'phone' ? t('systemExtras.' + column.label) : t('system.' + column.label); }
-function permissionLabel(code) { const item = permissionRows.value.find((permission) => permission.code === code); return item ? t('systemExtras.' + item.moduleKey) + ' · ' + t('systemExtras.' + item.featureKey) : code; }
+function entityLetter(index = 0) { let value = Math.max(0, Number(index) || 0), result = ''; do { result = String.fromCharCode(65 + (value % 26)) + result; value = Math.floor(value / 26) - 1; } while (value >= 0); return result; }
+function permissionItemLabel(item) {
+  if (item.entityKind === 'agent') return `${t('systemExtras.messageAgentEntry', { letter: entityLetter(item.displayIndex) })} · ${item.entityId}`;
+  if (item.entityKind === 'site') return `${t('systemExtras.messageSiteEntry', { letter: entityLetter(item.displayIndex) })} · ${item.entityId}`;
+  return t('systemExtras.' + item.featureKey);
+}
+function permissionLabel(code) { const item = permissionCatalog.value.find((permission) => permission.code === code); return item ? t('systemExtras.' + item.moduleKey) + ' · ' + permissionItemLabel(item) : code; }
 function roleLabel(user) { const role = roleRows.value.find((item) => item.id === user.roleId || item.code === user.role); return role?.name || user.role || '—'; }
 function formatTime(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'; }
-async function load() { loading.value = true; try { rows.value = section.value === 'permissions' ? permissionRows.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
-async function loadReferences() { [roleRows.value, permissionRows.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions')]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
+async function load() { loading.value = true; try { rows.value = section.value === 'permissions' ? permissionCatalog.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
+async function loadReferences() { [roleRows.value, permissionRows.value, messageRecipientTree.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions'), getMessageRecipientTree().catch(() => [])]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
 async function changeSection() { keyword.value = ''; appliedQuery.value = ''; await load(); }
 function resetAuditFilters() { auditFilters.value = { actor: '', range: null, type: '', businessNo: '' }; load(); }
 function auditTypeLabel(type) { return type ? t('system.auditType_' + type) : '—'; }
@@ -296,7 +359,7 @@ async function exportAuditLogs() {
 function runSearch() { appliedQuery.value = keyword.value.trim(); }
 function resetSearch() { keyword.value = ''; appliedQuery.value = ''; }
 function openCreate() { editing.value = false; form.value = section.value === 'roles' ? { permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { status: 'active', enabled: true } : {}; dialog.value = true; }
-function openEdit(row) { editing.value = true; const permissionCodes = resolveEffectiveCodes(row.permissionCodes || []); form.value = { ...row, enabled: row.status !== 'disabled', permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
+function openEdit(row) { editing.value = true; const permissionCodes = resolveEffectiveCodes(row.permissionCodes || [], permissionCatalog.value).filter((code) => !legacyMessagePermission(code)); form.value = { ...row, enabled: row.status !== 'disabled', permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
 function auditMessage(key, entityKey, name, extra = {}) { return t('systemExtras.' + key, { actor: actor(), entity: t('systemExtras.' + entityKey), name, ...extra }); }
 async function save() {
   const name = form.value.name || form.value.username || form.value.code;

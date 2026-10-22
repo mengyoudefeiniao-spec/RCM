@@ -1,14 +1,11 @@
 /**
  * 审核流程权限体系统一工具
  *
- * 背景：消息通知新增「待审核消息」审核流程，审核权限在
- * 系统管理-角色-关联功能权限中配置；功能权限目录采用三级结构
- * (模块 → 功能 → 权限项)，审核权限按业务类型划分，并支持
- * 当前角色按审核事项配置可办理区域。
+ * 消息通知发送与审核权限在系统管理的角色功能权限中配置。
+ * 权限目录支持按模块、功能、范围和接收对象递归嵌套。
  */
 
-// 三级功能权限目录：模块(一级) → 功能(二级) → 权限项(三级)
-// parentCode 指向二级权限码；二级权限若存在子级，界面中作为分组开关
+// 功能权限目录：消息发送和审核的实体级权限在系统管理中按收件人树动态补充。
 export const PERMISSION_CATALOG = [
   { moduleKey: 'moduleDashboard', code: 'dashboard.view', featureKey: 'dashboardOverview' },
   { moduleKey: 'moduleAgents', code: 'agents.view', featureKey: 'agentsList' },
@@ -45,11 +42,13 @@ export const PERMISSION_CATALOG = [
   { moduleKey: 'moduleMessages', code: 'messages.send.agent', featureKey: 'messageScopeAgent', parentCode: 'messages.send' },
   { moduleKey: 'moduleMessages', code: 'messages.send.site', featureKey: 'messageScopeSite', parentCode: 'messages.send' },
   { moduleKey: 'moduleMessages', code: 'messages.send.cardAppUser', featureKey: 'messageScopeCardAppUser', parentCode: 'messages.send' },
+  { moduleKey: 'moduleMessages', code: 'messages.send.web', featureKey: 'messageTargetWebUsers', parentCode: 'messages.send' },
   { moduleKey: 'moduleMessages', code: 'messages.review', featureKey: 'messagesReview' },
   { moduleKey: 'moduleMessages', code: 'messages.review.region', featureKey: 'messageScopeRegion', parentCode: 'messages.review' },
   { moduleKey: 'moduleMessages', code: 'messages.review.agent', featureKey: 'messageScopeAgent', parentCode: 'messages.review' },
   { moduleKey: 'moduleMessages', code: 'messages.review.site', featureKey: 'messageScopeSite', parentCode: 'messages.review' },
-  { moduleKey: 'moduleMessages', code: 'messages.review.cardAppUser', featureKey: 'messageScopeCardAppUser', parentCode: 'messages.review' }
+  { moduleKey: 'moduleMessages', code: 'messages.review.cardAppUser', featureKey: 'messageScopeCardAppUser', parentCode: 'messages.review' },
+  { moduleKey: 'moduleMessages', code: 'messages.review.web', featureKey: 'messageTargetWebUsers', parentCode: 'messages.review' }
 ];
 
 export const WAREHOUSE_PERMISSION_CODES = PERMISSION_CATALOG
@@ -80,59 +79,57 @@ const SOURCE_TO_CODE = {
 
 // 审核范围可选区域（伊拉克省级行政区）
 export const REVIEW_SCOPE_REGIONS = [
-  { value: '巴格达省', labelKey: 'regionBaghdad' },
-  { value: '巴士拉省', labelKey: 'regionBasra' },
-  { value: '尼尼微省', labelKey: 'regionNineveh' },
-  { value: '迪亚拉省', labelKey: 'regionDiyala' },
-  { value: '基尔库克省', labelKey: 'regionKirkuk' },
-  { value: '安巴尔省', labelKey: 'regionAnbar' },
-  { value: '埃尔比勒省', labelKey: 'regionErbil' },
-  { value: '苏莱曼尼亚省', labelKey: 'regionSulaymaniyah' }
+  { code: 'BAG', value: '巴格达省', labelKey: 'regionBaghdad' },
+  { code: 'BAS', value: '巴士拉省', labelKey: 'regionBasra' },
+  { code: 'NIN', value: '尼尼微省', labelKey: 'regionNineveh' },
+  { code: 'DIY', value: '迪亚拉省', labelKey: 'regionDiyala' },
+  { code: 'KIR', value: '基尔库克省', labelKey: 'regionKirkuk' },
+  { code: 'ANB', value: '安巴尔省', labelKey: 'regionAnbar' },
+  { code: 'ERB', value: '埃尔比勒省', labelKey: 'regionErbil' },
+  { code: 'SLY', value: '苏莱曼尼亚省', labelKey: 'regionSulaymaniyah' }
 ];
 
 const ADMIN_ROLES = ['admin', 'minister_center', 'deputy_minister', 'director_planning'];
 
 /**
- * 构建三级权限树（模块 → 功能 → 权限项）
+ * 构建递归功能权限树。
  * @param {Array} catalog 权限目录，默认 PERMISSION_CATALOG
  * @returns {Array<{ moduleKey: string, features: Array<{ code, featureKey, children: Array }> }>}
  */
 export function buildPermissionTree(catalog = PERMISSION_CATALOG) {
   const modules = [];
   const moduleMap = new Map();
+  const nodeMap = new Map(catalog.map((item) => [item.code, { ...item, children: [] }]));
   catalog.forEach((item) => {
     if (!moduleMap.has(item.moduleKey)) {
       const module = { moduleKey: item.moduleKey, features: [] };
       moduleMap.set(item.moduleKey, module);
       modules.push(module);
     }
-    moduleMap.get(item.moduleKey).features.push({ ...item, children: [] });
+    if (!item.parentCode) moduleMap.get(item.moduleKey).features.push(nodeMap.get(item.code));
   });
-  // 将三级权限项挂到二级功能下
-  modules.forEach((module) => {
-    module.features.forEach((feature) => {
-      catalog
-        .filter((item) => item.parentCode === feature.code)
-        .forEach((child) => feature.children.push({ ...child, children: [] }));
-    });
-    // 子权限只显示在父级功能内部，不能再作为同级功能重复渲染
-    module.features = module.features.filter((feature) => !feature.parentCode);
+  catalog.forEach((item) => {
+    if (!item.parentCode) return;
+    const parent = nodeMap.get(item.parentCode);
+    if (parent) parent.children.push(nodeMap.get(item.code));
   });
   return modules;
 }
 
 /**
- * 将角色权限码展开为有效的三级权限码（父码自动展开为全部子级）
+ * 将角色权限码展开为有效叶子权限码（父码自动展开为全部后代）
  * @param {string[]} codes 角色已授权权限码
- * @returns {string[]} 有效三级权限码
+ * @returns {string[]} 有效叶子权限码
  */
-export function resolveEffectiveCodes(codes = []) {
+export function resolveEffectiveCodes(codes = [], catalog = PERMISSION_CATALOG) {
   const set = new Set();
-  (Array.isArray(codes) ? codes : []).forEach((code) => {
-    const children = PERMISSION_CATALOG.filter((item) => item.parentCode === code);
-    if (children.length) children.forEach((child) => set.add(child.code));
-    else set.add(code);
-  });
+  const descendants = (code) => catalog.filter((item) => item.parentCode === code);
+  const addEffectiveCode = (code) => {
+    const children = descendants(code);
+    if (children.length) children.forEach((child) => addEffectiveCode(child.code));
+    else if (code && (catalog === PERMISSION_CATALOG || catalog.some((item) => item.code === code))) set.add(code);
+  };
+  (Array.isArray(codes) ? codes : []).forEach(addEffectiveCode);
   return [...set];
 }
 

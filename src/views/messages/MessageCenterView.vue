@@ -1,6 +1,6 @@
 <template>
   <section class="mail-shell p-2 sm:p-4">
-    <MessageCenterNav :can-review="canReview" />
+    <MessageCenterNav :can-view="canViewMessages" :can-review="canReview" />
     <div class="mail-toolbar rcm-card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
       <div class="flex items-center gap-3"><h1 class="text-lg font-bold text-[var(--el-text-color-primary)]">{{ t('mail.title') }}</h1><el-tag v-if="messageStore.unreadCount" size="small" round>{{ t('mail.unreadCount', { count: messageStore.unreadCount }) }}</el-tag></div>
       <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" :aria-label="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"><template #prefix><el-icon><Search /></el-icon></template></el-input><el-button circle :title="t('mail.refresh')" :aria-label="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
@@ -23,7 +23,7 @@
           <div v-for="item in filteredItems" :key="item.id" class="notification-item" :class="{ 'is-selected': selected?.id === item.id }">
             <button type="button" class="notification-content" :aria-pressed="selected?.id === item.id" @click="selectMessage(item)">
               <div class="flex min-w-0 items-center justify-between gap-2"><span class="min-w-0 truncate text-xs text-[#75837A]">{{ isIncoming(item) ? item.sender : t('mail.to') + ': ' + recipientSummary(item) }}</span><time class="shrink-0 text-[11px] text-[#8A9890]">{{ shortDate(item.createdAt) }}</time></div>
-              <div class="mt-1.5 flex items-center gap-2"><span v-if="!item.read && isIncoming(item)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3D8A58]" :title="t('mail.unread')"/><span class="min-w-0 flex-1 truncate text-sm" :class="!item.read && isIncoming(item) ? 'font-semibold text-[#24372C]' : 'font-medium text-[#53635A]'">{{ titleOf(item) || t('mail.emptyBody') }}</span><el-icon v-if="item.attachments?.length" class="shrink-0 text-[#819087]" :title="t('mail.attachments')"><Paperclip /></el-icon></div>
+              <div class="mt-1.5 flex items-center gap-2"><span v-if="!item.read && isIncoming(item)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3D8A58]" :title="t('mail.unread')"/><span class="min-w-0 flex-1 truncate text-sm" :class="!item.read && isIncoming(item) ? 'font-semibold text-[#24372C]' : 'font-medium text-[#53635A]'">{{ titleOf(item) || t('mail.emptyBody') }}</span><el-tag v-if="item.sourceFolder === 'sent' && item.reviewStatus" size="small" :type="messageReviewTagType(item.reviewStatus)">{{ messageReviewStatus(item.reviewStatus) }}</el-tag><el-icon v-if="item.attachments?.length" class="shrink-0 text-[#819087]" :title="t('mail.attachments')"><Paperclip /></el-icon></div>
               <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
             </button>
             <button v-if="item.kind !== 'review'" type="button" class="favorite-toggle" :class="{ 'is-favorite': item.favorite }" :disabled="favoritePending.includes(item.id)" :aria-pressed="!!item.favorite" :title="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" :aria-label="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" @click.stop="toggleFavorite(item)"><el-icon><component :is="item.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon></button>
@@ -35,7 +35,7 @@
       <main class="mail-reader min-w-0 p-4 sm:p-6">
         <template v-if="selected">
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDEA] pb-4">
-            <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && isIncoming(selected)" size="small" type="success">{{ t('mail.unread') }}</el-tag></div>
+            <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && isIncoming(selected)" size="small" type="success">{{ t('mail.unread') }}</el-tag><el-tag v-if="selected.sourceFolder === 'sent' && selected.reviewStatus" size="small" :type="messageReviewTagType(selected.reviewStatus)">{{ messageReviewStatus(selected.reviewStatus) }}</el-tag></div>
             <div class="flex flex-wrap items-center gap-2"><el-button size="small" :loading="favoritePending.includes(selected.id)" :type="selected.favorite ? 'primary' : 'default'" :plain="selected.favorite" :aria-pressed="!!selected.favorite" @click="toggleFavorite(selected)"><el-icon><component :is="selected.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon>{{ t(selected.favorite ? 'mail.removeFavorite' : 'mail.addFavorite') }}</el-button><el-button v-if="canSend && isIncoming(selected)" size="small" @click="replyTo(selected)"><el-icon><Promotion /></el-icon>{{ t('mail.reply') }}</el-button></div>
           </div>
           <h2 class="mb-5 break-words text-xl font-bold leading-8 text-[#26382D]">{{ titleOf(selected) }}</h2>
@@ -59,14 +59,14 @@
           </div>
           <el-select v-model="draft.category" class="!w-48" :aria-label="t('mail.category')"><el-option value="admin" :label="t('mail.admin')"/><el-option value="system" :label="t('mail.system')"/></el-select>
         </div>
-        <div class="compose-row recipient-line"><label class="compose-label">{{ t('mail.to') }}</label><el-select v-model="draft.recipientType" class="compose-control" @change="resetTarget"><el-option value="citizens" :label="t('mail.citizenUsers')"/><el-option value="agents" :label="t('mail.agents')"/><el-option value="web" :label="t('mail.webUsers')"/><el-option value="everyone" :label="t('mail.everyone')"/></el-select></div>
+        <div class="compose-row recipient-line"><label class="compose-label">{{ t('mail.to') }}</label><el-select v-model="draft.recipientType" class="compose-control" @change="resetTarget"><el-option v-for="option in recipientTypeOptions" :key="option.value" :value="option.value" :label="option.label"/></el-select></div>
         <div v-if="['citizens','agents'].includes(draft.recipientType)" class="recipient-fields">
           <el-form label-position="top" class="recipient-grid">
-            <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.province || region.name"/></el-select></el-form-item>
-            <el-form-item :label="t('mail.agent')" class="!mb-0"><el-select v-model="draft.agentId" class="w-full" :placeholder="t('mail.chooseAgent')" @change="changeAgent"><el-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id" :label="agent.name"/></el-select></el-form-item>
-            <el-form-item :label="t('mail.rationSite')" class="!mb-0"><el-select v-model="draft.siteId" class="w-full" :placeholder="t('mail.chooseSite')" @change="loadFamilies"><el-option v-for="site in siteOptions" :key="site.id" :value="site.id" :label="site.storeName || site.centerName || site.name"/></el-select></el-form-item>
-            <el-form-item v-if="draft.recipientType === 'citizens'" :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.chooseUsers')"><el-option v-for="family in familyOptions" :key="family.rationCardNo" :value="family.rationCardNo" :label="family.headName + ' · ' + family.rationCardNo"/></el-select><el-checkbox v-model="draft.allAtSite" class="mt-2" @change="toggleAllFamilies">{{ t('mail.allAtSite') }}</el-checkbox></el-form-item>
-            <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><div class="flex min-h-8 items-center gap-2"><el-tag v-if="draft.siteId">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseAgent') }}</span></div></el-form-item>
+            <el-form-item :label="t('mail.region')" class="!mb-0"><el-select v-model="draft.regionId" class="w-full" :placeholder="t('mail.chooseRegion')" @change="changeRegion"><el-option v-for="region in regionOptions" :key="region.id" :value="region.id" :label="region.label"/></el-select></el-form-item>
+            <el-form-item v-if="canChooseAgent" :label="t('mail.agent')" class="!mb-0"><el-select v-model="draft.agentId" class="w-full" :placeholder="t('mail.chooseAgent')" @change="changeAgent"><el-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id" :label="agentLabel(agent)"/></el-select></el-form-item>
+            <el-form-item v-if="canChooseSite" :label="t('mail.rationSite')" class="!mb-0"><el-select v-model="draft.siteId" class="w-full" :placeholder="t('mail.chooseSite')" @change="loadFamilies"><el-option v-for="site in siteOptions" :key="site.id" :value="site.id" :label="siteLabel(site)"/></el-select></el-form-item>
+            <el-form-item v-if="draft.recipientType === 'citizens' && draft.siteId" :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><el-select v-model="draft.recipientIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('mail.chooseUsers')"><el-option v-for="family in familyOptions" :key="family.rationCardNo" :value="family.rationCardNo" :label="family.headName + ' · ' + family.rationCardNo"/></el-select><el-checkbox v-model="draft.allAtSite" class="mt-2" @change="toggleAllFamilies">{{ t('mail.allAtSite') }}</el-checkbox></el-form-item>
+            <el-form-item v-else :label="t('mail.selectRecipients')" class="!mb-0 recipient-users"><div class="flex min-h-8 items-center gap-2"><el-tag v-if="draft.siteId">{{ selectedSiteLabel }}</el-tag><el-tag v-else-if="draft.agentId">{{ selectedAgentLabel }}</el-tag><el-tag v-else-if="draft.regionId">{{ selectedRegionLabel }}</el-tag><span v-else class="text-sm text-[#89958E]">{{ t('mail.chooseRegion') }}</span></div></el-form-item>
           </el-form>
         </div>
         <div class="compose-row subject-line"><label class="compose-label">{{ t('mail.subject') }}</label><el-input v-model="draft.subject" maxlength="160" :placeholder="t('mail.subjectPlaceholder')" show-word-limit class="compose-control"/></div>
@@ -78,26 +78,11 @@
       </div>
     </el-dialog>
     <el-dialog v-model="previewVisible" :title="t('mail.preview')" width="min(900px, 94vw)" append-to-body>
-      <div class="mb-3 border-b border-[#E8EDEA] pb-3 text-sm"><div class="mb-2"><b>{{ t('mail.subject') }}:</b> {{ draft.subject || t('mail.subjectPlaceholder') }}</div><div><b>{{ t('mail.to') }}:</b> {{ recipientPayload().recipientLabel || t('mail.' + draft.recipientType) }}</div></div>
+      <div class="mb-3 border-b border-[#E8EDEA] pb-3 text-sm"><div class="mb-2"><b>{{ t('mail.subject') }}:</b> {{ draft.subject || t('mail.subjectPlaceholder') }}</div><div><b>{{ t('mail.to') }}:</b> {{ recipientSummary({ recipientType: draft.recipientType, recipientLabel: recipientPayload().recipientLabel }) }}</div></div>
       <article class="mail-content min-h-48 break-words text-sm leading-7 text-[#34473A]" v-html="previewHtml" />
       <template #footer><el-button @click="previewVisible = false">{{ t('mail.closePreview') }}</el-button><el-button type="primary" @click="previewVisible = false">{{ t('mail.continueEditing') }}</el-button></template>
     </el-dialog>
 
-    <!-- 待审核消息：初审意见 / 终审裁决 -->
-    <el-dialog v-model="reviewActionVisible" :title="reviewStage === 'manager' ? t('mail.reviewManagerAction') : t('mail.reviewStaffAction')" width="min(640px, 95vw)" append-to-body>
-      <el-form label-position="top">
-        <el-form-item v-if="reviewStage === 'manager'" :label="t('mail.reviewDecision')">
-          <el-radio-group v-model="reviewDecision">
-            <el-radio value="accept">{{ t('mail.reviewAccept') }}</el-radio>
-            <el-radio value="reject">{{ t('mail.reviewReject') }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item :label="reviewStage === 'manager' ? t('mail.reviewNotes') : t('mail.reviewOpinion')">
-          <el-input v-model="reviewActionText" type="textarea" :rows="4" maxlength="500" show-word-limit :placeholder="reviewStage === 'manager' ? t('review.managerPlaceholder') : t('review.staffPlaceholder')" />
-        </el-form-item>
-      </el-form>
-      <template #footer><el-button @click="reviewActionVisible = false">{{ t('system.cancel') }}</el-button><el-button type="primary" :loading="reviewSubmitting" @click="submitReviewAction">{{ t('mail.reviewSubmit') }}</el-button></template>
-    </el-dialog>
   </section>
 </template>
 
@@ -110,26 +95,85 @@ import { getAgentFamilies } from '../../api/agent.js';
 import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage, setMessageFavorite } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
-import { resolveReviewAccess } from '../../utils/reviewPermission.js';
+import { isMessageInSendScope, resolveMessageAccess } from '../../utils/messagePermissions.js';
+import { REVIEW_SCOPE_REGIONS } from '../../utils/reviewPermission.js';
 import MessageCenterNav from './MessageCenterNav.vue';
 
 const { t, locale } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
-const activeFolder = ref('inbox'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
+const activeFolder = ref(authStore.hasPermission('messages.view') ? 'inbox' : 'sent'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
 const recipientTree = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
 const favoriteCount = ref(0), favoritePending = ref([]);
 const receivedUnreadCount = computed(() => messageStore.inbox.filter((item) => !item.read && !item.favorite).length);
-const reviewAccess = computed(() => resolveReviewAccess(authStore.userProfile));
-const canReview = computed(() => reviewAccess.value.canView && reviewAccess.value.canProcess);
+const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
+const canReview = computed(() => messageAccess.value.canReview);
+const canViewMessages = computed(() => authStore.hasPermission('messages.view'));
 let loadVersion = 0;
 const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
-const canSend = computed(() => authStore.hasPermission('messages.send'));
-const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), { id: 'favorites', icon: 'FolderChecked' }]);
-const regionOptions = computed(() => recipientTree.value);
-const agentOptions = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || []);
-const siteOptions = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.children || []);
+const canSend = computed(() => messageAccess.value.canSend);
+const recipientTypeOptions = computed(() => [
+  { value: 'citizens', label: t('mail.cardAppUsers') },
+  { value: 'agents', label: t('mail.agents') },
+  { value: 'web', label: t('mail.webUsers') },
+].filter((option) => messageAccess.value.sendTypes.includes(option.value)));
+const folders = computed(() => [...(canViewMessages.value ? [{ id: 'inbox', icon: 'MessageBox' }] : []), ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), ...(canViewMessages.value || canSend.value ? [{ id: 'favorites', icon: 'FolderChecked' }] : [])]);
+function hasRecipientScope(item, type = 'agent') {
+  const access = messageAccess.value;
+  const regionGranted = access.directSend || access.sendAllRegions || access.sendRegions.includes(item.regionCode || draft.value.regionId);
+  if (draft.value.recipientType === 'citizens') return access.directSend || access.sendAllCardAppUsers || access.sendCardAppUserRegions.includes(item.regionCode || draft.value.regionId);
+  if (type === 'site') return regionGranted || access.sendAllSites || access.sendSites.includes(String(item.id));
+  return regionGranted || access.sendAllAgents || access.sendAgents.includes(String(item.id))
+    || (item.children || []).some((site) => access.sendAllSites || access.sendSites.includes(String(site.id)));
+}
+const regionOptions = computed(() => REVIEW_SCOPE_REGIONS.map((region) => {
+  const root = recipientTree.value.find((item) => item.regionCode === region.code || String(item.province || item.name || '').includes(region.value));
+  return { ...region, id: region.code, label: t('systemExtras.' + region.labelKey), children: root?.children || [] };
+}).filter((region) => {
+  if (draft.value.recipientType === 'citizens') return messageAccess.value.directSend || messageAccess.value.sendAllCardAppUsers || messageAccess.value.sendCardAppUserRegions.includes(region.code);
+  if (draft.value.recipientType === 'agents') return messageAccess.value.directSend || messageAccess.value.sendAllRegions || messageAccess.value.sendRegions.includes(region.code) || region.children.some((agent) => hasRecipientScope({ ...agent, regionCode: region.code }));
+  return false;
+}));
+const allAgentNodes = computed(() => {
+  const agents = [];
+  const visit = (nodes) => (nodes || []).forEach((node) => {
+    if (String(node.level || '').toUpperCase() === 'STREET' || (!node.children?.length && node.storeName)) return;
+    agents.push(node);
+    visit(node.children);
+  });
+  recipientTree.value.forEach((root) => visit(root.children));
+  return agents;
+});
+const allSiteNodes = computed(() => {
+  const sites = [];
+  const visit = (nodes) => (nodes || []).forEach((node) => {
+    if (String(node.level || '').toUpperCase() === 'STREET' || (!node.children?.length && node.storeName)) { sites.push(node); return; }
+    visit(node.children);
+  });
+  recipientTree.value.forEach((root) => visit(root.children));
+  return sites;
+});
+const agentOptions = computed(() => (regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || [])
+  .filter((agent) => hasRecipientScope({ ...agent, regionCode: draft.value.regionId })));
+const siteOptions = computed(() => (agentOptions.value.find((item) => item.id === draft.value.agentId)?.children || [])
+  .filter((site) => hasRecipientScope({ ...site, regionCode: draft.value.regionId }, 'site')));
 const familyOptions = computed(() => families.value);
-const selectedAgentLabel = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.name || '');
-const selectedSiteLabel = computed(() => siteOptions.value.find((item) => item.id === draft.value.siteId)?.storeName || siteOptions.value.find((item) => item.id === draft.value.siteId)?.name || '');
+const selectedRegionLabel = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.label || '');
+function entityLetter(index = 0) { let value = Math.max(0, Number(index) || 0), result = ''; do { result = String.fromCharCode(65 + (value % 26)) + result; value = Math.floor(value / 26) - 1; } while (value >= 0); return result; }
+function agentLabel(agent) {
+  const translated = agent?.[`name_${locale.value}`] || agent?.localizedNames?.[locale.value];
+  if (translated) return translated;
+  const index = Math.max(0, allAgentNodes.value.findIndex((node) => node.id === agent?.id));
+  return `${t('systemExtras.messageAgentEntry', { letter: entityLetter(index) })} · ${agent?.id || ''}`;
+}
+function siteLabel(site) {
+  const translated = site?.[`storeName_${locale.value}`] || site?.[`name_${locale.value}`] || site?.localizedNames?.[locale.value];
+  if (translated) return translated;
+  const index = Math.max(0, allSiteNodes.value.findIndex((node) => node.id === site?.id));
+  return `${t('systemExtras.messageSiteEntry', { letter: entityLetter(index) })} · ${site?.id || ''}`;
+}
+const selectedAgentLabel = computed(() => agentLabel(agentOptions.value.find((item) => item.id === draft.value.agentId)));
+const selectedSiteLabel = computed(() => siteLabel(siteOptions.value.find((item) => item.id === draft.value.siteId)));
+const canChooseAgent = computed(() => ['citizens', 'agents'].includes(draft.value.recipientType));
+const canChooseSite = computed(() => !!draft.value.agentId && siteOptions.value.length > 0);
 const filteredItems = computed(() => {
   const keyword = search.value.trim().toLocaleLowerCase(locale.value);
   return items.value.filter((item) => {
@@ -149,7 +193,23 @@ function safeBody(item) {
   return sanitizeHtml(html);
 }
 function categoryLabel(item) { return t(item.category === 'system' ? 'mail.system' : 'mail.admin'); }
-function recipientSummary(item) { return item.recipientLabel || (item.recipientType ? t('mail.' + item.recipientType) : t('mail.everyone')); }
+function messageReviewStatus(status) {
+  if (status === 'pending') return t('mail.reviewStatusPending');
+  if (status === 'approved') return t('mail.reviewStatusApproved');
+  if (status === 'rejected') return t('mail.reviewStatusRejected');
+  return String(status || '');
+}
+function messageReviewTagType(status) { return status === 'approved' ? 'success' : status === 'rejected' ? 'danger' : 'warning'; }
+function recipientTypeLabel(recipientType) {
+  const labels = { citizens: 'mail.cardAppUsers', agents: 'mail.agents', web: 'mail.webUsers' };
+  return t(labels[recipientType] || 'mail.webUsers');
+}
+function recipientSummary(item) {
+  const typeLabel = recipientTypeLabel(item.recipientType);
+  return item.recipientLabel && ['citizens', 'agents'].includes(item.recipientType)
+    ? `${typeLabel} · ${item.recipientLabel}`
+    : typeLabel;
+}
 function shortDate(value) { return value ? new Intl.DateTimeFormat(locale.value, { month: 'short', day: 'numeric' }).format(new Date(value)) : ''; }
 function fullDate(value) { return value ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : ''; }
 function formatSize(size = 0) { return size < 1024 * 1024 ? `${Math.max(1, Math.round(size / 1024))} KB` : `${(size / (1024 * 1024)).toFixed(1)} MB`; }
@@ -204,13 +264,14 @@ function openCompose() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('rcm_message_draft') || '{}'); } catch { saved = {}; }
   draft.value = { category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', ...saved, attachments: [] };
+  if (!recipientTypeOptions.value.some((option) => option.value === draft.value.recipientType)) draft.value.recipientType = recipientTypeOptions.value[0]?.value || 'citizens';
   composeVisible.value = true;
   if (!recipientTree.value.length) loadTree();
   if (draft.value.siteId) loadFamilies();
 }
 function resetTarget() { Object.assign(draft.value, { regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false }); families.value = []; }
-function changeRegion() { draft.value.agentId = ''; draft.value.siteId = ''; draft.value.recipientIds = []; families.value = []; }
-function changeAgent() { draft.value.siteId = ''; draft.value.recipientIds = []; families.value = []; }
+function changeRegion() { draft.value.agentId = ''; draft.value.siteId = ''; draft.value.recipientIds = []; draft.value.allAtSite = false; families.value = []; }
+function changeAgent() { draft.value.siteId = ''; draft.value.recipientIds = []; draft.value.allAtSite = false; families.value = []; }
 async function loadFamilies() {
   draft.value.recipientIds = []; families.value = [];
   if (!draft.value.siteId) return;
@@ -242,11 +303,11 @@ function recipientPayload() {
   let recipientLabel = '';
   if (draft.value.recipientType === 'agents') {
     recipientIds = draft.value.siteId ? [draft.value.siteId] : draft.value.agentId ? [draft.value.agentId] : [];
-    recipientLabel = draft.value.siteId ? selectedSiteLabel.value : selectedAgentLabel.value;
+    recipientLabel = draft.value.siteId ? selectedSiteLabel.value : draft.value.agentId ? selectedAgentLabel.value : selectedRegionLabel.value;
   } else if (draft.value.recipientType === 'citizens') {
-    recipientLabel = selectedSiteLabel.value;
+    recipientLabel = draft.value.siteId ? selectedSiteLabel.value : draft.value.agentId ? selectedAgentLabel.value : selectedRegionLabel.value;
     if (draft.value.allAtSite) recipientIds = families.value.map((family) => family.rationCardNo);
-  } else recipientLabel = t('mail.' + draft.value.recipientType);
+  } else recipientLabel = recipientTypeLabel(draft.value.recipientType);
   return { recipientIds, recipientLabel };
 }
 function saveDraft() {
@@ -259,18 +320,22 @@ async function sendDraft() {
   const probe = document.createElement('div'); probe.innerHTML = cleanHtml;
   const bodyText = probe.textContent.trim();
   const { recipientIds, recipientLabel } = recipientPayload();
+  if (!recipientTypeOptions.value.some((option) => option.value === draft.value.recipientType)) { ElMessage.warning(t('mail.recipientTypeNotAllowed')); return; }
   if (!draft.value.subject.trim() || !bodyText) { ElMessage.warning(t('mail.subjectRequired')); return; }
-  if (['citizens','agents'].includes(draft.value.recipientType) && !recipientIds.length) { ElMessage.warning(t('mail.recipientsRequired')); return; }
+  const target = { recipientType: draft.value.recipientType, regionCode: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId };
+  if (!isMessageInSendScope(target, messageAccess.value)) { ElMessage.warning(t('mail.recipientsRequired')); return; }
+  if (draft.value.recipientType === 'citizens' && draft.value.siteId && !recipientIds.length && !draft.value.allAtSite) { ElMessage.warning(t('mail.recipientsRequired')); return; }
   sending.value = true;
   try {
-    await sendMessage({ category: draft.value.category, recipientType: draft.value.recipientType, regionId: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId, recipientIds, recipientLabel, subject: draft.value.subject.trim(), bodyHtml: cleanHtml, bodyText, attachments: draft.value.attachments });
+    await sendMessage({ category: draft.value.category, recipientType: draft.value.recipientType, regionId: draft.value.regionId, regionCode: draft.value.regionId, agentId: draft.value.agentId, siteId: draft.value.siteId, recipientIds, recipientLabel, subject: draft.value.subject.trim(), bodyHtml: cleanHtml, bodyText, attachments: draft.value.attachments });
     localStorage.removeItem('rcm_message_draft');
-    ElMessage.success(t('mail.sentSuccess')); composeVisible.value = false; previewVisible.value = false; await switchFolder('sent');
+    ElMessage.success(t('mail.sendSubmittedReview')); composeVisible.value = false; previewVisible.value = false; await switchFolder('sent');
   } finally { sending.value = false; }
 }
 function replyTo(item) { openCompose(); draft.value.recipientType = 'web'; draft.value.subject = `${t('mail.reply')}: ${titleOf(item)}`; }
 async function downloadAttachment(attachment) { const result = await getMessageAttachment(attachment.id); if (!result?.dataUrl) return; const link = document.createElement('a'); link.href = result.dataUrl; link.download = result.name || attachment.name; link.click(); URL.revokeObjectURL(link.href); }
 async function revealMessage(id) {
+  if (!canViewMessages.value) return;
   const inbox = await getMessages('inbox');
   messageStore.inbox = inbox;
   const found = inbox.find((item) => item.id === id);

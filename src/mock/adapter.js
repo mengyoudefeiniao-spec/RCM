@@ -17,6 +17,7 @@ import {
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
+import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -825,21 +826,71 @@ export async function mockDispatch(config) {
   }
   if (url.includes('/messages') && !url.includes('/me/')) {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
-    if (Array.isArray(profile.permissionCodes)) {
-      const requiredCode = method === 'POST' && url.endsWith('/messages') ? 'messages.send' : 'messages.view';
-      const hasRequiredCode = profile.permissionCodes.includes(requiredCode) || profile.permissionCodes.some((code) => String(code).startsWith(`${requiredCode}.`));
-      if (!hasRequiredCode) return createResponse({}, 403, i18n.global.t('api.forbidden'));
-    }
+    const access = resolveMessageAccess(profile);
     const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
     const userKey = String(profile.id || profile.username || currentRole);
     const identity = [profile.id, profile.username, profile.cardNo, profile.rationCardNo, profile.agentCode].filter(Boolean).map(String);
-    const isReceived = (item) => item.audience?.includes(currentRole) && (!item.recipientIds?.length || item.recipientIds.some((id) => identity.includes(String(id)) || (currentRole === 'agent' && id === 'FA-00128')));
+    const profileRegion = String(profile.regionCode || profile.provinceCode || profile.province || profile.region || profile.governorate || '');
+    const userRegionCode = profileRegion ? REVIEW_SCOPE_REGIONS.find((region) => region.code === profileRegion
+      || profileRegion === region.value
+      || profileRegion.includes(region.value)
+      || region.value.includes(profileRegion))?.code || '' : '';
+    const isReceived = (item) => {
+      const selectedRecipients = !item.recipientIds?.length || item.recipientIds.some((id) => identity.includes(String(id)) || (currentRole === 'agent' && id === 'FA-00128'));
+      const needsRegionMatch = ['citizens', 'agents'].includes(item.recipientType) && item.regionCode && !item.recipientIds?.length;
+      return (!item.reviewStatus || item.reviewStatus === 'approved')
+        && item.audience?.includes(currentRole)
+        && selectedRecipients
+        && (!needsRegionMatch || (userRegionCode && userRegionCode === item.regionCode));
+    };
     const isSent = (item) => item.senderId ? item.senderId === userKey : item.senderRole === currentRole;
     const presentMessage = (item, sourceFolder = isReceived(item) ? 'inbox' : 'sent') => ({ ...item, sourceFolder, read: (item.readBy || []).includes(currentRole), favorite: (item.favoriteBy || []).includes(userKey) });
     const newestFirst = (rows) => rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const reviewPath = /\/messages\/([^/?]+)\/review$/.test(url);
+    const reviewQueuePath = url.endsWith('/messages/review') && method === 'GET';
+    const sendPath = method === 'POST' && url.endsWith('/messages');
+    const inboxPath = url.endsWith('/messages/inbox') && method === 'GET';
+    const sentPath = url.endsWith('/messages/sent') && method === 'GET';
+    const favoritesPath = url.endsWith('/messages/favorites') && method === 'GET';
+    if (reviewPath || reviewQueuePath) {
+      if (!access.canReview) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    } else if (sendPath) {
+      if (!access.canSend) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    } else if (inboxPath) {
+      if (Array.isArray(profile.permissionCodes) && !access.canView) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    } else if (sentPath) {
+      if (Array.isArray(profile.permissionCodes) && !access.canSend && !access.canView) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    } else if (favoritesPath) {
+      if (Array.isArray(profile.permissionCodes) && !access.canView && !access.canSend) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    } else if (!url.includes('/attachments/') && !url.includes('/recipients/tree') && !url.includes('/favorite') && !url.includes('/read')) {
+      if (Array.isArray(profile.permissionCodes) && !access.canView && !access.canSend && !access.canReview) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    }
     if (url.endsWith('/messages/recipients/tree') && method === 'GET') return createResponse(MOCK_AGENT_HIERARCHY_TREE);
     const attachmentMatch = url.match(/\/messages\/attachments\/([^/?]+)/);
-    if (attachmentMatch && method === 'GET') return createResponse(await getMockMessageAttachment(decodeURIComponent(attachmentMatch[1])));
+    if (attachmentMatch && method === 'GET') {
+      const attachmentId = decodeURIComponent(attachmentMatch[1]);
+      const message = messages.find((item) => item.attachments?.some((attachment) => attachment.id === attachmentId));
+      if (!message || (!isReceived(message) && !isSent(message) && !isMessageInReviewScope(message, access))) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      return createResponse(await getMockMessageAttachment(attachmentId));
+    }
+    if (reviewQueuePath) {
+      return createResponse(newestFirst(messages
+        .filter((item) => ['pending', 'approved', 'rejected'].includes(item.reviewStatus) && isMessageInReviewScope(item, access))
+        .map((item) => presentMessage(item, 'review'))));
+    }
+    if (reviewPath && method === 'POST') {
+      const reviewMatch = url.match(/\/messages\/([^/?]+)\/review$/);
+      const item = messages.find((entry) => entry.id === decodeURIComponent(reviewMatch?.[1] || ''));
+      if (!item || !isMessageInReviewScope(item, access)) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      if (item.reviewStatus !== 'pending') return createResponse({}, 409, i18n.global.t('api.businessError'));
+      if (!['approved', 'rejected'].includes(data.decision) || (data.decision === 'rejected' && !String(data.notes || '').trim())) return createResponse({}, 400, i18n.global.t('api.businessError'));
+      item.reviewStatus = data.decision;
+      item.reviewNotes = String(data.notes || '').trim();
+      item.reviewedBy = profile.name || profile.username || currentRole;
+      item.reviewedAt = new Date().toISOString();
+      writeCenter('messages', messages);
+      return createResponse(presentMessage(item, 'review'));
+    }
     if (url.endsWith('/messages/inbox') && method === 'GET') {
       return createResponse(newestFirst(messages.filter(isReceived).map((item) => presentMessage(item, 'inbox'))));
     }
@@ -859,17 +910,21 @@ export async function mockDispatch(config) {
       const isMultipart = typeof FormData !== 'undefined' && data instanceof FormData;
       const messageData = isMultipart ? Object.fromEntries([...data.entries()].filter(([key]) => key !== 'attachments')) : { ...data };
       if (typeof messageData.recipientIds === 'string') { try { messageData.recipientIds = JSON.parse(messageData.recipientIds); } catch { messageData.recipientIds = []; } }
-      const recipientType = messageData.recipientType || messageData.recipient || 'everyone';
-      const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], everyone: ['citizen', 'agent', 'admin', 'minister_center', 'deputy_minister', 'director_planning'] };
+      const recipientType = messageData.recipientType || messageData.recipient || '';
+      const audienceMap = { citizens: ['citizen'], agents: ['agent'], web: ['admin', 'minister_center', 'deputy_minister', 'director_planning'] };
+      if (!Object.hasOwn(audienceMap, recipientType)) return createResponse({}, 400, i18n.global.t('api.businessError'));
+      const regionCode = messageData.regionCode || messageData.regionId || '';
+      const next = { ...messageData, recipientType, regionCode, id: `msg-${crypto.randomUUID()}`, senderId: userKey, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType], reviewStatus: 'pending', reviewNotes: '', createdAt: new Date().toISOString(), readBy: [] };
+      if (!isMessageInSendScope(next, access)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
       const files = isMultipart ? data.getAll('attachments') : [];
-      const attachments = await Promise.all(files.filter((file) => file instanceof File).map(async (file) => ({ id: await saveMockMessageAttachment(file), name: file.name, size: file.size, type: file.type })));
-      const next = { ...messageData, recipientType, attachments, id: `msg-${crypto.randomUUID()}`, senderId: userKey, senderRole: currentRole, sender: profile.name || 'Administrator', audience: audienceMap[recipientType] || audienceMap.everyone, createdAt: new Date().toISOString(), readBy: [] };
-      messages.unshift(next); writeCenter('messages', messages); return createResponse(next);
+      next.attachments = await Promise.all(files.filter((file) => file instanceof File).map(async (file) => ({ id: await saveMockMessageAttachment(file), name: file.name, size: file.size, type: file.type })));
+      messages.unshift(next); writeCenter('messages', messages); return createResponse(presentMessage(next, 'sent'));
     }
     const readMatch = url.match(/\/messages\/([^/?]+)\/read$/);
     if (readMatch && method === 'POST') {
       const item = messages.find((entry) => entry.id === decodeURIComponent(readMatch[1]));
-      if (!item || !isReceived(item)) return createResponse({}, 404, i18n.global.t('api.notFound'));
+      const canRead = item && (isReceived(item) || (item.reviewStatus === 'pending' && isMessageInReviewScope(item, access)));
+      if (!canRead) return createResponse({}, 404, i18n.global.t('api.notFound'));
       item.readBy = [...new Set([...(item.readBy || []), currentRole])]; writeCenter('messages', messages);
       return createResponse({ success: true });
     }

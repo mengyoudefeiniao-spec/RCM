@@ -7,6 +7,7 @@
 export const MOCK_AGENT_HIERARCHY_TREE = [
   {
     id: 'PROV-AGT-BAG01',
+    regionCode: 'BAG',
     level: 'PROVINCE',
     levelName: '省级代理 (总管)',
     name: '穆罕默德·贾巴尔·拉希德',

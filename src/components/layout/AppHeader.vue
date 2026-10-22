@@ -117,7 +117,7 @@
           <router-link v-if="authStore.hasPermission('system.users')" to="/system-management" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/system-management') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Tools /></el-icon><span>{{ $t('system.title') }}</span>
           </router-link>
-          <router-link v-if="authStore.hasPermission('messages.view')" to="/messages" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+          <router-link v-if="canAccessMessageCenter" :to="authStore.hasPermission('messages.view') || authStore.hasPermission('messages.send') ? '/messages' : '/messages/review'" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Bell /></el-icon><span>{{ $t('messages.title') }}</span>
           </router-link>
         </nav>
@@ -128,7 +128,7 @@
         <!-- 国际化语言切换选择器 -->
         <LanguageSwitcher />
 
-        <el-tooltip v-if="authStore.hasPermission('messages.view')" :content="$t('messages.notification')" placement="bottom">
+        <el-tooltip v-if="canViewMessageNotifications" :content="$t('messages.notification')" placement="bottom">
           <el-badge :value="messageStore.unreadCount" :hidden="messageStore.unreadCount === 0" :max="99" class="cursor-pointer">
             <el-button circle size="small" plain @click="openNotifications"><el-icon><Bell /></el-icon></el-button>
           </el-badge>
@@ -248,6 +248,8 @@ const authStore = useAuthStore();
 const reviewStore = useReviewStore();
 const messageStore = useMessageCenterStore();
 const notificationsVisible = ref(false), messageVisible = ref(false), selectedMessage = ref(null);
+const canAccessMessageCenter = computed(() => authStore.hasPermission('messages.view') || authStore.hasPermission('messages.send') || authStore.hasPermission('messages.review'));
+const canViewMessageNotifications = computed(() => authStore.hasPermission('messages.view') || authStore.hasPermission('messages.review'));
 let messageTimer;
 
 const isAppMode = computed(() => {
@@ -267,12 +269,27 @@ onMounted(() => {
   if (authStore.isAdmin) {
     reviewStore.fetchTickets('全部');
   }
-  messageStore.refresh().catch(() => {});
-  messageTimer = setInterval(() => messageStore.refresh().catch(() => {}), 30000);
+  if (canViewMessageNotifications.value) {
+    refreshMessageCounts();
+    messageTimer = setInterval(refreshMessageCounts, 30000);
+  }
 });
 onBeforeUnmount(() => clearInterval(messageTimer));
 
-async function openNotifications() { notificationsVisible.value = true; await messageStore.refresh().catch(() => {}); }
+function refreshMessageCounts() {
+  return messageStore.refresh({
+    includeInbox: authStore.hasPermission('messages.view'),
+    includeReview: authStore.hasPermission('messages.review')
+  }).catch(() => {});
+}
+async function openNotifications() {
+  if (!authStore.hasPermission('messages.view')) {
+    if (authStore.hasPermission('messages.review')) router.push('/messages/review');
+    return;
+  }
+  notificationsVisible.value = true;
+  await messageStore.refresh({ includeInbox: true }).catch(() => {});
+}
 async function previewMessage(item) { selectedMessage.value = item; messageVisible.value = true; if (!item.read) await messageStore.markRead(item.id); }
 function viewMessageDetails() { if (!selectedMessage.value) return; const id = selectedMessage.value.id; messageVisible.value = false; notificationsVisible.value = false; router.push({ path: '/messages', query: { detail: id } }); }
 

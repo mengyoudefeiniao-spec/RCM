@@ -1,12 +1,14 @@
 <template>
   <nav class="message-subnav" :aria-label="t('mail.sectionNavigation')">
-    <router-link to="/messages" class="message-subnav-link" :class="{ 'is-active': route.path === '/messages' }" :aria-current="route.path === '/messages' ? 'page' : undefined">
+    <router-link v-if="canView" to="/messages" class="message-subnav-link" :class="{ 'is-active': route.path === '/messages' }" :aria-current="route.path === '/messages' ? 'page' : undefined">
       <el-icon><Bell /></el-icon>
       <span>{{ t('mail.title') }}</span>
+      <span v-if="messageStore.unreadInboxCount" class="message-unread-badge" :aria-label="t('mail.unreadCount', { count: messageStore.unreadInboxCount })">{{ displayCount(messageStore.unreadInboxCount) }}</span>
     </router-link>
     <router-link v-if="canReview" to="/messages/review" class="message-subnav-link" :class="{ 'is-active': route.path.startsWith('/messages/review') }" :aria-current="route.path.startsWith('/messages/review') ? 'page' : undefined">
       <el-icon><Stamp /></el-icon>
       <span>{{ t('mail.reviewPageTitle') }}</span>
+      <span v-if="messageStore.unreadReviewCount" class="message-unread-badge" :aria-label="t('mail.unreadCount', { count: messageStore.unreadReviewCount })">{{ displayCount(messageStore.unreadReviewCount) }}</span>
     </router-link>
   </nav>
 </template>
@@ -15,10 +17,13 @@
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Bell, Stamp } from '@element-plus/icons-vue';
+import { useMessageCenterStore } from '../../stores/messageCenter.js';
 
-defineProps({ canReview: { type: Boolean, default: false } });
+defineProps({ canView: { type: Boolean, default: true }, canReview: { type: Boolean, default: false } });
 const route = useRoute();
 const { t } = useI18n();
+const messageStore = useMessageCenterStore();
+function displayCount(count) { return count > 99 ? '99+' : count; }
 </script>
 
 <style scoped>
@@ -27,4 +32,5 @@ const { t } = useI18n();
 .message-subnav-link:hover { border-color: var(--gold-border); background: var(--gold-soft); color: var(--gold-ink); }
 .message-subnav-link.is-active { border-color: var(--gold-border); background: var(--secondary); color: var(--primary); font-weight: 600; }
 .message-subnav-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.message-unread-badge { display: inline-flex; min-width: 1.25rem; height: 1.25rem; align-items: center; justify-content: center; border-radius: 9999px; background: #c04442; padding-inline: .35rem; color: #fff; font-size: .6875rem; font-weight: 700; line-height: 1; }
 </style>
