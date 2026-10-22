@@ -144,6 +144,7 @@
     </section>
 
     <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm space-y-2">
+      <el-button class="w-full !justify-start" text @click="openDeviceDialog"><el-icon class="me-2"><Iphone /></el-icon>{{ $t('my.trustedDevices') }}</el-button>
       <el-button class="w-full !justify-start" text @click="passwordDialogOpen = true"><el-icon class="me-2"><Lock /></el-icon>{{ $t('my.changePassword') }}</el-button>
       <el-button class="w-full !justify-start !ms-0" text type="danger" @click="handleLogout"><el-icon class="me-2"><SwitchButton /></el-icon>{{ $t('my.logout') }}</el-button>
     </section>
@@ -191,6 +192,60 @@
       </el-form>
       <template #footer><el-button @click="passwordDialogOpen = false">{{ $t('common.cancel') }}</el-button><el-button type="primary" :loading="saving" @click="savePassword">{{ $t('my.changePassword') }}</el-button></template>
     </el-dialog>
+
+    <el-dialog v-model="deviceDialogOpen" :title="$t('my.trustedDevices')" width="min(92vw, 440px)" append-to-body>
+      <p class="mb-3 text-xs text-[#8A9A8F]">{{ $t('my.trustedDevicesSubtitle') }}</p>
+      <div v-if="!devices.length" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.deviceEmpty') }}</div>
+      <article v-for="device in devices" :key="device.id" class="flex items-center gap-3 border-t border-[#E9F1EB] py-3 first:border-t-0">
+        <div class="size-10 shrink-0 rounded-full bg-[#EFF5F1] flex items-center justify-center text-[#326445]"><el-icon><component :is="deviceIcon(device.platform)" /></el-icon></div>
+        <div class="min-w-0 flex-1 text-sm">
+          <div class="font-semibold flex flex-wrap items-center gap-1.5">
+            <span class="truncate">{{ device.name }}</span>
+            <el-tag v-if="device.current" size="small" type="success" effect="plain">{{ $t('my.deviceCurrent') }}</el-tag>
+          </div>
+          <div class="mt-0.5 text-xs text-[#58685D]"><span>{{ device.location }}</span> · <bdi dir="ltr">{{ device.ip }}</bdi></div>
+          <div class="mt-0.5 text-[11px] text-[#8A9A8F]"><span>{{ $t('my.deviceLastActive') }}</span> <bdi dir="ltr">{{ formatDeviceTime(device.lastActiveAt) }}</bdi></div>
+        </div>
+        <el-button v-if="!device.current" size="small" text type="danger" :aria-label="$t('my.deviceDelete')" @click="openDeviceVerify(device)"><el-icon><Delete /></el-icon></el-button>
+      </article>
+    </el-dialog>
+
+    <el-dialog v-model="deviceVerifyOpen" :title="$t('my.deviceVerifyTitle')" width="min(92vw, 440px)" append-to-body @closed="resetDeviceVerify">
+      <div class="space-y-4">
+        <p class="text-xs text-[#8A9A8F]">{{ $t('my.deviceVerifyHint') }}</p>
+        <div class="rounded-lg bg-[#F8FAF8] p-3 text-sm">
+          <div class="font-semibold">{{ pendingDevice?.name }}</div>
+          <div class="mt-0.5 text-xs text-[#58685D]"><span>{{ pendingDevice?.location }}</span> · <bdi dir="ltr">{{ pendingDevice?.ip }}</bdi></div>
+        </div>
+        <el-radio-group v-model="deviceVerifyMethod" class="w-full">
+          <div class="grid grid-cols-2 gap-2">
+            <el-radio-button value="sms">{{ $t('my.deviceVerifyMethodSms') }}</el-radio-button>
+            <el-radio-button value="face">{{ $t('my.deviceVerifyMethodFace') }}</el-radio-button>
+          </div>
+        </el-radio-group>
+        <div v-if="deviceVerifyMethod === 'sms'" class="space-y-1.5">
+          <div class="flex w-full gap-2">
+            <el-input v-model.trim="deviceSmsCode" maxlength="6" inputmode="numeric" dir="ltr" :placeholder="$t('my.smsCode')" />
+            <el-button class="shrink-0" :disabled="deviceSmsCountdown > 0" @click="sendDeviceSms">{{ deviceSmsCountdown ? `${deviceSmsCountdown}s` : $t('my.sendSms') }}</el-button>
+          </div>
+          <span v-if="deviceDemoSmsCode" class="text-xs text-[#326445]">{{ $t('my.demoSmsCode', { code: deviceDemoSmsCode }) }}</span>
+        </div>
+        <el-button v-else class="w-full" :type="deviceFaceToken ? 'success' : 'primary'" plain @click="deviceFaceDialogOpen = true">
+          <el-icon class="me-2"><Camera /></el-icon>{{ deviceFaceToken ? $t('my.deviceFaceVerified') : $t('my.deviceFaceStart') }}
+        </el-button>
+      </div>
+      <template #footer><el-button @click="deviceVerifyOpen = false">{{ $t('common.cancel') }}</el-button><el-button type="danger" :disabled="!deviceVerified" :loading="saving" @click="confirmDeviceRemoval">{{ $t('my.deviceDelete') }}</el-button></template>
+    </el-dialog>
+
+    <FaceLivenessVerifyDialog
+      v-model="deviceFaceDialogOpen"
+      :title="$t('my.deviceVerifyTitle')"
+      :target-name="displayName"
+      :target-national-id="authStore.userProfile?.cardNo || ''"
+      :allow-quick-pass="false"
+      @success="onDeviceFaceVerified"
+      @cancel="deviceVerifyOpen = true"
+    />
   </div>
 </template>
 
@@ -199,11 +254,11 @@ import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter, Camera, Monitor } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
-import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier } from '../../api/my.js';
+import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl } from '../../stores/myNotifications.js';
 import { getSharedTickets } from '../../utils/sharedSession.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
@@ -248,6 +303,20 @@ const saving = ref(false);
 const contactForm = reactive({ email: '', phone: '', address: '' });
 const courierForm = reactive({ id: '', name: '', phone: '', vehicleNo: '', active: true });
 const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '', smsCode: '' });
+
+// 受信设备列表：当前账号已登录设备，删除前需手机号或人脸验证
+const devices = ref([]);
+const deviceDialogOpen = ref(false);
+const deviceVerifyOpen = ref(false);
+const deviceFaceDialogOpen = ref(false);
+const pendingDevice = ref(null);
+const deviceVerifyMethod = ref('sms');
+const deviceSmsCode = ref('');
+const deviceDemoSmsCode = ref('');
+const deviceSmsCountdown = ref(0);
+const deviceFaceToken = ref('');
+let deviceSmsTimer;
+const deviceVerified = computed(() => (deviceVerifyMethod.value === 'sms' ? /^\d{6}$/.test(deviceSmsCode.value) : !!deviceFaceToken.value));
 
 async function loadData() {
   try {
@@ -476,6 +545,80 @@ async function savePassword() {
   finally { saving.value = false; }
 }
 
+function deviceIcon(platform) {
+  return platform === 'ios' || platform === 'android' ? Iphone : Monitor;
+}
+
+function formatDeviceTime(value) {
+  if (!value) return '';
+  const language = { zh: 'zh-CN', en: 'en-US', ar: 'ar-IQ', ckb: 'ckb-IQ' }[locale.value] || 'en-US';
+  const date = new Date(String(value).replace(' ', 'T'));
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat(language, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+}
+
+async function openDeviceDialog() {
+  deviceDialogOpen.value = true;
+  try {
+    devices.value = await getMyDevices();
+  } catch { /* 请求层负责提示 */ }
+}
+
+function openDeviceVerify(device) {
+  pendingDevice.value = device;
+  deviceVerifyMethod.value = 'sms';
+  deviceSmsCode.value = '';
+  deviceDemoSmsCode.value = '';
+  deviceFaceToken.value = '';
+  deviceVerifyOpen.value = true;
+}
+
+function resetDeviceVerify() {
+  clearInterval(deviceSmsTimer);
+  deviceVerifyOpen.value = false;
+  pendingDevice.value = null;
+  deviceVerifyMethod.value = 'sms';
+  deviceSmsCode.value = '';
+  deviceDemoSmsCode.value = '';
+  deviceSmsCountdown.value = 0;
+  deviceFaceToken.value = '';
+}
+
+async function sendDeviceSms() {
+  try {
+    const result = await sendMyDeviceCode();
+    deviceDemoSmsCode.value = import.meta.env.VITE_APP_MOCK_MODE === 'true' ? (result.demoCode || '') : '';
+    deviceSmsCountdown.value = 60;
+    clearInterval(deviceSmsTimer);
+    deviceSmsTimer = setInterval(() => { if (--deviceSmsCountdown.value <= 0) clearInterval(deviceSmsTimer); }, 1000);
+    ElMessage.success(t('my.smsSent'));
+  } catch { /* 请求层负责提示 */ }
+}
+
+async function onDeviceFaceVerified(payload) {
+  try {
+    const result = await verifyMyDeviceFace({ ...payload, purpose: 'device-remove' });
+    if (!result?.token) throw new Error('Missing face verification token');
+    deviceFaceToken.value = result.token;
+    deviceVerifyOpen.value = true;
+  } catch {
+    deviceVerifyOpen.value = true;
+  }
+}
+
+async function confirmDeviceRemoval() {
+  if (!pendingDevice.value || !deviceVerified.value) return;
+  saving.value = true;
+  try {
+    const payload = deviceVerifyMethod.value === 'sms' ? { smsCode: deviceSmsCode.value } : { faceToken: deviceFaceToken.value };
+    await deleteMyDevice(pendingDevice.value.id, payload);
+    devices.value = await getMyDevices();
+    resetDeviceVerify();
+    ElMessage.success(t('my.deviceRemoveSuccess'));
+  } catch { /* 请求层负责提示 */ }
+  finally { saving.value = false; }
+}
+
 async function handleLogout() {
   await authStore.logout();
   await router.replace('/login');
@@ -490,6 +633,7 @@ watch(role, loadData);
 watch(() => route.query.tab, (tab) => { if (agentTabs.some(item => item.key === tab)) selectTab(tab); });
 onBeforeUnmount(() => {
   clearInterval(smsTimer);
+  clearInterval(deviceSmsTimer);
   window.removeEventListener('storage', refreshApplicationHistory);
 });
 </script>

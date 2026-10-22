@@ -292,6 +292,105 @@ const MY_COURIER_SEEDS = [
   { id: 'courier-2', name: 'Omar Sabah', phone: '07701234002', vehicleNo: 'BAG-VAN-2198', active: true }
 ];
 
+// 受信设备演示种子数据（跨语言共享业务数据，名称与地区使用语言中立写法，经 PocketBase 同步）
+const MY_DEVICE_SEEDS = {
+  citizen: [
+    { id: 'device-seed-cit-01', name: 'iPhone 15 Pro', platform: 'ios', location: 'Baghdad', ip: '156.204.31.77', createdAt: '2026-09-02 09:12:00', lastActiveAt: '2026-10-21 19:42:00' },
+    { id: 'device-seed-cit-02', name: 'Redmi Note 12', platform: 'android', location: 'Basra', ip: '156.204.88.132', createdAt: '2026-08-18 21:05:00', lastActiveAt: '2026-10-19 08:27:00' },
+    { id: 'device-seed-cit-03', name: 'Chrome · Windows', platform: 'windows', location: 'Erbil', ip: '156.204.45.90', createdAt: '2026-07-30 14:48:00', lastActiveAt: '2026-10-20 12:03:00' }
+  ],
+  agent: [
+    { id: 'device-seed-agt-01', name: 'Galaxy S23', platform: 'android', location: 'Baghdad', ip: '156.204.66.19', createdAt: '2026-09-10 07:30:00', lastActiveAt: '2026-10-22 06:15:00' },
+    { id: 'device-seed-agt-02', name: 'Chrome · Windows', platform: 'windows', location: 'Baghdad', ip: '156.204.66.204', createdAt: '2026-06-21 11:26:00', lastActiveAt: '2026-10-21 20:58:00' }
+  ]
+};
+
+// 当前设备指纹：每台设备本地生成并仅存本机，不参与 PocketBase 同步
+function currentDeviceFingerprint() {
+  const KEY = 'rcm_device_fingerprint';
+  let id = localStorage.getItem(KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(KEY, id);
+  }
+  return id;
+}
+
+function detectDevicePlatform() {
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  if (/Windows/.test(ua)) return 'windows';
+  if (/Macintosh|Mac OS X/.test(ua)) return 'macos';
+  return 'web';
+}
+
+function detectDeviceBrowser() {
+  const ua = navigator.userAgent || '';
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/Chrome\//.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua)) return 'Safari';
+  return 'Browser';
+}
+
+function currentDeviceName() {
+  const platform = detectDevicePlatform();
+  const browser = detectDeviceBrowser();
+  if (platform === 'ios') return `${browser} · iPhone`;
+  if (platform === 'android') return `${browser} · Android`;
+  if (platform === 'windows') return `${browser} · Windows`;
+  if (platform === 'macos') return `${browser} · macOS`;
+  return `${browser} · Web`;
+}
+
+// 由指纹派生稳定演示 IP，保证同一设备每次打开列表一致
+function deviceIpFromFingerprint(fingerprint) {
+  let hash = 0;
+  for (const ch of fingerprint) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return `156.204.${(hash >> 8) & 255}.${hash & 255}`;
+}
+
+function deviceNowText() {
+  const now = new Date();
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
+function readDevices(role) {
+  return readMyData(role, 'devices', MY_DEVICE_SEEDS[role]?.map(item => ({ ...item })) || []);
+}
+
+// 打开列表时登记/刷新当前设备，保证“当前设备”始终出现在受信列表中
+function registerCurrentDevice(role) {
+  const fingerprint = currentDeviceFingerprint();
+  const devices = readDevices(role);
+  const now = deviceNowText();
+  const index = devices.findIndex(item => item.id === fingerprint);
+  if (index >= 0) {
+    devices[index] = { ...devices[index], lastActiveAt: now };
+  } else {
+    devices.push({
+      id: fingerprint,
+      name: currentDeviceName(),
+      platform: detectDevicePlatform(),
+      location: 'Baghdad',
+      ip: deviceIpFromFingerprint(fingerprint),
+      createdAt: now,
+      lastActiveAt: now
+    });
+  }
+  const sorted = devices.sort((a, b) => String(b.lastActiveAt).localeCompare(String(a.lastActiveAt)));
+  writeMyData(role, 'devices', sorted);
+  return sorted;
+}
+
+// current 标记按请求实时计算，避免把某台设备的视角持久化进共享数据
+function listMyDevices(role) {
+  const fingerprint = currentDeviceFingerprint();
+  return registerCurrentDevice(role).map(item => ({ ...item, current: item.id === fingerprint }));
+}
+
 const multiLangStores = {
   zh: {
     complaintsStore: JSON.parse(JSON.stringify(zhComplaint.MOCK_COMPLAINTS)),
@@ -851,6 +950,53 @@ export async function mockDispatch(config) {
       if (method === 'DELETE') {
         writeMyData(role, 'couriers', couriers.filter(item => item.id !== id));
         addMockNotification(role, 'courier', 'couriers');
+        return createResponse({ success: true });
+      }
+    }
+
+    // 受信设备列表：公民与代理均支持手机号验证或人脸验证后删除指定设备登录记录
+    if (url.includes('/me/devices')) {
+      if (url.endsWith('/me/devices/sms') && method === 'POST') {
+        const previous = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'device_sms')) || 'null');
+        if (previous && previous.sentAt + 60000 > Date.now()) return createResponse({}, 429, i18n.global.t('my.smsWait'));
+        const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0');
+        sessionStorage.setItem(myStorageKey(role, 'device_sms'), JSON.stringify({ code, sentAt: Date.now(), expiresAt: Date.now() + 5 * 60000, attempts: 0 }));
+        return createResponse({ demoCode: code, expiresIn: 300 });
+      }
+      if (url.endsWith('/me/devices/face') && method === 'POST') {
+        if (!data.verifiedAt) return createResponse({}, 400, i18n.global.t('my.faceRequired'));
+        const token = crypto.randomUUID();
+        sessionStorage.setItem(myStorageKey(role, 'device_face'), JSON.stringify({ token, expiresAt: Date.now() + 5 * 60000 }));
+        return createResponse({ token });
+      }
+      const match = url.match(/\/me\/devices\/([^/?]+)/);
+      if (!match && method === 'GET') {
+        return createResponse(listMyDevices(role));
+      }
+      if (match && method === 'DELETE') {
+        const fingerprint = currentDeviceFingerprint();
+        const id = decodeURIComponent(match[1]);
+        if (id === fingerprint) return createResponse({}, 400, i18n.global.t('my.deviceCurrentCannotDelete'));
+        // 删除前必须通过手机号验证码或人脸验证凭据（二选一）
+        const smsChallenge = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'device_sms')) || 'null');
+        const faceProof = JSON.parse(sessionStorage.getItem(myStorageKey(role, 'device_face')) || 'null');
+        const smsOk = Boolean(data.smsCode) && smsChallenge && smsChallenge.expiresAt >= Date.now()
+          && smsChallenge.attempts < 5 && smsChallenge.code === String(data.smsCode);
+        const faceOk = Boolean(data.faceToken) && faceProof && faceProof.expiresAt >= Date.now() && faceProof.token === data.faceToken;
+        if (!smsOk && !faceOk) {
+          if (data.smsCode && smsChallenge && smsChallenge.attempts < 5) {
+            smsChallenge.attempts += 1;
+            sessionStorage.setItem(myStorageKey(role, 'device_sms'), JSON.stringify(smsChallenge));
+          }
+          return createResponse({}, 400, i18n.global.t('my.deviceVerifyRequired'));
+        }
+        const devices = readDevices(role);
+        const position = devices.findIndex(item => item.id === id);
+        if (position < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
+        devices.splice(position, 1);
+        writeMyData(role, 'devices', devices);
+        sessionStorage.removeItem(myStorageKey(role, 'device_sms'));
+        sessionStorage.removeItem(myStorageKey(role, 'device_face'));
         return createResponse({ success: true });
       }
     }
