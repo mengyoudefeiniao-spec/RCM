@@ -2,19 +2,6 @@
   <section class="review-page p-2 sm:p-4">
     <MessageCenterNav :can-view="canViewMessages" :can-review="canReview" />
 
-    <header class="review-header rcm-card">
-      <div class="review-heading">
-        <span class="rcm-icon-box rcm-icon-box--primary review-heading-icon"><el-icon><Stamp /></el-icon></span>
-        <div class="min-w-0">
-          <h1>{{ t('mail.reviewPageTitle') }}<span v-if="messageStore.unreadReviewCount" class="review-unread-badge" :aria-label="t('mail.unreadCount', { count: messageStore.unreadReviewCount })">{{ messageStore.unreadReviewCount > 99 ? '99+' : messageStore.unreadReviewCount }}</span></h1>
-          <p>{{ t('mail.reviewPageSubtitle') }}</p>
-        </div>
-      </div>
-      <el-button :aria-label="t('mail.refresh')" :title="t('mail.refresh')" :loading="loading" @click="loadMessages">
-        <el-icon><Refresh /></el-icon><span class="hidden sm:inline">{{ t('mail.refresh') }}</span>
-      </el-button>
-    </header>
-
     <div v-if="canReview" class="review-summary">
       <article class="review-stat rcm-card">
         <span class="review-stat-icon review-stat-icon--pending"><el-icon><Clock /></el-icon></span>
@@ -37,9 +24,14 @@
           <el-radio-button value="processed">{{ t('mail.reviewFilterProcessed') }}<span class="filter-count">{{ processedCount }}</span></el-radio-button>
           <el-radio-button value="all">{{ t('mail.reviewFilterAll') }}<span class="filter-count">{{ reviewMessages.length }}</span></el-radio-button>
         </el-radio-group>
-        <el-input v-model="search" :placeholder="t('mail.reviewSearch')" :aria-label="t('mail.reviewSearch')" clearable class="review-search">
-          <template #prefix><el-icon><Search /></el-icon></template>
-        </el-input>
+        <div class="review-toolbar-actions">
+          <el-input v-model="search" :placeholder="t('mail.reviewSearch')" :aria-label="t('mail.reviewSearch')" clearable class="review-search">
+            <template #prefix><el-icon><Search /></el-icon></template>
+          </el-input>
+          <el-button circle :aria-label="t('mail.refresh')" :title="t('mail.refresh')" :loading="loading" @click="loadMessages">
+            <el-icon><Refresh /></el-icon>
+          </el-button>
+        </div>
       </div>
 
       <el-table v-loading="loading" :data="filteredMessages" row-key="id" class="review-table" :class="{ 'review-table--rtl': isRtl }" :max-height="tableMaxHeight" @row-click="openDetails">
@@ -142,7 +134,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { CircleCheck, Clock, InfoFilled, Message, Paperclip, Refresh, Search, Stamp } from '@element-plus/icons-vue';
+import { CircleCheck, Clock, InfoFilled, Message, Paperclip, Refresh, Search } from '@element-plus/icons-vue';
 import { decideMessageReview, getMessageAttachment, getMessages } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
@@ -299,13 +291,7 @@ onMounted(loadMessages);
 
 <style scoped>
 .review-page { color: var(--el-text-color-primary); }
-.review-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.125rem 1.25rem; }
-.review-heading { display: flex; min-width: 0; align-items: center; gap: .875rem; }
-.review-heading-icon { width: 2.75rem; height: 2.75rem; font-size: 1.25rem; }
-.review-heading h1 { margin: 0; color: var(--el-text-color-primary); font-size: 1.125rem; font-weight: 700; line-height: 1.5; }
-.review-unread-badge { display: inline-flex; min-width: 1.25rem; height: 1.25rem; align-items: center; justify-content: center; margin-inline-start: .5rem; border-radius: 9999px; background: #c04442; padding-inline: .35rem; color: #fff; font-size: .6875rem; font-weight: 700; line-height: 1; vertical-align: middle; }
-.review-heading p { margin: .25rem 0 0; color: var(--el-text-color-secondary); font-size: .8125rem; line-height: 1.5; }
-.review-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .875rem; margin-top: .875rem; }
+.review-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .875rem; }
 .review-stat { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.125rem; }
 .review-stat-icon { display: inline-flex; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: .625rem; font-size: 1.125rem; }
 .review-stat-icon--pending { border-color: var(--gold-border); background: var(--gold-soft); color: var(--gold-ink); }
@@ -315,7 +301,8 @@ onMounted(loadMessages);
 .review-stat strong { display: block; margin-top: .125rem; color: var(--el-text-color-primary); font-size: 1.25rem; line-height: 1.35; }
 .review-workspace { margin-top: .875rem; overflow: hidden; }
 .review-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid var(--el-border-color-light); padding: .875rem 1rem; }
-.review-search { width: min(100%, 20rem); }
+.review-toolbar-actions { display: flex; width: min(100%, 23rem); align-items: center; gap: .5rem; }
+.review-search { min-width: 0; flex: 1; }
 .review-status-filter { max-width: 100%; overflow-x: auto; }
 .filter-count { display: inline-flex; min-width: 1.125rem; height: 1.125rem; align-items: center; justify-content: center; margin-inline-start: .375rem; border-radius: 999px; background: var(--el-fill-color-light); padding-inline: .25rem; color: var(--el-text-color-secondary); font-size: .6875rem; line-height: 1; }
 .review-table { width: 100%; }

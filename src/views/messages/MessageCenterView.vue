@@ -2,7 +2,6 @@
   <section class="mail-shell p-2 sm:p-4">
     <MessageCenterNav :can-view="canViewMessages" :can-review="canReview" />
     <div class="mail-toolbar rcm-card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-      <div class="flex items-center gap-3"><h1 class="text-lg font-bold text-[var(--el-text-color-primary)]">{{ t('mail.title') }}</h1><span v-if="messageStore.unreadInboxCount" class="message-unread-badge" :aria-label="t('mail.unreadCount', { count: messageStore.unreadInboxCount })">{{ messageStore.unreadInboxCount > 99 ? '99+' : messageStore.unreadInboxCount }}</span></div>
       <div class="flex w-full items-center gap-2 sm:w-auto"><el-input v-model="search" :placeholder="t('mail.search')" :aria-label="t('mail.search')" clearable class="!w-full sm:!w-64" @keyup.enter="load"><template #prefix><el-icon><Search /></el-icon></template></el-input><el-button circle :title="t('mail.refresh')" :aria-label="t('mail.refresh')" @click="load"><el-icon><Refresh /></el-icon></el-button><el-button v-if="canSend" type="primary" @click="openCompose"><el-icon><EditPen /></el-icon>{{ t('mail.compose') }}</el-button></div>
     </div>
 
