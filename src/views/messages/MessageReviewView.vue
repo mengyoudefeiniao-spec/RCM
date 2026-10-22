@@ -156,7 +156,7 @@ const authStore = useAuthStore();
 const messageStore = useMessageCenterStore();
 const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
 const canReview = computed(() => messageAccess.value.canReview);
-const canViewMessages = computed(() => authStore.hasPermission('messages.view'));
+const canViewMessages = computed(() => messageAccess.value.canView);
 const loading = ref(false);
 const reviewMessages = ref([]);
 const statusFilter = ref('pending');

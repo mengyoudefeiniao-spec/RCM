@@ -117,7 +117,7 @@
           <router-link v-if="authStore.hasPermission('system.users')" to="/system-management" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/system-management') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Tools /></el-icon><span>{{ $t('system.title') }}</span>
           </router-link>
-          <router-link v-if="canAccessMessageCenter" :to="authStore.hasPermission('messages.view') || authStore.hasPermission('messages.send') ? '/messages' : '/messages/review'" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
+          <router-link v-if="canAccessMessageCenter" :to="canViewMessages || canSendMessages ? '/messages' : '/messages/review'" class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap" :class="$route.path.startsWith('/messages') ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1]' : 'text-[#58685D] hover:text-[#326445] hover:bg-[#E2F4E4]'">
             <el-icon><Bell /></el-icon><span>{{ $t('messages.title') }}</span>
           </router-link>
         </nav>
@@ -219,6 +219,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
 import { useReviewStore } from '../../stores/review.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
+import { resolveMessageAccess } from '../../utils/messagePermissions.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import LanguageSwitcher from '../common/LanguageSwitcher.vue';
 import AppLogo from '../common/AppLogo.vue';
@@ -248,8 +249,11 @@ const authStore = useAuthStore();
 const reviewStore = useReviewStore();
 const messageStore = useMessageCenterStore();
 const notificationsVisible = ref(false), messageVisible = ref(false), selectedMessage = ref(null);
-const canAccessMessageCenter = computed(() => authStore.hasPermission('messages.view') || authStore.hasPermission('messages.send') || authStore.hasPermission('messages.review'));
-const canViewMessageNotifications = computed(() => authStore.hasPermission('messages.view') || authStore.hasPermission('messages.review'));
+const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
+const canViewMessages = computed(() => messageAccess.value.canView);
+const canSendMessages = computed(() => messageAccess.value.canSend);
+const canAccessMessageCenter = computed(() => canViewMessages.value || canSendMessages.value || messageAccess.value.canReview);
+const canViewMessageNotifications = computed(() => canViewMessages.value || messageAccess.value.canReview);
 let messageTimer;
 
 const isAppMode = computed(() => {
@@ -278,13 +282,13 @@ onBeforeUnmount(() => clearInterval(messageTimer));
 
 function refreshMessageCounts() {
   return messageStore.refresh({
-    includeInbox: authStore.hasPermission('messages.view'),
-    includeReview: authStore.hasPermission('messages.review')
+    includeInbox: canViewMessages.value,
+    includeReview: messageAccess.value.canReview
   }).catch(() => {});
 }
 async function openNotifications() {
-  if (!authStore.hasPermission('messages.view')) {
-    if (authStore.hasPermission('messages.review')) router.push('/messages/review');
+  if (!canViewMessages.value) {
+    if (messageAccess.value.canReview) router.push('/messages/review');
     return;
   }
   notificationsVisible.value = true;
