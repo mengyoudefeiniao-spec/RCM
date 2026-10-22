@@ -175,7 +175,7 @@ export const useAuthStore = defineStore('auth', () => {
   const hasPermission = (code) => {
     if (!code || isAdmin.value) return true;
     const codes = userProfile.value?.permissionCodes;
-    return !Array.isArray(codes) || codes.includes(code);
+    return !Array.isArray(codes) || codes.includes(code) || codes.some((permission) => String(permission).startsWith(`${code}.`));
   };
   const isMinisterCenter = computed(() => currentRole.value === ROLE_MINISTER_CENTER);
   const isDeputyMinister = computed(() => currentRole.value === ROLE_DEPUTY_MINISTER);

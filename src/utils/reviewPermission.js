@@ -40,7 +40,16 @@ export const PERMISSION_CATALOG = [
   { moduleKey: 'moduleSystem', code: 'system.organizations', featureKey: 'systemManageOrganizations' },
   { moduleKey: 'moduleSystem', code: 'system.audit', featureKey: 'systemViewAudit' },
   { moduleKey: 'moduleMessages', code: 'messages.view', featureKey: 'messagesOverview' },
-  { moduleKey: 'moduleMessages', code: 'messages.send', featureKey: 'messagesSend' }
+  { moduleKey: 'moduleMessages', code: 'messages.send', featureKey: 'messagesSend' },
+  { moduleKey: 'moduleMessages', code: 'messages.send.region', featureKey: 'messageScopeRegion', parentCode: 'messages.send' },
+  { moduleKey: 'moduleMessages', code: 'messages.send.agent', featureKey: 'messageScopeAgent', parentCode: 'messages.send' },
+  { moduleKey: 'moduleMessages', code: 'messages.send.site', featureKey: 'messageScopeSite', parentCode: 'messages.send' },
+  { moduleKey: 'moduleMessages', code: 'messages.send.cardAppUser', featureKey: 'messageScopeCardAppUser', parentCode: 'messages.send' },
+  { moduleKey: 'moduleMessages', code: 'messages.review', featureKey: 'messagesReview' },
+  { moduleKey: 'moduleMessages', code: 'messages.review.region', featureKey: 'messageScopeRegion', parentCode: 'messages.review' },
+  { moduleKey: 'moduleMessages', code: 'messages.review.agent', featureKey: 'messageScopeAgent', parentCode: 'messages.review' },
+  { moduleKey: 'moduleMessages', code: 'messages.review.site', featureKey: 'messageScopeSite', parentCode: 'messages.review' },
+  { moduleKey: 'moduleMessages', code: 'messages.review.cardAppUser', featureKey: 'messageScopeCardAppUser', parentCode: 'messages.review' }
 ];
 
 export const WAREHOUSE_PERMISSION_CODES = PERMISSION_CATALOG

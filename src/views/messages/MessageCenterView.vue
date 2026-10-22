@@ -173,7 +173,7 @@ const reviewActionVisible = ref(false), reviewSubmitting = ref(false), reviewSta
 const pendingReviewCount = computed(() => reviewTickets.value.filter(isReviewPending).length);
 let loadVersion = 0;
 const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
-const canSend = computed(() => authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('messages.send'));
+const canSend = computed(() => authStore.hasPermission('messages.send'));
 const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canReview.value ? [{ id: 'review', icon: 'Stamp' }] : []), ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), { id: 'favorites', icon: 'FolderChecked' }]);
 const regionOptions = computed(() => recipientTree.value);
 const agentOptions = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || []);
