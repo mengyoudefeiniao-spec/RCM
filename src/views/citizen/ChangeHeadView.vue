@@ -108,7 +108,7 @@
     <ElectronicPaymentDialog
       v-model="paymentDialogVisible"
       :title="$t('changeHead.paymentTitle')"
-      :amount="5000"
+      :amount="changeHeadFee"
       currency="IQD"
       :business-no="citizenStore.currentFamily?.rationCardNo"
       :applicant-name="currentCandidateName"
@@ -123,6 +123,10 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
+import { feeAmountFor } from '../../utils/businessRules.js';
+
+// 规费来自「业务规则配置 · 规费标准」
+const changeHeadFee = computed(() => feeAmountFor('HED'));
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import SupplementMaterialsPanel from '../../components/citizen/SupplementMaterialsPanel.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';

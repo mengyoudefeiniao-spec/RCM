@@ -504,7 +504,7 @@
                 <div class="space-y-1">
                   <div class="text-xs text-[#8A9A8F]">{{ $t('memberTransfer.feeLabel') }}</div>
                   <div class="text-2xl font-bold font-mono text-[#6FBF92]">
-                    5,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
+                    {{ memberTransferFee.toLocaleString() }} IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
                   </div>
                 </div>
                 <div class="text-xs text-[#8A9A8F] sm:text-end">
@@ -619,7 +619,7 @@
     <ElectronicPaymentDialog
       v-model="paymentDialogVisible"
       :title="$t('memberTransfer.paymentTitle')"
-      :amount="5000"
+      :amount="memberTransferFee"
       currency="IQD"
       :business-no="citizenStore.currentFamily?.rationCardNo"
       :applicant-name="citizenStore.currentFamily?.headName"
@@ -634,7 +634,11 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
+import { feeAmountFor } from '../../utils/businessRules.js';
 import { queryMemberForTransfer, submitMemberTransfer, getTransferrableMembers } from '../../api/citizen.js';
+
+// 规费来自「业务规则配置 · 规费标准」
+const memberTransferFee = computed(() => feeAmountFor('TRM'));
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import SupplementMaterialsPanel from '../../components/citizen/SupplementMaterialsPanel.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';

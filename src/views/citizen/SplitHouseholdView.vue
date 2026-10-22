@@ -263,7 +263,7 @@
                 <span class="w-6 h-6 rounded-full bg-[#FDF3E0] text-[#C9A13B] text-xs flex items-center justify-center font-bold">4</span>
                 <span>{{ $t('split.paymentSummaryTitle') }}</span>
               </label>
-              <el-tag type="purple" effect="dark">{{ $t('split.feeBadge', { amount: '10,000 IQD' }) }}</el-tag>
+              <el-tag type="purple" effect="dark">{{ $t('split.feeBadge', { amount: splitFeeLabel }) }}</el-tag>
             </div>
 
             <!-- 摘要核对卡片 -->
@@ -282,7 +282,7 @@
               </div>
               <div>
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('split.feeStandard') }}</span>
-                <span class="font-mono font-bold text-[#2F7A50]">10,000 IQD</span>
+                <span class="font-mono font-bold text-[#2F7A50]">{{ splitFee.toLocaleString() }} IQD</span>
               </div>
             </div>
 
@@ -291,7 +291,7 @@
               <div class="space-y-1">
                 <div class="text-xs text-[#8A9A8F]">{{ $t('split.administrativeFee') }}</div>
                 <div class="text-2xl font-bold font-mono text-[#6FBF92]">
-                  10,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('split.iraqiDinar') }})</span>
+                  {{ splitFee.toLocaleString() }} IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('split.iraqiDinar') }})</span>
                 </div>
                 <div class="text-[11px] text-[#8A9A8F]">
                   {{ $t('split.paymentMethods') }}
@@ -364,7 +364,7 @@
                 <div>{{ $t('split.newCardNo') }} <bdi dir="ltr" class="font-mono font-bold text-[#7A5F21]">{{ splitResult?.newCardNo || 'RC-10029399' }}</bdi></div>
                 <div>{{ $t('split.originalCardNo') }} <bdi dir="ltr" class="font-mono text-[#43554B]">{{ citizenStore.currentFamily?.rationCardNo }}</bdi></div>
                 <div>{{ $t('split.movingMembers') }} <span class="font-bold text-[#1F3326]">{{ $t('split.peopleCount', { count: selectedMemberIds.length }) }}</span></div>
-                <div>{{ $t('split.documentFee') }} <span class="font-mono text-[#2F7A50] font-bold">{{ $t('split.feePaid', { amount: '10,000 IQD' }) }}</span></div>
+                <div>{{ $t('split.documentFee') }} <span class="font-mono text-[#2F7A50] font-bold">{{ $t('split.feePaid', { amount: splitFeeLabel }) }}</span></div>
                 <div>{{ $t('split.processingMode') }} <span class="font-bold" :class="splitResult?.passed ? 'text-[#2F7A50]' : 'text-[#C9A13B]'">{{ $t(splitResult?.passed ? 'split.automaticApproval' : 'split.twoTierReview') }}</span></div>
               </div>
             </div>
@@ -430,7 +430,7 @@
   <ElectronicPaymentDialog
     v-model="paymentDialogVisible"
     :title="$t('split.paymentTitle')"
-    :amount="10000"
+    :amount="splitFee"
     currency="IQD"
     :business-no="citizenStore.currentFamily?.rationCardNo"
     :applicant-name="citizenStore.currentFamily?.headName"
@@ -444,6 +444,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
+import { feeAmountFor } from '../../utils/businessRules.js';
+
+// 规费来自「业务规则配置 · 规费标准」
+const splitFee = computed(() => feeAmountFor('SPL'));
+const splitFeeLabel = computed(() => `${splitFee.value.toLocaleString()} IQD`);
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import SupplementMaterialsPanel from '../../components/citizen/SupplementMaterialsPanel.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';

@@ -13,6 +13,7 @@ import ar from './ar.js';
 import ckb from './ku.js';
 import myMessages from './my.js';
 import citizenOrderMessages from './citizenOrder.js';
+import businessRulesMessages from './businessRules.js';
 import agentDeliveryMessages from './agentDelivery.js';
 import adminCenterMessages from './adminCenter.js';
 import systemExtras from './systemExtras.js';
@@ -56,10 +57,10 @@ export const i18n = createI18n({
   locale: savedLang,
   fallbackLocale: 'zh',
   messages: {
-    zh: withCitizenApplications({ ...zh, my: myMessages.zh, citizenOrder: citizenOrderMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh, ...mailCenterMessages.zh, memberRegistration: memberRegistrationMessages.zh }, 'zh'),
-    en: withCitizenApplications({ ...en, my: myMessages.en, citizenOrder: citizenOrderMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en, ...mailCenterMessages.en, memberRegistration: memberRegistrationMessages.en }, 'en'),
-    ar: withCitizenApplications({ ...ar, my: myMessages.ar, citizenOrder: citizenOrderMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar, ...mailCenterMessages.ar, memberRegistration: memberRegistrationMessages.ar }, 'ar'),
-    ckb: withCitizenApplications({ ...ckb, my: myMessages.ckb, citizenOrder: citizenOrderMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb, ...mailCenterMessages.ckb, memberRegistration: memberRegistrationMessages.ckb }, 'ckb')
+    zh: withCitizenApplications({ ...zh, my: myMessages.zh, citizenOrder: citizenOrderMessages.zh, businessRules: businessRulesMessages.zh, agentDelivery: agentDeliveryMessages.zh, ...adminCenterMessages.zh, ...systemExtras.zh, ...mailCenterMessages.zh, memberRegistration: memberRegistrationMessages.zh }, 'zh'),
+    en: withCitizenApplications({ ...en, my: myMessages.en, citizenOrder: citizenOrderMessages.en, businessRules: businessRulesMessages.en, agentDelivery: agentDeliveryMessages.en, ...adminCenterMessages.en, ...systemExtras.en, ...mailCenterMessages.en, memberRegistration: memberRegistrationMessages.en }, 'en'),
+    ar: withCitizenApplications({ ...ar, my: myMessages.ar, citizenOrder: citizenOrderMessages.ar, businessRules: businessRulesMessages.ar, agentDelivery: agentDeliveryMessages.ar, ...adminCenterMessages.ar, ...systemExtras.ar, ...mailCenterMessages.ar, memberRegistration: memberRegistrationMessages.ar }, 'ar'),
+    ckb: withCitizenApplications({ ...ckb, my: myMessages.ckb, citizenOrder: citizenOrderMessages.ckb, businessRules: businessRulesMessages.ckb, agentDelivery: agentDeliveryMessages.ckb, ...adminCenterMessages.ckb, ...systemExtras.ckb, ...mailCenterMessages.ckb, memberRegistration: memberRegistrationMessages.ckb }, 'ckb')
   }
 });
 

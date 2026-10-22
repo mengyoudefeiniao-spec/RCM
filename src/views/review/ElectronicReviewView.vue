@@ -252,6 +252,11 @@
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.centerLabel') }}</span>
                 <span class="text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'province') }} · {{ localizedTicketField(reviewStore.selectedTicket, 'center') }}</span>
               </div>
+              <!-- 受理时的业务规则版本：历史业务不随规则调整追溯改写 -->
+              <div v-if="reviewStore.selectedTicket.rulesVersion">
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('businessRules.appliedVersion') }}</span>
+                <bdi dir="ltr" class="font-mono font-bold text-[#1F3326]">v{{ reviewStore.selectedTicket.rulesVersion }}</bdi>
+              </div>
             </div>
 
             <!-- 触发电子审核原因 -->

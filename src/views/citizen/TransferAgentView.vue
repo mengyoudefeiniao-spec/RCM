@@ -421,7 +421,7 @@
                 <div class="space-y-1">
                   <div class="text-xs text-[#8A9A8F]">{{ $t('transfer.feeDescription') }}：</div>
                   <div class="text-2xl font-bold font-mono text-[#6FBF92]">
-                    5,000 IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
+                    {{ transferFee.toLocaleString() }} IQD <span class="text-xs text-[#8A9A8F] font-normal">({{ $t('common.iqdUnit') }})</span>
                   </div>
                   <div class="text-[11px] text-[#8A9A8F]">
                     {{ $t('transfer.payChannels') }}
@@ -540,7 +540,7 @@
     <ElectronicPaymentDialog
       v-model="paymentDialogVisible"
       :title="$t('transfer.paymentTitle')"
-      :amount="5000"
+      :amount="transferFee"
       currency="IQD"
       :business-no="citizenStore.currentFamily?.rationCardNo"
       :applicant-name="citizenStore.currentFamily?.headName"
@@ -574,6 +574,10 @@ import {
 import { useI18n } from 'vue-i18n';
 import { localizeTransferLocation, transferProvinceKey } from '../../utils/transferLocationLabels.js';
 import { ElMessage } from 'element-plus';
+import { feeAmountFor } from '../../utils/businessRules.js';
+
+// 规费来自「业务规则配置 · 规费标准」，管理员调整后支付中心自动同步
+const transferFee = computed(() => feeAmountFor('TRF'));
 
 const { t, locale } = useI18n();
 const locationLabel = (value) => localizeTransferLocation(t, value);

@@ -1,6 +1,19 @@
 // 中文测试数据源
 import { i18n } from '../locales/index.js';
 import { transferProvinceKey } from '../utils/transferLocationLabels.js';
+import {
+  readBusinessRulesDocument,
+  writeBusinessRulesDocument,
+  buildNextBusinessRulesVersion,
+  validateBusinessRules,
+  getHouseholdThresholds,
+  getArticle140Centers,
+  getBusinessRulesVersion,
+  quotaPerPerson,
+  autoAcceptRuleFor,
+  getApprovalLevels,
+  ageFromBirthDate
+} from '../utils/businessRules.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import * as zhAuth from './data/authData.js';
@@ -693,6 +706,39 @@ export async function mockDispatch(config) {
     organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Central Office', phone: '+964 1 000 0000' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Baghdad Office', phone: '+964 1 000 0001' }],
     'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', ip: '127.0.0.1', time: new Date().toISOString() }]
   };
+  // 业务规则配置（版本化）：每次发布生成新版本号，历史版本保留全量快照
+  if (url.includes('/admin/business-rules')) {
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
+    const hasRuleGrant = Array.isArray(profile.permissionCodes)
+      ? profile.permissionCodes.includes('system.users')
+      : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole);
+    if (!hasRuleGrant) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+
+    if (method === 'GET') {
+      return createResponse(readBusinessRulesDocument());
+    }
+    if (method === 'POST') {
+      const errors = validateBusinessRules(data?.rules);
+      if (errors.length) {
+        return createResponse({}, 400, i18n.global.t('businessRules.validationFailed'));
+      }
+      const actor = profile.name || profile.username || 'System Administrator';
+      const next = buildNextBusinessRulesVersion(readBusinessRulesDocument(), data?.rules, actor);
+      writeBusinessRulesDocument(next);
+      const logs = readCenter('system_audit-logs', systemSeed['audit-logs']);
+      const groups = (next.history[next.history.length - 1]?.changedGroups || []).join(', ') || 'metadata';
+      logs.unshift({
+        id: `log-${crypto.randomUUID()}`,
+        actor,
+        details: `Published business rules v${next.version} (${groups})`,
+        ip: '127.0.0.1',
+        time: new Date().toISOString()
+      });
+      writeCenter('system_audit-logs', logs);
+      return createResponse(next);
+    }
+  }
+
   if (url.includes('/admin/system/')) {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
     const hasSystemGrant = Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('system.users') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(currentRole);
@@ -1275,11 +1321,23 @@ export async function mockDispatch(config) {
     const family = familiesStore.find((f) => f.rationCardNo === currentCardNo) || familiesStore[0];
     const selectedMembers = (family?.members || []).filter((m) => memberIds.includes(m.id));
 
+    // 双路径条件来自「业务规则配置」：自动受理开关、家庭编号一致性、最低年龄
+    const splitRule = autoAcceptRuleFor('SPL');
+    const splitRulesVersion = getBusinessRulesVersion();
     const hasMale = selectedMembers.some((m) => m.gender === '男');
     const hasFemale = selectedMembers.some((m) => m.gender === '女');
     const isCouple = selectedMembers.length >= 2 && hasMale && hasFemale;
+    const familyCodePassed = !splitRule.requireSameFamilyCode
+      || selectedMembers.every((m) => !m.familyCode || !family?.familyCode || m.familyCode === family.familyCode);
+    const ageThreshold = Number(splitRule.minAge) || 0;
+    const agePassed = ageThreshold <= 0
+      || selectedMembers.every((m) => {
+        const age = ageFromBirthDate(m.birthDate);
+        return age === null || age >= ageThreshold;
+      });
+    const judgePassed = Boolean(splitRule.autoAccept) && isCouple && familyCodePassed && agePassed;
 
-    if (isCouple) {
+    if (judgePassed) {
       // 判别通过：自动执行分户并签发新卡
       const newCardNo = `RC-1002${Math.floor(2000 + Math.random() * 7000)}`;
       const newFamilyCode = `FAM-BAG-${Math.floor(10000 + Math.random() * 89999)}`;
@@ -1318,26 +1376,40 @@ export async function mockDispatch(config) {
       return createResponse({
         passed: true,
         newCardNo,
-        message: (isEn ? `[Automatic Judge Passed] Identified as a standard legal couple; household split auto-approved and new ration card number issued: ${newCardNo}!` : `【系统自动判别通过】识别为标准合法夫妻，已自动批准分户并签发新配给卡号：${newCardNo}！`)
-      });
-    } else {
-      // 判别未通过
-      const reason = selectedMembers.length === 1
-        ? '拟分立成员仅为单独一人，不满足“夫妻标准组合”自动识别规则，系统自动判别未通过。'
-        : '拟分立成员组合非标准夫妻结构，系统自动判别未通过。';
-      return createResponse({
-        passed: false,
-        reasonCode: selectedMembers.length === 1 ? 'SINGLE_MEMBER' : 'NON_SPOUSAL_GROUP',
-        reason,
-        message: reason
+        rulesVersion: splitRulesVersion,
+        message: i18n.global.t('businessRules.autoJudgePassed', { version: splitRulesVersion, cardNo: newCardNo })
       });
     }
+
+    // 判别未通过：按未命中的条件给出原因
+    const reasonCode = selectedMembers.length === 1
+      ? 'SINGLE_MEMBER'
+      : !isCouple
+        ? 'NON_SPOUSAL_GROUP'
+        : !familyCodePassed
+          ? 'FAMILY_CODE_MISMATCH'
+          : 'AGE_BELOW_THRESHOLD';
+    const reasonKey = {
+      SINGLE_MEMBER: 'businessRules.autoJudgeFailedSingle',
+      NON_SPOUSAL_GROUP: 'businessRules.autoJudgeFailedGroup',
+      FAMILY_CODE_MISMATCH: 'businessRules.autoJudgeFailedFamily',
+      AGE_BELOW_THRESHOLD: 'businessRules.autoJudgeFailedAge'
+    }[reasonCode];
+    const reason = i18n.global.t(reasonKey, { age: ageThreshold });
+    return createResponse({
+      passed: false,
+      reasonCode,
+      rulesVersion: splitRulesVersion,
+      reason,
+      message: reason
+    });
   }
 
   // 申请分户：提交分部电子审核 (POST)
   if (url.includes('/citizen/split-household/submit-review') && method === 'POST') {
     const { currentCardNo, memberIds, reason } = data;
     const ticketId = `REV-SPL-${Date.now().toString().slice(-4)}`;
+    const splitApprovalLevel = getApprovalLevels('SPL');
 
     const newTicket = {
       id: ticketId,
@@ -1348,7 +1420,11 @@ export async function mockDispatch(config) {
       applicantName: isEn ? 'Original Head of Household / Applicant' : '原家庭户主/申请人',
       targetMemberName: isEn ? `Split Members (${memberIds.length})` : `分立人员(${memberIds.length}人)`,
       reason: reason || (isEn ? 'Automatic judge failed; routed to branch staff for manual review' : '系统自动判别未通过，转交分部门人员手动审核'),
-      status: isEn ? 'Pending Staff Review' : '待分部初审',
+      status: splitApprovalLevel === 'manager'
+        ? (isEn ? 'Pending Manager Review' : '待经理终审')
+        : (isEn ? 'Pending Staff Review' : '待分部初审'),
+      approvalLevel: splitApprovalLevel,
+      rulesVersion: getBusinessRulesVersion(),
       submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
       staffOpinion: '',
       managerDecision: isEn ? 'Pending' : '待决',
@@ -1385,12 +1461,13 @@ export async function mockDispatch(config) {
       article140Doc
     } = data;
 
-    // 1. 容量红线检查 (1,500户上限)
-    if (toFlourAgent?.currentHouseholds >= 1500) {
-      return createResponse({}, 400, (isEn ? `The selected flour agent [${toFlourAgent.name}] has reached the 1,500-household service ceiling; transfer-in prohibited, please choose another station!` : `所选面粉代理【${toFlourAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`));
+    // 1. 容量红线检查（阈值来自「业务规则配置 · 户数阈值」）
+    const capacityRedline = getHouseholdThresholds().capacityRedline;
+    if (toFlourAgent?.currentHouseholds >= capacityRedline) {
+      return createResponse({}, 400, (isEn ? `The selected flour agent [${toFlourAgent.name}] has reached the ${capacityRedline.toLocaleString()}-household service ceiling; transfer-in prohibited, please choose another station!` : `所选面粉代理【${toFlourAgent.name}】已达 ${capacityRedline.toLocaleString()} 户服务上限，禁止转入，请选择其他网点！`));
     }
-    if (toFoodAgent?.currentHouseholds >= 1500) {
-      return createResponse({}, 400, (isEn ? `The selected food agent [${toFoodAgent.name}] has reached the 1,500-household service ceiling; transfer-in prohibited, please choose another station!` : `所选食品代理【${toFoodAgent.name}】已达 1,500 户服务上限，禁止转入，请选择其他网点！`));
+    if (toFoodAgent?.currentHouseholds >= capacityRedline) {
+      return createResponse({}, 400, (isEn ? `The selected food agent [${toFoodAgent.name}] has reached the ${capacityRedline.toLocaleString()}-household service ceiling; transfer-in prohibited, please choose another station!` : `所选食品代理【${toFoodAgent.name}】已达 ${capacityRedline.toLocaleString()} 户服务上限，禁止转入，请选择其他网点！`));
     }
 
     const family = getSharedFamily(cardNo) || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
@@ -1402,8 +1479,16 @@ export async function mockDispatch(config) {
         : fromProvince.split(' ')[0] === toProvince.split(' ')[0]
     );
 
-    if (isIntraProvince) {
-      // 路径 A: 省内转移 (全自动批准)
+    // 双路径判定：规则配置决定自动受理条件（地区范围）与转人工后的审批层级
+    const transferRule = autoAcceptRuleFor('TRF');
+    const regionAllowed = transferRule.regionScope === 'any'
+      || (transferRule.regionScope === 'intra-province' ? isIntraProvince : !isIntraProvince);
+    const autoApproved = Boolean(transferRule.autoAccept && regionAllowed);
+    const transferRulesVersion = getBusinessRulesVersion();
+    const transferApprovalLevel = getApprovalLevels('TRF');
+
+    if (autoApproved) {
+      // 路径 A: 命中自动受理条件（默认省内转移，全自动批准）
       family.province = toProvince;
       family.district = `${toBranch} · ${toCenter?.centerName || ''}`;
       family.agentId = `${toFlourAgent?.id || 'FA'} / ${toFoodAgent?.id || 'FD'}`;
@@ -1421,21 +1506,32 @@ export async function mockDispatch(config) {
       return createResponse({
         autoApproved: true,
         passed: true,
-        message: (isEn ? `[Intra-Governorate Transfer Auto-Approved] The ration card has been automatically transferred to [${toFlourAgent?.name}] and [${toFoodAgent?.name}]; card agents and supply points updated instantly!` : `【省内转移自动核准通过】已自动将配给卡转移至【${toFlourAgent?.name}】与【${toFoodAgent?.name}】，配给卡代理及供货点已即时更新生效！`)
-      }, 200, '省内转移全自动批准生效！');
+        rulesVersion: transferRulesVersion,
+        message: (isEn ? `[Auto-Approved by Rule v${transferRulesVersion}] The ration card has been automatically transferred to [${toFlourAgent?.name}] and [${toFoodAgent?.name}]; card agents and supply points updated instantly!` : `【命中自动受理规则 v${transferRulesVersion}】已自动将配给卡转移至【${toFlourAgent?.name}】与【${toFoodAgent?.name}】，配给卡代理及供货点已即时更新生效！`)
+      }, 200, isEn ? 'Transfer auto-approved by rule configuration.' : '已按业务规则自动批准生效！');
     } else {
-      // 路径 B: 跨省转移 (流转至转入分部两级电子审核工作台)
+      // 路径 B: 未命中自动受理条件 (流转至审核工作台，层级由审批矩阵决定)
       const ticketId = `REV-TRF-${Date.now().toString().slice(-4)}`;
+      const crossProvince = !isIntraProvince;
+      const managerLevel = transferApprovalLevel === 'manager';
       const newTicket = {
         id: ticketId,
         source: isEn ? 'Transfer Agent' : '代理转移',
-        categoryType: isEn ? 'Cross-Governorate Agent Transfer Two-Tier Approval' : '跨省代理转移两级审批',
-        appType: isEn ? `Cross-Governorate Agent Transfer (${fromProvince} → ${toProvince})` : `跨省代理转移 (${fromProvince} → ${toProvince})`,
+        categoryType: isEn
+          ? (crossProvince ? 'Cross-Governorate Agent Transfer Two-Tier Approval' : 'Intra-Governorate Agent Transfer Manual Review')
+          : (crossProvince ? '跨省代理转移两级审批' : '省内代理转移人工审核'),
+        appType: isEn
+          ? `${crossProvince ? 'Cross-Governorate' : 'Intra-Governorate'} Agent Transfer (${fromProvince} → ${toProvince})`
+          : `${crossProvince ? '跨省' : '省内'}代理转移 (${fromProvince} → ${toProvince})`,
         cardNo: cardNo || family.rationCardNo,
         applicantName: family.headName,
         targetMemberName: isEn ? `${family.headName} (Whole Household, ${family.memberCount} Members)` : `${family.headName} (全户 ${family.memberCount} 人)`,
-        reason: isEn ? `Relocated cross-governorate from [${fromProvince}] to [${toProvince} · ${toBranch} · ${toCenter?.centerName}] for work/family reasons; requesting nearby flour agent [${toFlourAgent?.name}] and food agent [${toFoodAgent?.name}] transfer.` : `因工作/家庭迁居由【${fromProvince}】跨省迁往【${toProvince} · ${toBranch} · ${toCenter?.centerName}】，申请就近转移面粉代理【${toFlourAgent?.name}】与食品代理【${toFoodAgent?.name}】。`,
-        status: isEn ? 'Pending Staff Review' : '待分部初审',
+        reason: isEn ? `Relocated from [${fromProvince}] to [${toProvince} · ${toBranch} · ${toCenter?.centerName}] for work/family reasons; requesting nearby flour agent [${toFlourAgent?.name}] and food agent [${toFoodAgent?.name}] transfer.` : `因工作/家庭迁居由【${fromProvince}】迁往【${toProvince} · ${toBranch} · ${toCenter?.centerName}】，申请就近转移面粉代理【${toFlourAgent?.name}】与食品代理【${toFoodAgent?.name}】。`,
+        status: managerLevel
+          ? (isEn ? 'Pending Manager Review' : '待经理终审')
+          : (isEn ? 'Pending Staff Review' : '待分部初审'),
+        approvalLevel: transferApprovalLevel,
+        rulesVersion: transferRulesVersion,
         submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
         staffOpinion: '',
         managerDecision: isEn ? 'Pending' : '待决',
@@ -1461,8 +1557,10 @@ export async function mockDispatch(config) {
         autoApproved: false,
         passed: true,
         ticketId,
-        message: isEn ? `Cross-governorate agent transfer application submitted! Routed to the receiving branch audit workbench of [${toProvince}], Ticket No.: ${ticketId}.` : `跨省代理转移申请已提交！已流转至【${toProvince}】转入分部审核工作台，工单编号：${ticketId}。`
-      }, 200, isEn ? `Cross-governorate transfer routed to branch audit workbench (Ticket No. ${ticketId})` : `跨省转移申报已转入分部审核工作台 (工单号 ${ticketId})`);
+        rulesVersion: transferRulesVersion,
+        approvalLevel: transferApprovalLevel,
+        message: isEn ? `Agent transfer application submitted! Routed to the audit workbench of [${toProvince}] (rule v${transferRulesVersion}), Ticket No.: ${ticketId}.` : `代理转移申请已提交！已流转至【${toProvince}】审核工作台（规则 v${transferRulesVersion}），工单编号：${ticketId}。`
+      }, 200, isEn ? `Transfer routed to the audit workbench (Ticket No. ${ticketId})` : `转移申报已转入审核工作台 (工单号 ${ticketId})`);
     }
   }
 
@@ -1532,6 +1630,12 @@ export async function mockDispatch(config) {
     const currentFamily = familiesStore.find((f) => f.rationCardNo === targetCardNo) || familiesStore[0];
     const isArticle140 = !!(member.isArticle140Area || currentFamily.province.includes('基尔库克') || currentFamily.province.includes('迪亚拉') || currentFamily.province.includes('尼尼微'));
 
+    // 业务规则配置：自动受理开关与年龄门槛
+    const memberRule = autoAcceptRuleFor('TRM');
+    const memberRulesVersion = getBusinessRulesVersion();
+    const memberAge = ageFromBirthDate(member.birthDate);
+    const memberAgePassed = memberRule.minAge <= 0 || memberAge === null || memberAge >= memberRule.minAge;
+
     let autoApproved = false;
     let reasonText = '';
 
@@ -1571,6 +1675,14 @@ export async function mockDispatch(config) {
       reasonText = (isEn ? `The transfer reason falls under [${transferType === 'guardianship' ? 'Legal Guardianship' : transferType === 'support' ? 'Kinship Support' : 'Special Statutory Reasons'}]; two-tier manual review of statutory certification documents by the ration branch is required by law.` : `转移事由属于【${transferType === 'guardianship' ? (isEn ? 'Legal Guardianship' : '法定监护') : transferType === 'support' ? (isEn ? 'Kinship Support' : '亲属抚养') : (isEn ? 'Special Statutory Reasons' : '特殊法定原因')}】，依法须经配给分部两级人工审查法定证明公文。`);
     }
 
+    // 规则配置优先于默认判定：关闭自动受理或未达年龄门槛时转人工
+    if (autoApproved && (!memberRule.autoAccept || !memberAgePassed)) {
+      autoApproved = false;
+      reasonText = !memberAgePassed
+        ? i18n.global.t('businessRules.autoJudgeFailedAge', { age: memberRule.minAge })
+        : i18n.global.t('businessRules.autoAcceptDisabled');
+    }
+
     if (autoApproved) {
       // 路径 1: 自动批准：将成员正式移入当前家庭
       const newMember = {
@@ -1599,12 +1711,14 @@ export async function mockDispatch(config) {
       return createResponse({
         autoApproved: true,
         passed: true,
+        rulesVersion: memberRulesVersion,
         member: newMember,
         message: (isEn ? `[Member Transfer Fully Auto-Approved] ${reasonText}; new member [${member.name}] has been successfully moved into your electronic ration card!` : `【成员转移全自动批准生效】${reasonText}，新成员【${member.name}】已成功移入您的电子配给卡！`)
       }, 200, '成员转移已自动批准并即刻生效！');
     } else {
-      // 路径 2: 电子审核：转入配给分部工作台 (分部初审 -> 经理终审)
+      // 路径 2: 电子审核：转入配给分部工作台 (层级由审批矩阵决定)
       const ticketId = `REV-MEM-${Date.now().toString().slice(-4)}`;
+      const memberApprovalLevel = getApprovalLevels('TRM');
       const newTicket = {
         id: ticketId,
         source: isEn ? 'Member Entry' : '成员转移',
@@ -1614,7 +1728,11 @@ export async function mockDispatch(config) {
         applicantName: currentFamily.headName,
         targetMemberName: isEn ? `${member.name} (National ID: ${member.nationalId})` : `${member.name} (国民号: ${member.nationalId})`,
         reason: isEn ? `${reasonText} Original card registered at [${member.currentProvince} · ${member.currentCenterName}]` : `${reasonText} 原持卡所属【${member.currentProvince} · ${member.currentCenterName}】`,
-        status: isEn ? 'Pending Staff Review' : '待分部初审',
+        status: memberApprovalLevel === 'manager'
+          ? (isEn ? 'Pending Manager Review' : '待经理终审')
+          : (isEn ? 'Pending Staff Review' : '待分部初审'),
+        approvalLevel: memberApprovalLevel,
+        rulesVersion: memberRulesVersion,
         submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
         staffOpinion: '',
         managerDecision: isEn ? 'Pending' : '待决',
@@ -1669,18 +1787,23 @@ export async function mockDispatch(config) {
       });
     });
 
-    // 商品名与每人配给标准与「家庭代理 · 月度家庭口粮配给份额明细」口径严格一致
-    // (面粉 9kg/人 · 大米 3kg/人 · 油 1L/人 · 糖 1kg/人，见 quotaStandards / RationPlanTab)
+    // 人均月度定额来自「业务规则配置 · 配额标准」（调整后顺延至下一周期生效）
+    const perPersonQuota = {
+      'FLOUR-WHT-02': quotaPerPerson('FLOUR-WHT-02'),
+      'RICE-BAS-01': quotaPerPerson('RICE-BAS-01'),
+      'OIL-SUN-03': quotaPerPerson('OIL-SUN-03'),
+      'SUGAR-WHT-04': quotaPerPerson('SUGAR-WHT-04')
+    };
     const quotaList = [
       {
         itemCode: 'FLOUR-WHT-02',
         itemName: isEn ? 'Premium Flour' : '特级面粉',
         category: '面粉',
         unit: 'kg',
-        standardPerPerson: 9,
-        totalHouseholdQuota: memberCount * 9,
+        standardPerPerson: perPersonQuota['FLOUR-WHT-02'],
+        totalHouseholdQuota: memberCount * perPersonQuota['FLOUR-WHT-02'],
         consumedQuota: consumedMap['FLOUR-WHT-02'],
-        remainingQuota: Math.max(0, memberCount * 9 - consumedMap['FLOUR-WHT-02']),
+        remainingQuota: Math.max(0, memberCount * perPersonQuota['FLOUR-WHT-02'] - consumedMap['FLOUR-WHT-02']),
         guidePriceIQD: 250,
         marketPriceIQD: 1200,
         subsidyIQD: 950,
@@ -1693,10 +1816,10 @@ export async function mockDispatch(config) {
         itemName: isEn ? 'Premium Rice' : '精制大米',
         category: '大米',
         unit: 'kg',
-        standardPerPerson: 3,
-        totalHouseholdQuota: memberCount * 3,
+        standardPerPerson: perPersonQuota['RICE-BAS-01'],
+        totalHouseholdQuota: memberCount * perPersonQuota['RICE-BAS-01'],
         consumedQuota: consumedMap['RICE-BAS-01'],
-        remainingQuota: Math.max(0, memberCount * 3 - consumedMap['RICE-BAS-01']),
+        remainingQuota: Math.max(0, memberCount * perPersonQuota['RICE-BAS-01'] - consumedMap['RICE-BAS-01']),
         guidePriceIQD: 500,
         marketPriceIQD: 2500,
         subsidyIQD: 2000,
@@ -1709,10 +1832,10 @@ export async function mockDispatch(config) {
         itemName: isEn ? 'Edible Vegetable Oil' : '食用植物油',
         category: '食用油',
         unit: 'L',
-        standardPerPerson: 1,
-        totalHouseholdQuota: memberCount * 1,
+        standardPerPerson: perPersonQuota['OIL-SUN-03'],
+        totalHouseholdQuota: memberCount * perPersonQuota['OIL-SUN-03'],
         consumedQuota: consumedMap['OIL-SUN-03'],
-        remainingQuota: Math.max(0, memberCount * 1 - consumedMap['OIL-SUN-03']),
+        remainingQuota: Math.max(0, memberCount * perPersonQuota['OIL-SUN-03'] - consumedMap['OIL-SUN-03']),
         guidePriceIQD: 1000,
         marketPriceIQD: 4500,
         subsidyIQD: 3500,
@@ -1725,10 +1848,10 @@ export async function mockDispatch(config) {
         itemName: isEn ? 'Refined White Sugar' : '纯精白糖',
         category: '白糖',
         unit: 'kg',
-        standardPerPerson: 1,
-        totalHouseholdQuota: memberCount * 1,
+        standardPerPerson: perPersonQuota['SUGAR-WHT-04'],
+        totalHouseholdQuota: memberCount * perPersonQuota['SUGAR-WHT-04'],
         consumedQuota: consumedMap['SUGAR-WHT-04'],
-        remainingQuota: Math.max(0, memberCount * 1 - consumedMap['SUGAR-WHT-04']),
+        remainingQuota: Math.max(0, memberCount * perPersonQuota['SUGAR-WHT-04'] - consumedMap['SUGAR-WHT-04']),
         guidePriceIQD: 500,
         marketPriceIQD: 2000,
         subsidyIQD: 1500,
@@ -3068,7 +3191,26 @@ export async function mockDispatch(config) {
 
   // 5.2 查询全国及第140号决议覆盖省份与中心列表 (UNICODE / SCM)
   if (url.includes('/agent/article140-centers') && method === 'GET') {
-    let result = [...article140CentersStore];
+    // 140 号决议清单以「业务规则配置」为准，增减后立即生效
+    const configuredCenters = getArticle140Centers();
+    const configuredIds = new Set(configuredCenters.map((center) => String(center.id)));
+    const baseCenters = article140CentersStore.map((center) => ({
+      ...center,
+      isArticle140: configuredIds.has(String(center.centerId))
+    }));
+    configuredCenters.forEach((center) => {
+      if (!baseCenters.some((item) => String(item.centerId) === String(center.id))) {
+        baseCenters.push({
+          centerId: String(center.id),
+          centerName: center.name,
+          province: center.province || '',
+          city: '',
+          isArticle140: true,
+          status: '正常营业'
+        });
+      }
+    });
+    let result = baseCenters;
     if (params.province && params.province !== '全部') {
       result = result.filter((c) => c.province.includes(params.province));
     }
