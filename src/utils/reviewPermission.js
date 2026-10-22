@@ -115,8 +115,8 @@ export function buildPermissionTree(catalog = PERMISSION_CATALOG) {
         .filter((item) => item.parentCode === feature.code)
         .forEach((child) => feature.children.push({ ...child, children: [] }));
     });
-    // 纯分组节点（存在子级）不参与勾选存储，仅作为分组开关
-    module.features = module.features.filter((feature) => feature.children.length === 0 || !feature.parentCode);
+    // 子权限只显示在父级功能内部，不能再作为同级功能重复渲染
+    module.features = module.features.filter((feature) => !feature.parentCode);
   });
   return modules;
 }
