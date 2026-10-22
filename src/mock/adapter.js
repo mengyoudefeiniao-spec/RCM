@@ -696,6 +696,56 @@ export async function mockDispatch(config) {
     try { return JSON.parse(localStorage.getItem(`rcm_center_${key}_v1`) || 'null') ?? fallback; } catch { return fallback; }
   };
   const writeCenter = (key, value) => localStorage.setItem(`rcm_center_${key}_v1`, JSON.stringify(value));
+  const initializeMessageSeeds = () => {
+    const messages = readCenter('messages', []);
+    if (readCenter('messages_demo_seed', false)) return messages;
+
+    const adminFavoriteKeys = ['usr-admin-01', 'usr-admin-02', 'usr-admin-03', 'web-001', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
+    const now = Date.now();
+    const makeMessage = ({ ageMinutes = 0, ...message }) => ({
+      category: 'system',
+      sender: 'RCM',
+      createdAt: new Date(now - ageMinutes * 60_000).toISOString(),
+      readBy: [],
+      favoriteBy: [],
+      ...message
+    });
+    const demoMessages = [
+      makeMessage({
+        id: 'demo-notification-inbox-welcome', subjectKey: 'mail.demoInboxSubject', bodyKey: 'mail.demoInboxBody',
+        recipientType: 'web', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'],
+        reviewStatus: 'approved', favoriteBy: adminFavoriteKeys, ageMinutes: 60
+      }),
+      makeMessage({
+        id: 'demo-notification-inbox-update', subjectKey: 'mail.demoUpdateSubject', bodyKey: 'mail.demoUpdateBody',
+        recipientType: 'web', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'],
+        category: 'admin', reviewStatus: 'approved', readBy: ['admin', 'minister_center', 'deputy_minister', 'director_planning'],
+        ageMinutes: 180
+      }),
+      ...[
+        { role: 'minister_center', id: 'usr-admin-01' },
+        { role: 'deputy_minister', id: 'usr-admin-02' },
+        { role: 'director_planning', id: 'usr-admin-03' },
+        { role: 'admin', id: 'web-001' }
+      ].map(({ role }, index) => makeMessage({
+        id: `demo-notification-sent-${role}`, subjectKey: 'mail.demoSentSubject', bodyKey: 'mail.demoSentBody',
+        recipientType: 'web', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'],
+        senderRole: role, category: 'admin', reviewStatus: 'pending', favoriteBy: adminFavoriteKeys,
+        ageMinutes: 300 + index
+      })),
+      makeMessage({
+        id: 'demo-notification-review-agent', subjectKey: 'mail.demoReviewSubject', bodyKey: 'mail.demoReviewBody',
+        recipientType: 'citizens', regionCode: 'BAG', recipientLabelKey: 'systemExtras.regionBaghdad',
+        audience: ['citizen'], senderRole: 'agent', category: 'admin', reviewStatus: 'pending', ageMinutes: 120
+      })
+    ];
+    const existingIds = new Set(messages.map((message) => message.id));
+    const seededMessages = demoMessages.filter((message) => !existingIds.has(message.id));
+    const combinedMessages = [...seededMessages, ...messages];
+    if (seededMessages.length) writeCenter('messages', combinedMessages);
+    writeCenter('messages_demo_seed', true);
+    return combinedMessages;
+  };
   const systemSeed = {
     users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
     roles: [
@@ -827,7 +877,7 @@ export async function mockDispatch(config) {
   if (url.includes('/messages') && !url.includes('/me/')) {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
     const access = resolveMessageAccess(profile);
-    const messages = readCenter('messages', [{ id: 'welcome-admin-note', category: 'system', subjectKey: 'messages.demoSubject', bodyKey: 'messages.demoBody', sender: 'RCM', audience: ['admin', 'minister_center', 'deputy_minister', 'director_planning'], createdAt: new Date().toISOString(), readBy: [] }]);
+    const messages = initializeMessageSeeds();
     const userKey = String(profile.id || profile.username || currentRole);
     const identity = [profile.id, profile.username, profile.cardNo, profile.rationCardNo, profile.agentCode].filter(Boolean).map(String);
     const profileRegion = String(profile.regionCode || profile.provinceCode || profile.province || profile.region || profile.governorate || '');

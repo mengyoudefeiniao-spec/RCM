@@ -47,7 +47,7 @@
           <template #default="{ row }"><span class="font-mono text-xs">{{ row.id }}</span></template>
         </el-table-column>
         <el-table-column :label="t('mail.reviewMessageSubject')" min-width="200">
-          <template #default="{ row }"><span class="font-medium">{{ row.subject || t('mail.emptyBody') }}</span></template>
+          <template #default="{ row }"><span class="font-medium">{{ messageSubject(row) || t('mail.emptyBody') }}</span></template>
         </el-table-column>
         <el-table-column :label="t('mail.reviewMessageSender')" min-width="150">
           <template #default="{ row }">{{ row.sender || '—' }}</template>
@@ -84,7 +84,7 @@
           <span class="font-mono text-xs text-[var(--el-text-color-secondary)]">{{ selectedMessage.id }}</span>
         </div>
 
-        <h2 class="review-message-title">{{ selectedMessage.subject || t('mail.emptyBody') }}</h2>
+        <h2 class="review-message-title">{{ messageSubject(selectedMessage) || t('mail.emptyBody') }}</h2>
         <el-descriptions :column="1" border class="review-descriptions">
           <el-descriptions-item :label="t('mail.reviewMessageSender')">{{ selectedMessage.sender || '—' }}</el-descriptions-item>
           <el-descriptions-item :label="t('mail.reviewMessageRecipients')">{{ recipientSummary(selectedMessage) }}</el-descriptions-item>
@@ -94,7 +94,7 @@
         <section class="drawer-section">
           <h3>{{ t('mail.reviewMessageContent') }}</h3>
           <article v-if="selectedMessage.bodyHtml" class="review-message-body mail-content" v-html="safeMessageBody(selectedMessage.bodyHtml)" />
-          <p v-else class="review-message-body">{{ selectedMessage.bodyText || '—' }}</p>
+          <p v-else class="review-message-body">{{ messageBody(selectedMessage) || '—' }}</p>
         </section>
 
         <section v-if="selectedMessage.attachments?.length" class="drawer-section">
@@ -173,7 +173,7 @@ const filteredMessages = computed(() => {
     .filter((message) => statusFilter.value === 'all'
       || (statusFilter.value === 'pending' && message.reviewStatus === 'pending')
       || (statusFilter.value === 'processed' && ['approved', 'rejected'].includes(message.reviewStatus)))
-    .filter((message) => !keyword || [message.subject, message.bodyText, message.sender, message.recipientLabel, recipientSummary(message), message.id]
+    .filter((message) => !keyword || [messageSubject(message), messageBody(message), message.sender, message.recipientLabelKey && t(message.recipientLabelKey), message.recipientLabel, recipientSummary(message), message.id]
       .some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(keyword)));
 });
 const emptyDescription = computed(() => {
@@ -192,10 +192,14 @@ const RECIPIENT_LABEL_KEYS = {
 
 function recipientSummary(message) {
   const typeLabel = t(RECIPIENT_LABEL_KEYS[message?.recipientType] || 'mail.webUsers');
-  return message?.recipientLabel && ['citizens', 'agents'].includes(message?.recipientType)
-    ? `${typeLabel} · ${message.recipientLabel}`
+  const recipientLabel = message?.recipientLabelKey ? t(message.recipientLabelKey) : message?.recipientLabel;
+  return recipientLabel && ['citizens', 'agents'].includes(message?.recipientType)
+    ? `${typeLabel} · ${recipientLabel}`
     : typeLabel;
 }
+
+function messageSubject(message) { return message?.subjectKey ? t(message.subjectKey) : message?.subject || ''; }
+function messageBody(message) { return message?.bodyText || (message?.bodyKey ? t(message.bodyKey) : ''); }
 
 function statusLabel(status) {
   if (status === 'approved') return t('mail.reviewStatusApproved');

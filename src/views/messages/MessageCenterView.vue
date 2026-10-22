@@ -206,8 +206,9 @@ function recipientTypeLabel(recipientType) {
 }
 function recipientSummary(item) {
   const typeLabel = recipientTypeLabel(item.recipientType);
-  return item.recipientLabel && ['citizens', 'agents'].includes(item.recipientType)
-    ? `${typeLabel} · ${item.recipientLabel}`
+  const recipientLabel = item.recipientLabelKey ? t(item.recipientLabelKey) : item.recipientLabel;
+  return recipientLabel && ['citizens', 'agents'].includes(item.recipientType)
+    ? `${typeLabel} · ${recipientLabel}`
     : typeLabel;
 }
 function shortDate(value) { return value ? new Intl.DateTimeFormat(locale.value, { month: 'short', day: 'numeric' }).format(new Date(value)) : ''; }

@@ -165,7 +165,8 @@ function messageRegionCode(message) {
 }
 
 function scopeAllows(message, access, action, recipientType) {
-  if (!access?.can) return false;
+  const canPerformAction = action === 'send' ? access?.canSend : access?.canReview;
+  if (!canPerformAction) return false;
   if (access.direct) return true;
   if (!RECIPIENT_TYPES.includes(recipientType)) return false;
   if (recipientType === 'web') return access[`${action}WebUsers`];
