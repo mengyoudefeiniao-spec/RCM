@@ -485,16 +485,17 @@
             </button>
             <div
               v-else
-              class="w-7 h-7 rounded-full bg-[#E1F4E4]/90 flex items-center justify-center text-[#2F5B44] text-xs font-bold"
+              class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              :class="claimStep === 'scan-error' ? 'bg-[#F6D9D9]/90 text-[#C04442]' : 'bg-[#E1F4E4]/90 text-[#2F5B44]'"
             >
-              ✓
+              {{ claimStep === 'scan-error' ? '✕' : '✓' }}
             </div>
             <div>
               <div class="text-xs font-bold flex items-center gap-1" :class="claimStep === 'camera' ? 'text-white' : 'text-[#1B3123]'">
-                <span>{{ claimStep === 'camera' ? $t('agentOrders.scanCameraModalTitle') : claimStep === 'citizen-card' ? $t('citizenCard.qrVerifyTitle') : claimStep === 'government-order' ? $t('agentG2B.qrModalTitle') : claimStep === 'confirm' ? $t('agentOrders.confirmOrderModalTitle') : $t('agentOrders.officialVoucherModalTitle') }}</span>
+                <span>{{ claimStep === 'camera' ? $t('agentOrders.scanCameraModalTitle') : claimStep === 'citizen-card' ? $t('citizenCard.qrVerifyTitle') : claimStep === 'government-order' ? $t('agentG2B.qrModalTitle') : claimStep === 'confirm' ? $t('agentOrders.confirmOrderModalTitle') : claimStep === 'scan-error' ? $t('scanGuard.panelTitle') : $t('agentOrders.officialVoucherModalTitle') }}</span>
                 <span
                   class="text-[9px] px-1 rounded font-mono"
-                  :class="claimStep === 'camera' ? 'bg-[#12241A] text-[#6FBF92] border border-[#3E9B68]/40' : 'bg-[#E1F4E4] text-[#24483A] border border-[#A7D9BC]'"
+                  :class="claimStep === 'camera' ? 'bg-[#12241A] text-[#6FBF92] border border-[#3E9B68]/40' : claimStep === 'scan-error' ? 'bg-[#C04442] text-white border border-[#C04442]/60' : 'bg-[#E1F4E4] text-[#24483A] border border-[#A7D9BC]'"
                 >MOT-APP</span>
               </div>
             </div>
@@ -530,6 +531,11 @@
 
           <!-- 核心相机取景器窗口 (自适应高度，带最大高度限制) -->
           <div class="relative w-full flex-1 min-h-[180px] max-h-[340px] rounded-lg overflow-hidden bg-black border border-[#1F3326] shadow-2xl flex items-center justify-center">
+            <!-- 公民卡二维码状态核验中的加载遮罩 -->
+            <div v-if="cardVerifyLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#12241A]/85 rounded-lg">
+              <el-icon class="is-loading text-2xl text-[#6FBF92]"><Loading /></el-icon>
+              <span class="text-[11px] text-[#A7D9BC] mt-1.5 tracking-wide">{{ $t('scanGuard.verifying') }}</span>
+            </div>
             <!-- 真实摄像头视频流预览 -->
             <video
               ref="videoRef"
@@ -711,6 +717,131 @@
           <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
             <el-button type="success" class="w-full whitespace-normal leading-snug" @click="retakePhoto">
               {{ $t('agentOrders.retakePhotoBtn') }}
+            </el-button>
+          </div>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- 扫码状态异常红色拦截面板 -->
+        <!-- ERR_FROZEN 已冻结 / ERR_QUOTA 配额不足 / ERR_DUPLICATE 重复领取 -->
+        <!-- ERR_EXPIRED 提货码过期 / ERR_CARD 卡注销挂失 / ERR_SYS 系统错误 -->
+        <!-- ====================================================== -->
+        <div
+          v-else-if="claimStep === 'scan-error' && scanStatusError"
+          class="flex-1 min-h-0 flex flex-col overflow-hidden"
+        >
+          <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 custom-scrollbar">
+            <!-- 红色错误头部 -->
+            <div class="rounded-xl bg-[#FBEAEA] border border-[#E5B8B8] p-4 text-center">
+              <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#C04442] flex items-center justify-center">
+                <el-icon class="text-2xl"><CircleCloseFilled /></el-icon>
+              </div>
+              <div class="text-base font-bold text-[#C04442] leading-snug">
+                {{ $t(`scanGuard.${scanErrorMeta.titleKey}`) }}
+              </div>
+              <div class="mt-1.5 inline-flex items-center px-2 py-0.5 rounded bg-[#C04442] text-white text-[10px] font-mono font-bold tracking-wider">
+                {{ scanStatusError.code }}
+              </div>
+              <div v-if="scanStatusError.cardNo" class="text-xs text-[#8A4A48] font-mono mt-1.5">
+                {{ scanStatusError.cardNo }}<span v-if="scanStatusError.headName"> · {{ scanStatusError.headName }}</span>
+              </div>
+            </div>
+
+            <!-- 异常明细（按错误码渲染） -->
+            <div class="rounded-xl bg-white border border-[#E5B8B8] divide-y divide-[#F3E3E3] text-xs">
+              <!-- ERR_FROZEN：红色提示冻结原因 -->
+              <div v-if="scanStatusError.code === 'ERR_FROZEN'" class="p-3 flex justify-between gap-3">
+                <span class="text-[#8A9A8F]">{{ $t('scanGuard.errFrozenReasonLabel') }}</span>
+                <span class="font-bold text-[#C04442] text-end">
+                  {{ scanStatusError.freezeReason ? formatFreezeReason(scanStatusError.freezeReason) : $t('scanGuard.errFrozenReasonNone') }}
+                </span>
+              </div>
+
+              <!-- ERR_QUOTA：剩余可领量与本次请求量差额 -->
+              <template v-if="scanStatusError.code === 'ERR_QUOTA'">
+                <div class="p-3 flex justify-between gap-3">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errQuotaRemainingLabel') }}</span>
+                  <span class="font-mono font-bold text-[#1F3326]">{{ scanStatusError.remaining }} {{ $t('scanGuard.errQuotaUnit') }}</span>
+                </div>
+                <div class="p-3 flex justify-between gap-3">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errQuotaRequestedLabel') }}</span>
+                  <span class="font-mono font-bold text-[#1F3326]">{{ scanStatusError.requested }} {{ $t('scanGuard.errQuotaUnit') }}</span>
+                </div>
+                <div class="p-3 flex justify-between gap-3 bg-[#FBEAEA]/60">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errQuotaDeficitLabel') }}</span>
+                  <span class="font-mono font-bold text-[#C04442]">-{{ scanStatusError.deficit }} {{ $t('scanGuard.errQuotaUnit') }}</span>
+                </div>
+                <div class="p-3 text-[11px] text-[#8A9A8F]">
+                  {{ $t('scanGuard.errQuotaMemberNote', { memberCount: scanStatusError.memberCount, eligible: scanStatusError.eligibleMembers }) }}
+                </div>
+              </template>
+
+              <!-- ERR_DUPLICATE：本期已核销记录 -->
+              <template v-if="scanStatusError.code === 'ERR_DUPLICATE'">
+                <div class="p-3 flex justify-between gap-3">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errDuplicatePeriodLabel') }}</span>
+                  <span class="font-bold text-[#1F3326]">{{ scanStatusError.claimPeriod || '—' }}</span>
+                </div>
+                <div class="p-3 space-y-2">
+                  <div class="font-bold text-[#43554B]">{{ $t('scanGuard.errDuplicateRecordsLabel') }}</div>
+                  <div
+                    v-for="(rec, ri) in scanStatusError.claimedRecords"
+                    :key="ri"
+                    class="bg-[#F7F7F5] border border-[#E5E0DA] rounded-lg p-2 space-y-1"
+                  >
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-mono font-bold text-[#2A5440]">{{ rec.claimVoucherNo }}</span>
+                      <span class="text-[10px] text-[#8A9A8F] font-mono">{{ rec.claimTime }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        v-for="(it, ii) in (rec.claimedItems || [])"
+                        :key="ii"
+                        class="bg-white border border-[#D9E5DB] px-1.5 py-0.5 rounded text-[10px] text-[#43554B]"
+                      >
+                        {{ formatItemName(it.itemName) }}: <strong>{{ it.qty }}{{ it.unit }}</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- ERR_EXPIRED：提货码签发时间与动态有效期 -->
+              <template v-if="scanStatusError.code === 'ERR_EXPIRED'">
+                <div class="p-3 flex justify-between gap-3">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errExpiredIssuedAtLabel') }}</span>
+                  <span class="font-mono text-[#1F3326] text-end">{{ formatIssuedAt(scanStatusError.issuedAt) }}</span>
+                </div>
+                <div class="p-3 flex justify-between gap-3">
+                  <span class="text-[#8A9A8F]">{{ $t('scanGuard.errExpiredValidityLabel') }}</span>
+                  <span class="font-bold text-[#C04442]">{{ $t('scanGuard.errExpiredValidityValue', { minutes: scanStatusError.validMinutes }) }}</span>
+                </div>
+              </template>
+
+              <!-- ERR_CARD：配给卡状态 -->
+              <div v-if="scanStatusError.code === 'ERR_CARD'" class="p-3 flex justify-between gap-3">
+                <span class="text-[#8A9A8F]">{{ $t('scanGuard.errCardStatusLabel') }}</span>
+                <span class="font-bold text-[#C04442] text-end">{{ formatCardStatus(scanStatusError.cardStatus) }}</span>
+              </div>
+
+              <!-- ERR_SYS：系统错误明细（可空） -->
+              <div v-if="scanStatusError.code === 'ERR_SYS'" class="p-3 text-[11px] text-[#8A9A8F]">
+                {{ scanStatusError.detail || '' }}
+              </div>
+            </div>
+
+            <!-- 红色处理引导 -->
+            <div class="rounded-xl bg-[#FDF3F3] border border-[#E5B8B8] p-3 text-xs text-[#A03E3C] leading-relaxed">
+              <div class="font-bold mb-1">{{ $t('scanGuard.guideTitle') }}</div>
+              <div>{{ $t(`scanGuard.${scanErrorMeta.guideKey}`) }}</div>
+            </div>
+          </div>
+          <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20 space-y-1.5">
+            <el-button type="danger" class="w-full font-bold" @click="retakePhoto">
+              {{ $t('scanGuard.rescanBtn') }}
+            </el-button>
+            <el-button class="w-full" @click="closeScanVerifyModal">
+              {{ $t('scanGuard.closeBtn') }}
             </el-button>
           </div>
         </div>
@@ -928,10 +1059,12 @@ import {
   Van,
   Check,
   CircleCheck,
+  CircleCloseFilled,
   SuccessFilled,
   Document,
   Camera,
-  Printer
+  Printer,
+  Loading
 } from '@element-plus/icons-vue';
 import {
   getAgentCitizenOrders,
@@ -939,6 +1072,9 @@ import {
   lookupCitizenOrderByCode,
   verifyAndClaimCitizenOrder
 } from '@/api/agent';
+import { verifyCitizenCardAndQuota, getCitizenClaimRecords } from '@/api/warehouse';
+import { evaluateCitizenCardScan, createScanSystemError, getScanErrorMeta } from '@/utils/scanStatusGuard';
+import { localizeFreezeReason } from '@/utils/freezeReason.js';
 import { onTabMessage } from '@/utils/crossTabBus';
 import { getMyCouriers } from '@/api/my';
 import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoState.js';
@@ -1158,19 +1294,26 @@ async function loadManagedCouriers() {
 // 阶段 4 核心：高纵深 APP 风格扫码与拍照核验状态
 // ==========================================
 const scanVerifyModalVisible = ref(false);
-const claimStep = ref('camera'); // 'camera' | 'citizen-card' | 'confirm' | 'receipt'
+const claimStep = ref('camera'); // 'camera' | 'citizen-card' | 'confirm' | 'receipt' | 'scan-error'
 const targetPresetOrder = ref(null);
 const showManualInput = ref(false);
 const isFlashOn = ref(false);
 const lookupLoading = ref(false);
 const claiming = ref(false);
+const cardVerifyLoading = ref(false);
 const scanInputCode = ref('');
 const verifiedOrder = ref(null);
 const verifiedCitizenCard = ref(null);
 const verifiedGovernmentOrder = ref(null);
 const claimReceipt = ref(null);
+const scanStatusError = ref(null);
 const selectedOrderId = ref('');
 const cameraError = ref('');
+
+// 扫码状态异常对应的界面词条键（标题 / 处理指引）
+const scanErrorMeta = computed(() => (
+  getScanErrorMeta(scanStatusError.value?.code) || { titleKey: 'errSysTitle', guideKey: 'errSysGuide' }
+));
 
 // 摄像头实时二维码扫描控制
 const videoRef = ref(null);
@@ -1258,6 +1401,7 @@ function openScanVerifyModal(order = null) {
   verifiedCitizenCard.value = null;
   verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
+  scanStatusError.value = null;
   targetPresetOrder.value = order; // 暂存目标订单
   selectedOrderId.value = order?.orderId || '';
   showManualInput.value = false;
@@ -1278,10 +1422,7 @@ async function handleScannedQr(rawValue) {
 
   if (decoded.type === 'citizen-card') {
     stopCamera();
-    verifiedCitizenCard.value = decoded.payload;
-    verifiedOrder.value = null;
-    claimStep.value = 'citizen-card';
-    ElMessage.success(t('citizenCard.qrScanSuccessMsg'));
+    await verifyCitizenCardScan(decoded.payload);
     return;
   }
 
@@ -1297,6 +1438,82 @@ async function handleScannedQr(rawValue) {
 
   scanInputCode.value = decoded.pickupCode;
   await handleLookupCode();
+}
+
+/**
+ * 扫描公民电子配给卡二维码：自动判定用户状态异常
+ * - 正常：进入持卡人凭证页继续核销流程
+ * - 异常：进入红色拦截面板，展示错误码/明细与处理引导（严禁异常发货）
+ */
+async function verifyCitizenCardScan(cardPayload) {
+  cardVerifyLoading.value = true;
+  try {
+    const res = await verifyCitizenCardAndQuota({ cardNo: cardPayload?.cardNo });
+    const verification = res?.data || res;
+
+    // 重复领取场景：拉取本期已核销流水用于红色面板展示
+    let claimedRecords = [];
+    if (verification?.alreadyClaimed) {
+      try {
+        const recordsRes = await getCitizenClaimRecords({ cardNo: cardPayload?.cardNo });
+        const list = Array.isArray(recordsRes) ? recordsRes : (recordsRes?.data || []);
+        claimedRecords = list
+          .filter((rec) => rec?.rationCardNo === cardPayload?.cardNo)
+          .slice(0, 3);
+      } catch (recordErr) {
+        console.warn('拉取本期核销记录失败', recordErr);
+      }
+    }
+
+    const scanError = evaluateCitizenCardScan(cardPayload, { verification, claimedRecords });
+    if (scanError) {
+      scanStatusError.value = scanError;
+      verifiedCitizenCard.value = null;
+      verifiedOrder.value = null;
+      claimStep.value = 'scan-error';
+      ElMessage.error(t(`scanGuard.${scanErrorMeta.value.titleKey}`));
+      return;
+    }
+
+    scanStatusError.value = null;
+    verifiedCitizenCard.value = cardPayload;
+    verifiedOrder.value = null;
+    claimStep.value = 'citizen-card';
+    ElMessage.success(t('citizenCard.qrScanSuccessMsg'));
+  } catch (err) {
+    console.error('公民卡状态核验失败', err);
+    scanStatusError.value = {
+      ...createScanSystemError(err?.message),
+      cardNo: cardPayload?.cardNo || '',
+      headName: cardPayload?.headName || ''
+    };
+    verifiedCitizenCard.value = null;
+    verifiedOrder.value = null;
+    claimStep.value = 'scan-error';
+  } finally {
+    cardVerifyLoading.value = false;
+  }
+}
+
+// 冻结原因本地化展示（稳定代码 → 当前语言词条，兼容历史中英文词根）
+function formatFreezeReason(reason) {
+  return localizeFreezeReason(reason, t);
+}
+
+// 配给卡状态本地化展示（注销 / 挂失 / 无效）
+function formatCardStatus(status) {
+  const s = String(status || '');
+  if (/挂失|丢失|遗失|lost/i.test(s)) return t('scanGuard.errCardStatusLost');
+  if (/注销|吊销|撤销|cancell/i.test(s)) return t('scanGuard.errCardStatusCancelled');
+  return s || t('scanGuard.errCardStatusInvalid');
+}
+
+// 二维码签发时间格式化（ISO → 本地可读时间）
+function formatIssuedAt(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 // 查询提货码对应的订单
@@ -1340,6 +1557,7 @@ function retakePhoto() {
   verifiedCitizenCard.value = null;
   verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
+  scanStatusError.value = null;
   scanInputCode.value = '';
   claimStep.value = 'camera';
   nextTick(() => startCamera());
@@ -1394,6 +1612,7 @@ function closeScanVerifyModal() {
   verifiedCitizenCard.value = null;
   verifiedGovernmentOrder.value = null;
   claimReceipt.value = null;
+  scanStatusError.value = null;
   claimStep.value = 'camera';
 }
 

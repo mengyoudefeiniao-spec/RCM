@@ -23,6 +23,8 @@ export function createCitizenCardQrPayload(family, verificationCode) {
     agentName: family?.agentName || '',
     agentId: family?.agentId || '',
     status: family?.status || '',
+    // 冻结原因随码下发，便于代理终端扫码时直接展示（稳定代码/历史词根，展示层经 i18n 转译）
+    freezeReason: family?.freezeReason || '',
     verificationCode: verificationCode || '',
     issuedAt: new Date().toISOString()
   });
