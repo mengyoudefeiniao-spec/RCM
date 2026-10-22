@@ -747,14 +747,14 @@ export async function mockDispatch(config) {
     return combinedMessages;
   };
   const systemSeed = {
-    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
+    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Baghdad Karkh Ration Center', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Karkh Ration Center', status: 'active' }],
     roles: [
       { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch',...WAREHOUSE_PERMISSION_CODES,'review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send','messages.review'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries([...REVIEW_TYPE_CODES, ...WAREHOUSE_PERMISSION_CODES].map((code) => [code, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
       { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], regionsByType: { 'review.process.unfreeze': ['巴格达省'], 'review.process.split': ['巴格达省'] } } },
       { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], regionsByType: {} } }
     ],
     permissions: PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' })),
-    organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Central Office', phone: '+964 1 000 0000' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Baghdad Office', phone: '+964 1 000 0001' }],
+    organizations: [{ id: 'org-001', name: 'Baghdad Karkh Ration Center', code: 'BG-KRK-01', province: 'baghdad', address: 'Karkh, Baghdad, Iraq', latitude: '33.315200', longitude: '44.366100', contact: 'Baghdad Center Office', phone: '+964 1 000 0001' }, { id: 'org-002', name: 'Basra Central Ration Center', code: 'BS-CTR-01', province: 'basra', address: 'Basra, Iraq', latitude: '30.508500', longitude: '47.780400', contact: 'Basra Center Office', phone: '+964 1 000 0002' }],
     'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', type: 'login', businessNo: 'admin', terminal: 'Web console', ip: '127.0.0.1', before: null, after: { result: 'success' }, time: new Date().toISOString() }]
   };
   const appendSystemAudit = ({ actor = 'System', type, details, businessNo = '', object = businessNo, before = null, after = null }) => {
@@ -823,7 +823,7 @@ export async function mockDispatch(config) {
       records = records.map((row) => ({ ...row, roleId: row.roleId || systemSeed.roles.find((role) => role.code === row.role)?.id }));
       writeCenter(`system_${section}`, records);
     } else if (section === 'organizations') {
-      records = records.map((row) => ({ ...row, address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
+      records = records.map((row) => ({ ...row, province: row.province || (/baghdad|بغداد/i.test(row.address || '') ? 'baghdad' : /basra|بصرة/i.test(row.address || '') ? 'basra' : ''), address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
       writeCenter(`system_${section}`, records);
     }
     if (method === 'GET' && section !== 'audit-logs') return createResponse(records);
