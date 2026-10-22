@@ -18,6 +18,7 @@ import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
+import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -826,7 +827,7 @@ export async function mockDispatch(config) {
       records = records.map((row) => ({ ...row, province: row.province || (/baghdad|بغداد/i.test(row.address || '') ? 'baghdad' : /basra|بصرة/i.test(row.address || '') ? 'basra' : ''), address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
       writeCenter(`system_${section}`, records);
     }
-    if (method === 'GET' && section !== 'audit-logs') return createResponse(records);
+    if (method === 'GET' && section !== 'audit-logs') return createResponse(section === 'users' ? records.map(publicAdminAccount) : records);
     if (section === 'audit-logs' && (method === 'POST' || method === 'DELETE')) return createResponse({}, 405, i18n.global.t('api.businessError'));
     if (method === 'GET' && section === 'audit-logs') {
       const businessAuditLogs = (auditLogsStore || []).map((log) => {
@@ -855,11 +856,29 @@ export async function mockDispatch(config) {
       const index = records.findIndex((row) => row.id === decodeURIComponent(recordId));
       if (index < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
       const [removed] = records.splice(index, 1); writeCenter(`system_${section}`, records);
-      appendSystemAudit({ actor: profile.name || profile.username || 'System Administrator', type: 'configuration', details: data.auditDetails || `Deleted ${section} ${removed.name || removed.username || removed.code || removed.id}`, businessNo: removed.businessNo || removed.code || removed.id, object: removed.name || removed.username || removed.code || section, before: removed, after: null });
+      appendSystemAudit({ actor: profile.name || profile.username || 'System Administrator', type: 'configuration', details: data.auditDetails || `Deleted ${section} ${removed.name || removed.username || removed.code || removed.id}`, businessNo: removed.businessNo || removed.code || removed.id, object: removed.name || removed.username || removed.code || section, before: section === 'users' ? publicAdminAccount(removed) : removed, after: null });
       return createResponse({ success: true });
     }
     if (method === 'POST') {
       const next = { ...data, id: data.id || `rec-${crypto.randomUUID()}`, time: data.time || new Date().toISOString() };
+      if (section === 'users') {
+        const existing = records.find((row) => row.id === next.id);
+        next.username = String(data.username || '').trim();
+        if (!next.username) return createResponse({}, 400, i18n.global.t('systemUi.usernameRequired'));
+        if (records.some((row) => row.id !== next.id && String(row.username).toLowerCase() === next.username.toLowerCase())) {
+          return createResponse({}, 400, i18n.global.t('systemUi.usernameTaken'));
+        }
+        if (!existing || data.password) {
+          const password = String(data.password || '');
+          if (!password) return createResponse({}, 400, i18n.global.t('systemUi.passwordRequired'));
+          if (password.length > 128) return createResponse({}, 400, i18n.global.t('systemUi.passwordLength'));
+          if (password !== data.passwordConfirm) return createResponse({}, 400, i18n.global.t('systemUi.passwordMismatch'));
+          next.passwordCredential = await createAdminCredential(password);
+        } else if (existing.passwordCredential) next.passwordCredential = existing.passwordCredential;
+        else delete next.passwordCredential;
+        delete next.password;
+        delete next.passwordConfirm;
+      }
       const auditDetails = next.auditDetails;
       const auditType = next.auditType || 'configuration';
       delete next.auditDetails;
@@ -869,9 +888,9 @@ export async function mockDispatch(config) {
       if (index >= 0) records.splice(index, 1, next); else records.unshift(next);
       writeCenter(`system_${section}`, records);
       if (section !== 'audit-logs') {
-        appendSystemAudit({ actor: profile.name || profile.username || 'Administrator', details: auditDetails || `${index >= 0 ? 'Updated' : 'Created'} ${section} ${next.name || next.username || next.code || next.id}`, type: auditType, businessNo: next.businessNo || next.code || next.id, object: next.name || next.username || next.code || section, before, after: next });
+        appendSystemAudit({ actor: profile.name || profile.username || 'Administrator', details: auditDetails || `${index >= 0 ? 'Updated' : 'Created'} ${section} ${next.name || next.username || next.code || next.id}`, type: auditType, businessNo: next.businessNo || next.code || next.id, object: next.name || next.username || next.code || section, before: section === 'users' && before ? publicAdminAccount(before) : before, after: section === 'users' ? publicAdminAccount(next) : next });
       }
-      return createResponse(next);
+      return createResponse(section === 'users' ? publicAdminAccount(next) : next);
     }
   }
   if (url.includes('/messages') && !url.includes('/me/')) {

@@ -1,80 +1,103 @@
 <template>
-  <section class="mx-auto max-w-[1720px] p-3 sm:p-5">
-    <div class="rounded-xl border border-[#D9E5DB] bg-white p-3 shadow-sm sm:p-5">
-      <el-tabs v-model="section" @tab-change="changeSection">
-        <el-tab-pane v-for="tab in tabs" :key="tab.key" :name="tab.key" :label="t('system.' + tab.label)" />
+  <section class="system-management mx-auto max-w-[1720px] space-y-4 p-3 sm:p-5">
+    <div class="system-card system-workspace">
+      <el-tabs v-model="section" class="system-tabs" @tab-change="changeSection">
+        <el-tab-pane v-for="tab in tabs" :key="tab.key" :name="tab.key">
+          <template #label><span class="system-tab-label"><el-icon><component :is="tab.icon" /></el-icon>{{ t('system.' + tab.label) }}<span v-if="tabCount(tab.key) !== null" class="system-tab-count">{{ tabCount(tab.key) }}</span></span></template>
+        </el-tab-pane>
       </el-tabs>
-      <div v-if="section !== 'audit-logs'" class="mb-4 grid grid-cols-1 items-center gap-2 md:grid-cols-[minmax(220px,1fr)_auto_auto_auto]">
-        <el-input v-model="keyword" :placeholder="searchPlaceholder" clearable class="w-full" @keyup.enter="runSearch" />
-        <el-button type="primary" @click="runSearch">{{ t('systemExtras.query') }}</el-button>
-        <el-button @click="resetSearch">{{ t('common.reset') }}</el-button>
-        <el-button v-if="section !== 'permissions'" type="success" class="md:ms-4" @click="openCreate"><el-icon><Plus /></el-icon>{{ t('system.add') }}</el-button>
+      <div class="system-list-heading">
+        <div class="system-filter-actions"><el-button :loading="loading" @click="refreshAll"><el-icon><Refresh /></el-icon>{{ t('common.refresh') }}</el-button><el-button v-if="section === 'audit-logs'" type="primary" plain @click="exportAuditLogs"><el-icon><Download /></el-icon>{{ t('system.auditExport') }}</el-button><el-button v-else-if="section !== 'permissions'" type="primary" @click="openCreate"><el-icon><Plus /></el-icon>{{ dialogCreateTitle }}</el-button></div>
       </div>
-      <div v-else class="mb-4 grid grid-cols-1 items-center gap-2 sm:grid-cols-2 xl:grid-cols-12">
-        <el-input v-model="auditFilters.actor" :placeholder="t('system.auditActor')" clearable class="xl:col-span-2" @keyup.enter="load" />
-        <el-date-picker v-model="auditFilters.range" type="datetimerange" value-format="YYYY-MM-DDTHH:mm:ss" :start-placeholder="t('system.auditFrom')" :end-placeholder="t('system.auditTo')" class="!w-full xl:col-span-4" />
-        <el-select v-model="auditFilters.type" clearable :placeholder="t('system.auditType')" class="xl:col-span-2"><el-option v-for="type in auditTypes" :key="type" :value="type" :label="auditTypeLabel(type)" /></el-select>
-        <el-input v-model="auditFilters.businessNo" :placeholder="t('system.auditBusinessNo')" clearable class="xl:col-span-2" @keyup.enter="load" />
-        <div class="flex flex-wrap gap-2 xl:col-span-2"><el-button type="primary" @click="load">{{ t('system.auditSearch') }}</el-button><el-button @click="resetAuditFilters">{{ t('common.reset') }}</el-button><el-button type="success" @click="exportAuditLogs">{{ t('system.auditExport') }}</el-button></div>
+      <div v-if="section !== 'audit-logs'" class="system-filters system-search-filters">
+        <label class="system-filter-field"><span>{{ t('systemUi.keyword') }}</span><el-input v-model="keyword" :placeholder="searchPlaceholder" clearable @keyup.enter="runSearch"><template #prefix><el-icon><Search /></el-icon></template></el-input></label>
+        <label v-if="section === 'users'" class="system-filter-field"><span>{{ t('system.status') }}</span><el-select v-model="statusFilter" clearable :placeholder="t('systemUi.allStatuses')" @change="currentPage = 1"><el-option value="active" :label="t('system.active')" /><el-option value="disabled" :label="t('system.disabled')" /></el-select></label>
+        <div class="system-filter-actions"><el-button type="primary" @click="runSearch"><el-icon><Search /></el-icon>{{ t('systemExtras.query') }}</el-button><el-button @click="resetSearch"><el-icon><RefreshRight /></el-icon>{{ t('common.reset') }}</el-button></div>
       </div>
-      <div v-if="section === 'audit-logs'" class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#F3F8F4] px-3 py-2 text-xs text-[#52675A]">
-        <span>{{ t('system.auditRetention') }}</span><span>{{ t('system.auditAppendOnly') }}</span>
+      <div v-else class="system-filters system-audit-filters">
+        <label class="system-filter-field"><span>{{ t('system.auditActor') }}</span><el-input v-model="auditFilters.actor" :placeholder="t('system.auditActor')" clearable @keyup.enter="load" /></label>
+        <label class="system-filter-field audit-date-filter"><span>{{ t('system.time') }}</span><el-date-picker v-model="auditFilters.range" type="datetimerange" value-format="YYYY-MM-DDTHH:mm:ss" :start-placeholder="t('system.auditFrom')" :end-placeholder="t('system.auditTo')" class="!w-full" /></label>
+        <label class="system-filter-field"><span>{{ t('system.auditType') }}</span><el-select v-model="auditFilters.type" clearable :placeholder="t('system.auditType')"><el-option v-for="type in auditTypes" :key="type" :value="type" :label="auditTypeLabel(type)" /></el-select></label>
+        <label class="system-filter-field"><span>{{ t('system.auditBusinessNo') }}</span><el-input v-model="auditFilters.businessNo" :placeholder="t('system.auditBusinessNo')" clearable @keyup.enter="load" /></label>
+        <div class="system-filter-actions"><el-button type="primary" @click="load"><el-icon><Search /></el-icon>{{ t('system.auditSearch') }}</el-button><el-button @click="resetAuditFilters"><el-icon><RefreshRight /></el-icon>{{ t('common.reset') }}</el-button></div>
       </div>
-      <el-table :data="pagedRows" stripe v-loading="loading" class="w-full">
-        <el-table-column v-for="column in columns" :key="column.key" :prop="column.key" :label="columnLabel(column)" :min-width="column.width || 145">
+      <div v-if="section === 'audit-logs'" class="system-audit-note"><span><el-icon><Lock /></el-icon>{{ t('system.auditAppendOnly') }}</span><span>{{ t('system.auditRetention') }}</span></div>
+      <el-table :data="pagedRows" border row-key="id" v-loading="loading" class="system-table w-full" :max-height="600">
+        <el-table-column v-for="column in columns" :key="column.key" :prop="column.key" :label="columnLabel(column)" :min-width="column.width || 145" :show-overflow-tooltip="!['name', 'permissionCodes', 'status'].includes(column.key)">
           <template v-if="column.key === 'status'" #default="{ row }"><el-tag :type="row.status === 'disabled' ? 'info' : 'success'">{{ row.status === 'disabled' ? t('system.disabled') : t('system.active') }}</el-tag></template>
           <template v-else-if="column.key === 'roleId'" #default="{ row }">{{ roleLabel(row) }}</template>
-          <template v-else-if="column.key === 'name' && section === 'roles'" #default="{ row }">{{ localizedRoleName(row) }}</template>
+          <template v-else-if="column.key === 'name' && section === 'roles'" #default="{ row }"><div class="system-identity"><span class="system-row-icon"><el-icon><Key /></el-icon></span><span class="font-semibold">{{ localizedRoleName(row) }}</span></div></template>
+          <template v-else-if="column.key === 'name' && section === 'users'" #default="{ row }"><div class="system-identity"><span class="system-avatar">{{ (row.name || row.username || '?').slice(0, 1).toUpperCase() }}</span><span class="font-semibold">{{ row.name }}</span></div></template>
           <template v-else-if="column.key === 'description' && section === 'roles'" #default="{ row }">{{ localizedRoleDescription(row) }}</template>
           <template v-else-if="column.key === 'province'" #default="{ row }">{{ provinceLabel(row.province) }}</template>
           <template v-else-if="column.key === 'organization'" #default="{ row }">{{ localizedCenterName(row.organization) }}</template>
-          <template v-else-if="column.key === 'name' && section === 'organizations'" #default="{ row }">{{ localizedCenterName(row.name) }}</template>
-          <template v-else-if="column.key === 'permissionCodes'" #default="{ row }"><div class="flex flex-wrap gap-1"><el-tag v-for="code in row.permissionCodes || []" :key="code" size="small">{{ permissionLabel(code) }}</el-tag><span v-if="!row.permissionCodes?.length" class="text-xs text-[#89978E]">{{ t('systemExtras.noPermissions') }}</span></div></template>
+          <template v-else-if="column.key === 'name' && section === 'organizations'" #default="{ row }"><div class="system-identity"><span class="system-row-icon"><el-icon><OfficeBuilding /></el-icon></span><span class="font-semibold">{{ localizedCenterName(row.name) }}</span></div></template>
+          <template v-else-if="column.key === 'permissionCodes'" #default="{ row }"><div class="system-permission-summary"><el-tag v-for="code in (row.permissionCodes || []).slice(0, 2)" :key="code" size="small" effect="plain">{{ permissionLabel(code) }}</el-tag><el-popover v-if="row.permissionCodes?.length > 2" placement="top" :width="360" trigger="hover"><div class="system-permission-popover"><el-tag v-for="code in row.permissionCodes" :key="code" size="small" effect="plain">{{ permissionLabel(code) }}</el-tag></div><template #reference><el-tag size="small" type="info" :aria-label="t('systemUi.permissionCount', { count: row.permissionCodes.length })">+{{ row.permissionCodes.length - 2 }}</el-tag></template></el-popover><span v-if="!row.permissionCodes?.length" class="text-xs text-[#89978E]">{{ t('systemExtras.noPermissions') }}</span></div></template>
+          <template v-else-if="['username', 'code', 'ip'].includes(column.key)" #default="{ row }"><span class="system-code" dir="ltr">{{ row[column.key] || '—' }}</span></template>
           <template v-else-if="column.key === 'reviewScope'" #default="{ row }"><span class="text-xs leading-5">{{ reviewScopeSummary(row) }}</span></template>
           <template v-else-if="column.key === 'moduleKey'" #default="{ row }">{{ t('systemExtras.' + row.moduleKey) }}</template>
           <template v-else-if="column.key === 'featureKey'" #default="{ row }">{{ row.entityKind ? permissionItemLabel(row) : t('systemExtras.' + row.featureKey) }}</template>
-          <template v-else-if="column.key === 'type'" #default="{ row }">{{ auditTypeLabel(row.type) }}</template>
+          <template v-else-if="column.key === 'type'" #default="{ row }"><el-tag effect="plain" size="small">{{ auditTypeLabel(row.type) }}</el-tag></template>
           <template v-else-if="column.key === 'terminal'" #default="{ row }">{{ row.terminal || '—' }}</template>
           <template v-else-if="column.key === 'businessNo'" #default="{ row }">{{ row.businessNo || '—' }}</template>
           <template v-else-if="column.key === 'object'" #default="{ row }">{{ row.object || '—' }}</template>
           <template v-else-if="column.key === 'before' || column.key === 'after'" #default="{ row }"><pre class="max-h-28 max-w-[300px] overflow-auto whitespace-pre-wrap break-all text-xs">{{ formatSnapshot(row[column.key]) }}</pre></template>
           <template v-else-if="column.key === 'time'" #default="{ row }">{{ formatTime(row.time || row.timestamp) }}</template>
         </el-table-column>
-        <el-table-column v-if="section === 'users'" :label="t('common.actions')" width="245" fixed="right">
+        <el-table-column v-if="section === 'users'" :label="t('common.actions')" width="245" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex items-center gap-2">
-              <el-button link type="primary" @click="openEdit(row)">{{ t('system.edit') }}</el-button>
+              <el-button link type="primary" @click="openEdit(row)"><el-icon><EditPen /></el-icon>{{ t('system.edit') }}</el-button>
               <el-button link :type="row.status === 'disabled' ? 'success' : 'warning'" @click="toggleUser(row)">{{ t(row.status === 'disabled' ? 'systemExtras.enable' : 'systemExtras.disable') }}</el-button>
               <el-button link type="danger" @click="removeRecord(row)">{{ t('systemExtras.delete') }}</el-button>
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-else-if="section === 'roles' || section === 'organizations'" :label="t('common.actions')" width="100" fixed="right"><template #default="{ row }"><el-button link type="primary" @click="openEdit(row)">{{ t('system.edit') }}</el-button></template></el-table-column>
+        <el-table-column v-else-if="section === 'roles' || section === 'organizations'" :label="t('common.actions')" width="110" fixed="right" align="center"><template #default="{ row }"><el-button link type="primary" @click="openEdit(row)"><el-icon><EditPen /></el-icon>{{ t('system.edit') }}</el-button></template></el-table-column>
+        <el-table-column v-else-if="section === 'audit-logs'" :label="t('common.actions')" width="125" fixed="right" align="center"><template #default="{ row }"><el-button link type="primary" @click="selectedAudit = row; auditDialog = true"><el-icon><View /></el-icon>{{ t('systemUi.viewDetails') }}</el-button></template></el-table-column>
         <template #empty><el-empty :description="t('system.noData')" /></template>
       </el-table>
-      <div v-if="showPagination" class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div v-if="showPagination" class="system-pagination">
         <span class="text-xs text-[#718077]">{{ t('system.paginationSummary', { total: filteredRows.length }) }}</span>
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" :total="filteredRows.length" background layout="prev, pager, next, sizes" />
       </div>
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? t('system.edit') : t('system.add')" width="min(680px, 95vw)">
-      <el-form :model="form" label-position="top" class="max-h-[68vh] overflow-y-auto px-1">
+    <el-dialog v-model="dialog" :title="dialogTitle" :width="section === 'roles' ? 'min(1040px, 96vw)' : 'min(820px, 96vw)'" top="5vh" class="system-editor" :close-on-click-modal="false" :close-on-press-escape="!saving" :show-close="!saving" destroy-on-close @closed="clearEditor">
+      <template #header="{ titleId }"><div class="system-dialog-heading"><span class="system-row-icon"><el-icon><component :is="sectionIcon" /></el-icon></span><div><p>{{ sectionTitle }}</p><h2 :id="titleId">{{ dialogTitle }}</h2></div></div></template>
+      <el-form ref="editorForm" :model="form" :rules="formRules" label-position="top" class="system-editor-form" @submit.prevent="save">
         <template v-if="section === 'users'">
-          <el-form-item :label="t('system.username')"><el-input v-model="form.username" /></el-form-item>
-          <el-form-item :label="t('system.name')"><el-input v-model="form.name" /></el-form-item>
-          <el-form-item :label="t('system.email')"><el-input v-model="form.email" /></el-form-item>
-          <el-form-item :label="t('system.role')"><el-select v-model="form.roleId" class="w-full"><el-option v-for="role in roleRows" :key="role.id" :value="role.id" :label="localizedRoleName(role) + ' (' + role.code + ')'" /></el-select></el-form-item>
-          <el-form-item :label="t('system.rationCenter')"><el-select v-model="form.organization" class="w-full" filterable><el-option v-for="center in centerRows" :key="center.id" :value="center.name" :label="rationCenterOptionLabel(center)" /></el-select></el-form-item>
+          <h3 class="system-form-heading"><el-icon><User /></el-icon>{{ t('systemUi.accountDetails') }}</h3>
+          <div class="system-form-grid">
+            <el-form-item prop="username" :label="t('system.username')"><el-input v-model="form.username" :placeholder="fieldPlaceholder('system.username')" maxlength="64" autocomplete="off" /></el-form-item>
+            <el-form-item prop="name" :label="t('system.name')"><el-input v-model="form.name" :placeholder="fieldPlaceholder('system.name')" maxlength="120" /></el-form-item>
+            <el-form-item prop="email" :label="t('system.email')" class="system-form-wide"><el-input v-model="form.email" :placeholder="fieldPlaceholder('system.email')" type="email" autocomplete="email" /></el-form-item>
+          </div>
+          <h3 class="system-form-heading"><el-icon><Key /></el-icon>{{ t('systemUi.assignments') }}</h3>
+          <div class="system-form-grid">
+            <el-form-item prop="roleId" :label="t('system.role')"><el-select v-model="form.roleId" class="w-full" filterable :placeholder="fieldPlaceholder('system.role', true)"><el-option v-for="role in roleRows" :key="role.id" :value="role.id" :label="localizedRoleName(role) + ' (' + role.code + ')'" /></el-select></el-form-item>
+            <el-form-item :label="t('system.rationCenter')"><el-select v-model="form.organization" class="w-full" filterable clearable :placeholder="fieldPlaceholder('system.rationCenter', true)"><el-option v-for="center in centerRows" :key="center.id" :value="center.name" :label="rationCenterOptionLabel(center)" /></el-select></el-form-item>
+          </div>
+          <h3 class="system-form-heading"><el-icon><Lock /></el-icon>{{ t('systemUi.security') }}</h3>
+          <p class="system-form-hint">{{ t(editing ? 'systemUi.editPasswordHint' : 'systemUi.passwordHint') }}</p>
+          <div class="system-form-grid">
+            <el-form-item prop="password" :label="t('systemUi.password')"><el-input v-model="form.password" type="password" show-password maxlength="128" autocomplete="new-password" :placeholder="fieldPlaceholder('systemUi.password')" /></el-form-item>
+            <el-form-item prop="passwordConfirm" :label="t('systemUi.confirmPassword')"><el-input v-model="form.passwordConfirm" type="password" show-password maxlength="128" autocomplete="new-password" :placeholder="fieldPlaceholder('systemUi.confirmPassword')" @keyup.enter="save" /></el-form-item>
+          </div>
         </template>
         <template v-else-if="section === 'roles'">
-          <el-form-item :label="t('system.roleName')"><el-input v-model="formRoleName" /></el-form-item>
-          <el-form-item :label="t('system.roleCode')"><el-input v-model="form.code" /></el-form-item>
-          <el-form-item :label="t('system.description')"><el-input v-model="formRoleDescription" type="textarea" /></el-form-item>
-          <el-form-item :label="t('systemExtras.rolePermissions')">
-            <div class="w-full space-y-3 rounded-lg border border-[#E3ECE5] p-3">
-              <div v-for="module in permissionTree" :key="module.moduleKey" class="space-y-1.5">
-                <div class="text-sm font-semibold text-[#1F3326]">{{ t('systemExtras.' + module.moduleKey) }}</div>
+          <h3 class="system-form-heading"><el-icon><Key /></el-icon>{{ t('systemUi.roleDetails') }}</h3>
+          <div class="system-form-grid">
+            <el-form-item prop="name" :label="t('system.roleName')"><el-input v-model="formRoleName" :placeholder="fieldPlaceholder('system.roleName')" /></el-form-item>
+            <el-form-item prop="code" :label="t('system.roleCode')"><el-input v-model="form.code" :placeholder="fieldPlaceholder('system.roleCode')" /></el-form-item>
+            <el-form-item :label="t('system.description')" class="system-form-wide"><el-input v-model="formRoleDescription" type="textarea" :rows="2" :placeholder="fieldPlaceholder('system.description')" /></el-form-item>
+          </div>
+          <div class="system-form-heading flex-wrap"><el-icon><Checked /></el-icon><h3>{{ t('systemExtras.rolePermissions') }}</h3><el-tag size="small" effect="plain">{{ t('systemUi.permissionCount', { count: (form.permissionCodes || []).length }) }}</el-tag></div>
+          <p class="system-form-hint">{{ t('systemUi.permissionsHint') }}</p>
+          <el-form-item>
+            <div class="system-permission-panel w-full">
+              <div v-for="module in permissionTree" :key="module.moduleKey" class="system-permission-module">
+                <div class="system-permission-title">{{ t('systemExtras.' + module.moduleKey) }}</div>
                 <div class="flex flex-wrap items-start gap-2 ps-3">
                 <div v-for="feature in module.features" :key="feature.code" :class="feature.children.length || isWarehouseScopedPermission(feature.code) ? 'w-full' : 'rounded-md border border-[#E8EDEA] px-3 py-1.5'">
                   <template v-if="isWarehouseScopedPermission(feature.code)">
@@ -196,19 +219,28 @@
           </el-form-item>
         </template>
         <template v-else-if="section === 'organizations'">
-          <el-form-item :label="t('system.name')"><el-input v-model="form.name" /></el-form-item>
-          <el-form-item :label="t('system.code')"><el-input v-model="form.code" /></el-form-item>
-          <el-form-item :label="t('system.province')"><el-select v-model="form.province" class="w-full" clearable><el-option v-for="province in provinceOptions" :key="province.code" :value="province.code" :label="t('systemExtras.' + province.labelKey)" /></el-select></el-form-item>
-          <el-form-item :label="t('systemExtras.address')"><div class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-2"><el-input v-model="form.address"/><el-button @click="locationDialog = true">{{ t('systemExtras.locate') }}</el-button></div></el-form-item>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><el-form-item :label="t('systemExtras.latitude')"><el-input v-model="form.latitude" /></el-form-item><el-form-item :label="t('systemExtras.longitude')"><el-input v-model="form.longitude" /></el-form-item></div>
-          <el-form-item :label="t('systemExtras.contact')"><el-input v-model="form.contact" /></el-form-item>
-          <el-form-item :label="t('systemExtras.phone')"><el-input v-model="form.phone" /></el-form-item>
+          <h3 class="system-form-heading"><el-icon><OfficeBuilding /></el-icon>{{ t('systemUi.centerDetails') }}</h3>
+          <div class="system-form-grid">
+            <el-form-item prop="name" :label="t('systemUi.centerName')"><el-input v-model="form.name" :placeholder="fieldPlaceholder('systemUi.centerName')" /></el-form-item>
+            <el-form-item prop="code" :label="t('systemUi.centerCode')"><el-input v-model="form.code" :placeholder="fieldPlaceholder('systemUi.centerCode')" /></el-form-item>
+            <el-form-item prop="province" :label="t('system.province')" class="system-form-wide"><el-select v-model="form.province" class="w-full" clearable filterable :placeholder="fieldPlaceholder('system.province', true)"><el-option v-for="province in provinceOptions" :key="province.code" :value="province.code" :label="t('systemExtras.' + province.labelKey)" /></el-select></el-form-item>
+          </div>
+          <h3 class="system-form-heading"><el-icon><Location /></el-icon>{{ t('systemUi.location') }}</h3>
+          <el-form-item :label="t('systemExtras.address')"><div class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-2"><el-input v-model="form.address" :placeholder="fieldPlaceholder('systemExtras.address')" /><el-button plain @click="locationDialog = true"><el-icon><Location /></el-icon>{{ t('systemExtras.locate') }}</el-button></div></el-form-item>
+          <div class="system-form-grid"><el-form-item :label="t('systemExtras.latitude')"><el-input v-model="form.latitude" inputmode="decimal" /></el-form-item><el-form-item :label="t('systemExtras.longitude')"><el-input v-model="form.longitude" inputmode="decimal" /></el-form-item></div>
+          <h3 class="system-form-heading"><el-icon><Phone /></el-icon>{{ t('systemUi.contacts') }}</h3>
+          <div class="system-form-grid"><el-form-item :label="t('systemExtras.contact')"><el-input v-model="form.contact" :placeholder="fieldPlaceholder('systemExtras.contact')" /></el-form-item><el-form-item :label="t('systemExtras.phone')"><el-input v-model="form.phone" type="tel" :placeholder="fieldPlaceholder('systemExtras.phone')" /></el-form-item></div>
         </template>
       </el-form>
-      <template #footer><el-button @click="dialog = false">{{ t('system.cancel') }}</el-button><el-button type="primary" @click="save">{{ t('system.save') }}</el-button></template>
+      <template #footer><el-button :disabled="saving" @click="dialog = false">{{ t('system.cancel') }}</el-button><el-button type="primary" :loading="saving" @click="save"><el-icon><Check /></el-icon>{{ t(editing ? 'systemUi.saveChanges' : 'systemUi.createRecord') }}</el-button></template>
     </el-dialog>
 
-    <el-dialog v-model="locationDialog" :title="t('systemExtras.locate')" width="min(720px, 96vw)" @opened="initializeLocationMap">
+    <el-dialog v-model="auditDialog" :title="t('systemUi.auditDetail')" width="min(980px, 96vw)" top="5vh" class="system-editor system-audit-dialog" destroy-on-close>
+      <template v-if="selectedAudit"><h3 class="system-form-heading"><el-icon><Document /></el-icon>{{ t('systemUi.recordDetails') }}</h3><dl class="system-audit-metadata"><div v-for="field in auditDetailFields" :key="field.label"><dt>{{ field.label }}</dt><dd>{{ field.value || '—' }}</dd></div></dl><div class="system-audit-content"><h3>{{ t('system.auditDetails') }}</h3><p>{{ selectedAudit.details || '—' }}</p></div><div class="system-snapshots"><section v-for="key in ['before', 'after']" :key="key"><h3>{{ t(key === 'before' ? 'system.auditBefore' : 'system.auditAfter') }}</h3><pre dir="auto">{{ formatSnapshot(selectedAudit[key]) }}</pre></section></div></template>
+      <template #footer><el-button type="primary" plain @click="auditDialog = false">{{ t('messages.close') }}</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="locationDialog" :title="t('systemExtras.locate')" width="min(820px, 96vw)" top="5vh" class="system-editor" @opened="initializeLocationMap">
       <el-form label-position="top"><el-form-item :label="t('systemExtras.address')"><el-input v-model="form.address" /></el-form-item><el-form-item :label="t('system.province')"><el-select v-model="form.province" class="w-full"><el-option v-for="province in provinceOptions" :key="province.code" :value="province.code" :label="t('systemExtras.' + province.labelKey)" /></el-select></el-form-item><p class="mb-3 text-xs text-[#718077]">{{ t('system.mapProvinceHint') }}</p><div class="grid grid-cols-2 gap-3"><el-form-item :label="t('systemExtras.latitude')"><el-input v-model="form.latitude" /></el-form-item><el-form-item :label="t('systemExtras.longitude')"><el-input v-model="form.longitude" /></el-form-item></div></el-form>
       <div ref="locationMap" class="h-[340px] w-full rounded-lg border border-[#D9E5DB]" />
       <template #footer><el-button @click="locateCurrentPosition">{{ t('systemExtras.useLocation') }}</el-button><el-button type="primary" @click="locationDialog = false">{{ t('common.confirm') }}</el-button></template>
@@ -220,6 +252,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { Checked, Check, Document, Download, EditPen, Key, Location, Lock, OfficeBuilding, Phone, Plus, Refresh, RefreshRight, Search, Tools, User, View } from '@element-plus/icons-vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { deleteSystemRecord, getMessageRecipientTree, getSystemRecords, logAuditExport, saveSystemRecord } from '../../api/adminCenter.js';
@@ -233,9 +266,36 @@ import {
   summarizeReviewScope
 } from '../../utils/reviewPermission.js';
 import { buildMessagePermissionEntries } from '../../utils/messagePermissions.js';
-const { t } = useI18n();
-const tabs = [{ key: 'users', label: 'adminAccounts' }, { key: 'roles', label: 'roles' }, { key: 'organizations', label: 'rationCenters' }, { key: 'audit-logs', label: 'logs' }];
+import { publicAdminAccount } from '../../utils/adminCredentials.js';
+const { t, locale } = useI18n();
+const tabs = [{ key: 'users', label: 'adminAccounts', icon: User }, { key: 'roles', label: 'roles', icon: Key }, { key: 'organizations', label: 'rationCenters', icon: OfficeBuilding }, { key: 'audit-logs', label: 'logs', icon: Document }];
 const section = ref('users'), rows = ref([]), roleRows = ref([]), centerRows = ref([]), adminUserRows = ref([]), permissionRows = ref([]), loading = ref(false), keyword = ref(''), appliedQuery = ref(''), dialog = ref(false), locationDialog = ref(false), editing = ref(false), form = ref({});
+const editorForm = ref(null), saving = ref(false), statusFilter = ref(''), auditDialog = ref(false), selectedAudit = ref(null);
+const sectionTitle = computed(() => t('system.' + tabs.find((tab) => tab.key === section.value)?.label));
+const sectionIcon = computed(() => tabs.find((tab) => tab.key === section.value)?.icon || Tools);
+const dialogCreateTitle = computed(() => t('systemUi.create_' + section.value));
+const dialogTitle = computed(() => section.value === 'audit-logs' ? t('systemUi.auditDetail') : t('systemUi.' + (editing.value ? 'edit_' : 'create_') + section.value));
+function tabCount(key) { return key === section.value ? rows.value.length : key === 'users' ? adminUserRows.value.length : key === 'roles' ? roleRows.value.length : key === 'organizations' ? centerRows.value.length : null; }
+function fieldPlaceholder(key, select = false) { return t(select ? 'systemUi.selectField' : 'systemUi.enterField', { field: t(key) }); }
+const formRules = computed(() => {
+  const required = (key, select = false) => ({ required: true, whitespace: !select, message: fieldPlaceholder(key, select), trigger: select ? 'change' : 'blur' });
+  if (section.value === 'users') return {
+    username: [required('system.username'), { validator: (_rule, value, callback) => callback(adminUserRows.value.some((row) => row.id !== form.value.id && String(row.username || '').toLowerCase() === String(value || '').trim().toLowerCase()) ? new Error(t('systemUi.usernameTaken')) : undefined), trigger: 'blur' }],
+    name: [required('system.name')], roleId: [required('system.role', true)],
+    email: [{ type: 'email', message: t('systemUi.invalidEmail'), trigger: 'blur' }],
+    password: [{ required: !editing.value, validator: (_rule, value, callback) => callback((!editing.value || form.value.passwordConfirm) && !value ? new Error(t('systemUi.passwordRequired')) : undefined), trigger: 'blur' }],
+    passwordConfirm: [{ required: !editing.value, validator: (_rule, value, callback) => {
+      if ((!editing.value || form.value.password) && !value) return callback(new Error(t('systemUi.confirmationRequired')));
+      if (value !== form.value.password) return callback(new Error(t('systemUi.passwordMismatch')));
+      callback();
+    }, trigger: 'blur' }]
+  };
+  return { name: [required(section.value === 'roles' ? 'system.roleName' : 'systemUi.centerName')], code: [required(section.value === 'roles' ? 'system.roleCode' : 'systemUi.centerCode')], ...(section.value === 'organizations' ? { province: [required('system.province', true)] } : {}) };
+});
+const auditDetailFields = computed(() => {
+  const row = selectedAudit.value || {};
+  return [['auditActor', row.actor || row.operatorName], ['time', formatTime(row.time || row.timestamp)], ['auditType', auditTypeLabel(row.type)], ['auditBusinessNo', row.businessNo], ['auditObject', row.object], ['auditIp', row.ip], ['auditTerminal', row.terminal]].map(([key, value]) => ({ label: t('system.' + key), value }));
+});
 const currentPage = ref(1), pageSize = ref(10);
 const roleNameEdited = ref(false), roleDescriptionEdited = ref(false);
 const auditFilters = ref({ actor: '', range: null, type: '', businessNo: '' });
@@ -311,9 +371,9 @@ const bySection = {
   roles: [['name','name'],['code','code'],['reviewScope','reviewPermission'],['permissionCodes','assignedPermissions'],['description','description']],
   permissions: [['moduleKey','permissionModule'],['featureKey','permissionFeature'],['code','code']],
   organizations: [['name','name'],['code','code'],['province','province'],['address','address'],['contact','contact'],['phone','phone']],
-  'audit-logs': [['actor','auditActor'],['time','time'],['terminal','auditTerminal'],['ip','auditIp'],['type','auditType'],['businessNo','auditBusinessNo'],['object','auditObject'],['details','auditDetails'],['before','auditBefore'],['after','auditAfter']]
+  'audit-logs': [['actor','auditActor'],['time','time'],['type','auditType'],['object','auditObject'],['businessNo','auditBusinessNo'],['ip','auditIp'],['details','auditDetails']]
 };
-const columns = computed(() => bySection[section.value].map(([key,label]) => ({ key,label, width: key === 'permissionCodes' || key === 'details' ? 260 : undefined })));
+const columns = computed(() => bySection[section.value].map(([key,label]) => ({ key,label, width: ({ name: section.value === 'organizations' ? 260 : 210, username: 160, email: 215, permissionCodes: 340, reviewScope: 180, description: 250, address: 230, organization: 230, actor: 170, time: 180, type: 140, object: 200, businessNo: 165, details: 300 })[key] })));
 const showPagination = computed(() => ['users', 'roles', 'organizations', 'audit-logs'].includes(section.value));
 const searchPlaceholder = computed(() => section.value === 'users' ? t('system.adminAccountKeyword') : section.value === 'roles' ? t('system.roleKeyword') : section.value === 'organizations' ? t('system.centerKeyword') : t('systemExtras.keyword'));
 const pagedRows = computed(() => {
@@ -334,6 +394,7 @@ const filteredRows = computed(() => {
     });
   }
   return rows.value.filter((row) => {
+    if (section.value === 'users' && statusFilter.value && (row.status || 'active') !== statusFilter.value) return false;
     if (!appliedQuery.value) return true;
     const extra = section.value === 'organizations' ? [provinceLabel(row.province), localizedCenterName(row.name)] : section.value === 'users' ? [roleLabel(row), localizedCenterName(row.organization)] : section.value === 'roles' ? [localizedRoleName(row), localizedRoleDescription(row)] : [];
     return [...Object.values(row), ...extra].some((value) => String(JSON.stringify(value) ?? value ?? '').toLowerCase().includes(appliedQuery.value.toLowerCase()));
@@ -430,6 +491,10 @@ function reviewScopeSummary(row) {
   return `${typeText} · ${t('systemExtras.reviewRegionCount', { count: summary.regionCount })}`;
 }
 function columnLabel(column) {
+  if (column.key === 'name' && section.value === 'roles') return t('system.roleName');
+  if (column.key === 'name' && section.value === 'organizations') return t('systemUi.centerName');
+  if (column.key === 'code' && section.value === 'roles') return t('system.roleCode');
+  if (column.key === 'code' && section.value === 'organizations') return t('systemUi.centerCode');
   if (column.key === 'organization') return t('system.rationCenter');
   if (column.key === 'province') return t('system.province');
   return column.key === 'permissionCodes' || column.key === 'reviewScope' || column.key === 'details' || column.key === 'ip' || column.key === 'moduleKey' || column.key === 'featureKey' || column.key === 'address' || column.key === 'contact' || column.key === 'phone' ? t('systemExtras.' + column.label) : t('system.' + column.label);
@@ -501,10 +566,11 @@ function localizedCenterName(name) {
   if (name === 'Basra Central Ration Center') return t('system.demoBasraCenter');
   return name || '—';
 }
-function formatTime(value) { return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'; }
+function formatTime(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(date); }
 async function load() { loading.value = true; currentPage.value = 1; try { rows.value = section.value === 'permissions' ? permissionCatalog.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
 async function loadReferences() { [roleRows.value, permissionRows.value, centerRows.value, adminUserRows.value, messageRecipientTree.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions'), getSystemRecords('organizations'), getSystemRecords('users').catch(() => []), getMessageRecipientTree().catch(() => [])]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
-async function changeSection() { keyword.value = ''; appliedQuery.value = ''; await load(); }
+async function refreshAll() { await loadReferences(); await load(); }
+async function changeSection() { keyword.value = ''; appliedQuery.value = ''; statusFilter.value = ''; await load(); }
 function resetAuditFilters() { auditFilters.value = { actor: '', range: null, type: '', businessNo: '' }; load(); }
 function auditTypeLabel(type) { return type ? t('system.auditType_' + type) : '—'; }
 function formatSnapshot(value) { if (value == null || value === '') return '—'; try { return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2); } catch { return String(value); } }
@@ -517,23 +583,28 @@ async function exportAuditLogs() {
   const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`; link.click(); URL.revokeObjectURL(url);
 }
 function runSearch() { appliedQuery.value = keyword.value.trim(); currentPage.value = 1; }
-function resetSearch() { keyword.value = ''; appliedQuery.value = ''; currentPage.value = 1; }
-function openCreate() { editing.value = false; roleNameEdited.value = true; roleDescriptionEdited.value = true; form.value = section.value === 'roles' ? { permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { status: 'active' } : section.value === 'organizations' ? { province: '', latitude: '', longitude: '' } : {}; dialog.value = true; }
-function openEdit(row) { editing.value = true; roleNameEdited.value = false; roleDescriptionEdited.value = false; const permissionCodes = resolveRolePermissionCodes(row.permissionCodes || []); form.value = { ...row, permissionCodes, reviewScope: normalizeReviewScope(row.reviewScope || {}, permissionCodes, row.code) }; dialog.value = true; }
+function resetSearch() { keyword.value = ''; appliedQuery.value = ''; statusFilter.value = ''; currentPage.value = 1; }
+function clearEditor() { editorForm.value?.clearValidate(); form.value = {}; }
+function openCreate() { editing.value = false; roleNameEdited.value = true; roleDescriptionEdited.value = true; form.value = section.value === 'roles' ? { name: '', code: '', permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { username: '', name: '', email: '', password: '', passwordConfirm: '', status: 'active' } : section.value === 'organizations' ? { name: '', code: '', province: '', latitude: '', longitude: '' } : {}; dialog.value = true; }
+function openEdit(row) { editing.value = true; roleNameEdited.value = false; roleDescriptionEdited.value = false; const source = JSON.parse(JSON.stringify(section.value === 'users' ? publicAdminAccount(row) : row)); const permissionCodes = resolveRolePermissionCodes(source.permissionCodes || []); form.value = { ...source, password: '', passwordConfirm: '', permissionCodes, reviewScope: normalizeReviewScope(source.reviewScope || {}, permissionCodes, source.code) }; dialog.value = true; }
 function auditMessage(key, entityKey, name, extra = {}) { return t('systemExtras.' + key, { actor: actor(), entity: t('systemExtras.' + entityKey), name, ...extra }); }
 async function save() {
-  const name = form.value.name || form.value.username || form.value.code;
-  if (!name) return;
-  const oldName = rows.value.find((row) => row.id === form.value.id)?.name;
-  const value = { ...form.value, status: form.value.status || 'active' };
-  if (section.value === 'users') { const role = roleRows.value.find((item) => item.id === value.roleId); value.role = role?.code || value.role; value.permissionCodes = role?.permissionCodes || []; value.reviewScope = role?.reviewScope || null; }
-  const entityKey = section.value === 'users' ? 'entityUser' : section.value === 'roles' ? 'entityRole' : section.value === 'permissions' ? 'entityPermission' : 'entityOrganization';
-  const isRename = editing.value && oldName && oldName !== value.name;
-  value.auditDetails = isRename ? auditMessage('auditRenamed', entityKey, value.name, { oldName, newName: value.name }) : auditMessage(editing.value ? 'auditUpdated' : 'auditCreated', entityKey, name);
-  value.auditType = 'configuration';
-  await saveSystemRecord(section.value, value); dialog.value = false; await load();
-  const successKey = section.value === 'users' ? (editing.value ? 'userUpdated' : 'userCreated') : section.value === 'roles' ? (editing.value ? 'roleUpdated' : 'roleCreated') : section.value === 'permissions' ? 'permissionCreated' : (editing.value ? 'rationCenterUpdated' : 'rationCenterCreated');
-  ElMessage.success(t('system.' + successKey));
+  if (saving.value || !editorForm.value || !await editorForm.value.validate().catch(() => false)) return;
+  saving.value = true;
+  try {
+    const name = form.value.name || form.value.username || form.value.code;
+    const oldName = rows.value.find((row) => row.id === form.value.id)?.name;
+    const value = { ...form.value, status: form.value.status || 'active' };
+    if (section.value !== 'users' || (editing.value && !value.password)) { delete value.password; delete value.passwordConfirm; }
+    if (section.value === 'users') { const role = roleRows.value.find((item) => item.id === value.roleId); value.role = role?.code || value.role; value.permissionCodes = role?.permissionCodes || []; value.reviewScope = role?.reviewScope || null; }
+    const entityKey = section.value === 'users' ? 'entityUser' : section.value === 'roles' ? 'entityRole' : section.value === 'permissions' ? 'entityPermission' : 'entityOrganization';
+    const isRename = editing.value && oldName && oldName !== value.name;
+    value.auditDetails = isRename ? auditMessage('auditRenamed', entityKey, value.name, { oldName, newName: value.name }) : auditMessage(editing.value ? 'auditUpdated' : 'auditCreated', entityKey, name);
+    value.auditType = 'configuration';
+    await saveSystemRecord(section.value, value); form.value.password = ''; form.value.passwordConfirm = ''; dialog.value = false; await refreshAll();
+    const successKey = section.value === 'users' ? (editing.value ? 'userUpdated' : 'userCreated') : section.value === 'roles' ? (editing.value ? 'roleUpdated' : 'roleCreated') : section.value === 'permissions' ? 'permissionCreated' : (editing.value ? 'rationCenterUpdated' : 'rationCenterCreated');
+    ElMessage.success(t('system.' + successKey));
+  } finally { saving.value = false; }
 }
 async function toggleUser(row) { const enabling = row.status === 'disabled', nextStatus = enabling ? 'active' : 'disabled'; const details = auditMessage(enabling ? 'auditEnabled' : 'auditDisabled', 'entityUser', row.name || row.username); await saveSystemRecord('users', { ...row, status: nextStatus, auditDetails: details, auditType: 'status_change' }); await load(); ElMessage.success(t('systemExtras.statusUpdated')); }
 async function removeRecord(row) { try { await ElMessageBox.confirm(t('systemExtras.confirmDelete'), t('systemExtras.delete'), { type: 'warning' }); } catch { return; } const entityKey = section.value === 'users' ? 'entityUser' : section.value === 'roles' ? 'entityRole' : 'entityOrganization'; await deleteSystemRecord(section.value, row.id, { auditDetails: auditMessage('auditDeleted', entityKey, row.name || row.username || row.code) }); await load(); ElMessage.success(t(section.value === 'users' ? 'systemExtras.userDeleted' : 'systemExtras.recordDeleted')); }
@@ -577,3 +648,89 @@ function locateCurrentPosition() { if (!navigator.geolocation) { ElMessage.warni
 onMounted(async () => { await loadReferences(); await load(); });
 onBeforeUnmount(() => { mapInstance?.remove(); mapInstance = undefined; });
 </script>
+
+<style scoped>
+.system-management { color: #1f3326; }
+.system-card { border: 1px solid #d9e5db; border-radius: .625rem; background: #fff; box-shadow: 0 2px 6px rgb(31 51 38 / 3%); }
+.system-workspace { overflow: hidden; padding: .5rem 1.5rem 0; }
+.system-tabs :deep(.el-tabs__header) { margin-bottom: 0; }
+.system-tabs :deep(.el-tabs__item) { height: 3.25rem; }
+.system-tabs :deep(.el-tabs__nav-wrap::after) { height: 1px; background: #e9f1eb; }
+.system-tab-label { display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; }
+.system-tab-count { min-width: 1.375rem; padding: .1rem .375rem; border-radius: .35rem; background: #f0f5f1; color: #6c7e71; font-size: .6875rem; line-height: 1.4; }
+.system-list-heading { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: .875rem; padding: 1rem 0; }
+.system-filters { display: grid; align-items: end; gap: .875rem; margin-bottom: 1rem; padding: 1rem; border: 1px solid #d9e5db; border-radius: .5rem; background: #f3f8f4; }
+.system-search-filters { grid-template-columns: minmax(230px, 1fr) auto auto; }
+.system-search-filters .system-filter-field:first-child { max-width: 42rem; }
+.system-search-filters .system-filter-field:nth-child(2) { min-width: 150px; }
+.system-audit-filters { grid-template-columns: minmax(130px, 1fr) minmax(290px, 2fr) minmax(130px, 1fr) minmax(140px, 1fr) auto; }
+.system-filter-field { display: flex; min-width: 0; flex-direction: column; gap: .375rem; }
+.system-filter-field > span { color: #58685d; font-size: .75rem; font-weight: 600; }
+.system-filter-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.system-filter-actions :deep(.el-button + .el-button) { margin-inline-start: 0; }
+.system-filter-actions .el-icon, .system-list-heading .el-button .el-icon { margin-inline-end: .375rem; }
+.system-audit-note { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; margin-bottom: .875rem; color: #718077; font-size: .75rem; }
+.system-audit-note > span { display: inline-flex; align-items: center; gap: .375rem; }
+.system-table { --el-table-header-bg-color: #f3f8f4; --el-table-header-text-color: #53675a; --el-table-row-hover-bg-color: #f6f9f6; --el-table-border-color: #e2ebe4; font-size: .8125rem; }
+.system-table :deep(th.el-table__cell) { padding-block: .75rem; font-size: .75rem; font-weight: 600; }
+.system-table :deep(td.el-table__cell) { padding-block: .875rem; }
+.system-table :deep(.cell) { line-height: 1.6; }
+.system-table :deep(.el-button .el-icon) { margin-inline-end: .25rem; }
+.system-identity { display: flex; align-items: center; gap: .625rem; }
+.system-avatar, .system-row-icon { display: inline-flex; width: 2rem; height: 2rem; flex: 0 0 auto; align-items: center; justify-content: center; border: 1px solid #d9e5db; border-radius: .5rem; background: #f0f6f1; color: #326445; font-weight: 700; }
+.system-avatar { border-radius: 50%; font-size: .8125rem; }
+.system-code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .75rem; font-weight: 600; }
+.system-permission-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.system-permission-summary :deep(.el-tag) { max-width: 100%; }
+.system-permission-summary :deep(.el-tag__content) { overflow: hidden; text-overflow: ellipsis; }
+.system-permission-popover { display: flex; max-height: 280px; flex-wrap: wrap; gap: .375rem; overflow: auto; }
+.system-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: 1rem 0; }
+.system-dialog-heading { display: flex; align-items: center; gap: .75rem; }
+.system-dialog-heading .system-row-icon { width: 2.5rem; height: 2.5rem; font-size: 1.25rem; }
+.system-dialog-heading p { margin: 0 0 .125rem; color: #819087; font-size: .6875rem; }
+.system-dialog-heading h2 { margin: 0; color: #1f3326; font-size: 1.0625rem; font-weight: 700; }
+.system-form-heading { display: flex; align-items: center; gap: .5rem; margin: .375rem 0 1rem; border-bottom: 1px solid #e9f1eb; padding-bottom: .625rem; color: #326445; font-size: .8125rem; font-weight: 700; }
+.system-form-heading h3 { margin: 0; font-size: inherit; }
+.system-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.25rem; }
+.system-form-wide { grid-column: 1 / -1; }
+.system-form-hint { margin: -.375rem 0 1rem; color: #819087; font-size: .75rem; line-height: 1.7; }
+.system-editor-form :deep(.el-form-item__label) { margin-bottom: .375rem; color: #58685d; font-size: .8125rem; font-weight: 500; }
+.system-editor-form :deep(.el-form-item) { margin-bottom: 1.375rem; }
+.system-permission-panel { display: grid; gap: .875rem; }
+.system-permission-module { overflow: hidden; border: 1px solid #e0e9e2; border-radius: .5rem; padding: 0 1rem .875rem; }
+.system-permission-title { margin: 0 -1rem .75rem; border-bottom: 1px solid #e5ede7; background: #f4f8f4; padding: .625rem 1rem; color: #326445; font-size: .8125rem; font-weight: 700; }
+.system-permission-module :deep(.el-checkbox) { height: auto; min-height: 1.75rem; margin-inline-end: .5rem; }
+.system-permission-module :deep(.el-checkbox__label) { white-space: normal; line-height: 1.5; }
+.system-audit-metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin: 0 0 1.25rem; }
+.system-audit-metadata dt { margin-bottom: .25rem; color: #819087; font-size: .75rem; }
+.system-audit-metadata dd { margin: 0; color: #34473a; font-size: .8125rem; overflow-wrap: anywhere; }
+.system-audit-content { margin-bottom: 1.25rem; border: 1px solid #e1eae3; border-radius: .5rem; background: #f6f9f6; padding: 1rem; }
+.system-audit-content h3, .system-snapshots h3 { margin: 0 0 .625rem; color: #52675a; font-size: .8125rem; font-weight: 600; }
+.system-audit-content p { margin: 0; color: #34473a; font-size: .8125rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.system-snapshots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.system-snapshots section { min-width: 0; }
+.system-snapshots pre { max-height: 320px; min-height: 140px; margin: 0; overflow: auto; border: 1px solid #e1eae3; border-radius: .5rem; background: #f8faf8; padding: .875rem; color: #52675a; font-size: .75rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+:global(.system-editor.el-dialog) { display: flex; max-height: 90dvh; flex-direction: column; overflow: hidden; border-radius: .75rem; padding: 0; }
+:global(.system-editor .el-dialog__header) { flex-shrink: 0; margin: 0; border-bottom: 1px solid #e4ece6; padding: 1.25rem 1.5rem; padding-inline-end: 3rem; }
+:global(.system-editor .el-dialog__headerbtn) { top: 1rem; inset-inline-end: 1rem; }
+:global(.system-editor .el-dialog__body) { min-height: 0; overflow: auto; padding: 1.25rem 1.5rem .75rem; }
+:global(.system-editor .el-dialog__footer) { flex-shrink: 0; border-top: 1px solid #e4ece6; background: #fafcfb; padding: 1rem 1.5rem; }
+:global(.system-editor .el-dialog__footer .el-button .el-icon) { margin-inline-end: .375rem; }
+@media (max-width: 1280px) { .system-audit-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); } .audit-date-filter { grid-column: span 2; } }
+@media (max-width: 768px) {
+  .system-workspace { padding-inline: 1rem; }
+  .system-tabs :deep(.el-tabs__nav-wrap) { overflow: visible; padding: 0; }
+  .system-tabs :deep(.el-tabs__nav-scroll) { overflow: visible; }
+  .system-tabs :deep(.el-tabs__nav) { display: grid; width: 100%; float: none; grid-template-columns: repeat(2, minmax(0, 1fr)); transform: none !important; }
+  .system-tabs :deep(.el-tabs__nav-prev), .system-tabs :deep(.el-tabs__nav-next), .system-tabs :deep(.el-tabs__active-bar) { display: none; }
+  .system-tabs :deep(.el-tabs__item) { min-width: 0; height: auto; min-height: 3rem; justify-content: center; border-radius: .375rem; padding: .5rem .25rem; white-space: normal; scroll-margin-top: 4.5rem; }
+  .system-tabs :deep(.el-tabs__item.is-active) { background: #f0f6f1; }
+  .system-tab-label { flex-wrap: wrap; justify-content: center; gap: .3rem; font-size: .75rem; }
+  .system-search-filters, .system-audit-filters { grid-template-columns: minmax(0, 1fr); }
+  .audit-date-filter { grid-column: auto; }
+  .system-search-filters .system-filter-field:first-child { max-width: none; }
+  .system-form-grid, .system-audit-metadata, .system-snapshots { grid-template-columns: minmax(0, 1fr); }
+  .system-pagination { align-items: flex-start; flex-direction: column; overflow: auto; }
+  :global(.system-editor .el-dialog__header), :global(.system-editor .el-dialog__body), :global(.system-editor .el-dialog__footer) { padding-inline: 1rem; }
+}
+</style>

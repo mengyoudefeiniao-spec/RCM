@@ -3,7 +3,7 @@ export default {
   zh: {
     system: {
       subtitle: '管理管理员账号、角色、功能权限、配给中心与审计日志',
-      adminAccounts: '管理员账号', rationCenters: '配给中心', rationCenter: '所属配给中心', province: '所属省份', roleName: '角色姓名', roleCode: '角色编码',
+      adminAccounts: '管理员账号', rationCenters: '配给中心', rationCenter: '所属配给中心', province: '所属省份', roleName: '角色名称', roleCode: '角色编码',
       adminRoleDescription: '管理管理员账号、角色与系统权限', operatorRoleDescription: '办理日常业务并维护配给数据', auditorRoleDescription: '查看审计记录并监督系统操作',
       roleUpdated: '角色已更新', rationCenterCreated: '配给中心已添加', rationCenterUpdated: '配给中心已更新',
       demoBaghdadCenter: '巴格达卡尔赫配给中心', demoBasraCenter: '巴士拉中央配给中心',
