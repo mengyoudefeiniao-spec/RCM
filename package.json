@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "package:android": "powershell -NoProfile -ExecutionPolicy Bypass -File app-package/scripts/build-android.ps1",
     "reset:pocketbase": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/reset-pocketbase.ps1",
-    "deploy:pocketbase:provinces": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-pocketbase-provinces.ps1",
     "package:win": "node scripts/package-windows.mjs"
   },
   "dependencies": {
