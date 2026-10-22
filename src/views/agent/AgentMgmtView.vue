@@ -591,173 +591,17 @@
         </el-tab-pane>
 
         <!-- ======================================================== -->
-        <!-- TAB 3: 支付凭据 (支持多条件过滤与分页) -->
+        <!-- TAB 3: 资金台账 (采购支出与公民配给收入多维分析) -->
         <!-- ======================================================== -->
-        <el-tab-pane v-if="!hideCenterTabs" name="applications">
+        <el-tab-pane v-if="!hideCenterTabs" name="finance" lazy>
           <template #label>
             <div class="flex items-center gap-1.5 py-1">
-              <el-icon><DocumentChecked /></el-icon>
-              <span class="font-bold">{{ $t('agent.applications') }}</span>
-              <el-badge :value="filteredApplications.length" type="info" class="ms-1" />
+              <el-icon><Coin /></el-icon>
+              <span class="font-bold">{{ $t('agentFinance.title') }}</span>
+              <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono">LEDGER</el-tag>
             </div>
           </template>
-
-          <div class="py-4 space-y-4">
-            <!-- 过滤查询条件工具栏 (需求 3) -->
-            <div class="p-3.5 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-              <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterKeywordLabel') }}</span>
-                <el-input
-                  v-model="appKeyword"
-                  :placeholder="$t('agent.receipts.filterKeywordPlaceholder')"
-                  clearable
-                  size="small"
-                  @input="applicationsCurrentPage = 1"
-                >
-                  <template #prefix><el-icon><Search /></el-icon></template>
-                </el-input>
-              </div>
-              <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterTypeLabel') }}</span>
-                <el-select v-model="appTypeFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option :label="$t('agent.receipts.filterTypeAll')" value="全部" />
-                  <el-option :label="$t('agent.receipts.typeGrant')" value="GRANT" />
-                  <el-option :label="$t('agent.receipts.typeRotation')" value="ROTATION" />
-                  <el-option :label="$t('agent.receipts.typeRestoration')" value="RESTORATION" />
-                  <el-option :label="$t('agent.receipts.typeCancellation')" value="CANCELLATION" />
-                </el-select>
-              </div>
-              <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterPayLabel') }}</span>
-                <el-select v-model="appPayStatusFilter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option :label="$t('agent.receipts.filterPayAll')" value="全部" />
-                  <el-option :label="$t('agent.receipts.payPaid')" value="PAID" />
-                  <el-option :label="$t('agent.receipts.payUnpaid')" value="UNPAID" />
-                  <el-option :label="$t('agent.receipts.payFree')" value="FREE" />
-                </el-select>
-              </div>
-              <div>
-                <span class="block text-[#58685D] mb-1 font-semibold">{{ $t('agent.receipts.filterArticleLabel') }}</span>
-                <el-select v-model="appArticle140Filter" class="w-full" size="small" @change="applicationsCurrentPage = 1">
-                  <el-option :label="$t('agent.receipts.filterArticleAll')" value="全部" />
-                  <el-option :label="$t('agent.receipts.article140')" value="true" />
-                  <el-option :label="$t('agent.receipts.articleNormal')" value="false" />
-                </el-select>
-              </div>
-              <div class="flex items-end gap-2">
-                <el-button size="small" type="primary" class="flex-1" @click="applicationsCurrentPage = 1">
-                  <el-icon class="me-1"><Search /></el-icon>
-                  {{ $t('agent.receipts.btnSearch') }}
-                </el-button>
-                <el-button size="small" class="flex-1" @click="handleResetAppFilter">
-                  {{ $t('agent.receipts.btnReset') }}
-                </el-button>
-              </div>
-            </div>
-
-            <!-- 列表信息与精简介绍词 -->
-            <div class="flex items-center justify-between text-xs px-1 text-[#58685D]">
-              <span class="text-[11px]">{{ $t('agent.receipts.listIntro') }}</span>
-              <span class="text-[11px] font-mono">{{ $t('agent.receipts.matchCount', { count: filteredApplications.length }) }}</span>
-            </div>
-
-            <!-- 支付凭据工单表格 -->
-            <el-table
-              :data="pagedApplications"
-              v-loading="loadingApplications"
-              border
-              style="width: 100%"
-              class="text-xs"
-            >
-              <el-table-column prop="ticketNo" :label="$t('agent.receipts.colTicketNo')" width="180">
-                <template #default="{ row }">
-                  <span class="font-mono font-bold text-[#1F3326]">{{ row.ticketNo }}</span>
-                  <div class="text-[10px] text-[#8A9A8F]">{{ row.submitTime }}</div>
-                </template>
-              </el-table-column>
-
-              <el-table-column prop="typeName" :label="$t('agent.receipts.colType')" width="150">
-                <template #default="{ row }">
-                  <el-tooltip :content="row.typeName" placement="top">
-                    <div class="font-bold text-[#1F3326] truncate">{{ formatReceiptTypeShort(row.typeName) }}</div>
-                  </el-tooltip>
-                  <div class="text-[10px]" :class="row.isArticle140 ? 'text-[#C9A13B] font-semibold' : 'text-[#8A9A8F]'">
-                    {{ row.isArticle140 ? $t('agent.receipts.tagArticle140Short') : $t('agent.receipts.articleNormalShort') }}
-                  </div>
-                </template>
-              </el-table-column>
-
-              <el-table-column :label="$t('agent.receipts.colCenter')" min-width="190">
-                <template #default="{ row }">
-                  <span class="font-semibold text-[#1F3326]">{{ row.centerName }}</span>
-                  <div class="text-[10px] text-[#8A9A8F]">{{ row.province }} · {{ $t('agent.receipts.categoryLabel', { category: row.category }) }}</div>
-                </template>
-              </el-table-column>
-
-              <el-table-column prop="applicantName" :label="$t('agent.receipts.colApplicant')" width="140" />
-
-              <el-table-column :label="$t('agent.receipts.colFee')" width="130" align="right">
-                <template #default="{ row }">
-                  <div v-if="row.feeAmount > 0">
-                    <span class="font-mono font-bold text-[#1F3326]">{{ row.feeAmount.toLocaleString() }} IQD</span>
-                    <div>
-                      <el-tag size="small" :type="row.feePaid ? 'success' : 'warning'" effect="plain">
-                        {{ row.feePaid ? $t('agent.receipts.tagPaid') : $t('agent.receipts.tagUnpaid') }}
-                      </el-tag>
-                    </div>
-                  </div>
-                  <div v-else class="text-[#8A9A8F] text-[11px]">{{ $t('agent.receipts.freeFee') }}</div>
-                </template>
-              </el-table-column>
-
-              <el-table-column prop="status" :label="$t('agent.receipts.colStatus')" width="140" align="center">
-                <template #default="{ row }">
-                  <el-tag
-                    size="small"
-                    :type="isCompletedStatus(row.status) ? 'success' : (isPendingStatus(row.status) ? 'warning' : 'primary')"
-                    effect="light"
-                  >
-                    {{ row.status }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-
-              <el-table-column :label="$t('agent.receipts.colAction')" width="88" fixed="right" align="center">
-                <template #default="{ row }">
-                  <el-tooltip
-                    v-if="!row.feePaid && isPayPendingStatus(row.status)"
-                    :content="$t('agent.receipts.btnPayNow')"
-                    placement="top"
-                  >
-                    <el-button size="small" type="success" circle @click="handlePayExistingTicket(row)">
-                      <el-icon><Money /></el-icon>
-                    </el-button>
-                  </el-tooltip>
-                  <el-tooltip v-else :content="$t('agent.receipts.btnDetail')" placement="top">
-                    <el-button size="small" type="primary" plain circle @click="handleViewTicketDetail(row)">
-                      <el-icon><View /></el-icon>
-                    </el-button>
-                  </el-tooltip>
-                </template>
-              </el-table-column>
-            </el-table>
-
-            <!-- 分页控件 -->
-            <div class="flex items-center justify-between pt-3 text-xs border-t border-[#E9F1EB]">
-              <div class="text-[#8A9A8F] text-[11px]">
-                {{ $t('agent.receipts.pageInfo', { page: applicationsCurrentPage, total: Math.ceil(filteredApplications.length / applicationsPageSize) || 1 }) }}
-              </div>
-              <el-pagination
-                v-model:current-page="applicationsCurrentPage"
-                v-model:page-size="applicationsPageSize"
-                :page-sizes="[5, 10, 20]"
-                :total="filteredApplications.length"
-                layout="total, sizes, prev, pager, next, jumper"
-                size="small"
-                background
-              />
-            </div>
-          </div>
+          <AgentFinanceLedger />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -855,10 +699,6 @@ import { useAuthStore } from '../../stores/auth.js';
 const { t, locale } = useI18n();
 const route = useRoute();
 
-// 语言无关的工单状态判断（zh/en mock 数据源状态值均可达；ar/ku 回退 en）
-const isCompletedStatus = (status) => /已完成|Completed/i.test(status || '');
-const isPendingStatus = (status) => /待|Pending/i.test(status || '');
-const isPayPendingStatus = (status) => /待电子支付|待支付|Pending/i.test(status || '');
 // 网点营业状态（zh「正常」/ en Active·Operational·Assigned）
 const isNormalAgentStatus = (status) => /正常|Active|Operational|Assigned/i.test(status || '');
 const router = useRouter();
@@ -1016,9 +856,6 @@ const formatCategoryShort = (cat) => {
   return full;
 };
 
-// 支付凭据类型短名 (去掉费用后缀，全称 tooltip 展示)
-const formatReceiptTypeShort = (name) => (name ? String(name).replace(/\s*[(（].*?[)）]\s*$/, '') : '');
-
 const formatCategory = (cat) => {
   if (!cat) return '';
   if (cat.includes('综合') || cat.toLowerCase().includes('compre') || cat.toLowerCase().includes('general')) {
@@ -1079,6 +916,7 @@ import AgentRestorationModal from './components/AgentRestorationModal.vue';
 import AgentCancellationModal from './components/AgentCancellationModal.vue';
 import AgentOrdersView from './AgentOrdersView.vue';
 import AgentInventoryLedger from './components/AgentInventoryLedger.vue';
+import AgentFinanceLedger from './components/AgentFinanceLedger.vue';
 import AgentWorkflowOverviewDrawer from './components/AgentWorkflowOverviewDrawer.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
@@ -1094,7 +932,6 @@ import {
   LocationFilled,
   UserFilled,
   Document,
-  DocumentChecked,
   Compass,
   InfoFilled,
   Search,
@@ -1105,7 +942,7 @@ import {
   Connection,
   View,
   CircleClose,
-  Money
+  Coin
 } from '@element-plus/icons-vue';
 
 // 响应式数据
@@ -1117,12 +954,12 @@ const openWorkflowOverview = () => {
   workflowDrawerRef.value?.open();
 };
 
-// 代理端 APP 视口：隐藏「已代理中心」「支付凭据」2 个选项卡 (代理订单记录/统计分析已拆分为独立大模块)
+// 代理端 APP 视口：隐藏「已代理中心」「资金台账」2 个选项卡 (代理订单记录/统计分析已拆分为独立大模块)
 const hideCenterTabs = computed(() => isAppMode.value && !isAdmin.value);
 const validTabs = computed(() =>
   hideCenterTabs.value
     ? ['g2bOrders', 'orderAnalytics']
-    : ['myCenters', 'g2bOrders', 'orderAnalytics', 'applications']
+    : ['myCenters', 'g2bOrders', 'orderAnalytics', 'finance']
 );
 const activeTab = ref(validTabs.value.includes(route.query.tab) ? route.query.tab : validTabs.value[0]);
 const myCenters = ref([]);
@@ -1153,15 +990,6 @@ const filterCenterStatus = ref('全部');
 const searchKeyword = ref('');
 const provinceCentersCurrentPage = ref(1);
 const provinceCentersPageSize = ref(10);
-
-// 筛选条件与分页状态 (支付凭据，需求 3)
-const appKeyword = ref('');
-const appTypeFilter = ref('全部');
-const appPayStatusFilter = ref('全部');
-const appArticle140Filter = ref('全部');
-const applicationsCurrentPage = ref(1);
-const applicationsPageSize = ref(5);
-const applicationTypeFilter = ref('全部');
 
 // 弹窗组件引用
 const applyModalRef = ref(null);
@@ -1242,53 +1070,6 @@ function handleResetMyCentersFilter() {
   myCenterStatusFilter.value = '全部';
   myCentersCurrentPage.value = 1;
   fetchAllAgents();
-}
-
-// 支付凭据过滤 (需求 3)
-const filteredApplications = computed(() => {
-  return applications.value.filter((app) => {
-    // 关键字过滤
-    if (appKeyword.value.trim()) {
-      const kw = appKeyword.value.trim().toLowerCase();
-      const matchNo = (app.ticketNo || '').toLowerCase().includes(kw);
-      const matchCenter = (app.centerName || '').toLowerCase().includes(kw);
-      const matchApplicant = (app.applicantName || '').toLowerCase().includes(kw);
-      if (!matchNo && !matchCenter && !matchApplicant) return false;
-    }
-    // 业务申报类型
-    if (appTypeFilter.value !== '全部') {
-      if (app.type !== appTypeFilter.value) return false;
-    }
-    // 支付状态
-    if (appPayStatusFilter.value === 'PAID') {
-      if (!app.feePaid) return false;
-    } else if (appPayStatusFilter.value === 'UNPAID') {
-      if (app.feePaid || app.feeAmount <= 0) return false;
-    } else if (appPayStatusFilter.value === 'FREE') {
-      if (app.feeAmount > 0) return false;
-    }
-    // 第140号决议属性
-    if (appArticle140Filter.value === 'true') {
-      if (!app.isArticle140) return false;
-    } else if (appArticle140Filter.value === 'false') {
-      if (app.isArticle140) return false;
-    }
-    return true;
-  });
-});
-
-// 支付凭据分页切片 (需求 3)
-const pagedApplications = computed(() => {
-  const start = (applicationsCurrentPage.value - 1) * applicationsPageSize.value;
-  return filteredApplications.value.slice(start, start + applicationsPageSize.value);
-});
-
-function handleResetAppFilter() {
-  appKeyword.value = '';
-  appTypeFilter.value = '全部';
-  appPayStatusFilter.value = '全部';
-  appArticle140Filter.value = '全部';
-  applicationsCurrentPage.value = 1;
 }
 
 // 数据获取方法
@@ -1379,10 +1160,7 @@ async function fetchArticle140Centers() {
 async function fetchApplications() {
   loadingApplications.value = true;
   try {
-    const params = {
-      type: applicationTypeFilter.value
-    };
-    const res = await getAgentApplications(params);
+    const res = await getAgentApplications({});
     applications.value = res || [];
   } finally {
     loadingApplications.value = false;
