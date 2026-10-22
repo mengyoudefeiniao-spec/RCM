@@ -16,6 +16,7 @@ import {
 } from '../utils/businessRules.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
+import { PERMISSION_CATALOG } from '../utils/reviewPermission.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -696,13 +697,12 @@ export async function mockDispatch(config) {
   const writeCenter = (key, value) => localStorage.setItem(`rcm_center_${key}_v1`, JSON.stringify(value));
   const systemSeed = {
     users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Central Administration', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Center', status: 'active' }],
-    roles: [{ id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'] }, { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','messages.view'] }, { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'] }],
-    permissions: [
-      ['moduleDashboard','dashboard.view','view'], ['moduleAgents','agents.view','view'], ['moduleAgents','agents.create','create'], ['moduleAgents','agents.edit','editFeature'], ['moduleAgents','agents.delete','remove'],
-      ['moduleRation','ration.view','view'], ['moduleRation','ration.dispatch','dispatch'], ['moduleReview','review.view','view'], ['moduleReview','review.process','process'],
-      ['moduleComplaints','complaints.view','view'], ['moduleComplaints','complaints.process','process'], ['moduleSystem','system.users','manage'], ['moduleSystem','system.roles','manage'],
-      ['moduleSystem','system.permissions','manage'], ['moduleSystem','system.organizations','manage'], ['moduleSystem','system.audit','view'], ['moduleMessages','messages.view','view'], ['moduleMessages','messages.send','send']
-    ].map(([moduleKey, code, featureKey]) => ({ id: `perm-${code}`, moduleKey, code, featureKey })),
+    roles: [
+      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch','review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send'], reviewScope: { types: ['review.process.unfreeze','review.process.split','review.process.changeHead','review.process.memberEntry','review.process.memberTransfer','review.process.agentTransfer'], mode: 'role', roles: ['role-admin','role-auditor'], regions: [] } },
+      { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], mode: 'region', roles: [], regions: ['巴格达省'] } },
+      { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], mode: 'role', roles: [], regions: [] } }
+    ],
+    permissions: PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' })),
     organizations: [{ id: 'org-001', name: 'Central Administration', parent: '—', code: 'CENTRAL', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Central Office', phone: '+964 1 000 0000' }, { id: 'org-002', name: 'Baghdad Center', parent: 'Central Administration', code: 'BG-01', address: 'Baghdad, Iraq', latitude: '', longitude: '', contact: 'Baghdad Office', phone: '+964 1 000 0001' }],
     'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', ip: '127.0.0.1', time: new Date().toISOString() }]
   };
@@ -750,7 +750,14 @@ export async function mockDispatch(config) {
       const extras = records.filter((row) => row.code && !systemSeed.permissions.some((seed) => seed.code === row.code));
       records = [...systemSeed.permissions, ...extras]; writeCenter(`system_${section}`, records);
     } else if (section === 'roles') {
-      records = records.map((row) => ({ ...row, permissionCodes: row.permissionCodes || systemSeed.roles.find((seed) => seed.id === row.id || seed.code === row.code)?.permissionCodes || [] }));
+      records = records.map((row) => {
+        const seed = systemSeed.roles.find((item) => item.id === row.id || item.code === row.code);
+        return {
+          ...row,
+          permissionCodes: row.permissionCodes || seed?.permissionCodes || [],
+          reviewScope: row.reviewScope || seed?.reviewScope || { types: [], mode: 'role', roles: [], regions: [] }
+        };
+      });
       writeCenter(`system_${section}`, records);
     } else if (section === 'users') {
       records = records.map((row) => ({ ...row, roleId: row.roleId || systemSeed.roles.find((role) => role.code === row.role)?.id }));
@@ -846,7 +853,7 @@ export async function mockDispatch(config) {
       if (managedUser.status === 'disabled') return createResponse({}, 403, i18n.global.t('api.forbidden'));
       const roleRows = readCenter('system_roles', systemSeed.roles);
       const assignedRole = roleRows.find((entry) => entry.id === managedUser.roleId || entry.code === managedUser.role);
-      const profile = { id: managedUser.id, username: managedUser.username, name: managedUser.name, role: assignedRole?.code || managedUser.role || 'operator', department: managedUser.organization, permissionCodes: assignedRole?.permissionCodes || [] };
+      const profile = { id: managedUser.id, username: managedUser.username, name: managedUser.name, role: assignedRole?.code || managedUser.role || 'operator', department: managedUser.organization, permissionCodes: assignedRole?.permissionCodes || [], reviewScope: assignedRole?.reviewScope || null };
       return createResponse({ token: `mock-token-${managedUser.id}`, user: profile });
     }
     const user = MOCK_USERS.find(
@@ -3778,7 +3785,9 @@ export async function mockDispatch(config) {
   }
 
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
+    // 订单按语言分池存放；当前语言池为空时回退另一语言池，避免切换语言后资金台账/配送列表丢失历史订单
+    let sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
+    if (!sharedOrders.length) sharedOrders = getSharedOrders(isEn ? 'zh' : 'en') || [];
     // PocketBase/共享缓存是订单列表的唯一来源；空数组表示已清空，不能回退到内存演示数据。
     let result = [...sharedOrders];
     const orderTimestamp = (order) => {

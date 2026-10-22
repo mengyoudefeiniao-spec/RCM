@@ -8,12 +8,20 @@
     <div class="mail-grid overflow-hidden rounded-b-xl border-x border-b border-[#DCE5DF] bg-white">
       <aside class="mail-folders" :aria-label="t('mail.title')">
         <button v-for="folder in folders" :key="folder.id" type="button" class="folder-button" :class="{ 'is-active': activeFolder === folder.id }" :aria-current="activeFolder === folder.id ? 'page' : undefined" @click="switchFolder(folder.id)">
-          <el-icon><component :is="folder.icon" /></el-icon><span class="flex-1">{{ t('mail.' + folder.id) }}</span><span v-if="folder.id === 'inbox' && receivedUnreadCount" class="folder-count">{{ receivedUnreadCount }}</span><span v-if="folder.id === 'favorites' && favoriteCount" class="folder-count">{{ favoriteCount }}</span>
+          <el-icon><component :is="folder.icon" /></el-icon><span class="flex-1">{{ t('mail.' + folder.id) }}</span><span v-if="folder.id === 'inbox' && receivedUnreadCount" class="folder-count">{{ receivedUnreadCount }}</span><span v-if="folder.id === 'review' && pendingReviewCount" class="folder-count">{{ pendingReviewCount }}</span><span v-if="folder.id === 'favorites' && favoriteCount" class="folder-count">{{ favoriteCount }}</span>
         </button>
       </aside>
 
       <div class="mail-list">
-        <div class="mail-list-heading"><h2>{{ t('mail.' + activeFolder) }}</h2><span>{{ t('mail.totalCount', { count: filteredItems.length }) }}</span></div>
+        <div class="mail-list-heading">
+          <h2>{{ t('mail.' + activeFolder) }}</h2>
+          <el-select v-if="activeFolder === 'review'" v-model="reviewStatusFilter" size="small" style="width: 116px">
+            <el-option value="pending" :label="t('mail.reviewFilterPending')" />
+            <el-option value="processed" :label="t('mail.reviewFilterProcessed')" />
+            <el-option value="all" :label="t('mail.reviewFilterAll')" />
+          </el-select>
+          <span v-else>{{ t('mail.totalCount', { count: filteredItems.length }) }}</span>
+        </div>
         <div v-if="loading" class="p-4"><el-skeleton :rows="5" animated /></div>
         <div v-else-if="filteredItems.length" class="mail-list-items">
           <div v-for="item in filteredItems" :key="item.id" class="notification-item" :class="{ 'is-selected': selected?.id === item.id }">
@@ -22,13 +30,13 @@
               <div class="mt-1.5 flex items-center gap-2"><span v-if="!item.read && isIncoming(item)" class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#3D8A58]" :title="t('mail.unread')"/><span class="min-w-0 flex-1 truncate text-sm" :class="!item.read && isIncoming(item) ? 'font-semibold text-[#24372C]' : 'font-medium text-[#53635A]'">{{ titleOf(item) || t('mail.emptyBody') }}</span><el-icon v-if="item.attachments?.length" class="shrink-0 text-[#819087]" :title="t('mail.attachments')"><Paperclip /></el-icon></div>
               <p class="mt-1 line-clamp-2 text-xs leading-5 text-[#839087]">{{ previewText(item) }}</p>
             </button>
-            <button type="button" class="favorite-toggle" :class="{ 'is-favorite': item.favorite }" :disabled="favoritePending.includes(item.id)" :aria-pressed="!!item.favorite" :title="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" :aria-label="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" @click.stop="toggleFavorite(item)"><el-icon><component :is="item.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon></button>
+            <button v-if="item.kind !== 'review'" type="button" class="favorite-toggle" :class="{ 'is-favorite': item.favorite }" :disabled="favoritePending.includes(item.id)" :aria-pressed="!!item.favorite" :title="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" :aria-label="t(item.favorite ? 'mail.removeFavorite' : 'mail.addFavorite')" @click.stop="toggleFavorite(item)"><el-icon><component :is="item.favorite ? 'FolderChecked' : 'FolderAdd'" /></el-icon></button>
           </div>
         </div>
-        <el-empty v-else :description="search ? t('mail.noResults') : t(activeFolder === 'favorites' ? 'mail.noFavorites' : 'mail.noMail')" :image-size="76" />
+        <el-empty v-else :description="search ? t('mail.noResults') : activeFolder === 'review' ? (reviewStatusFilter.value === 'pending' ? t('mail.reviewEmptyPending') : t('mail.reviewEmptyAll')) : activeFolder === 'favorites' ? t('mail.noFavorites') : t('mail.noMail')" :image-size="76" />
       </div>
 
-      <main class="mail-reader min-w-0 p-4 sm:p-6">
+      <main v-if="activeFolder !== 'review'" class="mail-reader min-w-0 p-4 sm:p-6">
         <template v-if="selected">
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDEA] pb-4">
             <div class="flex flex-wrap items-center gap-2"><el-tag size="small" effect="plain">{{ categoryLabel(selected) }}</el-tag><el-tag v-if="!selected.read && isIncoming(selected)" size="small" type="success">{{ t('mail.unread') }}</el-tag></div>
@@ -38,6 +46,49 @@
           <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]"><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.from') }}:</b>{{ selected.sender }}</span><span><b class="me-1 font-medium text-[#526258]">{{ t('mail.to') }}:</b>{{ recipientSummary(selected) }}</span><span>{{ fullDate(selected.createdAt) }}</span></div>
           <article class="mail-content min-h-24 break-words text-sm leading-7 text-[#34473A]" v-html="safeBody(selected)" />
           <div v-if="selected.attachments?.length" class="mt-8 border-t border-[#E8EDEA] pt-4"><h3 class="mb-3 text-sm font-semibold text-[#43564A]">{{ t('mail.attachments') }} ({{ selected.attachments.length }})</h3><div class="flex flex-wrap gap-2"><button v-for="attachment in selected.attachments" :key="attachment.id" type="button" class="flex max-w-full items-center gap-2 rounded-lg border border-[#DCE5DF] px-3 py-2 text-start text-sm hover:bg-[#F5F8F5]" @click="downloadAttachment(attachment)"><el-icon class="shrink-0 text-[#548163]"><Paperclip /></el-icon><span class="max-w-64 truncate">{{ attachment.name }}</span><span class="shrink-0 text-xs text-[#86938B]">{{ formatSize(attachment.size) }}</span><el-icon class="shrink-0"><Download /></el-icon></button></div></div>
+        </template>
+        <div v-else class="flex min-h-[300px] items-center justify-center text-sm text-[#8A9890]">{{ t('mail.selectMail') }}</div>
+      </main>
+
+      <!-- 待审核消息：审核工单详情与两级审批操作 -->
+      <main v-if="activeFolder === 'review'" class="mail-reader min-w-0 p-4 sm:p-6">
+        <template v-if="selected">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDEA] pb-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <el-tag size="small" effect="plain">{{ reviewSourceLabel(selected) }}</el-tag>
+              <el-tag size="small" :type="reviewStatusType(selected)">{{ reviewStatusLabel(selected) }}</el-tag>
+            </div>
+            <el-button v-if="reviewStageOf(selected)" size="small" type="primary" @click="openReviewAction(selected)">
+              <el-icon><Stamp /></el-icon>{{ reviewStageOf(selected) === 'manager' ? t('mail.reviewManagerAction') : t('mail.reviewStaffAction') }}
+            </el-button>
+          </div>
+          <h2 class="mb-5 break-words text-xl font-bold leading-8 text-[#26382D]">{{ titleOf(selected) }}</h2>
+          <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#75837A]">
+            <span><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewTicketId') }}:</b><span class="font-mono">{{ selected.ticket.id }}</span></span>
+            <span><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewApplicant') }}:</b>{{ selected.ticket.applicantName || '—' }}</span>
+            <span><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewCardNo') }}:</b><span class="font-mono">{{ selected.ticket.cardNo || '—' }}</span></span>
+            <span><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewSubmittedAt') }}:</b>{{ fullDate(selected.createdAt) }}</span>
+          </div>
+          <div class="mb-6 space-y-2 text-sm leading-7 text-[#34473A]">
+            <div><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewTargetMember') }}:</b>{{ selected.ticket.targetMemberName || '—' }}</div>
+            <div><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewRegion') }}:</b>{{ [selected.ticket.province, selected.ticket.center].filter(Boolean).join(' · ') || '—' }}</div>
+            <div><b class="me-1 font-medium text-[#526258]">{{ t('mail.reviewReason') }}:</b>{{ selected.ticket.reason || '—' }}</div>
+          </div>
+          <div v-if="selected.ticket.staffOpinion || selected.ticket.managerNotes" class="mb-6 space-y-2 rounded-lg border border-[#E8EDEA] bg-[#F7FAF8] p-3 text-xs leading-6">
+            <div v-if="selected.ticket.staffOpinion"><b class="text-[#43564A]">{{ t('review.stage1Title') }}:</b> {{ selected.ticket.staffOpinion }}<span class="ms-1 text-[#8A9890]">({{ selected.ticket.staffName }} · {{ selected.ticket.staffReviewedAt }})</span></div>
+            <div v-if="selected.ticket.managerNotes"><b class="text-[#43564A]">{{ t('review.stage2Title', { title: reviewSourceLabel(selected) }) }}:</b> {{ selected.ticket.managerNotes }}<span class="ms-1 text-[#8A9890]">({{ selected.ticket.managerName }} · {{ selected.ticket.managerDecidedAt }})</span></div>
+          </div>
+          <div v-if="selected.ticket.attachments?.length" class="border-t border-[#E8EDEA] pt-4">
+            <h3 class="mb-3 text-sm font-semibold text-[#43564A]">{{ t('mail.reviewAttachments') }} ({{ selected.ticket.attachments.length }})</h3>
+            <div class="flex flex-wrap gap-2">
+              <span v-for="(att, ai) in selected.ticket.attachments" :key="ai" class="flex max-w-full items-center gap-2 rounded-lg border border-[#DCE5DF] px-3 py-2 text-start text-sm">
+                <el-icon class="shrink-0 text-[#548163]"><Paperclip /></el-icon>
+                <span class="max-w-64 truncate">{{ att.name }}</span>
+                <el-tag v-if="att.verified" size="small" type="success" effect="plain">{{ t('review.sealValid') }}</el-tag>
+              </span>
+            </div>
+          </div>
+          <div class="mt-8 rounded-lg border border-[#E8EDEA] bg-[#F7FAF8] p-3 text-xs leading-6 text-[#75837A]">{{ t('mail.reviewScopeHint') }}</div>
         </template>
         <div v-else class="flex min-h-[300px] items-center justify-center text-sm text-[#8A9890]">{{ t('mail.selectMail') }}</div>
       </main>
@@ -77,6 +128,22 @@
       <article class="mail-content min-h-48 break-words text-sm leading-7 text-[#34473A]" v-html="previewHtml" />
       <template #footer><el-button @click="previewVisible = false">{{ t('mail.closePreview') }}</el-button><el-button type="primary" @click="previewVisible = false">{{ t('mail.continueEditing') }}</el-button></template>
     </el-dialog>
+
+    <!-- 待审核消息：初审意见 / 终审裁决 -->
+    <el-dialog v-model="reviewActionVisible" :title="reviewStage === 'manager' ? t('mail.reviewManagerAction') : t('mail.reviewStaffAction')" width="min(640px, 95vw)" append-to-body>
+      <el-form label-position="top">
+        <el-form-item v-if="reviewStage === 'manager'" :label="t('mail.reviewDecision')">
+          <el-radio-group v-model="reviewDecision">
+            <el-radio value="accept">{{ t('mail.reviewAccept') }}</el-radio>
+            <el-radio value="reject">{{ t('mail.reviewReject') }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item :label="reviewStage === 'manager' ? t('mail.reviewNotes') : t('mail.reviewOpinion')">
+          <el-input v-model="reviewActionText" type="textarea" :rows="4" maxlength="500" show-word-limit :placeholder="reviewStage === 'manager' ? t('review.managerPlaceholder') : t('review.staffPlaceholder')" />
+        </el-form-item>
+      </el-form>
+      <template #footer><el-button @click="reviewActionVisible = false">{{ t('system.cancel') }}</el-button><el-button type="primary" :loading="reviewSubmitting" @click="submitReviewAction">{{ t('mail.reviewSubmit') }}</el-button></template>
+    </el-dialog>
   </section>
 </template>
 
@@ -89,23 +156,41 @@ import { getAgentFamilies } from '../../api/agent.js';
 import { getMessageAttachment, getMessageRecipientTree, getMessages, sendMessage, setMessageFavorite } from '../../api/adminCenter.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
+import { useReviewStore } from '../../stores/review.js';
+import { resolveReviewAccess, isTicketInReviewScope } from '../../utils/reviewPermission.js';
 
-const { t, locale } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore();
+const { t, locale } = useI18n(), route = useRoute(), authStore = useAuthStore(), messageStore = useMessageCenterStore(), reviewStore = useReviewStore();
 const activeFolder = ref('inbox'), items = ref([]), selected = ref(null), search = ref(''), loading = ref(false), composeVisible = ref(false), previewVisible = ref(false), sending = ref(false);
 const recipientTree = ref([]), recipientsLoading = ref(false), families = ref([]), editor = ref(null), fileInput = ref(null);
 const favoriteCount = ref(0), favoritePending = ref([]);
 const receivedUnreadCount = computed(() => messageStore.inbox.filter((item) => !item.read && !item.favorite).length);
+// 待审核消息（审核流程）：按当前账号的审核权限（业务类型 + 关联角色/区域）过滤工单
+const reviewAccess = computed(() => resolveReviewAccess(authStore.userProfile));
+const canReview = computed(() => reviewAccess.value.canView && reviewAccess.value.canProcess);
+const reviewTickets = ref([]);
+const reviewStatusFilter = ref('pending');
+const reviewActionVisible = ref(false), reviewSubmitting = ref(false), reviewStage = ref('staff'), reviewActionText = ref(''), reviewDecision = ref('accept');
+const pendingReviewCount = computed(() => reviewTickets.value.filter(isReviewPending).length);
 let loadVersion = 0;
 const draft = ref({ category: 'admin', recipientType: 'citizens', regionId: '', agentId: '', siteId: '', recipientIds: [], allAtSite: false, subject: '', bodyHtml: '', attachments: [] });
 const canSend = computed(() => authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('messages.send'));
-const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), { id: 'favorites', icon: 'FolderChecked' }]);
+const folders = computed(() => [{ id: 'inbox', icon: 'MessageBox' }, ...(canReview.value ? [{ id: 'review', icon: 'Stamp' }] : []), ...(canSend.value ? [{ id: 'sent', icon: 'Promotion' }] : []), { id: 'favorites', icon: 'FolderChecked' }]);
 const regionOptions = computed(() => recipientTree.value);
 const agentOptions = computed(() => regionOptions.value.find((item) => item.id === draft.value.regionId)?.children || []);
 const siteOptions = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.children || []);
 const familyOptions = computed(() => families.value);
 const selectedAgentLabel = computed(() => agentOptions.value.find((item) => item.id === draft.value.agentId)?.name || '');
 const selectedSiteLabel = computed(() => siteOptions.value.find((item) => item.id === draft.value.siteId)?.storeName || siteOptions.value.find((item) => item.id === draft.value.siteId)?.name || '');
-const filteredItems = computed(() => items.value.filter((item) => (activeFolder.value === 'favorites' ? item.favorite : !item.favorite) && (!search.value.trim() || [titleOf(item), item.sender, previewText(item), recipientSummary(item)].some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(search.value.trim().toLocaleLowerCase(locale.value))))));
+const filteredItems = computed(() => {
+  if (activeFolder.value === 'review') {
+    const keyword = search.value.trim().toLocaleLowerCase(locale.value);
+    return reviewTickets.value
+      .filter((ticket) => (reviewStatusFilter.value === 'all' || (reviewStatusFilter.value === 'pending' ? isReviewPending(ticket) : !isReviewPending(ticket))))
+      .filter((ticket) => !keyword || [ticket.source, ticket.applicantName, ticket.cardNo, ticket.reason, ticket.id].some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(keyword)))
+      .map(toReviewItem);
+  }
+  return items.value.filter((item) => (activeFolder.value === 'favorites' ? item.favorite : !item.favorite) && (!search.value.trim() || [titleOf(item), item.sender, previewText(item), recipientSummary(item)].some((value) => String(value || '').toLocaleLowerCase(locale.value).includes(search.value.trim().toLocaleLowerCase(locale.value)))));
+});
 const previewHtml = computed(() => sanitizeHtml(draft.value.bodyHtml));
 const editorTools = [{ command: 'undo', icon: 'Back', label: 'undo' }, { command: 'redo', icon: 'Right', label: 'redo' }, { command: 'bold', glyph: 'B', glyphClass: 'font-bold', label: 'bold' }, { command: 'italic', glyph: 'I', glyphClass: 'italic', label: 'italic' }, { command: 'underline', glyph: 'U', glyphClass: 'underline', label: 'underline' }, { command: 'strikeThrough', glyph: 'S', glyphClass: 'line-through', label: 'strikeThrough' }, { command: 'insertUnorderedList', icon: 'List', label: 'bulletList' }, { command: 'insertOrderedList', icon: 'Sort', label: 'numberedList' }, { command: 'formatBlock:h2', icon: 'Document', label: 'heading' }, { command: 'justifyLeft', glyph: '≡', glyphClass: 'align-left', label: 'alignLeft' }, { command: 'justifyCenter', glyph: '≡', glyphClass: 'align-center', label: 'alignCenter' }, { command: 'justifyRight', glyph: '≡', glyphClass: 'align-right', label: 'alignRight' }, { command: 'createLink', icon: 'Link', label: 'link' }, { command: 'removeFormat', icon: 'CircleClose', label: 'clearFormat' }];
 
@@ -137,6 +222,7 @@ function sanitizeHtml(html) {
   return parsed.body.innerHTML;
 }
 async function load() {
+  if (activeFolder.value === 'review') { await loadReviewTickets(); return; }
   const version = ++loadVersion, folder = activeFolder.value;
   loading.value = true;
   try {
@@ -148,10 +234,102 @@ async function load() {
     if (selected.value) selected.value = filteredItems.value.find((item) => item.id === selected.value.id) || null;
   } finally { if (version === loadVersion) loading.value = false; }
 }
+// 待审核消息：按审核权限加载工单池（业务类型 + 关联角色/区域过滤）
+async function loadReviewTickets() {
+  loading.value = true;
+  try {
+    await reviewStore.fetchTickets('全部');
+    reviewTickets.value = reviewStore.tickets.filter((ticket) => isTicketInReviewScope(ticket, reviewAccess.value));
+    if (selected.value && !filteredItems.value.some((item) => item.id === selected.value.id)) selected.value = null;
+  } finally { loading.value = false; }
+}
+function isReviewPending(ticket) {
+  const status = String(ticket?.status || '');
+  return status.includes('初审') || status.includes('终审') || status.includes('Pending');
+}
+const REVIEW_SOURCE_KEYS = {
+  '申请解冻': 'review.sourceUnfreeze', 'Unfreeze Card': 'review.sourceUnfreeze',
+  '申请分户': 'review.sourceSplit', 'Split Household': 'review.sourceSplit',
+  '变更户主': 'review.sourceChangeHead', 'Change Head': 'review.sourceChangeHead',
+  '成员录入': 'review.sourceMemberEntry', 'Member Entry': 'review.sourceMemberEntry',
+  '成员转移': 'review.sourceMemberTransfer', 'Transfer Member': 'review.sourceMemberTransfer',
+  '申请代理转移': 'review.sourceTransferAgent', 'Transfer Agent': 'review.sourceTransferAgent'
+};
+function reviewSourceLabel(item) {
+  const source = item?.ticket?.source || item?.source || '';
+  const key = REVIEW_SOURCE_KEYS[source];
+  return key ? t(key) : source || '—';
+}
+function reviewStatusLabel(item) {
+  const status = String(item?.ticket?.status || '');
+  if (status.includes('初审') || status === 'Pending Staff Review') return t('review.statusPendingStaff');
+  if (status.includes('终审') || status === 'Pending Manager Review') return t('review.statusPendingManager');
+  if (status.includes('批准') || status === 'Approved') return t('review.statusApproved');
+  if (status.includes('驳回') || status === 'Rejected') return t('review.statusRejected');
+  return status || '—';
+}
+function reviewStatusType(item) {
+  const status = String(item?.ticket?.status || '');
+  if (status.includes('批准') || status === 'Approved') return 'success';
+  if (status.includes('驳回') || status === 'Rejected') return 'danger';
+  return 'warning';
+}
+function reviewStageOf(item) {
+  const status = String(item?.ticket?.status || '');
+  if (status.includes('初审') || status === 'Pending Staff Review') return 'staff';
+  if (status.includes('终审') || status === 'Pending Manager Review') return 'manager';
+  return '';
+}
+function normalizeTicketTime(value) {
+  const raw = String(value || '');
+  const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+}
+function toReviewItem(ticket) {
+  const pending = isReviewPending(ticket);
+  return {
+    id: ticket.id,
+    kind: 'review',
+    ticket,
+    sender: ticket.applicantName || '—',
+    createdAt: normalizeTicketTime(ticket.submittedAt),
+    subject: `${reviewSourceLabel({ ticket })} · ${ticket.applicantName || ''}`,
+    bodyText: ticket.reason || '',
+    read: !pending,
+    favorite: false,
+    attachments: []
+  };
+}
+function openReviewAction(item) {
+  reviewStage.value = reviewStageOf(item) || 'staff';
+  reviewActionText.value = '';
+  reviewDecision.value = 'accept';
+  reviewActionVisible.value = true;
+}
+async function submitReviewAction() {
+  const ticket = selected.value?.ticket;
+  if (!ticket) return;
+  if (!reviewActionText.value.trim()) { ElMessage.warning(t('mail.reviewTextRequired')); return; }
+  reviewSubmitting.value = true;
+  try {
+    if (reviewStage.value === 'manager') {
+      const isEn = locale.value === 'en';
+      await reviewStore.reviewManager(ticket.id, reviewDecision.value === 'accept' ? (isEn ? 'Approved' : '接受') : (isEn ? 'Rejected' : '拒绝'), reviewActionText.value.trim());
+    } else {
+      await reviewStore.reviewStaff(ticket.id, reviewActionText.value.trim());
+    }
+    reviewActionVisible.value = false;
+    await loadReviewTickets();
+    const refreshed = filteredItems.value.find((item) => item.id === ticket.id);
+    if (refreshed) selected.value = refreshed;
+  } finally { reviewSubmitting.value = false; }
+}
 async function switchFolder(folder) { activeFolder.value = folder; selected.value = null; await load(); }
 function isIncoming(item) { return item.sourceFolder ? item.sourceFolder === 'inbox' : activeFolder.value !== 'sent'; }
-async function selectMessage(item) { selected.value = item; if (isIncoming(item) && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
+async function selectMessage(item) { selected.value = item; if (item.kind !== 'review' && isIncoming(item) && !item.read) { await messageStore.markRead(item.id); item.read = true; } }
 async function toggleFavorite(item) {
+  if (item.kind === 'review') return;
   if (favoritePending.value.includes(item.id)) return;
   favoritePending.value.push(item.id);
   try {

@@ -1,0 +1,184 @@
+/**
+ * 审核流程权限体系统一工具
+ *
+ * 背景：消息通知新增「待审核消息」审核流程，审核权限在
+ * 系统管理-角色-关联功能权限中配置；功能权限目录采用三级结构
+ * (模块 → 功能 → 权限项)，审核权限按业务类型划分，并支持
+ * 关联角色或区域两种范围限定。
+ */
+
+// 三级功能权限目录：模块(一级) → 功能(二级) → 权限项(三级)
+// parentCode 指向二级权限码；二级权限若存在子级，界面中作为分组开关
+export const PERMISSION_CATALOG = [
+  { moduleKey: 'moduleDashboard', code: 'dashboard.view', featureKey: 'view' },
+  { moduleKey: 'moduleAgents', code: 'agents.view', featureKey: 'view' },
+  { moduleKey: 'moduleAgents', code: 'agents.create', featureKey: 'create' },
+  { moduleKey: 'moduleAgents', code: 'agents.edit', featureKey: 'editFeature' },
+  { moduleKey: 'moduleAgents', code: 'agents.delete', featureKey: 'remove' },
+  { moduleKey: 'moduleRation', code: 'ration.view', featureKey: 'view' },
+  { moduleKey: 'moduleRation', code: 'ration.dispatch', featureKey: 'dispatch' },
+  { moduleKey: 'moduleReview', code: 'review.view', featureKey: 'view' },
+  { moduleKey: 'moduleReview', code: 'review.process', featureKey: 'process' },
+  // 三级权限项：审核处理 → 业务类型
+  { moduleKey: 'moduleReview', code: 'review.process.unfreeze', featureKey: 'reviewTypeUnfreeze', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.split', featureKey: 'reviewTypeSplit', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.changeHead', featureKey: 'reviewTypeChangeHead', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.memberEntry', featureKey: 'reviewTypeMemberEntry', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.memberTransfer', featureKey: 'reviewTypeMemberTransfer', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.agentTransfer', featureKey: 'reviewTypeAgentTransfer', parentCode: 'review.process' },
+  { moduleKey: 'moduleComplaints', code: 'complaints.view', featureKey: 'view' },
+  { moduleKey: 'moduleComplaints', code: 'complaints.process', featureKey: 'process' },
+  { moduleKey: 'moduleSystem', code: 'system.users', featureKey: 'manage' },
+  { moduleKey: 'moduleSystem', code: 'system.roles', featureKey: 'manage' },
+  { moduleKey: 'moduleSystem', code: 'system.permissions', featureKey: 'manage' },
+  { moduleKey: 'moduleSystem', code: 'system.organizations', featureKey: 'manage' },
+  { moduleKey: 'moduleSystem', code: 'system.audit', featureKey: 'view' },
+  { moduleKey: 'moduleMessages', code: 'messages.view', featureKey: 'view' },
+  { moduleKey: 'moduleMessages', code: 'messages.send', featureKey: 'send' }
+];
+
+// 审核业务类型三级权限码
+export const REVIEW_TYPE_CODES = PERMISSION_CATALOG
+  .filter((item) => item.parentCode === 'review.process')
+  .map((item) => item.code);
+
+// 审核工单来源（中英文）→ 三级审核权限码
+const SOURCE_TO_CODE = {
+  '申请解冻': 'review.process.unfreeze',
+  'Unfreeze Card': 'review.process.unfreeze',
+  '申请分户': 'review.process.split',
+  'Split Household': 'review.process.split',
+  '变更户主': 'review.process.changeHead',
+  'Change Head': 'review.process.changeHead',
+  '成员录入': 'review.process.memberEntry',
+  'Member Entry': 'review.process.memberEntry',
+  '成员转移': 'review.process.memberTransfer',
+  'Transfer Member': 'review.process.memberTransfer',
+  '申请代理转移': 'review.process.agentTransfer',
+  'Transfer Agent': 'review.process.agentTransfer'
+};
+
+// 审核范围划分模式
+export const REVIEW_SCOPE_MODES = ['role', 'region'];
+
+// 审核范围可选区域（伊拉克省级行政区）
+export const REVIEW_SCOPE_REGIONS = [
+  '巴格达省',
+  '巴士拉省',
+  '尼尼微省',
+  '迪亚拉省',
+  '基尔库克省',
+  '安巴尔省',
+  '埃尔比勒省',
+  '苏莱曼尼亚省'
+];
+
+const ADMIN_ROLES = ['admin', 'minister_center', 'deputy_minister', 'director_planning'];
+
+/**
+ * 构建三级权限树（模块 → 功能 → 权限项）
+ * @param {Array} catalog 权限目录，默认 PERMISSION_CATALOG
+ * @returns {Array<{ moduleKey: string, features: Array<{ code, featureKey, children: Array }> }>}
+ */
+export function buildPermissionTree(catalog = PERMISSION_CATALOG) {
+  const modules = [];
+  const moduleMap = new Map();
+  catalog.forEach((item) => {
+    if (!moduleMap.has(item.moduleKey)) {
+      const module = { moduleKey: item.moduleKey, features: [] };
+      moduleMap.set(item.moduleKey, module);
+      modules.push(module);
+    }
+    moduleMap.get(item.moduleKey).features.push({ ...item, children: [] });
+  });
+  // 将三级权限项挂到二级功能下
+  modules.forEach((module) => {
+    module.features.forEach((feature) => {
+      catalog
+        .filter((item) => item.parentCode === feature.code)
+        .forEach((child) => feature.children.push({ ...child, children: [] }));
+    });
+    // 纯分组节点（存在子级）不参与勾选存储，仅作为分组开关
+    module.features = module.features.filter((feature) => feature.children.length === 0 || !feature.parentCode);
+  });
+  return modules;
+}
+
+/**
+ * 将角色权限码展开为有效的三级权限码（父码自动展开为全部子级）
+ * @param {string[]} codes 角色已授权权限码
+ * @returns {string[]} 有效三级权限码
+ */
+export function resolveEffectiveCodes(codes = []) {
+  const set = new Set();
+  (Array.isArray(codes) ? codes : []).forEach((code) => {
+    const children = PERMISSION_CATALOG.filter((item) => item.parentCode === code);
+    if (children.length) children.forEach((child) => set.add(child.code));
+    else set.add(code);
+  });
+  return [...set];
+}
+
+/**
+ * 解析当前用户的审核权限
+ * @param {object} profile 用户画像 (auth store userProfile)
+ * @returns {{ isAdmin: boolean, canView: boolean, canProcess: boolean,
+ *   types: string[], mode: 'role'|'region', roles: string[], regions: string[] }}
+ */
+export function resolveReviewAccess(profile) {
+  const isAdmin = ADMIN_ROLES.includes(profile?.role);
+  const codes = resolveEffectiveCodes(profile?.permissionCodes);
+  const scope = profile?.reviewScope && typeof profile.reviewScope === 'object' ? profile.reviewScope : {};
+  const types = isAdmin ? [...REVIEW_TYPE_CODES] : codes.filter((code) => REVIEW_TYPE_CODES.includes(code));
+  return {
+    isAdmin,
+    canView: isAdmin || codes.includes('review.view'),
+    canProcess: types.length > 0,
+    types,
+    mode: REVIEW_SCOPE_MODES.includes(scope.mode) ? scope.mode : 'role',
+    roles: Array.isArray(scope.roles) ? scope.roles : [],
+    regions: Array.isArray(scope.regions) ? scope.regions : []
+  };
+}
+
+/**
+ * 审核工单来源 → 三级审核权限码
+ * @param {string} source 工单来源（兼容中英文）
+ * @returns {string} 权限码；无法识别时返回空字符串
+ */
+export function reviewSourceToCode(source) {
+  return SOURCE_TO_CODE[String(source || '').trim()] || '';
+}
+
+/**
+ * 判断某审核工单是否落在当前用户的审核权限范围内
+ * @param {object} ticket 审核工单
+ * @param {object} access resolveReviewAccess 的结果
+ * @returns {boolean} 是否可审核
+ */
+export function isTicketInReviewScope(ticket, access) {
+  if (!access?.canProcess) return false;
+  if (access.isAdmin) return true;
+  const typeCode = reviewSourceToCode(ticket?.source);
+  if (!typeCode || !access.types.includes(typeCode)) return false;
+  // 按区域划分时，工单所属省须在授权区域内（未配置区域视为不限）
+  if (access.mode === 'region' && access.regions.length) {
+    return access.regions.some((region) => String(ticket?.province || '').includes(region));
+  }
+  return true;
+}
+
+/**
+ * 审核权限范围摘要（用于角色列表展示）
+ * @param {object} scope 角色 reviewScope
+ * @returns {{ typeCount: number, mode: string, regionCount: number, roleCount: number }}
+ */
+export function summarizeReviewScope(scope) {
+  const safe = scope && typeof scope === 'object' ? scope : {};
+  return {
+    typeCount: Array.isArray(safe.types) ? safe.types.length : 0,
+    mode: REVIEW_SCOPE_MODES.includes(safe.mode) ? safe.mode : '',
+    roleCount: Array.isArray(safe.roles) ? safe.roles.length : 0,
+    regionCount: Array.isArray(safe.regions) ? safe.regions.length : 0
+  };
+}
