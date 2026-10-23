@@ -158,7 +158,7 @@
 
         <!-- 2.2 消息对话滚动视窗 -->
         <div
-          v-show="!complaintPanel"
+          v-show="!complaintPanel && !orderPickerOpen"
           ref="messagesContainerRef"
           class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8FBF8]"
         >
@@ -211,6 +211,7 @@
             >
               <div class="max-w-[82%] rounded-lg rounded-tr-xs bg-gradient-to-r rtl:bg-gradient-to-l from-[#326445] to-[#2F5B44] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
                 <span class="whitespace-pre-wrap" data-chat-user-content>{{ msg.content }}</span>
+                <CustomerOrderCard v-if="msg.order" :order="msg.order" class="mt-2" />
                 <div class="text-[10px] text-[#C7DED0] text-end mt-1 font-mono">
                   {{ formatTime(msg.timestamp) }}
                 </div>
@@ -443,11 +444,16 @@
           :mode="complaintPanel"
           :complaint-id="activeComplaintId"
           :draft="complaintDraft"
+          :order-id="activeOrder?.orderId || ''"
           @close="complaintPanel = ''"
           @submitted="openComplaintProgress"
         />
 
-        <footer v-if="!complaintPanel" class="p-3.5 bg-white border-t border-[#D9E5DB] shrink-0">
+        <ChatOrderPicker v-if="orderPickerOpen && showAppActions" :busy="isThinking" @close="orderPickerOpen = false" @select="sendOrderToAssistant" />
+        <footer v-if="!complaintPanel && !orderPickerOpen" class="p-3.5 bg-white border-t border-[#D9E5DB] shrink-0">
+          <div v-if="activeOrder && showAppActions" class="flex items-center justify-between gap-2 text-[11px] text-[#326445] mb-2">
+            <span>{{ t('chatOrders.selected') }}: <bdi>{{ activeOrder.orderId }}</bdi></span><button type="button" class="underline" :disabled="isThinking" @click="activeOrder = null">{{ t('chatOrders.clear') }}</button>
+          </div>
           <div class="relative bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-2.5 focus-within:border-[#D3AF62] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#D3AF62]/15 transition-all duration-200">
             <el-input
               ref="inputRef"
@@ -500,7 +506,10 @@
             </div>
           </div>
         </footer>
-        <nav v-if="showAppActions" class="chat-app-actions grid grid-cols-3 gap-1.5 px-3 py-2 bg-white border-t border-[#D9E5DB] shrink-0">
+        <nav v-if="showAppActions" class="chat-app-actions grid grid-cols-2 gap-1.5 px-3 py-2 bg-white border-t border-[#D9E5DB] shrink-0">
+          <button type="button" class="chat-app-action" :aria-pressed="orderPickerOpen" :disabled="isThinking || voiceInputActive" @click="openOrderPicker">
+            <el-icon><Tickets /></el-icon><span>{{ t('chatOrders.orders') }}</span>
+          </button>
           <button type="button" class="chat-app-action" :aria-pressed="complaintPanel === 'create'" @click="openComplaintForm">
             <el-icon><EditPen /></el-icon><span>{{ $t('chatComplaint.fileComplaint') }}</span>
           </button>
@@ -630,6 +639,8 @@ import { currentDirection } from '../../locales/index.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import ChatComplaintPanel from './ChatComplaintPanel.vue';
+import ChatOrderPicker from './ChatOrderPicker.vue';
+import CustomerOrderCard from './CustomerOrderCard.vue';
 import HoldToTalkInput from './HoldToTalkInput.vue';
 import { analyzeCustomerMessage, preserveOriginalUserMessage } from '../../utils/customerMessageAnalysis.js';
 import { COMPLAINT_TYPES } from '../../utils/complaints.js';
@@ -671,6 +682,9 @@ const auth = useAuthStore();
 const myNotifications = useMyNotificationsStore();
 const complaintUnread = computed(() => myNotifications.items.filter(item => item.type === 'complaint' && !item.read).length);
 const complaintPanel = ref('');
+const orderPickerOpen = ref(false);
+const activeOrder = ref(null);
+const chatStorageKey = () => `rcm_chat_history_${auth.currentRole}_${auth.userProfile?.id || auth.userProfile?.username || 'guest'}`;
 const complaintDraft = ref(null);
 const activeComplaintId = ref('');
 const showAppActions = computed(() => isAppMode.value && ['citizen', 'agent'].includes(auth.currentRole));
@@ -930,23 +944,27 @@ function openChatWindow() {
 
 // 关闭窗口
 function closeWindow() {
+  orderPickerOpen.value = false;
   complaintPanel.value = '';
   isOpen.value = false;
 }
 
 function openComplaintForm(draft = null) {
+  orderPickerOpen.value = false;
   complaintDraft.value = typeof draft?.content === 'string' ? draft : null;
   activeComplaintId.value = '';
   complaintPanel.value = 'create';
 }
 
 function handleFooterHumanAction() {
+  orderPickerOpen.value = false;
   complaintPanel.value = '';
   if (serviceMode.value === 'HUMAN') switchToAiMode();
   else triggerHumanHandoff('APP_QUICK_ACTION');
 }
 
 function openComplaintProgress(id = '') {
+  orderPickerOpen.value = false;
   activeComplaintId.value = typeof id === 'string' ? id : '';
   complaintPanel.value = 'progress';
 }
@@ -964,6 +982,19 @@ function appendVoiceToInput(text) {
   inputQuery.value += separator + text;
 }
 
+function openOrderPicker() {
+  if (isThinking.value || voiceInputActive.value) return;
+  complaintPanel.value = '';
+  orderPickerOpen.value = true;
+}
+async function sendOrderToAssistant(order) {
+  if (isThinking.value || voiceInputActive.value) return;
+  activeOrder.value = order;
+  orderPickerOpen.value = false;
+  if (serviceMode.value === 'HUMAN') switchToAiMode();
+  await handleSendMessage({ orderOnly: !inputQuery.value.trim() });
+}
+
 // 快捷发送热门问题
 function handleQuickQuestion(q) {
   if (isThinking.value || voiceInputActive.value) return;
@@ -972,8 +1003,10 @@ function handleQuickQuestion(q) {
 }
 
 // 发送消息处理
-async function handleSendMessage() {
-  const originalText = inputQuery.value;
+async function handleSendMessage(options = {}) {
+  const originalText = options.orderOnly ? t('chatOrders.ask') : inputQuery.value;
+  const requestOwner = chatStorageKey();
+  const requestOrder = showAppActions.value ? activeOrder.value : null;
   const query = originalText.trim();
   if (!query || isThinking.value || voiceInputActive.value) return;
 
@@ -985,6 +1018,7 @@ async function handleSendMessage() {
     role: 'user',
     content: originalText,
     originalContent: originalText,
+    ...(requestOrder ? { order: requestOrder } : {}),
     analysis,
     timestamp: new Date().toISOString()
   };
@@ -1029,20 +1063,24 @@ async function handleSendMessage() {
 
     const res = await askRagAssistant({
       question: originalText,
+      ...(requestOrder ? { orderId: requestOrder.orderId } : {}),
       history: historyPayload,
       userContext: currentUserContext.value,
       lang: locale.value
     });
 
+    if (requestOwner !== chatStorageKey()) return;
+    if (res.order && activeOrder.value?.orderId === res.order.orderId) activeOrder.value = res.order;
     thinkingText.value = t('chat.thinking');
     await new Promise((r) => setTimeout(r, 200));
+    if (requestOwner !== chatStorageKey()) return;
 
     const aiMsg = {
       id: `AI-${Date.now()}`,
       role: 'assistant',
       content: res.answer,
       contentMap: res.contentMap || (topic ? { ...topic.answer } : {}),
-      topicKey: res.topicKey || (topic ? topic.key : ''),
+      topicKey: res.order ? '' : res.topicKey || (topic ? topic.key : ''),
       sources: res.sources || [],
       sourcesMap: res.sourcesMap || {},
       suggestQuestions: res.suggestQuestions || [],
@@ -1060,6 +1098,8 @@ async function handleSendMessage() {
       }, 500);
     }
   } catch (err) {
+    if (requestOwner !== chatStorageKey()) return;
+    if (requestOrder) activeOrder.value = null;
     console.error('Query Failed:', err);
     messages.value.push({
       id: `ERR-${Date.now()}`,
@@ -1276,7 +1316,7 @@ function clearHistoryConfirm() {
       }
     ];
     serviceMode.value = 'AI';
-    localStorage.removeItem('rcm_chat_history');
+    localStorage.removeItem(chatStorageKey());
     ElMessage.success(t('common.success'));
   }).catch(() => {});
 }
@@ -1284,13 +1324,13 @@ function clearHistoryConfirm() {
 // 本地存储持久化与恢复
 function saveMessagesToStorage() {
   try {
-    localStorage.setItem('rcm_chat_history', JSON.stringify(messages.value.slice(-20)));
+    localStorage.setItem(chatStorageKey(), JSON.stringify(messages.value.slice(-20)));
   } catch (e) {}
 }
 
 function restoreMessagesFromStorage() {
   try {
-    const raw = localStorage.getItem('rcm_chat_history');
+    const raw = localStorage.getItem(chatStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -1326,7 +1366,12 @@ watch(
 );
 
 watch(() => route.query.complaint, (id) => { if (id) nextTick(() => openComplaintNotice()); }, { immediate: true });
-watch(() => [auth.userProfile?.id, auth.currentRole], () => { complaintPanel.value = ''; activeComplaintId.value = ''; });
+watch(() => [auth.userProfile?.id, auth.currentRole], () => {
+  complaintPanel.value = ''; activeComplaintId.value = ''; activeOrder.value = null; orderPickerOpen.value = false;
+  messages.value = messages.value.filter(msg => msg.id?.startsWith('MSG-INIT'));
+  inputQuery.value = ''; serviceMode.value = 'AI';
+  restoreMessagesFromStorage();
+});
 
 onMounted(() => {
   detectAppMode();

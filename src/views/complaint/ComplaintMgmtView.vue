@@ -315,7 +315,7 @@
     </div>
 
     <!-- 详情弹窗 -->
-    <el-dialog v-model="detailVisible" :title="$t('complaint.detailModalTitle')" width="620px" destroy-on-close>
+    <el-dialog v-model="detailVisible" :title="$t('complaint.detailModalTitle')" width="620px" class="rcm-compact-dialog" align-center destroy-on-close>
       <div v-if="currentDetail" class="space-y-4 text-xs">
         <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex items-center justify-between">
           <div>
@@ -359,6 +359,9 @@
           </div>
         </div>
 
+        <ComplaintEvidence :ticket="currentDetail" />
+        <ComplaintRating :ticket="currentDetail" />
+
         <div v-if="currentDetail.result" class="p-3 bg-[#EFF5F1] rounded-lg border border-[#E1F4E4] text-[#24483A] space-y-1">
           <div class="font-bold flex items-center justify-between">
             <span>{{ $t('complaint.handlingResult') }}</span>
@@ -367,20 +370,21 @@
           <p class="leading-relaxed">{{ currentDetail.result }}</p>
           <div class="text-[11px] text-[#2F5B44] pt-1">
             <span>{{ $t('complaint.handler') }}: {{ currentDetail.handlerNameKey ? t(currentDetail.handlerNameKey) : currentDetail.handlerName }}</span>
-            <span class="ms-3">{{ $t('complaint.satisfaction') }}: {{ satisfactionLabel(currentDetail.satisfaction) }}</span>
           </div>
         </div>
       </div>
     </el-dialog>
 
     <!-- 督办处理弹窗 -->
-    <el-dialog v-model="handleVisible" :title="$t('complaint.handleModalTitle')" width="580px" destroy-on-close>
+    <el-dialog v-model="handleVisible" :title="$t('complaint.handleModalTitle')" width="580px" class="rcm-compact-dialog" align-center destroy-on-close>
       <div v-if="currentHandling" class="space-y-4 text-xs">
         <div class="bg-[#FBEAE9]/50 p-3 rounded-lg border border-[#F7E3E2] space-y-1">
           <div class="font-bold text-[#6E2F2E]">{{ currentHandling.title }}</div>
           <p class="text-[#58685D] leading-relaxed">{{ currentHandling.content }}</p>
         </div>
 
+        <ComplaintEvidence :ticket="currentHandling" />
+        <ComplaintRating :ticket="currentHandling" />
         <div class="space-y-2">
           <label class="block font-medium text-[#43554B]">{{ $t('complaint.handlingResult') }}：</label>
           <el-input
@@ -396,12 +400,6 @@
             <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.handleStatus') }}：</label>
             <el-select v-model="handleForm.status" class="w-full" size="small">
               <el-option v-for="opt in statusHandleOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-            </el-select>
-          </div>
-          <div>
-            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.satisfaction') }}：</label>
-            <el-select v-model="handleForm.satisfaction" class="w-full" size="small">
-              <el-option v-for="opt in satisfactionOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
         </div>
@@ -475,6 +473,8 @@ import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Service, Phone, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
+import ComplaintEvidence from '../../components/chat/ComplaintEvidence.vue';
+import ComplaintRating from '../../components/chat/ComplaintRating.vue';
 import { getComplaintList, createComplaintTicket, handleComplaintTicket } from '../../api/complaint.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { COMPLAINT_STORAGE_PREFIX, COMPLAINT_STATUSES, COMPLAINT_TYPES, complaintStatusCode, complaintTypeCode } from '../../utils/complaints.js';
@@ -550,18 +550,6 @@ const statusOptions = computed(() => [
 const statusFilterOptions = computed(() => [{ value: '', label: t('complaint.allStatuses') }, ...statusOptions.value]);
 
 const statusHandleOptions = computed(() => statusOptions.value.filter(o => o.value !== (isEn.value ? 'Pending Assignment' : '待分配')));
-
-const satisfactionOptions = computed(() => [
-  { value: isEn.value ? 'Pending Rating' : '待评价', label: t('chatComplaint.ratingPending') },
-  { value: isEn.value ? 'Very Satisfied' : '非常满意', label: t('chatComplaint.ratingVerySatisfied') },
-  { value: isEn.value ? 'Satisfied' : '满意', label: t('chatComplaint.ratingSatisfied') },
-  { value: isEn.value ? 'Basically Satisfied' : '基本满意', label: t('chatComplaint.ratingBasicallySatisfied') }
-]);
-
-function satisfactionLabel(value) {
-  const code = { '非常满意': 'ratingVerySatisfied', 'Very Satisfied': 'ratingVerySatisfied', '满意': 'ratingSatisfied', 'Satisfied': 'ratingSatisfied', '基本满意': 'ratingBasicallySatisfied', 'Basically Satisfied': 'ratingBasicallySatisfied' }[value] || 'ratingPending';
-  return t('chatComplaint.' + code);
-}
 
 const centerMap = {
   '巴格达省': ['卡尔赫第一粮食供应分部', '鲁萨法第二粮食供应分部', '曼苏尔配给中心'],
@@ -718,6 +706,7 @@ async function loadComplaints() {
     const res = await getComplaintList();
     if (version === loadVersion) {
       complaintsList.value = res || [];
+      if (currentHandling.value) currentHandling.value = complaintsList.value.find(item => item.id === currentHandling.value.id) || currentHandling.value;
       if (currentDetail.value) currentDetail.value = complaintsList.value.find(item => item.id === currentDetail.value.id) || currentDetail.value;
     }
   } catch (e) {
@@ -741,16 +730,14 @@ const currentHandling = ref(null);
 const handlingLoading = ref(false);
 const handleForm = ref({
   status: '已办结',
-  result: '',
-  satisfaction: '非常满意'
+  result: ''
 });
 
 function openHandleModal(row) {
   currentHandling.value = row;
   handleForm.value = {
     status: isEn.value ? 'Resolved' : '已办结',
-    result: row.result || '',
-    satisfaction: row.satisfaction || (isEn.value ? 'Very Satisfied' : '非常满意')
+    result: row.result || ''
   };
   handleVisible.value = true;
 }

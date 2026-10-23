@@ -41,7 +41,30 @@
         <div class="rounded-lg border border-[#D9E5DB] bg-white p-2.5 space-y-2 mb-3">
           <HoldToTalkInput :disabled="saving" @active-change="recording = $event" @transcript="appendVoiceTranscript" />
         </div>
-        <el-button type="primary" native-type="submit" class="w-full" :loading="saving" :disabled="recording">{{ t('chatComplaint.submit') }}</el-button>
+        <el-form-item :label="t('chatOrders.associate')">
+          <el-select v-model="selectedOrderId" clearable filterable :loading="ordersLoading" :placeholder="t('chatOrders.none')" :aria-label="t('chatOrders.associate')" class="w-full" :disabled="saving">
+            <el-option v-for="order in orders" :key="order.orderId" :value="order.orderId" :label="order.orderId" />
+          </el-select>
+          <el-button v-if="ordersFailed" size="small" @click="loadOrders">{{ t('common.refresh') }}</el-button>
+        </el-form-item>
+        <CustomerOrderCard v-if="selectedOrder" :order="selectedOrder" class="mb-3" />
+        <div class="space-y-2 mb-3">
+          <h4 class="font-bold">{{ t('chatOrders.photos') }}</h4>
+          <div class="flex flex-wrap gap-2">
+            <el-button size="small" :disabled="saving || validatingPhotos" @click="cameraInput.click()">{{ t('chatOrders.camera') }}</el-button>
+            <el-button size="small" :disabled="saving || validatingPhotos" @click="photoInput.click()">{{ t('chatOrders.upload') }}</el-button>
+          </div>
+          <input ref="cameraInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden @change="addPhotos" />
+          <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden @change="addPhotos" />
+          <p class="text-[#58685D]">{{ t('chatOrders.photoHint') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <figure v-for="(photo, index) in photos" :key="photo.url" class="w-20 space-y-1">
+              <img :src="photo.url" :alt="photo.file.name" class="w-20 h-20 object-cover rounded-lg" />
+              <button type="button" class="text-[#B74040] underline" :disabled="saving" @click="removePhoto(index)">{{ t('chatOrders.remove') }}</button>
+            </figure>
+          </div>
+        </div>
+        <el-button type="primary" native-type="submit" class="w-full" :loading="saving" :disabled="recording || validatingPhotos">{{ t('chatComplaint.submit') }}</el-button>
       </el-form>
       <template v-else>
         <div class="flex items-center justify-between gap-2">
@@ -62,6 +85,8 @@
           <div v-if="selectedId === ticket.id" class="border-t border-[#E9F1EB] pt-2 space-y-3">
             <p class="whitespace-pre-wrap break-words text-[#58685D]">{{ ticket.content }}</p>
             <p class="text-[#8A9A8F]">{{ ticket.province }} · {{ ticket.agentName }}</p>
+            <ComplaintEvidence :ticket="ticket" />
+            <ComplaintRating :ticket="ticket" allow-rate @updated="updateRating" />
             <h4 class="font-bold text-[#326445]">{{ t('chatComplaint.timeline') }}</h4>
             <ol class="border-s-2 border-[#D9E5DB] ps-3 space-y-3">
               <li v-for="(entry, index) in ticket.history || []" :key="entry.id || index" class="space-y-1">
@@ -82,18 +107,22 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import HoldToTalkInput from './HoldToTalkInput.vue';
-import { createComplaintTicket, getComplaintList } from '../../api/complaint.js';
+import CustomerOrderCard from './CustomerOrderCard.vue';
+import ComplaintEvidence from './ComplaintEvidence.vue';
+import ComplaintRating from './ComplaintRating.vue';
+import { validComplaintPhoto } from '../../utils/customerOrders.js';
+import { createComplaintTicket, getComplaintList, getCustomerOrders } from '../../api/complaint.js';
 import { getMyProfile } from '../../api/my.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import { COMPLAINT_STATUSES, COMPLAINT_TYPES, COMPLAINT_STORAGE_PREFIX } from '../../utils/complaints.js';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 
-const props = defineProps({ mode: { type: String, default: 'create' }, complaintId: { type: String, default: '' }, draft: { type: Object, default: null } });
+const props = defineProps({ mode: { type: String, default: 'create' }, complaintId: { type: String, default: '' }, draft: { type: Object, default: null }, orderId: { type: String, default: '' } });
 const emit = defineEmits(['close', 'submitted']);
 const { t, locale } = useI18n();
 const auth = useAuthStore();
@@ -105,6 +134,32 @@ const loadError = ref(false);
 const tickets = ref([]);
 const selectedId = ref(props.complaintId);
 const recording = ref(false);
+const orders = ref([]), ordersLoading = ref(false), ordersFailed = ref(false);
+const selectedOrderId = ref(props.orderId), photos = ref([]), validatingPhotos = ref(false);
+const cameraInput = ref(null), photoInput = ref(null);
+const selectedOrder = computed(() => orders.value.find(order => order.orderId === selectedOrderId.value));
+let ordersVersion = 0;
+async function loadOrders() {
+  const version = ++ordersVersion;
+  ordersLoading.value = true; ordersFailed.value = false;
+  try { const rows = await getCustomerOrders(); if (alive && version === ordersVersion) orders.value = rows; }
+  catch { if (alive && version === ordersVersion) ordersFailed.value = true; }
+  finally { if (alive && version === ordersVersion) ordersLoading.value = false; }
+}
+async function addPhotos(event) {
+  const files = [...(event.target.files || [])];
+  event.target.value = '';
+  if (saving.value || validatingPhotos.value) return;
+  validatingPhotos.value = true;
+  try {
+    if (photos.value.length + files.length > 5 || !(await Promise.all(files.map(validComplaintPhoto))).every(Boolean)) { ElMessage.warning(t('chatOrders.invalidPhoto')); return; }
+    if (alive) photos.value.push(...files.map(file => ({ file, url: URL.createObjectURL(file) })));
+  } catch { ElMessage.warning(t('chatOrders.invalidPhoto')); }
+  finally { validatingPhotos.value = false; }
+}
+function removePhoto(index) { URL.revokeObjectURL(photos.value[index].url); photos.value.splice(index, 1); }
+function updateRating(ticket) { tickets.value = tickets.value.map(row => row.id === ticket.id ? ticket : row); }
+
 let alive = true;
 let requestVersion = 0;
 let timer;
@@ -141,7 +196,7 @@ async function markSelectedRead(id) {
 }
 
 async function submit() {
-  if (saving.value || recording.value) return;
+  if (saving.value || recording.value || validatingPhotos.value) return;
   const data = Object.fromEntries(Object.entries(form).map(([key, value]) => [key, value.trim()]));
   if (!data.applicantName || !/^\+?[\d\s-]{7,20}$/.test(data.callPhone) || !data.province || !data.agentName || !data.title || !data.content) {
     ElMessage.warning(t('chatComplaint.invalidForm'));
@@ -149,10 +204,16 @@ async function submit() {
   }
   saving.value = true;
   try {
-    const ticket = await createComplaintTicket({ ...data, ...(props.draft?.id ? { sourceMessageId: props.draft.id, intakeAnalysis: props.draft.analysis } : {}) });
+    const payload = new FormData();
+    Object.entries(data).forEach(([key, value]) => payload.append(key, value));
+    if (selectedOrderId.value) payload.append('orderId', selectedOrderId.value);
+    if (props.draft?.id) payload.append('sourceMessageId', props.draft.id);
+    photos.value.forEach(photo => payload.append('photos', photo.file));
+    const ticket = await createComplaintTicket(payload);
     if (!alive) return;
     form.title = '';
     form.content = '';
+    while (photos.value.length) removePhoto(0);
     ElMessage.success(t('chatComplaint.submitted'));
     emit('submitted', ticket.id);
   } catch { /* Request layer displays the server error; preserve the draft. */ }
@@ -176,8 +237,10 @@ watch(() => props.draft, draft => {
 }, { immediate: true });
 watch(() => [props.mode, props.complaintId], () => { selectedId.value = props.complaintId; load(); });
 watch(selectedId, markSelectedRead);
-watch(locale, load);
+watch(locale, () => { load(); loadOrders(); });
+watch(() => [props.mode, props.orderId], () => { if (props.mode === 'create') selectedOrderId.value = props.orderId; });
 onMounted(() => {
+  loadOrders();
   getMyProfile().then(profile => { if (alive && !form.callPhone) form.callPhone = profile.phone || ''; }).catch(() => {});
   load();
   timer = setInterval(load, 15000);
@@ -188,6 +251,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   alive = false;
+  while (photos.value.length) removePhoto(0);
   clearInterval(timer);
   unsubscribe?.();
   window.removeEventListener('storage', onStorage);

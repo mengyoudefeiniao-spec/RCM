@@ -22,6 +22,7 @@ import { createAdminCredential, publicAdminAccount } from '../utils/adminCredent
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
 import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
 import chatComplaintMessages from '../locales/chatComplaint.js';
+import { ownsCustomerOrder, customerOrderSnapshot, customerOrderAnswer, validComplaintPhoto } from '../utils/customerOrders.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -322,7 +323,7 @@ function getMockNotifications(role) {
     const revision = ticket.history?.at(-1)?.id || ticket.handledAt;
     const id = `complaint-${ticket.id}-${revision}`;
     return { id, type: 'complaint', section: 'notifications', path: '/my', tab: 'notifications', complaintId: ticket.id,
-      titleKey: 'chatComplaint.noticeTitle', bodyKey: 'chatComplaint.noticeBody', params: { id: ticket.id },
+      titleKey: 'chatComplaint.noticeTitle', bodyKey: 'chatOrders.completion', params: { id: ticket.id },
       read: complaintReads.includes(id), createdAt: ticket.handledAt || ticket.submittedAt };
   });
   const normal = (saved || []).filter(item => item.type !== 'complaint');
@@ -689,7 +690,9 @@ export function createResponse(data = {}, code = 200, message = 'success') {
 export async function mockDispatch(config) {
   const method = (config.method || 'get').toUpperCase();
   const url = (config.url || '').replace(/^https?:\/\/[^/]+/, ''); // 剥离域名前缀
-  const data = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
+  let data = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
+  const complaintPhotos = url.includes('/complaint/create') && data instanceof FormData ? data.getAll('photos') : [];
+  if (url.includes('/complaint/create') && data instanceof FormData) data = Object.fromEntries([...data.entries()].filter(([key]) => key !== 'photos'));
   const params = config.params || {};
 
   const reqLang = getActiveLang(config);
@@ -5011,6 +5014,22 @@ export async function mockDispatch(config) {
     return createResponse({}, 404, (isEn ? 'The specified policy clause slice not found' : '未找到指定的政策条文切片'));
   }
 
+  // Resolve actor-owned orders from the existing business stores, never from a client snapshot.
+  const actorProfile = () => JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+  const customerOrders = () => {
+    const profile = actorProfile();
+    const preferred = isEn ? 'en' : 'zh';
+    const alternate = isEn ? 'zh' : 'en';
+    const all = [...(getSharedOrders(preferred) || []), ...(getSharedOrders(alternate) || []), ...(profile.role === 'agent' ? g2bOrdersStore : [])];
+    const byId = new Map();
+    for (const order of all) {
+      const id = order.orderId || order.id || order.orderNo;
+      if (id && !byId.has(id) && ownsCustomerOrder(order, profile)) byId.set(id, customerOrderSnapshot(order));
+    }
+    return [...byId.values()].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  };
+  if (url === '/ai-service/orders' && method === 'GET') return createResponse(customerOrders());
+
   // 9.3 RAG 检索增强智能问答
   if (url.includes('/ai-service/chat') && method === 'POST') {
     const question = (data.question || '').trim();
@@ -5024,6 +5043,12 @@ export async function mockDispatch(config) {
       const key = analysis.intent === 'COMPLAINT_PROGRESS' ? 'progressReply' : analysis.emotion === 'ANGRY' ? 'empathyAngry' : 'empathyConcern';
       const contentMap = Object.fromEntries(['zh', 'en', 'ar', 'ku'].map(lang => [lang, chatComplaintMessages[lang === 'ku' ? 'ckb' : lang][key]]));
       return createResponse({ answer: contentMap[reqLang] || contentMap.en, contentMap, analysis, action: analysis.complaintRequested ? 'OPEN_COMPLAINT_DRAFT' : analysis.intent === 'COMPLAINT_PROGRESS' ? 'OPEN_COMPLAINT_PROGRESS' : '', sources: [], suggestQuestions: [], needHumanTransfer: false });
+    }
+    if (data.orderId) {
+      const order = customerOrders().find(item => item.orderId === data.orderId);
+      if (!order) return createResponse({}, 404, i18n.global.t('chatOrders.unavailable'));
+      const contentMap = Object.fromEntries(['zh', 'en', 'ar', 'ku'].map(lang => [lang, customerOrderAnswer(order, question, lang)]));
+      return createResponse({ answer: contentMap[reqLang] || contentMap.en, contentMap, order, sources: [], suggestQuestions: [] });
     }
     const isHumanIntent = analysis.intent === 'HUMAN_HANDOFF';
 
@@ -5201,6 +5226,29 @@ export async function mockDispatch(config) {
     return createResponse(list);
   }
 
+  const canViewComplaint = profile => !['citizen', 'agent'].includes(profile.role) && (Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('complaints.view') || profile.permissionCodes.includes('complaints.process') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(profile.role));
+  const evidenceMatch = url.match(/^\/complaint\/([^/]+)\/photos\/([^/]+)$/);
+  if (evidenceMatch && method === 'GET') {
+    const ticket = readSharedComplaints(complaintsStore).find(item => item.id === decodeURIComponent(evidenceMatch[1]));
+    const profile = actorProfile();
+    const photo = ticket?.photos?.find(item => item.id === decodeURIComponent(evidenceMatch[2]));
+    if (!photo || (!ownsComplaint(ticket, profile) && !canViewComplaint(profile))) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    const file = await getMockMessageAttachment(photo.id);
+    if (!file) return createResponse({}, 404, i18n.global.t('chatOrders.photoFailed'));
+    return createResponse({ ...file, name: photo.name });
+  }
+  const ratingMatch = url.match(/^\/complaint\/([^/]+)\/rating$/);
+  if (ratingMatch && method === 'POST') {
+    const profile = actorProfile();
+    const item = readSharedComplaints(complaintsStore).find(ticket => ticket.id === decodeURIComponent(ratingMatch[1]));
+    if (!item || !['citizen', 'agent'].includes(profile.role) || !ownsComplaint(item, profile)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    if (item.statusCode !== 'RESOLVED' || item.rating || !Number.isInteger(data.score) || data.score < 1 || data.score > 5 || typeof (data.comment ?? '') !== 'string' || String(data.comment || '').length > 1000) return createResponse({}, 400, i18n.global.t('chatOrders.ratingInvalid'));
+    item.rating = { score: data.score, comment: String(data.comment || '').trim(), ratedAt: new Date().toISOString(), requesterId: complaintOwnerId(profile), requesterRole: profile.role };
+    writeSharedComplaint(item);
+    appendSystemAudit({ actor: profile.name || profile.username, type: 'application', details: 'Rated complaint handling', businessNo: item.id, after: item.rating });
+    return createResponse(presentComplaint(item, isEn));
+  }
+
   // 10.2 登记新投诉工单 (如 1919 热线或 AI 客服转交)
   if (url.includes('/complaint/create') && method === 'POST') {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
@@ -5211,6 +5259,10 @@ export async function mockDispatch(config) {
       return createResponse({}, 400, i18n.global.t('chatComplaint.invalidForm'));
     }
     if (String(data.content).length > 5000 || String(data.title || '').length > 160) return createResponse({}, 400, i18n.global.t('chatComplaint.invalidForm'));
+    const relatedOrder = data.orderId ? customerOrders().find(order => order.orderId === data.orderId) : null;
+    if (data.orderId && !relatedOrder) return createResponse({}, 404, i18n.global.t('chatOrders.unavailable'));
+    if (complaintPhotos.length > 5 || !(await Promise.all(complaintPhotos.map(validComplaintPhoto))).every(Boolean)) return createResponse({}, 400, i18n.global.t('chatOrders.invalidPhoto'));
+    const photos = await Promise.all(complaintPhotos.map(async file => ({ id: await saveMockMessageAttachment(file, 'complaint-photo'), name: file.name, type: file.type, size: file.size })));
     const newId = `CMP-${new Date().getFullYear()}-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
     const now = new Date().toISOString();
     const newComplaint = {
@@ -5238,7 +5290,10 @@ export async function mockDispatch(config) {
       handlerName: '',
       handledAt: '',
       result: '',
-      satisfaction: isEn ? 'Pending Rating' : '待评价',
+      satisfaction: '',
+      rating: null,
+      relatedOrder,
+      photos,
       submittedAt: now,
       history: [{ id: crypto.randomUUID(), statusCode: 'PENDING', createdAt: now, result: '', handlerName: '' }]
     };
@@ -5262,7 +5317,6 @@ export async function mockDispatch(config) {
     item.handlerNameKey = profile.displayNameKey || '';
     item.handledAt = new Date().toISOString();
     item.result = String(data.result).trim();
-    item.satisfaction = data.satisfaction || item.satisfaction;
     item.history = [...(item.history || []), { id: crypto.randomUUID(), statusCode: item.statusCode, createdAt: item.handledAt, result: item.result, handlerName: item.handlerName, handlerNameKey: item.handlerNameKey }];
     writeSharedComplaint(item);
     appendSystemAudit({ actor: item.handlerName, type: 'status_change', details: 'Updated complaint handling', businessNo: item.id, before, after: { statusCode: item.statusCode, result: item.result, handlerName: item.handlerName } });

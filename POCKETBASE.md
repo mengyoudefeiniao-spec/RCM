@@ -66,3 +66,18 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 ```
 
 脚本不删除其他 `app_data` 数据：所有语言的家庭数据恢复为项目初始数据并只保留前 4 名成员；公民配给订单数组设为空；创建或更新 `rcm_shared_message_recipient_tree`，初始化伊拉克 19 个省份并保留现有代理/配给网点层级；同时创建或更新 `rcm_center_business_rules_v1`，为 140 号决议地区清单写入中心名称和所属省份的多语言数据。已有业务规则及中心清单会保留，仅补齐缺失的国际化字段；记录不存在时使用项目默认数据初始化。超级用户密码使用隐藏输入，临时传给子进程后清除。重置成功后，已打开的 App 会在最多 15 秒内同步更新。
+
+
+## 客服订单、投诉图片与用户评价
+
+智能助手的配给订单选择从现有订单存储读取，按当前公民的配给卡或代理的网点筛选；代理还可选择已有集中采购订单。咨询接口接收 `orderId` 并重新读取当前记录，不使用客户端提供的金额、状态或物资快照。对话历史按账号和角色保存在本机。
+
+投诉记录仍保存于 `app_data` 的 `rcm_shared_complaint_<工单编号>` 键，新增字段均兼容旧工单：
+
+- `relatedOrder`：可选的提交时订单快照，包括订单编号、状态、物资、支付金额及履约方式；管理端详情和处理窗口均展示。
+- `photos`：可选的图片元数据数组，最多 5 张，每张不超过 5 MB，支持 JPEG、PNG、WebP。图片文件存入现有 `app_files` 集合，键前缀为 `complaint-photo-`，不把图片内容写入工单 JSON。请确保该集合的 File 字段允许上述类型及 5 MB 文件。
+- `rating`：初始为 `null`。只有工单本人可在已办结后自愿提交一次 1–5 星评分及可选意见，保存评分人身份和时间。处理接口忽略客服传入的满意度、评分；旧 `satisfaction` 字段不再作为用户主动评价显示。
+
+无需新增 PocketBase 集合。跨设备状态和评价继续使用现有 15 秒同步机制，附件通过 PocketBase 文件接口按需读取。上述业务校验位于当前 Mock 适配层，正式后端接入时须实现相同的身份及工单权限校验（见上文“API 规则与访问安全”）。
+
+本地回归：`node --test scripts/tests/customer-orders.test.mjs scripts/tests/customer-message-analysis.test.mjs scripts/tests/hold-to-talk.test.mjs`。浏览器回归脚本为 `scripts/tests/order-complaint.e2e.cjs`，可通过 `playwright-cli run-code --filename scripts/tests/order-complaint.e2e.cjs` 执行；需要预先打开浏览器会话及端口 3100 的 Vite 服务，并设置 `VITE_POCKETBASE_SYNC=false`。该脚本会清理隔离浏览器中的本地测试投诉和聊天记录，禁止针对线上同步环境运行。

@@ -18,6 +18,7 @@ export function createComplaintTicket(data) {
   return request({
     url: '/complaint/create',
     method: 'POST',
+    ...(data instanceof FormData ? { headers: { 'Content-Type': undefined }, timeout: 120000 } : {}),
     data
   });
 }
@@ -32,3 +33,7 @@ export function handleComplaintTicket(id, data) {
     data
   });
 }
+
+export const getCustomerOrders = () => request({ url: '/ai-service/orders', method: 'GET' });
+export const rateComplaintTicket = (id, data) => request({ url: `/complaint/${encodeURIComponent(id)}/rating`, method: 'POST', data });
+export const getComplaintPhoto = (id, photoId) => request({ url: `/complaint/${encodeURIComponent(id)}/photos/${encodeURIComponent(photoId)}`, method: 'GET' });

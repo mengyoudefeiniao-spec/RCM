@@ -9,8 +9,8 @@ function openMessageAttachmentDb() {
   });
 }
 
-export async function saveMockMessageAttachment(file) {
-  const id = `mail-file-${crypto.randomUUID()}`;
+export async function saveMockMessageAttachment(file, prefix = 'mail-file') {
+  const id = `${prefix}-${crypto.randomUUID()}`;
   if (isPocketBaseSyncEnabled()) {
     await savePocketBaseFile(id, file);
     return id;
