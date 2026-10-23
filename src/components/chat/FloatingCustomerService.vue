@@ -461,16 +461,9 @@
               @keydown.enter.exact.prevent="handleSendMessage"
             />
 
-            <HoldToTalkInput
-              class="mt-2"
-              :disabled="isThinking || !isOpen"
-              @active-change="voiceInputActive = $event"
-              @transcript="appendVoiceToInput"
-            />
-
             <!-- 输入框底部工具与操作栏 -->
-            <div class="flex items-center justify-between pt-2 border-t border-[#D9E5DB]/60 mt-1">
-              <div class="flex items-center space-x-3 text-[11px] text-[#8A9A8F]">
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-[#D9E5DB]/60 mt-1">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8A9A8F]">
                 <span>
                   {{ $t('chat.enterToSend') }}
                 </span>
@@ -483,19 +476,27 @@
                 </span>
               </div>
 
-              <!-- 发送按钮 (深墨绿主品牌按钮) -->
-              <button
-                type="button"
-                class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
-                :class="inputQuery.trim() && !isThinking && !voiceInputActive
-                  ? (serviceMode === 'HUMAN' ? 'bg-[#C9A13B] hover:bg-[#7A5F21] active:scale-95' : 'bg-[#326445] hover:bg-[#2A5440] active:scale-95')
-                  : 'bg-[#C9DBCE] cursor-not-allowed'"
-                :disabled="!inputQuery.trim() || isThinking || voiceInputActive"
-                @click="handleSendMessage"
-              >
-                <span>{{ $t('chat.send') }}</span>
-                <el-icon class="text-sm"><Position /></el-icon>
-              </button>
+              <div class="flex shrink-0 items-center gap-2">
+                <HoldToTalkInput
+                  icon-only
+                  :disabled="isThinking || !isOpen"
+                  @active-change="voiceInputActive = $event"
+                  @transcript="appendVoiceToInput"
+                />
+                <!-- 发送按钮 (深墨绿主品牌按钮) -->
+                <button
+                  type="button"
+                  class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
+                  :class="inputQuery.trim() && !isThinking && !voiceInputActive
+                    ? (serviceMode === 'HUMAN' ? 'bg-[#C9A13B] hover:bg-[#7A5F21] active:scale-95' : 'bg-[#326445] hover:bg-[#2A5440] active:scale-95')
+                    : 'bg-[#C9DBCE] cursor-not-allowed'"
+                  :disabled="!inputQuery.trim() || isThinking || voiceInputActive"
+                  @click="handleSendMessage"
+                >
+                  <span>{{ $t('chat.send') }}</span>
+                  <el-icon class="text-sm"><Position /></el-icon>
+                </button>
+              </div>
             </div>
           </div>
         </footer>
