@@ -85,6 +85,10 @@ export default {
     },
     "unfreeze": {
       "resolutionBadge": "第140号决议申诉",
+      "targetMemberLabel": "申请解冻成员",
+      "targetMemberPlaceholder": "请选择需要解冻的冻结成员",
+      "noFrozenMembers": "当前配给卡下没有可申请解冻的冻结成员。",
+      "errorSelectMember": "请选择需要解冻的家庭成员。",
       "caseNames": {
         "commercial": "商业",
         "travel": "旅行",
@@ -279,6 +283,10 @@ export default {
     },
     "unfreeze": {
       "resolutionBadge": "Resolution 140 appeal",
+      "targetMemberLabel": "Member to unfreeze",
+      "targetMemberPlaceholder": "Select a frozen household member",
+      "noFrozenMembers": "There are no frozen members on this ration card.",
+      "errorSelectMember": "Select the household member to unfreeze.",
       "caseNames": {
         "commercial": "Commercial",
         "travel": "Travel",
@@ -496,6 +504,10 @@ export default {
     },
     "unfreeze": {
       "resolutionBadge": "اعتراض بموجب القرار 140",
+      "targetMemberLabel": "الفرد المطلوب رفع التجميد عنه",
+      "targetMemberPlaceholder": "اختر فرداً مجمداً من الأسرة",
+      "noFrozenMembers": "لا يوجد أفراد مجمدون على هذه البطاقة التموينية.",
+      "errorSelectMember": "يرجى اختيار فرد الأسرة المطلوب رفع التجميد عنه.",
       "caseCommercial": "1. نشاط تجاري (شطب السجل أو براءة الذمة الضريبية)",
       "caseTravel": "2. سفر (ختم العودة إلى العراق وإثبات الاستقرار)",
       "caseHighIncome": "3. دخل مرتفع (بيان دخل حديث من جهة العمل أو الضرائب)",
@@ -732,6 +744,10 @@ export default {
     },
     "unfreeze": {
       "resolutionBadge": "ناڕەزایی بەپێی بڕیاری 140",
+      "targetMemberLabel": "ئەو ئەندامەی داوای هەڵوەشاندنەوەی بەستنی بۆ دەکرێت",
+      "targetMemberPlaceholder": "ئەندامێکی بەستراوی خێزان هەڵبژێرە",
+      "noFrozenMembers": "هیچ ئەندامێکی بەستراو لەسەر ئەم کارتی بەشەخۆراکە نییە.",
+      "errorSelectMember": "تکایە ئەو ئەندامەی خێزان هەڵبژێرە کە داوای هەڵوەشاندنەوەی بەستنی بۆ دەکەیت.",
       "caseCommercial": "1. بازرگانی (سڕینەوەی تۆمار یان پاکتاوی باج)",
       "caseTravel": "2. گەشت (مۆری گەڕانەوە و بەڵگەی نیشتەجێبوون)",
       "caseHighIncome": "3. داهاتی بەرز (بەڵگەی نوێی داهات لە خاوەنکار یان باج)",

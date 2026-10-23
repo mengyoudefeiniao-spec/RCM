@@ -554,6 +554,65 @@ function syncFamilyAcrossPools(family) {
   });
 }
 
+const ACTIVE_MEMBER_STATUS_BY_LANG = {
+  zh: '正常',
+  en: 'Active',
+  ar: 'نشط',
+  ku: 'چالاکە'
+};
+
+function matchesUnfreezeMember(member, payload) {
+  const memberId = String(payload?.targetMemberId || '');
+  const nationalId = String(payload?.targetNationalId || '');
+  return Boolean(member && (
+    (memberId && (String(member.id || '') === memberId || String(member.nationalId || '') === memberId))
+    || (nationalId && String(member.nationalId || '') === nationalId)
+  ));
+}
+
+function applyApprovedUnfreeze(ticket) {
+  const payload = ticket?.payload || {};
+  const cardNo = payload.cardNo || ticket?.cardNo;
+  if (!cardNo || (!payload.targetMemberId && !payload.targetNationalId)) return false;
+
+  let updated = false;
+  updateSharedFamily(cardNo, (family, lang) => {
+    let changed = false;
+    const members = (family.members || []).map((member) => {
+      if (!matchesUnfreezeMember(member, payload)) return member;
+      changed = true;
+      updated = true;
+      return {
+        ...member,
+        status: ACTIVE_MEMBER_STATUS_BY_LANG[lang] || 'Active',
+        freezeReason: '',
+        freezeDate: '',
+        isUpdatedInSystem: true
+      };
+    });
+    return changed ? { ...family, members } : family;
+  });
+
+  Object.entries(multiLangStores).forEach(([lang, stores]) => {
+    const family = (stores.familiesStore || []).find((item) => item.rationCardNo === cardNo);
+    if (family) {
+      family.members = (family.members || []).map((member) => {
+        if (!matchesUnfreezeMember(member, payload)) return member;
+        updated = true;
+        return {
+          ...member,
+          status: ACTIVE_MEMBER_STATUS_BY_LANG[lang] || 'Active',
+          freezeReason: '',
+          freezeDate: '',
+          isUpdatedInSystem: true
+        };
+      });
+    }
+  });
+
+  return updated;
+}
+
 // 有效纳保成员数：冻结 (zh 已冻结/冻结 / en Frozen) 成员不计入家庭配给额度
 function getActiveMemberCount(family) {
   if (!family || !Array.isArray(family.members)) return 0;
@@ -1483,24 +1542,31 @@ export async function mockDispatch(config) {
 
   // 申请解冻 (POST)
   if (url.includes('/citizen/apply-unfreeze') && method === 'POST') {
-    const { cardNo, unfreezeType, targetMemberId, docName } = data;
+    const { cardNo, unfreezeType, targetMemberId, targetMemberName, targetNationalId, docName } = data;
+    const targetFamily = getSharedFamilies().find((family) => family.rationCardNo === cardNo)
+      || familiesStore.find((family) => family.rationCardNo === cardNo);
+    const targetMember = targetFamily?.members?.find((member) => matchesUnfreezeMember(member, { targetMemberId, targetNationalId }));
+    if (!targetMember || (!targetMember.freezeReason && !/冻结|Frozen|مجمد|بەستراو/i.test(targetMember.status || ''))) {
+      return createResponse({}, 400, i18n.global.t('unfreeze.errorSelectMember'));
+    }
     const ticketId = `REV-UNF-${Date.now().toString().slice(-4)}`;
 
     const newTicket = {
       id: ticketId,
+      sourceCode: 'UNF',
       source: isEn ? 'Unfreeze Card' : '申请解冻',
       categoryType: isEn ? `Unfreeze Appeal (${unfreezeType} Scenario)` : `解冻申诉 (${unfreezeType}情形)`,
       appType: isEn ? `Unfreeze Application (${unfreezeType} Scenario)` : `解冻申请 (${unfreezeType}情形)`,
       cardNo: cardNo || 'RC-10029381',
       applicantName: isEn ? 'Ration Card Holder' : '配给卡持有人',
-      targetMemberName: isEn ? 'Unfreeze Subject Member' : '解冻当事人',
+      targetMemberName: targetMember.name || targetMemberName || (isEn ? 'Unfreeze Subject Member' : '解冻当事人'),
       reason: isEn ? `Supporting material [${docName}] submitted under the [${unfreezeType}] scenario; ration entitlements restoration requested.` : `依据【${unfreezeType}】情形提交证明材料【${docName}】，申请恢复配给。`,
       status: isEn ? 'Pending Staff Review' : '待分部初审',
       submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
       staffOpinion: '',
       managerDecision: isEn ? 'Pending' : '待决',
       attachments: [{ name: docName, type: 'required', verified: true }],
-      payload: { unfreezeType, targetMemberId, docName }
+      payload: { cardNo, targetMemberId, targetMemberName: targetMember.name || targetMemberName, targetNationalId: targetMember.nationalId || targetNationalId, unfreezeType, docName }
     };
     ticketsStore.unshift(newTicket);
     addSharedTicket(newTicket);
@@ -2286,7 +2352,7 @@ export async function mockDispatch(config) {
   // 提交第一级员工审核意见 (POST)
   if (url.includes('/review/staff-opinion') && method === 'POST') {
     const { ticketId, staffOpinion, staffName } = data;
-    const ticket = ticketsStore.find((t) => t.id === ticketId);
+    const ticket = ticketsStore.find((t) => t.id === ticketId) || getSharedTickets().find((t) => t.id === ticketId);
     if (ticket) {
       ticket.status = isEn ? 'Pending Manager Review' : '待经理终审';
       ticket.staffOpinion = staffOpinion;
@@ -2314,7 +2380,7 @@ export async function mockDispatch(config) {
   // 提交第二级经理终审裁决 (POST)
   if (url.includes('/review/manager-decision') && method === 'POST') {
     const { ticketId, decision, notes, managerName } = data;
-    const ticket = ticketsStore.find((t) => t.id === ticketId);
+    const ticket = ticketsStore.find((t) => t.id === ticketId) || getSharedTickets().find((t) => t.id === ticketId);
     if (ticket) {
       const isAccept = decision === '接受' || decision === 'Approved';
       ticket.status = isAccept ? (isEn ? 'Approved' : '已批准') : (isEn ? 'Rejected' : '已驳回');
@@ -2333,7 +2399,7 @@ export async function mockDispatch(config) {
       }
 
       // 若终审接受，自动落地对应业务实体变更
-      if (decision === '接受' && ticket.payload) {
+      if (isAccept && ticket.payload) {
         if (ticket.payload.type === 'transferAgent') {
           // 跨省代理转移终审落地
           const targetFam = getSharedFamily(ticket.payload.cardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
@@ -2367,23 +2433,8 @@ export async function mockDispatch(config) {
               });
             }
           }
-        } else if (ticket.payload.unfreezeType && ticket.payload.targetMemberId) {
-          familiesStore.forEach((f) => {
-            const m = f.members.find((item) => item.id === ticket.payload.targetMemberId);
-            if (m) {
-              m.status = '正常';
-              m.freezeReason = '';
-            }
-          });
-          const sharedFams = getSharedFamilies();
-          sharedFams.forEach((f) => {
-            const m = f.members.find((item) => item.id === ticket.payload.targetMemberId);
-            if (m) {
-              m.status = '正常';
-              m.freezeReason = '';
-              updateSharedFamily(f.rationCardNo, { members: f.members });
-            }
-          });
+        } else if (ticket.payload.unfreezeType && (ticket.payload.targetMemberId || ticket.payload.targetNationalId)) {
+          applyApprovedUnfreeze(ticket);
         } else if (ticket.payload.type === 'memberTransfer' && ticket.payload.member) {
           // 成员转移终审落地
           const targetFam = getSharedFamily(ticket.payload.targetCardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.targetCardNo) || familiesStore[0];

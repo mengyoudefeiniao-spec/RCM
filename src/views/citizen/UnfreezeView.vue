@@ -26,6 +26,29 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-[#43554B] mb-1">
+              {{ $t('unfreeze.targetMemberLabel') }}
+            </label>
+            <el-select
+              v-model="targetMemberId"
+              class="w-full"
+              size="large"
+              :placeholder="$t('unfreeze.targetMemberPlaceholder')"
+              :disabled="frozenMembers.length === 0"
+            >
+              <el-option
+                v-for="member in frozenMembers"
+                :key="member.id || member.nationalId"
+                :label="[member.name, member.nationalId].filter(Boolean).join(' · ')"
+                :value="member.id || member.nationalId"
+              />
+            </el-select>
+            <p v-if="frozenMembers.length === 0" class="mt-1 text-xs text-[#8A9A8F]">
+              {{ $t('unfreeze.noFrozenMembers') }}
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#43554B] mb-1">
               {{ $t('unfreeze.type') }}
             </label>
             <el-select v-model="unfreezeType" class="w-full" size="large" @change="handleTypeChange">
@@ -115,6 +138,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { addSharedTicket } from '../../utils/sharedSession.js';
+import { onTabMessage } from '../../utils/crossTabBus.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import SupplementMaterialsPanel from '../../components/citizen/SupplementMaterialsPanel.vue';
 import ElectronicPaymentDialog from '../../components/common/ElectronicPaymentDialog.vue';
@@ -193,11 +217,30 @@ const STATEMENTS_BY_TYPE = {
 const allDefaultTexts = Object.values(STATEMENTS_BY_TYPE).flatMap(typeObj => Object.values(typeObj));
 
 const unfreezeType = ref('商业');
+const targetMemberId = ref('');
 const unfreezeFileUploaded = ref(true);
 const unfreezeStatement = ref(STATEMENTS_BY_TYPE['商业'][locale.value === 'ckb' ? 'ku' : locale.value] || STATEMENTS_BY_TYPE['商业'].en);
 const submitting = ref(false);
 const paymentDialogVisible = ref(false);
+let offFamilyUpdated = null;
 
+const frozenMembers = computed(() => {
+  const frozenStatuses = new Set(['已冻结', '冻结', 'frozen', 'مجمد', 'بەستراو', 'بەستراوە', 'بەستووە']);
+  return (citizenStore.currentFamily?.members || []).filter((member) => {
+    const status = String(member?.status || '').trim().toLowerCase();
+    return frozenStatuses.has(status) || Boolean(member?.freezeReason);
+  });
+});
+
+const targetMember = computed(() => frozenMembers.value.find((member) =>
+  (member.id || member.nationalId) === targetMemberId.value
+));
+
+watch(frozenMembers, (members) => {
+  if (!members.some((member) => (member.id || member.nationalId) === targetMemberId.value)) {
+    targetMemberId.value = members[0]?.id || members[0]?.nationalId || '';
+  }
+}, { immediate: true });
 
 
 watch(locale, (newLang) => {
@@ -240,14 +283,27 @@ function handleStartUnfreeze() {
     ElMessage.error(t('unfreeze.errorInputStatement'));
     return;
   }
+  if (!targetMember.value) {
+    ElMessage.error(t('unfreeze.errorSelectMember'));
+    return;
+  }
   paymentDialogVisible.value = true;
 }
 
 async function handlePaymentSuccess(paymentInfo) {
+  if (!targetMember.value) {
+    ElMessage.error(t('unfreeze.errorSelectMember'));
+    paymentDialogVisible.value = false;
+    return;
+  }
+
   submitting.value = true;
   try {
     const res = await citizenStore.applyUnfreeze({
       cardNo: citizenStore.currentFamily?.rationCardNo,
+      targetMemberId: targetMember.value.id || targetMember.value.nationalId,
+      targetMemberName: targetMember.value.name,
+      targetNationalId: targetMember.value.nationalId,
       unfreezeType: unfreezeType.value,
       statement: unfreezeStatement.value,
       docName: currentDocConfig.value?.fileName,
@@ -263,11 +319,20 @@ async function handlePaymentSuccess(paymentInfo) {
       categoryType: currentCaseLabel.value,
       appType: t('unfreeze.title'),
       cardNo: citizenStore.currentFamily?.rationCardNo || 'RC-10029381',
+      targetMemberName: targetMember.value.name,
       applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
       reason: unfreezeStatement.value || '公民提交配给卡解冻材料及合规陈述，申请撤销冻结状态。',
       attachments: [
         { name: currentDocConfig.value?.fileName || '解冻法定证明材料.pdf', type: 'required', verified: true }
-      ]
+      ],
+      payload: {
+        cardNo: citizenStore.currentFamily?.rationCardNo,
+        targetMemberId: targetMember.value.id || targetMember.value.nationalId,
+        targetMemberName: targetMember.value.name,
+        targetNationalId: targetMember.value.nationalId,
+        unfreezeType: unfreezeType.value,
+        docName: currentDocConfig.value?.fileName
+      }
     });
 
     ElMessage.success(t('unfreeze.submitSuccess'));
@@ -281,18 +346,27 @@ const handleLangChanged = async () => {
   await citizenStore.fetchFamilies();
 };
 
+const handleFamilyUpdatedSync = async () => {
+  await citizenStore.fetchFamilies();
+};
+
 onMounted(async () => {
-  if (!citizenStore.currentFamily) {
-    await citizenStore.fetchFamilies();
-  }
+  await citizenStore.fetchFamilies();
   if (typeof window !== 'undefined') {
     window.addEventListener('rcm-language-changed', handleLangChanged);
+    window.addEventListener('rcm-family-updated', handleFamilyUpdatedSync);
+    offFamilyUpdated = onTabMessage('FAMILY_UPDATED', handleFamilyUpdatedSync);
   }
 });
 
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('rcm-language-changed', handleLangChanged);
+    window.removeEventListener('rcm-family-updated', handleFamilyUpdatedSync);
+  }
+  if (offFamilyUpdated) {
+    offFamilyUpdated();
+    offFamilyUpdated = null;
   }
 });
 </script>

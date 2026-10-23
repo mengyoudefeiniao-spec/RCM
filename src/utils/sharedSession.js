@@ -32,15 +32,16 @@ function getArabicFamilies() {
     fam1.address = 'رقم 14، شارع المنصور، حي الكرخ، بغداد';
     fam1.status = 'ساري المفعول';
     const arMembers = [
-      { name: 'أحمد حسن صالح', relation: 'رب الأسرة', gender: 'ذكر', status: 'ساري المفعول' },
-      { name: 'فاطمة علي محمد', relation: 'الزوجة', gender: 'أنثى', status: 'ساري المفعول' },
-      { name: 'عمر أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'ساري المفعول' },
-      { name: 'زينب أحمد حسن', relation: 'ابنة', gender: 'أنثى', status: 'ساري المفعول' },
-      { name: 'يوسف أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'ساري المفعول' }
+      { name: 'أحمد حسن صالح', relation: 'رب الأسرة', gender: 'ذكر', status: 'نشط' },
+      { name: 'فاطمة علي محمد', relation: 'الزوجة', gender: 'أنثى', status: 'نشط' },
+      { name: 'عمر أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'نشط' },
+      { name: 'زينب أحمد حسن', relation: 'ابنة', gender: 'أنثى', status: 'نشط' },
+      { name: 'يوسف أحمد حسن', relation: 'ابن', gender: 'ذكر', status: 'نشط' }
     ];
     fam1.members = fam1.members.map((m, idx) => ({
       ...m,
       ...(arMembers[idx] || {}),
+      status: m.freezeReason || m.status === '冻结' ? 'مجمد' : (arMembers[idx]?.status || m.status),
       residenceInfo: fam1.address
     }));
   }
@@ -67,6 +68,7 @@ function getKurdishFamilies() {
     fam1.members = fam1.members.map((m, idx) => ({
       ...m,
       ...(kuMembers[idx] || {}),
+      status: m.freezeReason || m.status === '冻结' ? 'بەستراوە' : (kuMembers[idx]?.status || m.status),
       residenceInfo: fam1.address
     }));
   }
@@ -476,7 +478,25 @@ export function getSharedFamilies(langOverride) {
       if (Array.isArray(parsed)) {
         // 自动净化历史脏缓存：剔除已被废弃的冗余家庭 RC-10034592
         const cleaned = parsed.filter((f) => f && f.rationCardNo !== 'RC-10034592');
-        if (cleaned.length !== parsed.length) {
+        let localizedFreezeStatusChanged = false;
+        if (lang === 'ar' || lang === 'ku') {
+          const localizedStatuses = lang === 'ar'
+            ? { active: 'نشط', frozen: 'مجمد', legacyActive: 'ساري المفعول' }
+            : { active: 'چالاکە', frozen: 'بەستراوە' };
+          cleaned.forEach((family) => {
+            (family.members || []).forEach((member) => {
+              if (lang === 'ar' && member.status === localizedStatuses.legacyActive) {
+                member.status = localizedStatuses.active;
+                localizedFreezeStatusChanged = true;
+              }
+              if (member.freezeReason && member.status === localizedStatuses.active) {
+                member.status = localizedStatuses.frozen;
+                localizedFreezeStatusChanged = true;
+              }
+            });
+          });
+        }
+        if (cleaned.length !== parsed.length || localizedFreezeStatusChanged) {
           localStorage.setItem(storageKey, JSON.stringify(cleaned));
         }
         if (cleaned.length > 0) return cleaned;
@@ -512,7 +532,7 @@ export function updateSharedFamily(cardNo, updater, langOverride) {
 
     if (index !== -1) {
       if (typeof updater === 'function') {
-        list[index] = updater(list[index]);
+        list[index] = updater(list[index], lang);
       } else {
         list[index] = { ...list[index], ...updater };
       }
