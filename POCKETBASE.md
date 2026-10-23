@@ -78,6 +78,16 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 - `photos`：可选的图片元数据数组，最多 5 张，每张不超过 5 MB，支持 JPEG、PNG、WebP。图片文件存入现有 `app_files` 集合，键前缀为 `complaint-photo-`，不把图片内容写入工单 JSON。请确保该集合的 File 字段允许上述类型及 5 MB 文件。
 - `rating`：初始为 `null`。只有工单本人可在已办结后自愿提交一次 1–5 星评分及可选意见，保存评分人身份和时间。处理接口忽略客服传入的满意度、评分；旧 `satisfaction` 字段不再作为用户主动评价显示。
 
+### 管理 Web 回访统计
+
+“投诉和处理 → 回访统计”（`/#/complaint/statistics`）沿用 `complaints.view` 权限，从相同的投诉接口读取已同步工单，按提交日期、渠道、分类和省份筛选，无需新增统计集合。均分仅使用已办结工单的有效 `rating.score`；满意度为 4–5 星占比，低分为 1–2 星，覆盖率为已评价数 / 已办结数。历史 `satisfaction` 标签、未评价工单和无效评分均不计入均分。月度趋势使用评价时间。
+
+客服评价按最后办理人汇总，新办理记录同时保存 `handlerId`、`handlerNameKey` 及办理历史，随工单 JSON 写入 `app_data`。旧记录按名称词条或姓名兼容汇总；少于 3 条评价显示样本不足。平均办理时长按有效的提交、办结时间计算，不代表员工实际工时。
+
+工单保存为 `RESOLVED` 后，督办处置弹窗仅显示原始处理结果和状态。处理接口再次收到该工单的修改请求时返回 409，不修改状态、结果、办理人员或历史记录；用户仍可通过独立评分接口按原规则提交评价。
+
+问题建议由投诉分类、投诉原文和评价意见中的多语言关键词规则归纳，并提供关联工单供人工核查。同一工单可关联多个主题；含低分的主题优先显示，同一主题至少 3 件工单标为重复出现。该规则分析不调用外部 AI 服务，也不改写用户评价。
+
 无需新增 PocketBase 集合。跨设备状态和评价继续使用现有 15 秒同步机制，附件通过 PocketBase 文件接口按需读取。上述业务校验位于当前 Mock 适配层，正式后端接入时须实现相同的身份及工单权限校验（见上文“API 规则与访问安全”）。
 
 本地回归：`node --test scripts/tests/customer-orders.test.mjs scripts/tests/customer-message-analysis.test.mjs scripts/tests/hold-to-talk.test.mjs`。浏览器回归脚本为 `scripts/tests/order-complaint.e2e.cjs`，可通过 `playwright-cli run-code --filename scripts/tests/order-complaint.e2e.cjs` 执行；需要预先打开浏览器会话及端口 3100 的 Vite 服务，并设置 `VITE_POCKETBASE_SYNC=false`。该脚本会清理隔离浏览器中的本地测试投诉和聊天记录，禁止针对线上同步环境运行。

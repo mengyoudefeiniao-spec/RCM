@@ -102,9 +102,22 @@ const routes = [
       },
       {
         path: 'complaint',
-        name: 'ComplaintManagement',
-        component: () => import('../views/complaint/ComplaintMgmtView.vue'),
-        meta: { title: '投诉和处理', roles: ['admin'], permissionCode: 'complaints.view' }
+        component: () => import('../views/complaint/ComplaintLayout.vue'),
+        meta: { titleKey: 'nav.complaint', roles: ['admin'], permissionCode: 'complaints.view' },
+        children: [
+          {
+            path: '',
+            name: 'ComplaintManagement',
+            component: () => import('../views/complaint/ComplaintMgmtView.vue'),
+            meta: { titleKey: 'complaintAnalytics.handling' }
+          },
+          {
+            path: 'statistics',
+            name: 'ComplaintStatistics',
+            component: () => import('../views/complaint/ComplaintStatisticsView.vue'),
+            meta: { titleKey: 'complaintAnalytics.title' }
+          }
+        ]
       },
       {
         path: 'family-agent',

@@ -5310,14 +5310,16 @@ export async function mockDispatch(config) {
     const id = url.split('/complaint/handle/')[1]?.split('?')[0];
     const item = readSharedComplaints(complaintsStore).find(c => c.id === id);
     if (!item) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    if (complaintStatusCode(item.statusCode || item.status) === 'RESOLVED') return createResponse({}, 409, i18n.global.t('complaint.closedReadOnly'));
     if (!String(data.result || '').trim()) return createResponse({}, 400, i18n.global.t('chatComplaint.resultRequired'));
     const before = { statusCode: item.statusCode, result: item.result, handlerName: item.handlerName };
     item.statusCode = complaintStatusCode(data.statusCode || data.status || 'RESOLVED');
     item.handlerName = profile.name || profile.username || profile.role;
+    item.handlerId = complaintOwnerId(profile);
     item.handlerNameKey = profile.displayNameKey || '';
     item.handledAt = new Date().toISOString();
     item.result = String(data.result).trim();
-    item.history = [...(item.history || []), { id: crypto.randomUUID(), statusCode: item.statusCode, createdAt: item.handledAt, result: item.result, handlerName: item.handlerName, handlerNameKey: item.handlerNameKey }];
+    item.history = [...(item.history || []), { id: crypto.randomUUID(), statusCode: item.statusCode, createdAt: item.handledAt, result: item.result, handlerId: item.handlerId, handlerName: item.handlerName, handlerNameKey: item.handlerNameKey }];
     writeSharedComplaint(item);
     appendSystemAudit({ actor: item.handlerName, type: 'status_change', details: 'Updated complaint handling', businessNo: item.id, before, after: { statusCode: item.statusCode, result: item.result, handlerName: item.handlerName } });
     return createResponse(presentComplaint(item, isEn));

@@ -1,25 +1,10 @@
 <template>
   <div class="complaint-mgmt-view space-y-4">
-    <!-- 头部简要概览 -->
-    <div class="bg-white px-5 py-4 rounded-lg border border-[#D9E5DB] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="flex items-start sm:items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-[#FBEAE9] border border-[#F2D5D4] text-[#C04442] flex items-center justify-center font-bold shrink-0 mt-0.5 sm:mt-0">
-          <el-icon class="text-base"><Service /></el-icon>
-        </div>
-        <ModuleDescTip
-          :title="$t('complaint.title')"
-          :content="$t('complaint.subtitle')"
-          :badge="$t('complaint.badgeDualTrack')"
-          badge-type="danger"
-          title-class="text-sm font-bold text-[#1B3123]"
-        >
-          <template #extra>
-            <el-tag size="small" type="danger" effect="plain" class="font-bold ms-1">
-              {{ $t('complaint.supervision') }}
-            </el-tag>
-          </template>
-        </ModuleDescTip>
-      </div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E9F1EB]">
+      <h2 class="flex items-center gap-2 font-bold text-sm text-[#1F3326]">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#326445]"></span>
+        {{ $t('complaint.ticketList') }}
+      </h2>
 
       <div class="flex items-center gap-2">
         <el-button type="primary" size="small" @click="openCreateComplaintDialog">
@@ -63,7 +48,7 @@
     </div>
 
     <!-- 检索筛选区 (移动端支持折叠，保持首屏整洁) -->
-    <div class="bg-white p-3 sm:p-4 rounded-lg border border-[#D9E5DB] shadow-2xs space-y-3 text-xs">
+    <div class="bg-[#F3F8F4] p-3 sm:p-4 rounded-lg border border-[#D9E5DB]/80 space-y-3 text-xs">
       <div class="flex items-center justify-between">
         <span class="font-bold text-[#43554B] text-xs">{{ $t('complaint.filterSearch') }}</span>
         <button
@@ -317,6 +302,7 @@
     <!-- 详情弹窗 -->
     <el-dialog v-model="detailVisible" :title="$t('complaint.detailModalTitle')" width="620px" class="rcm-compact-dialog" align-center destroy-on-close>
       <div v-if="currentDetail" class="space-y-4 text-xs">
+        <p v-if="isResolved(currentDetail)" class="read-only-notice" role="status">{{ t('complaint.closedReadOnly') }}</p>
         <div class="bg-[#F3F8F4] p-3.5 rounded-lg border border-[#E9F1EB] flex items-center justify-between">
           <div>
             <div class="text-[11px] text-[#8A9A8F]">{{ $t('complaint.ticketIdLabel') }}</div>
@@ -378,6 +364,7 @@
     <!-- 督办处理弹窗 -->
     <el-dialog v-model="handleVisible" :title="$t('complaint.handleModalTitle')" width="580px" class="rcm-compact-dialog" align-center destroy-on-close>
       <div v-if="currentHandling" class="space-y-4 text-xs">
+        <p v-if="handlingReadOnly" class="read-only-notice" role="status">{{ t('complaint.closedReadOnly') }}</p>
         <div class="bg-[#FBEAE9]/50 p-3 rounded-lg border border-[#F7E3E2] space-y-1">
           <div class="font-bold text-[#6E2F2E]">{{ currentHandling.title }}</div>
           <p class="text-[#58685D] leading-relaxed">{{ currentHandling.content }}</p>
@@ -387,10 +374,13 @@
         <ComplaintRating :ticket="currentHandling" />
         <div class="space-y-2">
           <label class="block font-medium text-[#43554B]">{{ $t('complaint.handlingResult') }}：</label>
+          <p v-if="handlingReadOnly" class="read-only-result" dir="auto">{{ currentHandling.result || '—' }}</p>
           <el-input
+            v-else
             v-model="handleForm.result"
             type="textarea"
             :rows="3"
+            :disabled="handlingLoading"
             :placeholder="$t('complaint.handleResultPlaceholder')"
           />
         </div>
@@ -398,7 +388,8 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.handleStatus') }}：</label>
-            <el-select v-model="handleForm.status" class="w-full" size="small">
+            <el-tag v-if="handlingReadOnly" type="success">{{ statusLabel(currentHandling.statusCode || currentHandling.status) }}</el-tag>
+            <el-select v-else v-model="handleForm.statusCode" class="w-full" size="small" :disabled="handlingLoading">
               <el-option v-for="opt in statusHandleOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
           </div>
@@ -406,8 +397,8 @@
       </div>
 
       <template #footer>
-        <el-button size="small" @click="handleVisible = false">{{ $t('common.cancel') }}</el-button>
-        <el-button size="small" type="primary" :loading="handlingLoading" @click="submitHandle">
+        <el-button size="small" @click="handleVisible = false">{{ handlingReadOnly ? t('complaint.closeHandling') : t('common.cancel') }}</el-button>
+        <el-button v-if="!handlingReadOnly" size="small" type="primary" :loading="handlingLoading" @click="submitHandle">
           {{ $t('common.confirm') }}
         </el-button>
       </template>
@@ -470,9 +461,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, Refresh, Service, Phone, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
+import { Search, Refresh, Phone, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import ComplaintEvidence from '../../components/chat/ComplaintEvidence.vue';
 import ComplaintRating from '../../components/chat/ComplaintRating.vue';
 import { getComplaintList, createComplaintTicket, handleComplaintTicket } from '../../api/complaint.js';
@@ -549,7 +539,8 @@ const statusOptions = computed(() => [
 
 const statusFilterOptions = computed(() => [{ value: '', label: t('complaint.allStatuses') }, ...statusOptions.value]);
 
-const statusHandleOptions = computed(() => statusOptions.value.filter(o => o.value !== (isEn.value ? 'Pending Assignment' : '待分配')));
+const statusHandleOptions = computed(() => Object.entries(COMPLAINT_STATUSES).filter(([code]) => code !== 'PENDING')
+  .map(([value, labels]) => ({ value, label: t(`complaint.${labels[2]}`) })));
 
 const centerMap = {
   '巴格达省': ['卡尔赫第一粮食供应分部', '鲁萨法第二粮食供应分部', '曼苏尔配给中心'],
@@ -692,6 +683,7 @@ function shortStatus(st) {
 
 const statusLabel = value => t('complaint.' + COMPLAINT_STATUSES[complaintStatusCode(value)][2]);
 const typeLabel = value => t('complaint.' + COMPLAINT_TYPES[complaintTypeCode(value)][2]);
+const isResolved = ticket => complaintStatusCode(ticket?.statusCode || ticket?.status) === 'RESOLVED';
 function getStatusTag(value) {
   const code = complaintStatusCode(value);
   return code === 'RESOLVED' ? 'success' : code === 'RECTIFYING' ? 'danger' : 'warning';
@@ -727,16 +719,17 @@ function openDetail(row) {
 // 督办处理弹窗
 const handleVisible = ref(false);
 const currentHandling = ref(null);
+const handlingReadOnly = computed(() => isResolved(currentHandling.value));
 const handlingLoading = ref(false);
 const handleForm = ref({
-  status: '已办结',
+  statusCode: 'INVESTIGATING',
   result: ''
 });
 
 function openHandleModal(row) {
   currentHandling.value = row;
   handleForm.value = {
-    status: isEn.value ? 'Resolved' : '已办结',
+    statusCode: complaintStatusCode(row.statusCode || row.status) === 'PENDING' ? 'INVESTIGATING' : complaintStatusCode(row.statusCode || row.status),
     result: row.result || ''
   };
   handleVisible.value = true;
@@ -744,6 +737,7 @@ function openHandleModal(row) {
 
 async function submitHandle() {
   if (!currentHandling.value) return;
+  if (handlingReadOnly.value) { ElMessage.info(t('complaint.closedReadOnly')); return; }
   if (!handleForm.value.result.trim()) { ElMessage.warning(t('chatComplaint.resultRequired')); return; }
   handlingLoading.value = true;
   try {
@@ -754,8 +748,9 @@ async function submitHandle() {
     ElMessage.success(t('common.success'));
     handleVisible.value = false;
     await loadComplaints();
-  } catch (e) {
-    ElMessage.error(t('common.failed'));
+  } catch {
+    // The API reports the error. Refresh the record in case another handler closed it.
+    await loadComplaints();
   } finally {
     handlingLoading.value = false;
   }
@@ -841,4 +836,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.read-only-notice { padding: .75rem 1rem; border: 1px solid #C9E4CE; border-radius: .5rem; color: #326445; background: #F3F8F4; line-height: 1.8; }
+.read-only-result { padding: .75rem; border: 1px solid #D9E5DB; border-radius: .5rem; background: #F8FBF8; color: #43554B; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
 </style>

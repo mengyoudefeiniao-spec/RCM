@@ -27,10 +27,11 @@ import citizenTransferMessages from './citizenTransfer.js';
 import changeHeadMessages from './changeHead.js';
 import chatComplaintMessages from './chatComplaint.js';
 import chatOrderMessages from './chatOrders.js';
+import complaintAnalyticsMessages from './complaintAnalytics.js';
 
 function withCitizenApplications(messages, lang) {
   const merged = { ...messages, chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang] };
-  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }]) {
+  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang]]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };
     }
