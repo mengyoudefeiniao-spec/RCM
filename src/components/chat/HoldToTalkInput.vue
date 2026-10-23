@@ -4,7 +4,7 @@
       type="button"
       class="voice-hold-button flex items-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D3AF62] disabled:cursor-not-allowed disabled:opacity-60"
       :class="[
-        iconOnly ? 'h-8 w-8 justify-center' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
+        iconOnly ? 'h-10 w-10 justify-center' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
         recording ? 'border-[#E5B8B8] bg-[#FBEAE9] text-[#A03E3C]' : 'border-[#C7DED0] bg-[#F3F8F4] text-[#326445] hover:border-[#D3AF62]'
       ]"
       :disabled="disabled || state.phase === 'finishing'"
@@ -15,10 +15,9 @@
       @pointerdown="startPointer"
       @pointerup="releasePointer"
       @pointercancel="releasePointer"
-      @lostpointercapture="releasePointer"
       @keydown="startKey"
       @keyup="releaseKey"
-      @blur="release"
+      @blur="releaseKeyboardHold"
       @click.prevent
       @contextmenu.prevent
     >
@@ -70,6 +69,7 @@ const errorKey = computed(() => {
   return ['not-allowed', 'service-not-allowed', 'audio-capture'].includes(error) ? 'chatComplaint.voiceDenied' : 'chatComplaint.voiceFailed';
 });
 let pointerId = null;
+let captureTarget = null;
 let heldKey = '';
 
 const session = createHoldToTalkSession({
@@ -86,12 +86,20 @@ function start() {
   const language = { zh: 'zh-CN', en: 'en-US', ar: 'ar-IQ', ckb: 'ckb-IQ' }[locale.value] || 'ar-IQ';
   return session.start(language);
 }
+function dismissKeyboard() {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && (active.matches('input, textarea') || active.isContentEditable)) active.blur();
+}
 function startPointer(event) {
   if (event.button !== 0 || event.isPrimary === false || pointerId !== null || heldKey) return;
   event.preventDefault();
-  if (!start()) return;
+  if (props.disabled) return;
+  dismissKeyboard();
+  // Anchor the gesture before recognition publishes state and updates the icon.
   pointerId = event.pointerId;
-  try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Window release listeners provide a fallback. */ }
+  captureTarget = event.currentTarget;
+  try { captureTarget.setPointerCapture(pointerId); } catch { /* Window release listeners provide a fallback. */ }
+  if (!start()) release();
 }
 function releasePointer(event) {
   if (event.pointerId !== pointerId) return;
@@ -108,24 +116,42 @@ function releaseKey(event) {
   event.preventDefault();
   release();
 }
-function release() { pointerId = null; heldKey = ''; session.stop(); }
+function releaseKeyboardHold() { if (heldKey) release(); }
+function checkPointerButtons(event) {
+  // Recover a mouse release outside the document when it returns without a button down.
+  if (event.pointerId === pointerId && event.pointerType === 'mouse' && !(event.buttons & 1)) release();
+}
+function release() {
+  const id = pointerId;
+  const target = captureTarget;
+  pointerId = null;
+  captureTarget = null;
+  heldKey = '';
+  try { if (id !== null && target?.hasPointerCapture(id)) target.releasePointerCapture(id); } catch { /* Capture may already have been lost. */ }
+  session.stop();
+}
 function onVisibilityChange() { if (document.hidden) release(); }
 
 watch(locale, release);
 watch(() => props.disabled, disabled => { if (disabled) release(); });
 onMounted(() => {
-  window.addEventListener('pointerup', releasePointer);
-  window.addEventListener('pointercancel', releasePointer);
-  window.addEventListener('keyup', releaseKey);
+  // Pointer capture or element focus can change without a physical release.
+  // Observe actual releases at the window, even outside this compact button.
+  window.addEventListener('pointerup', releasePointer, true);
+  window.addEventListener('pointercancel', releasePointer, true);
+  window.addEventListener('pointermove', checkPointerButtons, true);
+  window.addEventListener('keyup', releaseKey, true);
   window.addEventListener('blur', release);
   window.addEventListener('pagehide', release);
   document.addEventListener('visibilitychange', onVisibilityChange);
 });
 onBeforeUnmount(() => {
+  release();
   session.dispose();
-  window.removeEventListener('pointerup', releasePointer);
-  window.removeEventListener('pointercancel', releasePointer);
-  window.removeEventListener('keyup', releaseKey);
+  window.removeEventListener('pointerup', releasePointer, true);
+  window.removeEventListener('pointercancel', releasePointer, true);
+  window.removeEventListener('pointermove', checkPointerButtons, true);
+  window.removeEventListener('keyup', releaseKey, true);
   window.removeEventListener('blur', release);
   window.removeEventListener('pagehide', release);
   document.removeEventListener('visibilitychange', onVisibilityChange);

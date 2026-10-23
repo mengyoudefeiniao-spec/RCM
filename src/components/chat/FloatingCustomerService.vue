@@ -58,6 +58,10 @@
     <transition name="chat-window">
       <div
         v-if="isOpen"
+        ref="chatWindowRef"
+        role="dialog"
+        tabindex="-1"
+        :aria-label="serviceMode === 'HUMAN' ? t('chat.headerHumanTitle') : t('chat.headerTitle')"
         class="fixed z-50 flex flex-col bg-white shadow-2xl rounded-lg overflow-hidden border border-[#E5CEA1] backdrop-blur-md transition-all duration-300"
         :class="[
           isExpanded
@@ -456,7 +460,6 @@
           </div>
           <div class="relative bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-2.5 focus-within:border-[#D3AF62] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#D3AF62]/15 transition-all duration-200">
             <el-input
-              ref="inputRef"
               v-model="inputQuery"
               type="textarea"
               :rows="2"
@@ -768,7 +771,7 @@ const serviceMode = ref('AI');
 // 输入框与对话视窗绑定
 const inputQuery = ref('');
 const voiceInputActive = ref(false);
-const inputRef = ref(null);
+const chatWindowRef = ref(null);
 const messagesContainerRef = ref(null);
 
 // 常见问题推荐配置 (随系统语言实时响应式计算)
@@ -938,7 +941,9 @@ function openChatWindow() {
   isOpen.value = true;
   scrollToBottom();
   nextTick(() => {
-    inputRef.value?.focus();
+    // Focus the conversation rather than an editable field, so opening it does
+    // not summon the mobile keyboard. Typing still starts by tapping the input.
+    chatWindowRef.value?.focus({ preventScroll: true });
   });
 }
 
