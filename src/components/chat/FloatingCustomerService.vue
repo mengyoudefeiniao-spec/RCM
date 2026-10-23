@@ -461,6 +461,13 @@
               @keydown.enter.exact.prevent="handleSendMessage"
             />
 
+            <HoldToTalkInput
+              class="mt-2"
+              :disabled="isThinking || !isOpen"
+              @active-change="voiceInputActive = $event"
+              @transcript="appendVoiceToInput"
+            />
+
             <!-- 输入框底部工具与操作栏 -->
             <div class="flex items-center justify-between pt-2 border-t border-[#D9E5DB]/60 mt-1">
               <div class="flex items-center space-x-3 text-[11px] text-[#8A9A8F]">
@@ -480,10 +487,10 @@
               <button
                 type="button"
                 class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
-                :class="inputQuery.trim() && !isThinking
+                :class="inputQuery.trim() && !isThinking && !voiceInputActive
                   ? (serviceMode === 'HUMAN' ? 'bg-[#C9A13B] hover:bg-[#7A5F21] active:scale-95' : 'bg-[#326445] hover:bg-[#2A5440] active:scale-95')
                   : 'bg-[#C9DBCE] cursor-not-allowed'"
-                :disabled="!inputQuery.trim() || isThinking"
+                :disabled="!inputQuery.trim() || isThinking || voiceInputActive"
                 @click="handleSendMessage"
               >
                 <span>{{ $t('chat.send') }}</span>
@@ -622,6 +629,7 @@ import { currentDirection } from '../../locales/index.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import ChatComplaintPanel from './ChatComplaintPanel.vue';
+import HoldToTalkInput from './HoldToTalkInput.vue';
 import { analyzeCustomerMessage, preserveOriginalUserMessage } from '../../utils/customerMessageAnalysis.js';
 import { COMPLAINT_TYPES } from '../../utils/complaints.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -744,6 +752,7 @@ const serviceMode = ref('AI');
 
 // 输入框与对话视窗绑定
 const inputQuery = ref('');
+const voiceInputActive = ref(false);
 const inputRef = ref(null);
 const messagesContainerRef = ref(null);
 
@@ -948,8 +957,15 @@ function openComplaintNotice(event) {
   openComplaintProgress(event?.detail?.id || route.query.complaint || '');
 }
 
+function appendVoiceToInput(text) {
+  if (!text) return;
+  const separator = inputQuery.value && !/\s$/.test(inputQuery.value) ? ' ' : '';
+  inputQuery.value += separator + text;
+}
+
 // 快捷发送热门问题
 function handleQuickQuestion(q) {
+  if (isThinking.value || voiceInputActive.value) return;
   inputQuery.value = q;
   handleSendMessage();
 }
@@ -958,7 +974,7 @@ function handleQuickQuestion(q) {
 async function handleSendMessage() {
   const originalText = inputQuery.value;
   const query = originalText.trim();
-  if (!query || isThinking.value) return;
+  if (!query || isThinking.value || voiceInputActive.value) return;
 
   // Store exactly what the customer entered, including spacing and punctuation.
   const topic = matchTopic(query);

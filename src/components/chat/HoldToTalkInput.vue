@@ -26,7 +26,7 @@
       </span>
       <bdi v-if="state.elapsedMs > 0 || recording" dir="ltr" class="shrink-0 font-mono text-xs tabular-nums" aria-hidden="true">{{ elapsed }} / 01:00</bdi>
     </button>
-    <p v-if="state.interim" role="status" class="break-words text-xs text-[#43554B]">{{ state.interim }}</p>
+    <p v-if="state.interim" role="status" class="max-h-20 overflow-y-auto break-words text-xs text-[#43554B]">{{ state.interim }}</p>
     <p v-if="state.error" role="alert" class="text-xs text-[#C04442]">{{ t(errorKey) }}</p>
     <p v-else-if="state.limitReached" role="status" class="text-xs text-[#7A5F21]">{{ t('chatComplaint.voiceLimitReached') }}</p>
     <p :id="hintId" class="text-[11px] leading-relaxed text-[#8A9A8F]">{{ t('chatComplaint.voiceHint') }}</p>
