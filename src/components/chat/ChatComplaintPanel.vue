@@ -5,6 +5,10 @@
       <button type="button" class="text-xs text-[#326445] underline" @click="emit('close')">{{ t('chatComplaint.back') }}</button>
     </div>
     <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 text-xs">
+      <div v-if="mode === 'create' && draft?.responseKey" class="complaint-reassurance rounded-lg border border-[#E5CEA1] bg-[#FDF3E0] p-3 space-y-2 leading-relaxed" role="status">
+        <p class="font-medium text-[#326445]">{{ t(draft.responseKey) }}</p>
+        <p class="text-[#7A5F21]">{{ t('chatComplaint.draftNote') }}</p>
+      </div>
       <el-form v-if="mode === 'create'" label-position="top" :model="form" @submit.prevent="submit">
         <div class="grid grid-cols-2 gap-x-2">
           <el-form-item :label="t('complaint.citizenName')" required>
@@ -89,7 +93,7 @@ import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import { COMPLAINT_STATUSES, COMPLAINT_TYPES, COMPLAINT_STORAGE_PREFIX } from '../../utils/complaints.js';
 import { onTabMessage } from '../../utils/crossTabBus.js';
 
-const props = defineProps({ mode: { type: String, default: 'create' }, complaintId: { type: String, default: '' } });
+const props = defineProps({ mode: { type: String, default: 'create' }, complaintId: { type: String, default: '' }, draft: { type: Object, default: null } });
 const emit = defineEmits(['close', 'submitted']);
 const { t, locale } = useI18n();
 const auth = useAuthStore();
@@ -145,7 +149,7 @@ async function submit() {
   }
   saving.value = true;
   try {
-    const ticket = await createComplaintTicket(data);
+    const ticket = await createComplaintTicket({ ...data, ...(props.draft?.id ? { sourceMessageId: props.draft.id, intakeAnalysis: props.draft.analysis } : {}) });
     if (!alive) return;
     form.title = '';
     form.content = '';
@@ -164,6 +168,12 @@ async function enableNotifications() {
   ElMessage[enabled ? 'success' : 'info'](t(enabled ? 'chatComplaint.notificationsEnabled' : 'chatComplaint.notificationsUnavailable'));
 }
 function onStorage(event) { if (event.key?.startsWith(COMPLAINT_STORAGE_PREFIX)) load(); }
+watch(() => props.draft, draft => {
+  if (!draft?.id) return;
+  form.content = draft.content || '';
+  form.title = draft.title || '';
+  form.typeCode = Object.hasOwn(COMPLAINT_TYPES, draft.typeCode) ? draft.typeCode : 'SERVICE';
+}, { immediate: true });
 watch(() => [props.mode, props.complaintId], () => { selectedId.value = props.complaintId; load(); });
 watch(selectedId, markSelectedRead);
 watch(locale, load);

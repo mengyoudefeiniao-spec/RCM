@@ -73,7 +73,7 @@
           class="px-2.5 sm:px-4 py-3 bg-white text-[#1F3326] flex items-center justify-between gap-1.5 sm:gap-2 border-b border-[#E5CEA1] select-none shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)] min-w-0"
         >
           <!-- 左侧：头像与客服状态 (允许收缩，长标题/英文模式下截断省略) -->
-          <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
             <div class="relative shrink-0">
               <div
                 class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold shadow-inner"
@@ -90,39 +90,31 @@
               ></span>
             </div>
 
-            <div class="leading-tight min-w-0">
-              <div class="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
-                <span class="font-semibold text-sm text-[#1F3326] tracking-wide truncate min-w-0">
+            <div class="leading-tight min-w-0 flex-1">
+              <div class="min-w-0">
+                <span class="block font-semibold text-sm text-[#1F3326] leading-snug break-words">
                   {{ serviceMode === 'HUMAN' ? $t('chat.headerHumanTitle') : $t('chat.headerTitle') }}
                 </span>
+              </div>
+              <div class="flex items-center gap-1.5 mt-1 min-w-0">
                 <span
                   class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 border"
                   :class="serviceMode === 'HUMAN' ? 'bg-[#FDF3E0] text-[#7A5F21] border-[#E5CEA1]' : 'bg-[#E1F4E4] text-[#2F7A50] border-[#C7DED0]'"
                 >
                   ● {{ serviceMode === 'HUMAN' ? $t('chat.headerHumanConnected') : $t('chat.online') }}
                 </span>
+                <p class="text-[11px] text-[#58685D] truncate min-w-0">
+                  {{ serviceMode === 'HUMAN' ? (activeHumanAgent?.department || 'Ministry of Trade Care') : $t('chat.headerSubtitle') }}
+                </p>
               </div>
-              <p class="text-[11px] text-[#58685D] mt-0.5 truncate max-w-[150px] sm:max-w-[200px]">
-                {{ serviceMode === 'HUMAN' ? (activeHumanAgent?.department || 'Ministry of Trade Care') : $t('chat.headerSubtitle') }}
-              </p>
             </div>
           </div>
 
-          <!-- 右侧：核心动作（转人工/切回）与窗口控制按钮 (固定不收缩，保证X始终可见可点) -->
+          <!-- 窗口控制按钮；APP 的人工服务统一使用底部入口。 -->
           <div class="flex items-center space-x-1 sm:space-x-2 text-[#58685D] shrink-0">
             <!-- 模式切换按钮 (醒目独立胶囊；小屏仅显示图标避免挤压关闭键) -->
             <button
-              v-if="serviceMode === 'AI'"
-              type="button"
-              class="px-2 sm:px-2.5 py-1.5 bg-[#FDF3E0] hover:bg-[#F2E3C6] text-[#7A5F21] border border-[#E5CEA1] rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
-              :title="$t('chat.transferHuman')"
-              @click="triggerHumanHandoff('USER_HEADER_CLICK')"
-            >
-              <el-icon><Headset /></el-icon>
-              <span class="hidden md:inline">{{ $t('chat.transferHuman') }}</span>
-            </button>
-            <button
-              v-else
+              v-if="serviceMode === 'HUMAN' && !showAppActions"
               type="button"
               class="px-2 sm:px-2.5 py-1.5 bg-[#E2F4E4] hover:bg-[#C7E0CE] text-[#326445] border border-[#C7DED0] rounded-lg text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
               :title="$t('chat.switchAi')"
@@ -218,7 +210,7 @@
               class="flex justify-end items-start space-x-2.5"
             >
               <div class="max-w-[82%] rounded-lg rounded-tr-xs bg-gradient-to-r rtl:bg-gradient-to-l from-[#326445] to-[#2F5B44] text-white px-4 py-2.5 shadow-xs text-[13px] leading-relaxed break-words">
-                {{ msg.content }}
+                <span class="whitespace-pre-wrap" data-chat-user-content>{{ msg.content }}</span>
                 <div class="text-[10px] text-[#C7DED0] text-end mt-1 font-mono">
                   {{ formatTime(msg.timestamp) }}
                 </div>
@@ -335,6 +327,7 @@
 
                     <!-- 转人工快捷按钮 -->
                     <button
+                      v-if="!showAppActions"
                       type="button"
                       class="text-[#C9A13B] hover:text-[#7A5F21] font-medium inline-flex items-center space-x-1 cursor-pointer"
                       @click="triggerHumanHandoff('MESSAGE_ACTION_CLICK', msg)"
@@ -449,6 +442,7 @@
           v-if="complaintPanel && showAppActions"
           :mode="complaintPanel"
           :complaint-id="activeComplaintId"
+          :draft="complaintDraft"
           @close="complaintPanel = ''"
           @submitted="openComplaintProgress"
         />
@@ -474,7 +468,7 @@
                   {{ $t('chat.enterToSend') }}
                 </span>
                 <span
-                  v-if="serviceMode === 'AI'"
+                  v-if="serviceMode === 'AI' && !showAppActions"
                   class="text-[#D3AF62] hover:underline cursor-pointer hidden sm:inline font-medium"
                   @click="triggerHumanHandoff('USER_FOOTER_CLICK')"
                 >
@@ -506,8 +500,8 @@
             <el-icon><Tickets /></el-icon><span>{{ $t('chatComplaint.progress') }}</span>
             <span v-if="complaintUnread" class="rounded-full bg-[#C04442] text-white px-1 text-[9px]" :aria-label="$t('my.unreadCount', { count: complaintUnread })">{{ complaintUnread }}</span>
           </button>
-          <button type="button" class="chat-app-action" @click="complaintPanel = ''; triggerHumanHandoff('APP_QUICK_ACTION')">
-            <el-icon><Headset /></el-icon><span>{{ $t('chat.transferHuman') }}</span>
+          <button type="button" class="chat-app-action" @click="handleFooterHumanAction">
+            <el-icon><Headset /></el-icon><span>{{ $t(serviceMode === 'HUMAN' ? 'chat.switchAi' : 'chat.transferHuman') }}</span>
           </button>
         </nav>
       </div>
@@ -628,6 +622,8 @@ import { currentDirection } from '../../locales/index.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMyNotificationsStore } from '../../stores/myNotifications.js';
 import ChatComplaintPanel from './ChatComplaintPanel.vue';
+import { analyzeCustomerMessage, preserveOriginalUserMessage } from '../../utils/customerMessageAnalysis.js';
+import { COMPLAINT_TYPES } from '../../utils/complaints.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   ChatDotRound,
@@ -666,6 +662,7 @@ const auth = useAuthStore();
 const myNotifications = useMyNotificationsStore();
 const complaintUnread = computed(() => myNotifications.items.filter(item => item.type === 'complaint' && !item.read).length);
 const complaintPanel = ref('');
+const complaintDraft = ref(null);
 const activeComplaintId = ref('');
 const showAppActions = computed(() => isAppMode.value && ['citizen', 'agent'].includes(auth.currentRole));
 const { t, locale, tm } = useI18n();
@@ -794,7 +791,7 @@ const messages = ref([
   }
 ]);
 
-// 核心多语言同步方法：智能助手内所有的聊天记录（用户提问、AI 回答、系统提示、人工客服消息）均自动切换为对应语言
+// Localize service replies and controls while retaining every customer message verbatim.
 function syncChatMessagesLanguage(newLang) {
   if (!newLang) newLang = locale.value;
   if (newLang === 'ckb') newLang = 'ku';
@@ -806,33 +803,25 @@ function syncChatMessagesLanguage(newLang) {
     initMsg.content = t('chat.initGreeting') || initMsg.content;
   }
 
-  // 2. 遍历更新所有已产生的新聊天内容 (包括用户提问、AI 回答、系统卡片、人工客服消息)
+  // 2. Keep customer text immutable; localize only service-generated replies.
   messages.value.forEach((msg) => {
+    if (msg.role === 'user') {
+      preserveOriginalUserMessage(msg);
+      return;
+    }
+    if (msg.responseKey) {
+      msg.content = t(msg.responseKey);
+      return;
+    }
     // 2.1 针对有 contentMap 的消息，优先使用精确多语言文本
     if (msg.contentMap && msg.contentMap[newLang]) {
       msg.content = msg.contentMap[newLang];
     } else if (msg.topicKey && MULTI_LANG_TOPICS[msg.topicKey]) {
       // 若有主题 key，从主题字典获取对应角色文本
       const topic = MULTI_LANG_TOPICS[msg.topicKey];
-      if (msg.role === 'user' && topic.userQuestion?.[newLang]) {
-        msg.content = topic.userQuestion[newLang];
-        msg.contentMap = { ...topic.userQuestion };
-      } else if (msg.role === 'assistant' && topic.answer?.[newLang]) {
+      if (msg.role === 'assistant' && topic.answer?.[newLang]) {
         msg.content = topic.answer[newLang];
         msg.contentMap = { ...topic.answer };
-      }
-    } else if (msg.role === 'user' || msg.role === 'assistant') {
-      // 尝试根据当前文本内容进行语义主题匹配
-      const topic = matchTopic(msg.content);
-      if (topic) {
-        msg.topicKey = topic.key;
-        if (msg.role === 'user' && topic.userQuestion?.[newLang]) {
-          msg.content = topic.userQuestion[newLang];
-          msg.contentMap = { ...topic.userQuestion };
-        } else if (msg.role === 'assistant' && topic.answer?.[newLang]) {
-          msg.content = topic.answer[newLang];
-          msg.contentMap = { ...topic.answer };
-        }
       }
     }
 
@@ -895,7 +884,7 @@ watch(locale, (newLang) => {
 
 // 读取当前登录用户信息
 const currentUserContext = computed(() => {
-  const profile = JSON.parse(localStorage.getItem('rcm_user_profile') || '{}');
+  const profile = auth.userProfile || {};
   return {
     id: profile.id || 'anonymous',
     name: profile.name || profile.username || '当前用户',
@@ -935,9 +924,16 @@ function closeWindow() {
   isOpen.value = false;
 }
 
-function openComplaintForm() {
+function openComplaintForm(draft = null) {
+  complaintDraft.value = typeof draft?.content === 'string' ? draft : null;
   activeComplaintId.value = '';
   complaintPanel.value = 'create';
+}
+
+function handleFooterHumanAction() {
+  complaintPanel.value = '';
+  if (serviceMode.value === 'HUMAN') switchToAiMode();
+  else triggerHumanHandoff('APP_QUICK_ACTION');
 }
 
 function openComplaintProgress(id = '') {
@@ -960,33 +956,46 @@ function handleQuickQuestion(q) {
 
 // 发送消息处理
 async function handleSendMessage() {
-  const query = inputQuery.value.trim();
+  const originalText = inputQuery.value;
+  const query = originalText.trim();
   if (!query || isThinking.value) return;
 
-  // 1. 添加用户消息 (附带多语言映射)
+  // Store exactly what the customer entered, including spacing and punctuation.
   const topic = matchTopic(query);
+  const analysis = analyzeCustomerMessage(query);
   const userMsg = {
     id: `USER-${Date.now()}`,
     role: 'user',
-    content: (topic && topic.userQuestion && topic.userQuestion[contentLang.value]) ? topic.userQuestion[contentLang.value] : query,
-    topicKey: topic ? topic.key : '',
-    contentMap: topic ? { ...topic.userQuestion } : { zh: query, en: query, ar: query, ku: query },
+    content: originalText,
+    originalContent: originalText,
+    analysis,
     timestamp: new Date().toISOString()
   };
   messages.value.push(userMsg);
+  saveMessagesToStorage();
   inputQuery.value = '';
   scrollToBottom();
 
   // 判断是否处于人工客服模式
   if (serviceMode.value === 'HUMAN') {
-    await handleSendToHumanAgent(query);
+    await handleSendToHumanAgent(originalText);
     return;
   }
 
-  // 2. 检测用户是否主动要求人工
-  const qLower = query.toLowerCase();
-  const humanKeywords = ['人工', '转人工', '人工客服', '真人', 'live agent', 'agent', 'human', 'موظف', 'فەرمانبەر'];
-  if (humanKeywords.some((k) => qLower.includes(k))) {
+  // Complaints take priority over FAQ matching and mentions of ration agents.
+  if (analysis.needsComfort || analysis.intent === 'COMPLAINT_PROGRESS') {
+    const key = analysis.intent === 'COMPLAINT_PROGRESS' ? 'progressReply' : analysis.emotion === 'ANGRY' ? 'empathyAngry' : 'empathyConcern';
+    const responseKey = `chatComplaint.${key}`;
+    messages.value.push({ id: `AI-${Date.now()}`, role: 'assistant', content: t(responseKey), responseKey, analysis, timestamp: new Date().toISOString() });
+    saveMessagesToStorage();
+    if (showAppActions.value && analysis.complaintRequested) {
+      openComplaintForm({ id: userMsg.id, content: originalText, typeCode: analysis.typeCode, title: t('chatComplaint.autoTitle', { type: t(`complaint.${COMPLAINT_TYPES[analysis.typeCode][2]}`) }), analysis, responseKey });
+    } else if (showAppActions.value && analysis.intent === 'COMPLAINT_PROGRESS') openComplaintProgress();
+    scrollToBottom();
+    return;
+  }
+
+  if (analysis.intent === 'HUMAN_HANDOFF') {
     await triggerHumanHandoff('USER_KEYWORD_TRIGGER');
     return;
   }
@@ -1002,7 +1011,7 @@ async function handleSendMessage() {
       .map((m) => ({ role: m.role, content: m.content }));
 
     const res = await askRagAssistant({
-      question: query,
+      question: originalText,
       history: historyPayload,
       userContext: currentUserContext.value,
       lang: locale.value

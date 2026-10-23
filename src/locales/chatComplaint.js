@@ -1,5 +1,9 @@
 export default {
   zh: {
+    empathyAngry: '这次经历让您生气，我理解您的感受。您反映的问题值得认真核查，请保留配给领取凭证、称重记录等材料，我会协助您整理投诉内容。',
+    empathyConcern: '很抱歉这次配给服务让您感到困扰。我理解您的担忧，会协助您记录问题和诉求，供工作人员核查处理。',
+    draftNote: '已打开投诉草稿并保留您的原话。请核对诉求分类、补充联系信息和涉及网点，确认后再提交；当前尚未立案。',
+    autoTitle: '{type}投诉', progressReply: '您可以在投诉进度中查看已提交工单的当前状态、办理记录和处理结果。',
     ratingPending: '待评价', ratingVerySatisfied: '非常满意', ratingSatisfied: '满意', ratingBasicallySatisfied: '基本满意',
     fileComplaint: '投诉', progress: '投诉进度', back: '返回对话', subject: '投诉标题',
     subjectPlaceholder: '简要描述您遇到的问题', contentPlaceholder: '请描述发生时间、地点、涉及人员、具体问题及您的诉求。',
@@ -15,6 +19,10 @@ export default {
     enableNotifications: '开启消息提醒', notificationsEnabled: '消息提醒已开启', notificationsUnavailable: '暂未开启设备通知，您仍可在“我的－通知”和客服中查看进度。'
   },
   en: {
+    empathyAngry: 'I understand why this experience has made you angry. Your concern deserves careful review. Please keep your collection receipt and any weighing records; I can help you document the complaint.',
+    empathyConcern: 'I am sorry this ration service experience has been upsetting. I understand your concern and can help record the problem and what you want addressed for the handling team to review.',
+    draftNote: 'A complaint draft is open with your original words preserved. Check the category, add your contact details and the outlet, then confirm submission. No complaint has been filed yet.',
+    autoTitle: '{type} complaint', progressReply: 'Complaint Status shows the current status, handling history and outcome of your submitted complaints.',
     ratingPending: 'Pending rating', ratingVerySatisfied: 'Very satisfied', ratingSatisfied: 'Satisfied', ratingBasicallySatisfied: 'Basically satisfied',
     fileComplaint: 'Complaint', progress: 'Complaint Status', back: 'Back to chat', subject: 'Complaint title',
     subjectPlaceholder: 'Briefly describe the problem', contentPlaceholder: 'Describe when and where it happened, who was involved, the problem and your requested outcome.',
@@ -30,6 +38,10 @@ export default {
     enableNotifications: 'Enable notifications', notificationsEnabled: 'Notifications enabled', notificationsUnavailable: 'Device notifications are unavailable. View updates in My Notifications or customer service.'
   },
   ar: {
+    empathyAngry: 'أتفهم غضبك مما حدث. ما ذكرته يستحق التحقق بعناية. يرجى الاحتفاظ بوصل الاستلام وأي سجلات للوزن، وسأساعدك في توثيق الشكوى.',
+    empathyConcern: 'آسف لما سببته لك تجربة الخدمة التموينية من انزعاج. أتفهم قلقك ويمكنني مساعدتك في تسجيل المشكلة وطلبك لمراجعتهما من الجهة المختصة.',
+    draftNote: 'تم فتح مسودة شكوى مع الاحتفاظ بكلامك الأصلي. راجع النوع وأضف بيانات الاتصال والمنفذ ثم أكد الإرسال. لم تُسجل الشكوى رسميًا بعد.',
+    autoTitle: 'شكوى: {type}', progressReply: 'يمكنك في متابعة الشكاوى الاطلاع على الحالة الحالية وسجل المعالجة ونتائج الشكاوى المرسلة.',
     ratingPending: 'بانتظار التقييم', ratingVerySatisfied: 'راضٍ جدًا', ratingSatisfied: 'راضٍ', ratingBasicallySatisfied: 'راضٍ إلى حد ما',
     fileComplaint: 'شكوى', progress: 'متابعة الشكاوى', back: 'العودة للمحادثة', subject: 'عنوان الشكوى',
     subjectPlaceholder: 'صف المشكلة باختصار', contentPlaceholder: 'اذكر وقت ومكان الواقعة والأشخاص المعنيين وتفاصيل المشكلة وطلبك.',
@@ -45,6 +57,10 @@ export default {
     enableNotifications: 'تفعيل الإشعارات', notificationsEnabled: 'تم تفعيل الإشعارات', notificationsUnavailable: 'إشعارات الجهاز غير متاحة. يمكنك متابعة المستجدات في إشعارات حسابي أو خدمة العملاء.'
   },
   ckb: {
+    empathyAngry: 'تێدەگەم بۆچی ئەم ڕووداوە تووڕەی کردوویت. کێشەکەت شایەنی لێکۆڵینەوەی وردە. تکایە پسوڵەی وەرگرتن و بەڵگەی کێشکردن بپارێزە؛ یارمەتیت دەدەم سکاڵاکە تۆمار بکەیت.',
+    empathyConcern: 'داوای لێبوردن دەکەم کە ئەزموونی خزمەتگوزاریی بەشەخۆراک نیگەرانى کردوویت. تێدەگەم و یارمەتیت دەدەم کێشە و داواکارییەکەت تۆمار بکەیت بۆ لێکۆڵینەوەی لایەنی بەرپرس.',
+    draftNote: 'ڕەشنووسی سکاڵا کرایەوە و قسە ئەسڵییەکانت پارێزراون. جۆرەکە بپشکنە و زانیاریی پەیوەندی و بنکە زیاد بکە، پاشان ناردن پشتڕاست بکەرەوە. هێشتا سکاڵاکە بە فەرمی تۆمار نەکراوە.',
+    autoTitle: 'سکاڵای {type}', progressReply: 'لە بەدواداچوونی سکاڵا دەتوانیت دۆخی ئێستا، تۆماری چارەسەرکردن و ئەنجامی سکاڵا نێردراوەکانت ببینیت.',
     ratingPending: 'چاوەڕوانی هەڵسەنگاندن', ratingVerySatisfied: 'زۆر ڕازیم', ratingSatisfied: 'ڕازیم', ratingBasicallySatisfied: 'تا ڕادەیەک ڕازیم',
     fileComplaint: 'سکاڵا', progress: 'بەدواداچوونی سکاڵا', back: 'گەڕانەوە بۆ گفتوگۆ', subject: 'ناونیشانی سکاڵا',
     subjectPlaceholder: 'کێشەکە بە کورتی باس بکە', contentPlaceholder: 'کات و شوێن، کەسانی پەیوەندیدار، وردەکاریی کێشەکە و داواکاریی خۆت بنووسە.',

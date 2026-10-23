@@ -20,6 +20,8 @@ import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
 import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
+import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
+import chatComplaintMessages from '../locales/chatComplaint.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -5017,9 +5019,13 @@ export async function mockDispatch(config) {
     const userContext = data.userContext || {};
     const reqLang = getAiServiceLang(config, data);
 
-    const qLower = question.toLowerCase();
-    const humanKeywords = ['人工', '转人工', '人工客服', '真人', '客服人员', '投诉', '无法解答', '不满意', '电话', 'live agent', 'agent', 'human', 'موظف', 'فەرمانبەر'];
-    const isHumanIntent = humanKeywords.some((k) => qLower.includes(k));
+    const analysis = analyzeCustomerMessage(question);
+    if (analysis.needsComfort || analysis.intent === 'COMPLAINT_PROGRESS') {
+      const key = analysis.intent === 'COMPLAINT_PROGRESS' ? 'progressReply' : analysis.emotion === 'ANGRY' ? 'empathyAngry' : 'empathyConcern';
+      const contentMap = Object.fromEntries(['zh', 'en', 'ar', 'ku'].map(lang => [lang, chatComplaintMessages[lang === 'ku' ? 'ckb' : lang][key]]));
+      return createResponse({ answer: contentMap[reqLang] || contentMap.en, contentMap, analysis, action: analysis.complaintRequested ? 'OPEN_COMPLAINT_DRAFT' : analysis.intent === 'COMPLAINT_PROGRESS' ? 'OPEN_COMPLAINT_PROGRESS' : '', sources: [], suggestQuestions: [], needHumanTransfer: false });
+    }
+    const isHumanIntent = analysis.intent === 'HUMAN_HANDOFF';
 
     let matchedChunks = [];
     let answer = '';
@@ -5080,7 +5086,8 @@ export async function mockDispatch(config) {
       sourcesMap,
       suggestQuestions,
       suggestQuestionsMap,
-      needHumanTransfer
+      needHumanTransfer,
+      analysis
     });
   }
 
@@ -5212,6 +5219,10 @@ export async function mockDispatch(config) {
       channel: isAppUser ? 'AI智能客服助手' : (data.channel || '1919政务热线电话'),
       requesterId: isAppUser ? complaintOwnerId(profile) : '',
       requesterRole: isAppUser ? profile.role : '',
+      ...(isAppUser && data.sourceMessageId ? {
+        sourceMessageId: String(data.sourceMessageId).slice(0, 100),
+        intakeAnalysis: analyzeCustomerMessage(data.content)
+      } : {}),
       callPhone: data.callPhone || '',
       applicantName: data.applicantName || (isEn ? 'Anonymous Hotline Caller' : '匿名来电群众'),
       nationalId: data.nationalId || '',
