@@ -35,17 +35,7 @@
           <el-input v-model="form.content" :aria-label="t('complaint.mainContent')" type="textarea" :rows="4" maxlength="5000" show-word-limit :placeholder="t('chatComplaint.contentPlaceholder')" />
         </el-form-item>
         <div class="rounded-lg border border-[#D9E5DB] bg-white p-2.5 space-y-2 mb-3">
-          <div class="flex items-center gap-2 flex-wrap">
-            <el-button size="small" :type="recording ? 'danger' : 'primary'" :disabled="saving" :aria-pressed="recording" @click="toggleVoice">
-              <el-icon class="me-1"><Microphone /></el-icon>{{ t(recording ? 'chatComplaint.stopVoice' : 'chatComplaint.startVoice') }}
-            </el-button>
-            <select v-model="voiceLanguage" :aria-label="t('chatComplaint.voiceLanguage')" :disabled="recording" class="border border-[#D9E5DB] rounded-md px-2 py-1 min-w-0 max-w-full bg-white">
-              <option v-for="language in SUPPORTED_LANGUAGES" :key="language.code" :value="language.code">{{ language.nativeName }}</option>
-            </select>
-          </div>
-          <p v-if="recording" role="status" class="text-[#C04442]">{{ t('chatComplaint.listening') }} {{ interimTranscript }}</p>
-          <p v-if="voiceError" role="alert" class="text-[#C04442]">{{ voiceError }}</p>
-          <p class="text-[11px] leading-relaxed text-[#8A9A8F]">{{ t('chatComplaint.voiceHint') }}</p>
+          <HoldToTalkInput :disabled="saving" @active-change="recording = $event" @transcript="appendVoiceTranscript" />
         </div>
         <el-button type="primary" native-type="submit" class="w-full" :loading="saving" :disabled="recording">{{ t('chatComplaint.submit') }}</el-button>
       </el-form>
@@ -91,15 +81,13 @@
 import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Microphone } from '@element-plus/icons-vue';
+import HoldToTalkInput from './HoldToTalkInput.vue';
 import { createComplaintTicket, getComplaintList } from '../../api/complaint.js';
 import { getMyProfile } from '../../api/my.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useMyNotificationsStore } from '../../stores/myNotifications.js';
-import { SUPPORTED_LANGUAGES } from '../../locales/index.js';
 import { COMPLAINT_STATUSES, COMPLAINT_TYPES, COMPLAINT_STORAGE_PREFIX } from '../../utils/complaints.js';
 import { onTabMessage } from '../../utils/crossTabBus.js';
-import { hasNativeAppBridge, NativeSpeechRecognition } from '../../utils/nativeApp.js';
 
 const props = defineProps({ mode: { type: String, default: 'create' }, complaintId: { type: String, default: '' } });
 const emit = defineEmits(['close', 'submitted']);
@@ -113,10 +101,6 @@ const loadError = ref(false);
 const tickets = ref([]);
 const selectedId = ref(props.complaintId);
 const recording = ref(false);
-const interimTranscript = ref('');
-const voiceError = ref('');
-const voiceLanguage = ref(locale.value);
-let recognition;
 let alive = true;
 let requestVersion = 0;
 let timer;
@@ -171,49 +155,8 @@ async function submit() {
   finally { saving.value = false; }
 }
 
-function disposeVoice() {
-  if (recognition) {
-    recognition.onresult = recognition.onerror = recognition.onend = null;
-    recognition.abort();
-    recognition = undefined;
-  }
-  recording.value = false;
-  interimTranscript.value = '';
-}
-
-function toggleVoice() {
-  if (recording.value) { recognition?.stop(); return; }
-  const SpeechRecognition = hasNativeAppBridge() ? NativeSpeechRecognition : (window.SpeechRecognition || window.webkitSpeechRecognition);
-  voiceError.value = '';
-  if (!SpeechRecognition) { voiceError.value = t('chatComplaint.voiceUnsupported'); return; }
-  const session = new SpeechRecognition();
-  recognition = session;
-  session.lang = { zh: 'zh-CN', en: 'en-US', ar: 'ar-IQ', ckb: 'ckb-IQ' }[voiceLanguage.value] || 'ar-IQ';
-  session.continuous = true;
-  session.interimResults = true;
-  const committed = new Set();
-  session.onresult = event => {
-    if (!alive || recognition !== session) return;
-    const interim = [];
-    for (let index = event.resultIndex; index < event.results.length; index += 1) {
-      const result = event.results[index];
-      const text = result[0].transcript.trim();
-      if (result.isFinal && !committed.has(index)) {
-        committed.add(index);
-        form.content = [form.content, text].filter(Boolean).join(' ').slice(0, 5000);
-      } else if (!result.isFinal) interim.push(text);
-    }
-    interimTranscript.value = interim.join(' ');
-  };
-  session.onerror = event => {
-    if (recognition !== session) return;
-    if (event.error !== 'aborted') voiceError.value = t(event.error === 'unsupported' ? 'chatComplaint.voiceUnsupported' : ['not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error) ? 'chatComplaint.voiceDenied' : 'chatComplaint.voiceFailed');
-    recording.value = false;
-    interimTranscript.value = '';
-  };
-  session.onend = () => { if (recognition === session) { recording.value = false; interimTranscript.value = ''; recognition = undefined; } };
-  try { session.start(); recording.value = true; }
-  catch { disposeVoice(); voiceError.value = t('chatComplaint.voiceFailed'); }
+function appendVoiceTranscript(text) {
+  form.content = [form.content, text].filter(Boolean).join(' ').slice(0, 5000);
 }
 
 async function enableNotifications() {
@@ -221,9 +164,9 @@ async function enableNotifications() {
   ElMessage[enabled ? 'success' : 'info'](t(enabled ? 'chatComplaint.notificationsEnabled' : 'chatComplaint.notificationsUnavailable'));
 }
 function onStorage(event) { if (event.key?.startsWith(COMPLAINT_STORAGE_PREFIX)) load(); }
-watch(() => [props.mode, props.complaintId], () => { disposeVoice(); selectedId.value = props.complaintId; load(); });
+watch(() => [props.mode, props.complaintId], () => { selectedId.value = props.complaintId; load(); });
 watch(selectedId, markSelectedRead);
-watch(locale, () => { disposeVoice(); voiceLanguage.value = locale.value; voiceError.value = ''; load(); });
+watch(locale, load);
 onMounted(() => {
   getMyProfile().then(profile => { if (alive && !form.callPhone) form.callPhone = profile.phone || ''; }).catch(() => {});
   load();
@@ -235,7 +178,6 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   alive = false;
-  disposeVoice();
   clearInterval(timer);
   unsubscribe?.();
   window.removeEventListener('storage', onStorage);

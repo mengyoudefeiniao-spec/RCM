@@ -134,7 +134,18 @@ final class AppSupportBridge {
                 public void onPartialResults(Bundle results) { sendTranscript(id, results, false); }
                 public void onResults(Bundle results) { sendTranscript(id, results, true); finishSpeech(id, ""); }
                 public void onError(int error) {
-                    finishSpeech(id, error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ? "not-allowed" : "recognition-failed");
+                    String code;
+                    switch (error) {
+                        case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS: code = "not-allowed"; break;
+                        case SpeechRecognizer.ERROR_NO_MATCH:
+                        case SpeechRecognizer.ERROR_SPEECH_TIMEOUT: code = "no-speech"; break;
+                        case SpeechRecognizer.ERROR_RECOGNIZER_BUSY: code = "busy"; break;
+                        case SpeechRecognizer.ERROR_AUDIO: code = "audio-capture"; break;
+                        case SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED:
+                        case SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE: code = "language-not-supported"; break;
+                        default: code = "recognition-failed";
+                    }
+                    finishSpeech(id, code);
                 }
             });
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -206,6 +217,10 @@ final class AppSupportBridge {
         if (!destroyed && !activity.isFinishing()) webView.evaluateJavascript(
                 "window.dispatchEvent(new CustomEvent(" + JSONObject.quote(event) + ",{detail:" + data + "}));", null);
     }
-    void pauseSpeech() { if (!speechId.isEmpty()) cancelSpeech(); }
+    void pauseSpeech() {
+        String id = speechId.isEmpty() ? pendingSpeechId : speechId;
+        if (!id.isEmpty()) speechEvent(id, "error", "", false, "aborted");
+        cancelSpeech();
+    }
     void destroy() { cancelSpeech(); destroyed = true; }
 }
