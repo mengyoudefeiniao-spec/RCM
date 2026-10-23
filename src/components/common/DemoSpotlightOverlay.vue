@@ -508,8 +508,7 @@ const STEP_CONFIGS = {
     descKey: 'demo.steps.step6_2.desc',
     stepNo: 2,
     total: 2,
-    padding: 4,
-    advanceTo: 'step6_done'
+    padding: 4
   },
   'step6_done': {
     isDone: true,

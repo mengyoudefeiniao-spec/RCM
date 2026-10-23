@@ -548,7 +548,7 @@
             />
 
             <!-- 仿真全息扫描动画网格 (当物理摄像头未开启/PC端时平滑显示) -->
-            <div v-if="!cameraActive" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/90">
+            <div v-if="!cameraActive && !isFinalScanDemo" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/90">
               <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
               <div class="w-20 h-20 rounded-lg border-2 border-[#3E9B68]/20 flex items-center justify-center text-[#3E9B68]/40 text-3xl mb-1.5">
                 <el-icon><Camera /></el-icon>
@@ -557,6 +557,17 @@
                 {{ cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
               </p>
             </div>
+
+            <button
+              v-if="isFinalScanDemo"
+              type="button"
+              data-demo-target="scan-viewfinder"
+              class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 text-[#A7D9BC] cursor-pointer"
+              @click="completeScanDemo"
+            >
+              <el-icon class="text-4xl"><Camera /></el-icon>
+              <span class="rounded-lg bg-[#326445] px-4 py-2 text-sm font-bold text-white">{{ $t('demo.simulateVerification') }}</span>
+            </button>
 
             <!-- 取景器四角定位框 -->
             <div class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-[#6FBF92]/80 rounded-lg flex items-center justify-center pointer-events-none z-10">
@@ -579,7 +590,7 @@
           </div>
 
           <!-- 取景器下半部分：自动扫码状态与手动输入 -->
-          <div class="pt-2 pb-1 shrink-0 space-y-2 z-20">
+          <div v-if="!isFinalScanDemo" class="pt-2 pb-1 shrink-0 space-y-2 z-20">
             <div class="flex flex-col items-center justify-center">
               <div class="w-12 h-12 rounded-full border-2 border-white/70 bg-[#3E9B68] flex items-center justify-center text-white shadow-[0_0_16px_rgba(62,155,104,0.5)]">
                 <el-icon class="text-2xl" :class="cameraActive ? 'animate-pulse' : ''"><Camera /></el-icon>
@@ -1077,7 +1088,7 @@ import { evaluateCitizenCardScan, createScanSystemError, getScanErrorMeta } from
 import { localizeFreezeReason } from '@/utils/freezeReason.js';
 import { onTabMessage } from '@/utils/crossTabBus';
 import { getMyCouriers } from '@/api/my';
-import { isDemoActive, setDemoStep, activateDemo } from '../../../utils/demoState.js';
+import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
 import { deliveryPriority, sortDeliveryOrders } from '@/utils/deliveryPriority';
 
 const { t, locale } = useI18n();
@@ -1294,6 +1305,9 @@ async function loadManagedCouriers() {
 // 阶段 4 核心：高纵深 APP 风格扫码与拍照核验状态
 // ==========================================
 const scanVerifyModalVisible = ref(false);
+const isFinalScanDemo = computed(() => (
+  route.query.demo === 'true' && isDemoActive.value && demoSubStep.value === 'step6_2'
+));
 const claimStep = ref('camera'); // 'camera' | 'citizen-card' | 'confirm' | 'receipt' | 'scan-error'
 const targetPresetOrder = ref(null);
 const showManualInput = ref(false);
@@ -1324,6 +1338,7 @@ let cameraStartToken = 0;
 let scanHandled = false;
 
 async function startCamera() {
+  if (isFinalScanDemo.value) return;
   if (!videoRef.value || !scanVerifyModalVisible.value) return;
   const token = ++cameraStartToken;
   cameraError.value = '';
@@ -1616,6 +1631,12 @@ function closeScanVerifyModal() {
   claimStep.value = 'camera';
 }
 
+function completeScanDemo() {
+  if (!isFinalScanDemo.value) return;
+  closeScanVerifyModal();
+  setDemoStep('step6_done');
+}
+
 function handleModalClosed() {
   stopCamera();
 }
@@ -1820,6 +1841,15 @@ function copyText(val) {
 
 const crossTabUnsubs = [];
 
+// Restore the scan window on deep links/reloads as well as the dashboard scan action.
+watch(() => [route.query.action, route.query.demo, route.query.demoStep], ([action, demo, step]) => {
+  if (action !== 'scan' && !(demo === 'true' && step === 'step6_2')) return;
+  if (!scanVerifyModalVisible.value) openScanVerifyModal();
+  if (action === 'scan') {
+    router.replace({ query: { ...route.query, action: undefined } });
+  }
+}, { immediate: true });
+
 onMounted(() => {
   loadOrders();
   priorityTimer = window.setInterval(() => { priorityNow.value = Date.now(); }, 60_000);
@@ -1827,11 +1857,6 @@ onMounted(() => {
   // 全流程演示 04 阶段：URL 携带 demo=true 时激活引导（支持 demoStep 指定起始节点）
   if (route.query.demo === 'true') {
     activateDemo(String(route.query.demoStep || 'step4_1'));
-  }
-
-  if (route.query.action === 'scan') {
-    openScanVerifyModal();
-    router.replace({ query: { ...route.query, action: undefined } });
   }
 
   // 跨标签页监听公民端下单通知

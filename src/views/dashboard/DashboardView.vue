@@ -97,7 +97,8 @@ import P1P5VerificationDrawer from '../warehouse/components/P1P5VerificationDraw
 const route = useRoute();
 const authStore = useAuthStore();
 const { t } = useI18n();
-const dashboardMode = ref('overview'); // 默认展示现代中东高端政务风格看板
+// Honor demo deep links before mounting the overview's asynchronous map widgets.
+const dashboardMode = ref(String(route.query.mode || 'overview'));
 const selectedTimeRange = ref('quarter');
 const refreshing = ref(false);
 

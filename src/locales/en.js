@@ -916,6 +916,7 @@ export default {
     "paidToast": "Payment succeeded! Fee paid via [{channel}]"
   },
   "demo": {
+    "simulateVerification": "Simulate Successful Verification",
     "badge": "Full-Process Demo",
     "stepBadge": "Step {cur}/{total}",
     "exitTitle": "Exit full-process demo mode",
@@ -988,7 +989,7 @@ export default {
       },
       "step6_2": {
         "title": "Full-Process Demo · Step 06-2",
-        "desc": "The scan viewfinder is open! Scan the dynamic anti-counterfeit QR code of the citizen's ration order to confirm the recipient and complete the delivery — click the viewfinder area (or [Simulate Success]) to finish"
+        "desc": "The scan viewfinder is open! Click [Simulate Successful Verification] inside the gold frame to demonstrate scanning the citizen's pickup QR code, confirming the recipient and verifying delivery, completing the full demo."
       },
       "step1_1": {
         "title": "Full-Process Demo · Step 01-1",
