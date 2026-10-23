@@ -38,6 +38,35 @@
         <el-form-item :label="t('complaint.mainContent')" required>
           <el-input v-model="form.content" :aria-label="t('complaint.mainContent')" type="textarea" :rows="4" maxlength="5000" show-word-limit :placeholder="t('chatComplaint.contentPlaceholder')" />
         </el-form-item>
+        <section class="complaint-photo-upload mb-4 rounded-xl border border-[#C7DCCB] bg-gradient-to-b from-white to-[#F0F7F2] p-3 shadow-sm" :aria-label="t('chatOrders.photos')">
+          <div class="flex items-start justify-between gap-2">
+            <h4 class="flex min-w-0 items-start gap-2 text-sm font-bold leading-snug text-[#244D35]">
+              <el-icon class="mt-0.5 shrink-0 text-lg"><Picture /></el-icon>
+              <span>{{ t('chatOrders.photos') }}</span>
+            </h4>
+            <span class="shrink-0 rounded-full border border-[#C7DCCB] bg-white px-2 py-1 text-[11px] font-semibold text-[#326445]" role="status"><bdi dir="ltr">{{ t('chatOrders.photoCount', { count: photos.length, max: 5 }) }}</bdi></span>
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-[#58685D]">{{ t('chatOrders.photoTip') }}</p>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <button type="button" class="complaint-photo-action complaint-photo-action--camera" :aria-label="t('chatOrders.camera')" :aria-describedby="photoHintId" :disabled="saving || validatingPhotos || photos.length >= 5" @click="cameraInput.click()">
+              <el-icon class="text-2xl"><Camera /></el-icon>
+              <span>{{ t('chatOrders.camera') }}</span>
+            </button>
+            <button type="button" class="complaint-photo-action complaint-photo-action--upload" :aria-label="t('chatOrders.upload')" :aria-describedby="photoHintId" :disabled="saving || validatingPhotos || photos.length >= 5" @click="photoInput.click()">
+              <el-icon class="text-2xl"><UploadFilled /></el-icon>
+              <span>{{ t('chatOrders.upload') }}</span>
+            </button>
+          </div>
+          <input ref="cameraInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden @change="addPhotos" />
+          <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden @change="addPhotos" />
+          <p :id="photoHintId" class="mt-3 text-[11px] leading-relaxed text-[#58685D]">{{ t('chatOrders.photoHint') }}</p>
+          <div v-if="photos.length" class="mt-3 grid grid-cols-3 gap-2">
+            <figure v-for="(photo, index) in photos" :key="photo.url" class="min-w-0 rounded-lg border border-[#D9E5DB] bg-white p-1.5">
+              <img :src="photo.url" :alt="photo.file.name" class="aspect-square w-full rounded-md object-cover" />
+              <button type="button" class="mt-1 flex min-h-8 w-full items-center justify-center gap-1 text-[11px] leading-snug text-[#B74040] underline disabled:opacity-50" :disabled="saving" @click="removePhoto(index)"><el-icon class="shrink-0"><Delete /></el-icon><span>{{ t('chatOrders.remove') }}</span></button>
+            </figure>
+          </div>
+        </section>
         <div class="rounded-lg border border-[#D9E5DB] bg-white p-2.5 space-y-2 mb-3">
           <HoldToTalkInput :disabled="saving" @active-change="recording = $event" @transcript="appendVoiceTranscript" />
         </div>
@@ -48,22 +77,6 @@
           <el-button v-if="ordersFailed" size="small" @click="loadOrders">{{ t('common.refresh') }}</el-button>
         </el-form-item>
         <CustomerOrderCard v-if="selectedOrder" :order="selectedOrder" class="mb-3" />
-        <div class="space-y-2 mb-3">
-          <h4 class="font-bold">{{ t('chatOrders.photos') }}</h4>
-          <div class="flex flex-wrap gap-2">
-            <el-button size="small" :disabled="saving || validatingPhotos" @click="cameraInput.click()">{{ t('chatOrders.camera') }}</el-button>
-            <el-button size="small" :disabled="saving || validatingPhotos" @click="photoInput.click()">{{ t('chatOrders.upload') }}</el-button>
-          </div>
-          <input ref="cameraInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden @change="addPhotos" />
-          <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden @change="addPhotos" />
-          <p class="text-[#58685D]">{{ t('chatOrders.photoHint') }}</p>
-          <div class="flex flex-wrap gap-2">
-            <figure v-for="(photo, index) in photos" :key="photo.url" class="w-20 space-y-1">
-              <img :src="photo.url" :alt="photo.file.name" class="w-20 h-20 object-cover rounded-lg" />
-              <button type="button" class="text-[#B74040] underline" :disabled="saving" @click="removePhoto(index)">{{ t('chatOrders.remove') }}</button>
-            </figure>
-          </div>
-        </div>
         <el-button type="primary" native-type="submit" class="w-full" :loading="saving" :disabled="recording || validatingPhotos">{{ t('chatComplaint.submit') }}</el-button>
       </el-form>
       <template v-else>
@@ -107,9 +120,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
+import { Camera, UploadFilled, Picture, Delete } from '@element-plus/icons-vue';
 import HoldToTalkInput from './HoldToTalkInput.vue';
 import CustomerOrderCard from './CustomerOrderCard.vue';
 import ComplaintEvidence from './ComplaintEvidence.vue';
@@ -137,6 +151,7 @@ const recording = ref(false);
 const orders = ref([]), ordersLoading = ref(false), ordersFailed = ref(false);
 const selectedOrderId = ref(props.orderId), photos = ref([]), validatingPhotos = ref(false);
 const cameraInput = ref(null), photoInput = ref(null);
+const photoHintId = useId();
 const selectedOrder = computed(() => orders.value.find(order => order.orderId === selectedOrderId.value));
 let ordersVersion = 0;
 async function loadOrders() {
@@ -263,4 +278,30 @@ onBeforeUnmount(() => {
 <style scoped>
 .chat-complaint-panel :deep(.el-form-item) { margin-bottom: 12px; }
 .chat-complaint-panel :deep(.el-form-item__label) { font-size: 12px; line-height: 18px; margin-bottom: 4px; }
+.complaint-photo-action {
+  display: flex;
+  min-width: 0;
+  min-height: 88px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: 1px solid #326445;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color .15s, box-shadow .15s;
+}
+.complaint-photo-action--camera { background: #326445; color: white; box-shadow: 0 2px 5px #244d3520; }
+.complaint-photo-action .el-icon { font-size: 24px; }
+.complaint-photo-action--upload { background: white; color: #244d35; border-color: #8eb49a; }
+.complaint-photo-action--camera:hover:not(:disabled) { background: #244d35; }
+.complaint-photo-action--upload:hover:not(:disabled) { background: #e7f2e9; border-color: #326445; }
+.complaint-photo-action:focus-visible { outline: 3px solid #d3af62; outline-offset: 3px; }
+.complaint-photo-action:disabled { cursor: not-allowed; opacity: .5; box-shadow: none; }
 </style>
