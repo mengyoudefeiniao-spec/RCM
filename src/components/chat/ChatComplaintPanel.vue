@@ -38,6 +38,9 @@
         <el-form-item :label="t('complaint.mainContent')" required>
           <el-input v-model="form.content" :aria-label="t('complaint.mainContent')" type="textarea" :rows="4" maxlength="5000" show-word-limit :placeholder="t('chatComplaint.contentPlaceholder')" />
         </el-form-item>
+        <div class="rounded-lg border border-[#D9E5DB] bg-white p-2.5 space-y-2 mb-3">
+          <HoldToTalkInput :disabled="saving" @active-change="recording = $event" @transcript="appendVoiceTranscript" />
+        </div>
         <section class="complaint-photo-upload mb-4 rounded-xl border border-[#C7DCCB] bg-gradient-to-b from-white to-[#F0F7F2] p-3 shadow-sm" :aria-label="t('chatOrders.photos')">
           <div class="flex items-start justify-between gap-2">
             <h4 class="flex min-w-0 items-start gap-2 text-sm font-bold leading-snug text-[#244D35]">
@@ -67,9 +70,6 @@
             </figure>
           </div>
         </section>
-        <div class="rounded-lg border border-[#D9E5DB] bg-white p-2.5 space-y-2 mb-3">
-          <HoldToTalkInput :disabled="saving" @active-change="recording = $event" @transcript="appendVoiceTranscript" />
-        </div>
         <el-form-item :label="t('chatOrders.associate')">
           <el-select v-model="selectedOrderId" clearable filterable :loading="ordersLoading" :placeholder="t('chatOrders.none')" :aria-label="t('chatOrders.associate')" class="w-full" :disabled="saving">
             <el-option v-for="order in orders" :key="order.orderId" :value="order.orderId" :label="order.orderId" />
