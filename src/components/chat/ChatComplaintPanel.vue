@@ -17,16 +17,8 @@
           <el-form-item :label="t('common.phone')" required>
             <el-input v-model="form.callPhone" :aria-label="t('common.phone')" type="tel" maxlength="20" dir="ltr" />
           </el-form-item>
-          <el-form-item :label="t('common.province')" required>
-            <el-input v-model="form.province" :aria-label="t('common.province')" maxlength="100" />
-          </el-form-item>
-          <el-form-item :label="t('common.center')">
-            <el-input v-model="form.center" :aria-label="t('common.center')" maxlength="120" />
-          </el-form-item>
         </div>
-        <el-form-item :label="t('complaint.outletNamePlaceholder')" required>
-          <el-input v-model="form.agentName" :aria-label="t('complaint.outletNamePlaceholder')" maxlength="160" />
-        </el-form-item>
+        <ComplaintLocationFields v-model:province="form.province" v-model:center="form.center" v-model:agent-name="form.agentName" :disabled="saving" />
         <el-form-item :label="t('complaint.appealType')" required>
           <el-select v-model="form.typeCode" class="w-full" :aria-label="t('complaint.appealType')">
             <el-option v-for="(entry, code) in COMPLAINT_TYPES" :key="code" :value="code" :label="t('complaint.' + entry[2])" />
@@ -126,6 +118,7 @@ import { ElMessage } from 'element-plus';
 import { Camera, UploadFilled, Picture, Delete } from '@element-plus/icons-vue';
 import HoldToTalkInput from './HoldToTalkInput.vue';
 import CustomerOrderCard from './CustomerOrderCard.vue';
+import ComplaintLocationFields from './ComplaintLocationFields.vue';
 import ComplaintEvidence from './ComplaintEvidence.vue';
 import ComplaintRating from './ComplaintRating.vue';
 import { validComplaintPhoto } from '../../utils/customerOrders.js';

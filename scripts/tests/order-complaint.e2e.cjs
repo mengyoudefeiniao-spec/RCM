@@ -4,6 +4,11 @@ async (page) => {
   const base = 'http://127.0.0.1:3100/';
   for (const extra of page.context().pages()) if (extra!==page) await extra.close();
   const errors = []; const track = p => p.on('pageerror', e => errors.push(e.message)); track(page);
+  const fillLocation = async (panel,index,value) => {
+    const item=panel.locator('.complaint-location-fields .el-form-item').nth(index);
+    await item.locator('input').fill(value);
+    if(await item.locator('.el-select').count()) await panel.page().getByRole('option',{name:value,exact:true}).click();
+  };
   const call = (p,url,data={},method='POST') => p.evaluate(async ({url,data,method}) => {const {mockDispatch}=await import('/src/mock/adapter.js');return mockDispatch({url,method,data});},{url,data,method});
   await page.setViewportSize({width:412,height:915});
   await page.goto(base+'#/my?role=citizen&layout=app');
@@ -30,8 +35,8 @@ async (page) => {
   await root.getByRole('button',{name:'Complaint',exact:true}).click();await panel.locator('form').waitFor();
   assert((await panel.locator('.customer-order-card').getAttribute('data-order-id'))===order.orderId,'Complaint did not preselect discussed order');
   await panel.getByRole('textbox',{name:'Phone',exact:true}).fill('07701234567');
-  await panel.getByRole('textbox',{name:'Province',exact:true}).fill('Baghdad');
-  await panel.getByRole('textbox',{name:'Outlet Name',exact:true}).fill('Test outlet');
+  await fillLocation(panel,0,'Baghdad');
+  await fillLocation(panel,2,'Test outlet');
   await panel.getByRole('textbox',{name:'Complaint title',exact:true}).fill('Order photo complaint regression');
   await panel.locator('textarea').first().fill('The supplied ration was underweight. Please investigate the linked order.');
   await panel.locator('input[type=file][multiple]').setInputFiles({name:'not-an-image.png',mimeType:'image/png',buffer:Buffer.from('not an image')});
@@ -61,6 +66,7 @@ async (page) => {
   await row.getByRole('button').last().click();dialog=admin.getByRole('dialog');
   assert(await dialog.locator('.el-select').count()===1,'Admin still chooses satisfaction');
   await dialog.locator('textarea').fill('Checked the order and refunded the shortfall.');
+  await dialog.locator('.el-select').first().click();await admin.getByRole('option',{name:'Resolved',exact:true}).click();
   await dialog.locator('.customer-order-card').waitFor();await dialog.locator('.complaint-evidence img').nth(1).waitFor();
   await admin.screenshot({path:'.playwright-cli/order-complaint-admin.png',animations:'disabled'});
   await admin.evaluate(async()=>{const {default:client}=await import('/src/api/client.js');client.interceptors.request.use(config=>{if(config.url.includes('/complaint/handle/'))config.data={...config.data,satisfaction:'Very Satisfied',rating:{score:5}};return config;});});
@@ -101,7 +107,7 @@ async (page) => {
   const agentOrders=await call(agent,'/ai-service/orders',{},'GET');assert(agentOrders.data.every(o=>o.agentId==='FA-00128')&&agentOrders.data.some(o=>o.orderId.startsWith('G2B-')),'Agent order scope/procurement missing');
   await agentRoot.locator('.chat-order-picker article').first().getByRole('button',{name:'Send to assistant',exact:true}).click();
   await agentRoot.locator('.custom-chat-input textarea').waitFor();await agentRoot.getByRole('button',{name:'Complaint',exact:true}).click();
-  const ap=agentRoot.locator('.chat-complaint-panel');await ap.getByRole('textbox',{name:'Phone',exact:true}).fill('07701122339');await ap.getByRole('textbox',{name:'Province',exact:true}).fill('Baghdad');await ap.getByRole('textbox',{name:'Outlet Name',exact:true}).fill('Agent outlet');await ap.getByRole('textbox',{name:'Complaint title',exact:true}).fill('Agent related order');await ap.locator('textarea').first().fill('Please check the delivery.');
+  const ap=agentRoot.locator('.chat-complaint-panel');await ap.getByRole('textbox',{name:'Phone',exact:true}).fill('07701122339');await fillLocation(ap,0,'Baghdad');await fillLocation(ap,2,'Agent outlet');await ap.getByRole('textbox',{name:'Complaint title',exact:true}).fill('Agent related order');await ap.locator('textarea').first().fill('Please check the delivery.');
   await ap.getByRole('button',{name:'Submit complaint',exact:true}).click();await ap.locator('article').waitFor();
   const agentTicket=await agent.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('rcm_shared_complaint_')).map(k=>JSON.parse(localStorage.getItem(k))).find(t=>t.requesterRole==='agent'));assert(agentTicket.relatedOrder&&!agentTicket.photos.length,'Agent optional photo/order flow failed');
   const forbidden=await page.evaluate(async()=>{const profile=sessionStorage.getItem('rcm_user_profile');sessionStorage.setItem('rcm_user_profile',JSON.stringify({id:'stranger',role:'citizen'}));try{const {mockDispatch}=await import('/src/mock/adapter.js');return await mockDispatch({url:'/ai-service/orders',method:'GET'});}finally{sessionStorage.setItem('rcm_user_profile',profile);}});assert(forbidden.data.length===0,'Unbound identity inherited demo orders');
