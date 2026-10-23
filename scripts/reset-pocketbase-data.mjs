@@ -1,5 +1,6 @@
 import { getInitialFamilies } from '../src/utils/sharedSession.js';
 import { BUSINESS_RULES_STORAGE_KEY, normalizeBusinessRulesDocument } from '../src/utils/businessRules.js';
+import { MOCK_AGENT_HIERARCHY_TREE, MESSAGE_RECIPIENT_TREE_STORAGE_KEY } from '../src/mock/data/agentHierarchyData.js';
 
 const baseUrl = String(process.env.POCKETBASE_URL || process.env.VITE_POCKETBASE_URL || 'https://pb.51xyu.com')
   .replace(/\/_\/$/, '')
@@ -8,6 +9,7 @@ const collection = process.env.POCKETBASE_COLLECTION || process.env.VITE_POCKETB
 const email = process.env.POCKETBASE_ADMIN_EMAIL;
 const password = process.env.POCKETBASE_ADMIN_PASSWORD;
 const applyChanges = process.argv.includes('--apply');
+const provincesOnly = process.argv.includes('--provinces-only');
 const languages = ['zh', 'en', 'ar', 'ku'];
 const EMPTY_ARRAY_MARKER = '__rcm_pocketbase_empty_array_v1__';
 
@@ -63,12 +65,29 @@ for (const lang of languages) {
 }
 
 const byKey = new Map(records.map((record) => [record.key, record]));
+function mergeRecipientNodes(defaultNodes = [], savedNodes = []) {
+  const savedById = new Map(savedNodes.filter((node) => node?.id).map((node) => [String(node.id), node]));
+  const merged = defaultNodes.map((node) => {
+    const saved = savedById.get(String(node.id));
+    if (!saved) return node;
+    savedById.delete(String(node.id));
+    return { ...node, ...saved, children: mergeRecipientNodes(node.children || [], saved.children || []) };
+  });
+  return [...merged, ...savedById.values()];
+}
 // Keep the active rules intact while adding any missing Article 140 translations.
 // If the PocketBase record is absent, the normalizer creates the localized defaults.
 const currentBusinessRules = byKey.get(BUSINESS_RULES_STORAGE_KEY)?.value;
 desired.set(BUSINESS_RULES_STORAGE_KEY, normalizeBusinessRulesDocument(currentBusinessRules));
+const currentRecipientTree = byKey.get(MESSAGE_RECIPIENT_TREE_STORAGE_KEY)?.value;
+desired.set(MESSAGE_RECIPIENT_TREE_STORAGE_KEY, Array.isArray(currentRecipientTree)
+  ? mergeRecipientNodes(MOCK_AGENT_HIERARCHY_TREE, currentRecipientTree)
+  : MOCK_AGENT_HIERARCHY_TREE);
 
-const plan = Array.from(desired, ([key, value]) => ({ key, value, existing: byKey.get(key) }));
+const plannedValues = provincesOnly
+  ? new Map([[MESSAGE_RECIPIENT_TREE_STORAGE_KEY, desired.get(MESSAGE_RECIPIENT_TREE_STORAGE_KEY)]])
+  : desired;
+const plan = Array.from(plannedValues, ([key, value]) => ({ key, value, existing: byKey.get(key) }));
 console.log(`PocketBase: ${baseUrl}`);
 console.log(`Collection: ${collection}`);
 for (const { key, value, existing } of plan) {
@@ -76,7 +95,9 @@ for (const { key, value, existing } of plan) {
     ? `${value.length} families; max ${Math.max(0, ...value.map((family) => family.members.length))} members each`
     : key.includes('_orders_')
       ? '0 orders'
-      : `${value.rules.article140Centers.length} Article 140 centers with multilingual names and governorates`;
+    : key === BUSINESS_RULES_STORAGE_KEY
+        ? `${value.rules.article140Centers.length} Article 140 centers with multilingual names and governorates`
+      : `${value.length} provinces; existing agent/site hierarchy retained`;
   console.log(`${existing ? 'UPDATE' : 'CREATE'} ${key} (${detail})`);
 }
 
@@ -108,4 +129,6 @@ for (const { key, value, existing } of plan) {
   }
 }
 
-console.log('PocketBase demo data reset completed. Family records now contain at most four members, monthly citizen ration orders are empty, and Article 140 centers include multilingual names and governorates.');
+console.log(provincesOnly
+  ? 'PocketBase province hierarchy deployment completed. Existing custom province, agent, and site records were preserved.'
+  : 'PocketBase demo data reset completed. Family records now contain at most four members, monthly citizen ration orders are empty, the 19-province list and existing agent/site hierarchy are initialized, and Article 140 centers include multilingual names and governorates.');

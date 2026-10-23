@@ -43,7 +43,7 @@ import * as enTransfer from './data/en/transferData.js';
 import * as enMemberTransfer from './data/en/memberTransferData.js';
 import * as enKB from './data/en/knowledgeBaseData.js';
 import * as enComplaint from './data/en/complaintData.js';
-import { MOCK_AGENT_HIERARCHY_TREE, MOCK_AGENT_FAMILIES_MAP } from './data/agentHierarchyData.js';
+import { MOCK_AGENT_HIERARCHY_TREE, MOCK_AGENT_FAMILIES_MAP, MESSAGE_RECIPIENT_TREE_STORAGE_KEY } from './data/agentHierarchyData.js';
 
 // 智能客服多语言数据源与匹配工具
 import {
@@ -70,6 +70,27 @@ import {
 
 // 跨标签页高可靠事件总线
 import { broadcastTabMessage } from '../utils/crossTabBus.js';
+
+function mergeRecipientNodes(defaultNodes = [], savedNodes = []) {
+  const savedById = new Map(savedNodes.filter((node) => node?.id).map((node) => [String(node.id), node]));
+  const merged = defaultNodes.map((node) => {
+    const saved = savedById.get(String(node.id));
+    if (!saved) return node;
+    savedById.delete(String(node.id));
+    return { ...node, ...saved, children: mergeRecipientNodes(node.children || [], saved.children || []) };
+  });
+  return [...merged, ...savedById.values()];
+}
+
+function getMessageRecipientTreeData() {
+  if (typeof window === 'undefined') return MOCK_AGENT_HIERARCHY_TREE;
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(MESSAGE_RECIPIENT_TREE_STORAGE_KEY) || 'null');
+    return Array.isArray(saved) ? mergeRecipientNodes(MOCK_AGENT_HIERARCHY_TREE, saved) : MOCK_AGENT_HIERARCHY_TREE;
+  } catch {
+    return MOCK_AGENT_HIERARCHY_TREE;
+  }
+}
 
 // 预置公民配给购买演示订单
 const INITIAL_CITIZEN_PURCHASE_ORDERS_ZH = [
@@ -934,7 +955,7 @@ export async function mockDispatch(config) {
     } else if (!url.includes('/attachments/') && !url.includes('/recipients/tree') && !url.includes('/favorite') && !url.includes('/read')) {
       if (Array.isArray(profile.permissionCodes) && !access.canView && !access.canSend && !access.canReview) return createResponse({}, 403, i18n.global.t('api.forbidden'));
     }
-    if (url.endsWith('/messages/recipients/tree') && method === 'GET') return createResponse(MOCK_AGENT_HIERARCHY_TREE);
+    if (url.endsWith('/messages/recipients/tree') && method === 'GET') return createResponse(getMessageRecipientTreeData());
     const attachmentMatch = url.match(/\/messages\/attachments\/([^/?]+)/);
     if (attachmentMatch && method === 'GET') {
       const attachmentId = decodeURIComponent(attachmentMatch[1]);
@@ -4280,7 +4301,7 @@ export async function mockDispatch(config) {
 
   // 5.21 查询代理三级层级拓扑树 (省级 -> 区域级 -> 街道级，含 GIS 坐标与饱和度) (SCM)
   if (url.includes('/agent/hierarchy/tree') && method === 'GET') {
-    return createResponse(MOCK_AGENT_HIERARCHY_TREE);
+    return createResponse(getMessageRecipientTreeData());
   }
 
   // 5.22 查询指定代理管辖范围内的公民家庭明细列表 (支持省级/区域/街道三级穿透) (SCM / CITIZEN)

@@ -1,3 +1,5 @@
+import { IRAQ_19_PROVINCES } from './iraqRegionWarehouses.js';
+
 /**
  * 代理三级层级体系与家庭挂靠数据模型
  * 契合 Spring Cloud 微服务架构 (Gateway -> Auth / SCM / BPM / GIS)
@@ -296,6 +298,33 @@ export const MOCK_AGENT_HIERARCHY_TREE = [
     ]
   }
 ];
+
+// Keep province recipients aligned with the nationwide governorate master data while
+// preserving the existing agent/site hierarchy wherever operational records are available.
+const REVIEW_REGION_CODES = { SUL: 'SLY' };
+const provinceRegionCode = (province) => REVIEW_REGION_CODES[province.id] || province.id;
+const provinceRoots = new Map(MOCK_AGENT_HIERARCHY_TREE.map((root) => [root.regionCode, root]));
+for (const province of IRAQ_19_PROVINCES) {
+  const regionCode = provinceRegionCode(province);
+  let root = provinceRoots.get(regionCode);
+  if (!root) {
+    root = {
+      id: `PROV-AGT-${province.id}01`,
+      regionCode,
+      level: 'PROVINCE',
+      levelName: 'Province',
+      name: `${province.enName} Province`,
+      title: `${province.enName} Governorate`,
+      isSelf: false,
+      province: `${province.name} (${province.enName})`,
+      children: []
+    };
+    provinceRoots.set(regionCode, root);
+    MOCK_AGENT_HIERARCHY_TREE.push(root);
+  }
+}
+
+export const MESSAGE_RECIPIENT_TREE_STORAGE_KEY = 'rcm_shared_message_recipient_tree';
 
 /**
  * 街道代理挂靠的家庭明细数据池 (家庭列表)
