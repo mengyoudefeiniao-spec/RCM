@@ -25,9 +25,10 @@ import memberRegistrationMessages from './memberRegistration.js';
 import citizenApplicationMessages from './citizenApplications.js';
 import citizenTransferMessages from './citizenTransfer.js';
 import changeHeadMessages from './changeHead.js';
+import chatComplaintMessages from './chatComplaint.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages };
+  const merged = { ...messages, chatComplaint: chatComplaintMessages[lang] };
   for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };

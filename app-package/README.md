@@ -6,6 +6,8 @@ The app API remains in demo/mock mode; PocketBase synchronizes the persisted dem
 
 Some screens reference third-party map tiles and sample photos. Those remain network-dependent and may not be available offline.
 
+The customer service complaint form uses Android's installed speech recognition service for voice input. Microphone permission is requested when the user starts recording; supported languages depend on the device's speech service. Complaint completion notices use native Android notifications after permission is granted, and tapping a notice opens the related complaint progress. These services are exposed only to the bundled app's top-level asset origin. Business data still synchronizes while the WebView is running; delivery after the app has fully closed requires a separately deployed background push service.
+
 ## Build PocketBase APKs (default)
 
 With Node.js dependencies installed in the repository root and JDK 17 at `C:\Program Files\Java\jdk-17.0.8`, run:

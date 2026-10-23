@@ -19,6 +19,7 @@ import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mo
 import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
 import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
+import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
 import * as zhAuth from './data/authData.js';
 import * as zhCitizen from './data/citizenData.js';
 import * as zhReview from './data/reviewData.js';
@@ -313,8 +314,17 @@ function getMockNotifications(role) {
   const seeds = MY_NOTIFICATION_SEEDS[role].map((item, index) => ({
     ...item, read: readIds.includes(item.id), createdAt: new Date(Date.now() - index * 86400000).toISOString()
   }));
-  if (!saved) return seeds;
-  return [...saved, ...seeds.filter((item) => !saved.some((old) => old.id === item.id))];
+  const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+  const complaintReads = readMyData(role, `complaint_reads_${complaintOwnerId(profile)}`, []);
+  const complaintNotices = readSharedComplaints().filter(ticket => ownsComplaint(ticket, profile) && ticket.statusCode === 'RESOLVED').map(ticket => {
+    const revision = ticket.history?.at(-1)?.id || ticket.handledAt;
+    const id = `complaint-${ticket.id}-${revision}`;
+    return { id, type: 'complaint', section: 'notifications', path: '/my', tab: 'notifications', complaintId: ticket.id,
+      titleKey: 'chatComplaint.noticeTitle', bodyKey: 'chatComplaint.noticeBody', params: { id: ticket.id },
+      read: complaintReads.includes(id), createdAt: ticket.handledAt || ticket.submittedAt };
+  });
+  const normal = (saved || []).filter(item => item.type !== 'complaint');
+  return [...complaintNotices, ...normal, ...seeds.filter(item => !normal.some(old => old.id === item.id))];
 }
 
 function addMockNotification(role, type, section) {
@@ -1207,6 +1217,9 @@ export async function mockDispatch(config) {
       const items = getMockNotifications(role);
       const ids = Array.isArray(data.ids) ? data.ids : [];
       items.forEach((item) => { if (ids.includes(item.id)) item.read = true; });
+      const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+      const part = `complaint_reads_${complaintOwnerId(profile)}`;
+      writeMyData(role, part, [...new Set([...readMyData(role, part, []), ...items.filter(item => item.type === 'complaint' && item.read).map(item => item.id)])]);
       writeMyData(role, 'notifications', items);
       return createResponse({ readIds: ids });
     }
@@ -5144,7 +5157,13 @@ export async function mockDispatch(config) {
   // ==========================================
   // 10.1 查询投诉工单列表 (支持来源、状态、省市、中心、关键词)
   if (url.includes('/complaint/list') && method === 'GET') {
-    let list = [...complaintsStore];
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+    const isAppUser = ['citizen', 'agent'].includes(profile.role);
+    const canView = Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('complaints.view') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(profile.role);
+    if (!isAppUser && !canView) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    let list = readSharedComplaints(complaintsStore).filter(ticket => !isAppUser || ownsComplaint(ticket, profile)).map(ticket => presentComplaint(ticket, isEn));
+    if (params.mine && !isAppUser) list = [];
+    if (params.id) list = list.filter(ticket => ticket.id === params.id);
     if (params.channel && params.channel !== '全部') {
       list = list.filter((c) => c.channel === params.channel);
     }
@@ -5177,42 +5196,66 @@ export async function mockDispatch(config) {
 
   // 10.2 登记新投诉工单 (如 1919 热线或 AI 客服转交)
   if (url.includes('/complaint/create') && method === 'POST') {
-    const newId = `CMP-2026-${String(1085 + complaintsStore.length).padStart(4, '0')}`;
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+    const isAppUser = ['citizen', 'agent'].includes(profile.role);
+    const canCreate = Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('complaints.process') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(profile.role);
+    if (!isAppUser && !canCreate) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    if (!String(data.applicantName || '').trim() || !String(data.content || '').trim() || (isAppUser && (!String(data.title || '').trim() || !String(data.province || '').trim() || !String(data.agentName || '').trim() || !/^\+?[\d\s-]{7,20}$/.test(data.callPhone || '')))) {
+      return createResponse({}, 400, i18n.global.t('chatComplaint.invalidForm'));
+    }
+    if (String(data.content).length > 5000 || String(data.title || '').length > 160) return createResponse({}, 400, i18n.global.t('chatComplaint.invalidForm'));
+    const newId = `CMP-${new Date().getFullYear()}-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const now = new Date().toISOString();
     const newComplaint = {
       id: newId,
-      channel: data.channel || (isEn ? '1919 Government Hotline' : '1919政务热线电话'),
+      channelCode: isAppUser ? 'AI' : 'PHONE',
+      channel: isAppUser ? 'AI智能客服助手' : (data.channel || '1919政务热线电话'),
+      requesterId: isAppUser ? complaintOwnerId(profile) : '',
+      requesterRole: isAppUser ? profile.role : '',
       callPhone: data.callPhone || '',
       applicantName: data.applicantName || (isEn ? 'Anonymous Hotline Caller' : '匿名来电群众'),
       nationalId: data.nationalId || '',
       province: data.province || (isEn ? 'Baghdad Governorate' : '巴格达省'),
-      center: data.center || (isEn ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部'),
+      center: data.center || (isAppUser ? '' : (isEn ? 'Karkh 1st Food Supply Branch' : '卡尔赫第一粮食供应分部')),
       agentName: data.agentName || (isEn ? 'District Distribution Station' : '辖区所属代销网点'),
       type: data.type || (isEn ? 'Poor Service Attitude / Long Queue Time' : '服务态度差/排队耗时'),
+      typeCode: data.typeCode,
       title: data.title || (isEn ? 'Hotline Complaint Registration' : '群众致电投诉登记'),
       content: data.content || '',
       status: isEn ? 'Pending Assignment' : '待分配',
+      statusCode: 'PENDING',
       handlerName: '',
       handledAt: '',
       result: '',
       satisfaction: isEn ? 'Pending Rating' : '待评价',
-      submittedAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+      submittedAt: now,
+      history: [{ id: crypto.randomUUID(), statusCode: 'PENDING', createdAt: now, result: '', handlerName: '' }]
     };
-    complaintsStore.unshift(newComplaint);
-    return createResponse(newComplaint, 200, isEn ? 'Complaint ticket successfully registered' : '投诉工单已成功立案登记');
+    writeSharedComplaint(newComplaint);
+    appendSystemAudit({ actor: profile.name || profile.username, type: 'application', details: 'Submitted complaint', businessNo: newId, after: { statusCode: 'PENDING', requesterId: newComplaint.requesterId, requesterRole: newComplaint.requesterRole } });
+    return createResponse(presentComplaint(newComplaint, isEn));
   }
 
   // 10.3 督办并办结工单
   if (url.includes('/complaint/handle/') && method === 'POST') {
+    const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+    const canHandle = Array.isArray(profile.permissionCodes) ? profile.permissionCodes.includes('complaints.process') : ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(profile.role);
+    if (!canHandle) return createResponse({}, 403, i18n.global.t('api.forbidden'));
     const id = url.split('/complaint/handle/')[1]?.split('?')[0];
-    const item = complaintsStore.find((c) => c.id === id);
-    if (item) {
-      item.status = data.status || (isEn ? 'Resolved' : '已办结');
-      item.handlerName = data.handlerName || (isEn ? 'Director General, Planning & Follow-up Directorate' : '规划与跟进司总干事');
-      item.handledAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
-      item.result = data.result || (isEn ? 'Administrative supervision and rectification closed loop implemented' : '已落实行政监督与整改闭环');
-      item.satisfaction = data.satisfaction || (isEn ? 'Satisfied' : '满意');
-    }
-    return createResponse(item, 200, isEn ? 'Complaint case resolved' : '投诉案件已办结');
+    const item = readSharedComplaints(complaintsStore).find(c => c.id === id);
+    if (!item) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    if (!String(data.result || '').trim()) return createResponse({}, 400, i18n.global.t('chatComplaint.resultRequired'));
+    const before = { statusCode: item.statusCode, result: item.result, handlerName: item.handlerName };
+    item.statusCode = complaintStatusCode(data.statusCode || data.status || 'RESOLVED');
+    item.handlerName = profile.name || profile.username || profile.role;
+    item.handlerNameKey = profile.displayNameKey || '';
+    item.handledAt = new Date().toISOString();
+    item.result = String(data.result).trim();
+    item.satisfaction = data.satisfaction || item.satisfaction;
+    item.history = [...(item.history || []), { id: crypto.randomUUID(), statusCode: item.statusCode, createdAt: item.handledAt, result: item.result, handlerName: item.handlerName, handlerNameKey: item.handlerNameKey }];
+    writeSharedComplaint(item);
+    appendSystemAudit({ actor: item.handlerName, type: 'status_change', details: 'Updated complaint handling', businessNo: item.id, before, after: { statusCode: item.statusCode, result: item.result, handlerName: item.handlerName } });
+    return createResponse(presentComplaint(item, isEn));
   }
 
   // ========================================================

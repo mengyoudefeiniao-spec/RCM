@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { ElNotification } from 'element-plus';
 import { i18n } from '../locales/index.js';
 import { getMyNotifications, markMyNotificationsRead, registerMyPushSubscription } from '../api/my.js';
+import { hasNativeAppBridge, nativeAppRequest } from '../utils/nativeApp.js';
 
 const supportedRole = (role) => role === 'citizen' || role === 'agent';
 
@@ -17,8 +18,18 @@ export function notificationUrl(item) {
   const query = new URLSearchParams();
   if (item.flow && item.type === 'material') query.set('supplement', item.id);
   if (item.tab) query.set('tab', item.tab);
+  if (item.type === 'complaint' && item.complaintId) query.set('complaint', item.complaintId);
   const suffix = query.toString();
   return `${path}${suffix ? `?${suffix}` : ''}`;
+}
+
+export function notificationTitle(item, role) {
+  return i18n.global.t(item.titleKey || `my.notice.${role}.${item.type}.title`, item.params || {});
+}
+
+export function notificationBody(item, role) {
+  if (item.bodyKey) return i18n.global.t(item.bodyKey, item.params || {});
+  return item.flow ? i18n.global.t('my.materialRequestBody', { flow: i18n.global.t(`my.materialFlow.${item.flow}`) }) : i18n.global.t(`my.notice.${role}.${item.type}.body`);
 }
 
 export const useMyNotificationsStore = defineStore('myNotifications', () => {
@@ -30,10 +41,8 @@ export const useMyNotificationsStore = defineStore('myNotifications', () => {
   let running = false;
 
   function showDeviceNotice(item) {
-    const title = i18n.global.t(`my.notice.${role.value}.${item.type}.title`);
-    const body = item.flow
-      ? i18n.global.t('my.materialRequestBody', { flow: i18n.global.t(`my.materialFlow.${item.flow}`) })
-      : i18n.global.t(`my.notice.${role.value}.${item.type}.body`);
+    const title = notificationTitle(item, role.value);
+    const body = notificationBody(item, role.value);
     const target = notificationUrl(item);
     const appMode = sessionStorage.getItem('rcm_layout_mode') === 'app';
     const appQuery = appMode ? `${target.includes('?') ? '&' : '?'}layout=app&role=${encodeURIComponent(role.value)}` : '';
@@ -45,7 +54,9 @@ export const useMyNotificationsStore = defineStore('myNotifications', () => {
         notice.onclick = () => { window.focus(); location.href = url; };
       } catch { showInApp(); }
     };
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    if (hasNativeAppBridge()) {
+      nativeAppRequest('notify', { title, body, url, tag: item.id, channelName: i18n.global.t('my.notificationCenter') }).then(shown => { if (!shown) showInApp(); });
+    } else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then((registration) => registration
           ? registration.showNotification(title, { body, tag: item.id, data: { url } })
@@ -85,6 +96,11 @@ export const useMyNotificationsStore = defineStore('myNotifications', () => {
   }
 
   async function enableDeviceNotifications() {
+    if (hasNativeAppBridge()) {
+      const enabled = await nativeAppRequest('enableNotifications', {}, 60000);
+      if (enabled) { const first = items.value.find(item => !item.read); if (first) showDeviceNotice(first); }
+      return enabled;
+    }
     if (typeof Notification === 'undefined') return false;
     let permission;
     try { permission = await Notification.requestPermission(); } catch { return false; }

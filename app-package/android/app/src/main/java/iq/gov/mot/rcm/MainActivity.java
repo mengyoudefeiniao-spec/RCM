@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final int CAMERA_PERMISSION_REQUEST = 1002;
     private WebView webView;
+    private AppSupportBridge appSupportBridge;
     private ValueCallback<Uri[]> fileChooserCallback;
     private PermissionRequest pendingWebPermission;
     private Uri pendingCameraUri;
@@ -97,6 +98,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        appSupportBridge = new AppSupportBridge(this, webView);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -185,7 +187,9 @@ public class MainActivity extends Activity {
         String startRoute = "citizen".equals(BuildConfig.APP_ROLE)
                 ? "citizen?layout=app&role=citizen"
                 : "dashboard?role=agent&mode=mobile&layout=app";
-        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html#/" + startRoute);
+        Uri notificationTarget = getIntent().getData();
+        webView.loadUrl(AppSupportBridge.isAppUrl(notificationTarget) ? notificationTarget.toString()
+                : "https://appassets.androidplatform.net/assets/index.html#/" + startRoute);
     }
 
     private boolean isImageSelection(WebChromeClient.FileChooserParams params) {
@@ -207,6 +211,7 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (appSupportBridge != null && appSupportBridge.onPermissionsResult(requestCode, grantResults)) return;
         if (requestCode == CAMERA_PERMISSION_REQUEST && pendingCameraChooser != null && fileChooserCallback != null) {
             boolean cameraGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
             launchPendingFileChooser(cameraGranted);
@@ -266,6 +271,19 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        if (appSupportBridge != null) appSupportBridge.pauseSpeech();
+        super.onPause();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (webView != null && AppSupportBridge.isAppUrl(intent.getData())) webView.loadUrl(intent.getData().toString());
+    }
+
+    @Override
     public void onBackPressed() {
         if (webView != null && webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
@@ -274,6 +292,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         completeFileChooser(null);
+        if (appSupportBridge != null) appSupportBridge.destroy();
         if (webView != null) webView.destroy();
         super.onDestroy();
     }

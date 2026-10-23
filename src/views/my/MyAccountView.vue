@@ -108,8 +108,8 @@
         <button type="button" class="w-full text-start flex items-start gap-3 rounded-lg p-2 -mx-2 hover:bg-[#F8FAF8] transition-colors" @click="openNotification(item)">
           <span class="mt-1 size-2 shrink-0 rounded-full" :class="item.read ? 'bg-[#D9E5DB]' : 'bg-[#C9A13B]'" />
           <span class="min-w-0 flex-1">
-            <span class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5"><span class="font-semibold text-sm">{{ $t(`my.notice.${role}.${item.type}.title`) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
-            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ item.flow ? $t('my.materialRequestBody', { flow: $t(`my.materialFlow.${item.flow}`) }) : $t(`my.notice.${role}.${item.type}.body`) }}</span>
+            <span class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5"><span class="font-semibold text-sm">{{ notificationTitle(item, role) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
+            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ notificationBody(item, role) }}</span>
             <span v-if="item.materialStatus === 'submitted'" class="block mt-1 text-xs text-[#326445]">{{ $t('my.materialSubmitted') }}</span>
             <span class="block mt-1 text-xs font-semibold text-[#326445]">{{ $t('my.viewRelated') }}</span>
           </span>
@@ -275,7 +275,7 @@ import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
 import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
-import { useMyNotificationsStore, notificationUrl } from '../../stores/myNotifications.js';
+import { useMyNotificationsStore, notificationUrl, notificationTitle, notificationBody } from '../../stores/myNotifications.js';
 import { getSharedTickets } from '../../utils/sharedSession.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 
@@ -480,6 +480,7 @@ async function openNotification(item) {
   const query = Object.fromEntries(new URLSearchParams(search || ''));
   if (isAppMode.value) query.layout = 'app';
   await router.push({ path, query });
+  if (item.type === 'complaint') window.dispatchEvent(new CustomEvent('rcm-open-complaints', { detail: { id: item.complaintId } }));
 }
 
 function displayOutletName(outlet) {

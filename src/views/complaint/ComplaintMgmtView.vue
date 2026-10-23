@@ -166,7 +166,7 @@
               </el-tag>
             </div>
             <el-tag size="small" :type="getStatusTag(item.status)" effect="light">
-              {{ item.status }}
+              {{ statusLabel(item.status) }}
             </el-tag>
           </div>
 
@@ -174,8 +174,8 @@
           <div>
             <div class="font-bold text-[#1F3326] text-xs leading-snug">{{ item.title }}</div>
             <div class="mt-1 flex items-center gap-1.5">
-              <el-tag size="small" :type="getTypeTag(item.type)" class="scale-90 origin-left rtl:origin-right">{{ item.type }}</el-tag>
-              <span class="text-[10px] text-[#8A9A8F] font-mono">{{ item.createdAt?.slice(0, 16) }}</span>
+              <el-tag size="small" :type="getTypeTag(item.type)" class="scale-90 origin-left rtl:origin-right">{{ shortType(item.type) }}</el-tag>
+              <span class="text-[10px] text-[#8A9A8F] font-mono">{{ item.submittedAt?.slice(0, 16).replace('T', ' ') }}</span>
             </div>
           </div>
 
@@ -228,7 +228,7 @@
 
         <el-table-column prop="type" :label="$t('complaint.appealType')" width="120">
           <template #default="{ row }">
-            <el-tooltip :content="row.type" placement="top">
+            <el-tooltip :content="typeLabel(row.typeCode || row.type)" placement="top">
               <el-tag size="small" :type="getTypeTag(row.type)">{{ shortType(row.type) }}</el-tag>
             </el-tooltip>
           </template>
@@ -256,7 +256,7 @@
 
         <el-table-column prop="status" :label="$t('complaint.handleStatus')" width="104" align="center">
           <template #default="{ row }">
-            <el-tooltip :content="row.status" placement="top">
+            <el-tooltip :content="statusLabel(row.status)" placement="top">
               <el-tag
                 size="small"
                 :type="row.status === '已办结' || row.status === 'Resolved' ? 'success' : (row.status === '待分配' || row.status === 'Pending Assignment' ? 'danger' : 'warning')"
@@ -322,17 +322,17 @@
             <div class="text-[11px] text-[#8A9A8F]">{{ $t('complaint.ticketIdLabel') }}</div>
             <div class="text-sm font-mono font-bold text-[#326445]">{{ currentDetail.id }}</div>
           </div>
-          <el-tag :type="currentDetail.status === '已办结' || currentDetail.status === 'Resolved' ? 'success' : 'warning'">{{ currentDetail.status }}</el-tag>
+          <el-tag :type="getStatusTag(currentDetail.status)">{{ statusLabel(currentDetail.status) }}</el-tag>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.channelSource') }}:</span>
-            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.channel }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.channelCode === 'AI' || currentDetail.channel.includes('AI') ? t('complaint.aiOnline') : t('complaint.phoneHotline') }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.appealType') }}:</span>
-            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.type }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ typeLabel(currentDetail.typeCode || currentDetail.type) }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.citizenName') }}:</span>
@@ -366,8 +366,8 @@
           </div>
           <p class="leading-relaxed">{{ currentDetail.result }}</p>
           <div class="text-[11px] text-[#2F5B44] pt-1">
-            <span>{{ $t('complaint.handler') }}: {{ currentDetail.handlerName }}</span>
-            <span class="ms-3">{{ $t('complaint.satisfaction') }}: {{ currentDetail.satisfaction }}</span>
+            <span>{{ $t('complaint.handler') }}: {{ currentDetail.handlerNameKey ? t(currentDetail.handlerNameKey) : currentDetail.handlerName }}</span>
+            <span class="ms-3">{{ $t('complaint.satisfaction') }}: {{ satisfactionLabel(currentDetail.satisfaction) }}</span>
           </div>
         </div>
       </div>
@@ -477,6 +477,8 @@ import { ElMessage } from 'element-plus';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import { getComplaintList, createComplaintTicket, handleComplaintTicket } from '../../api/complaint.js';
 import { useAuthStore } from '../../stores/auth.js';
+import { COMPLAINT_STORAGE_PREFIX, COMPLAINT_STATUSES, COMPLAINT_TYPES, complaintStatusCode, complaintTypeCode } from '../../utils/complaints.js';
+import { onTabMessage } from '../../utils/crossTabBus.js';
 
 const { t, locale } = useI18n();
 const authStore = useAuthStore();
@@ -547,13 +549,19 @@ const statusOptions = computed(() => [
 
 const statusFilterOptions = computed(() => [{ value: '', label: t('complaint.allStatuses') }, ...statusOptions.value]);
 
-const statusHandleOptions = computed(() => statusOptions.value.filter((o) => o.value !== (isEn.value ? 'Pending Assignment' : '待分配') && o.value !== (isEn.value ? 'Under Investigation' : '核查中')));
+const statusHandleOptions = computed(() => statusOptions.value.filter(o => o.value !== (isEn.value ? 'Pending Assignment' : '待分配')));
 
 const satisfactionOptions = computed(() => [
-  { value: isEn.value ? 'Very Satisfied' : '非常满意', label: isEn.value ? 'Very Satisfied' : '非常满意' },
-  { value: isEn.value ? 'Satisfied' : '满意', label: isEn.value ? 'Satisfied' : '满意' },
-  { value: isEn.value ? 'Basically Satisfied' : '基本满意', label: isEn.value ? 'Basically Satisfied' : '基本满意' }
+  { value: isEn.value ? 'Pending Rating' : '待评价', label: t('chatComplaint.ratingPending') },
+  { value: isEn.value ? 'Very Satisfied' : '非常满意', label: t('chatComplaint.ratingVerySatisfied') },
+  { value: isEn.value ? 'Satisfied' : '满意', label: t('chatComplaint.ratingSatisfied') },
+  { value: isEn.value ? 'Basically Satisfied' : '基本满意', label: t('chatComplaint.ratingBasicallySatisfied') }
 ]);
+
+function satisfactionLabel(value) {
+  const code = { '非常满意': 'ratingVerySatisfied', 'Very Satisfied': 'ratingVerySatisfied', '满意': 'ratingSatisfied', 'Satisfied': 'ratingSatisfied', '基本满意': 'ratingBasicallySatisfied', 'Basically Satisfied': 'ratingBasicallySatisfied' }[value] || 'ratingPending';
+  return t('chatComplaint.' + code);
+}
 
 const centerMap = {
   '巴格达省': ['卡尔赫第一粮食供应分部', '鲁萨法第二粮食供应分部', '曼苏尔配给中心'],
@@ -694,15 +702,28 @@ function shortStatus(st) {
   return st;
 }
 
+const statusLabel = value => t('complaint.' + COMPLAINT_STATUSES[complaintStatusCode(value)][2]);
+const typeLabel = value => t('complaint.' + COMPLAINT_TYPES[complaintTypeCode(value)][2]);
+function getStatusTag(value) {
+  const code = complaintStatusCode(value);
+  return code === 'RESOLVED' ? 'success' : code === 'RECTIFYING' ? 'danger' : 'warning';
+}
+
+let loadVersion = 0;
+
 async function loadComplaints() {
+  const version = ++loadVersion;
   loading.value = true;
   try {
     const res = await getComplaintList();
-    complaintsList.value = res || [];
+    if (version === loadVersion) {
+      complaintsList.value = res || [];
+      if (currentDetail.value) currentDetail.value = complaintsList.value.find(item => item.id === currentDetail.value.id) || currentDetail.value;
+    }
   } catch (e) {
     ElMessage.error(t('common.failed'));
   } finally {
-    loading.value = false;
+    if (version === loadVersion) loading.value = false;
   }
 }
 
@@ -728,7 +749,7 @@ function openHandleModal(row) {
   currentHandling.value = row;
   handleForm.value = {
     status: isEn.value ? 'Resolved' : '已办结',
-    result: row.result || (isEn.value ? 'Investigation verified the complaint. Ordered the outlet to rectify immediately and recorded in credit file.' : '经属地联合核查属实，责令网点立即纠正整改并记入信用档案。'),
+    result: row.result || '',
     satisfaction: row.satisfaction || (isEn.value ? 'Very Satisfied' : '非常满意')
   };
   handleVisible.value = true;
@@ -736,6 +757,7 @@ function openHandleModal(row) {
 
 async function submitHandle() {
   if (!currentHandling.value) return;
+  if (!handleForm.value.result.trim()) { ElMessage.warning(t('chatComplaint.resultRequired')); return; }
   handlingLoading.value = true;
   try {
     await handleComplaintTicket(currentHandling.value.id, {
@@ -802,19 +824,31 @@ const handleLangChanged = () => {
   loadComplaints();
 };
 
+let refreshTimer;
+let unsubscribeComplaint;
+const onComplaintStorage = event => { if (event.key?.startsWith(COMPLAINT_STORAGE_PREFIX)) loadComplaints(); };
+
 onMounted(() => {
   loadComplaints();
   handleResize();
+  refreshTimer = setInterval(loadComplaints, 15000);
+  unsubscribeComplaint = onTabMessage('COMPLAINT_CHANGED', loadComplaints);
   if (typeof window !== 'undefined') {
     window.addEventListener('rcm-language-changed', handleLangChanged);
     window.addEventListener('resize', handleResize);
+    window.addEventListener('storage', onComplaintStorage);
+    window.addEventListener('rcm:complaints-changed', loadComplaints);
   }
 });
 
 onUnmounted(() => {
+  clearInterval(refreshTimer);
+  unsubscribeComplaint?.();
   if (typeof window !== 'undefined') {
     window.removeEventListener('rcm-language-changed', handleLangChanged);
     window.removeEventListener('resize', handleResize);
+    window.removeEventListener('storage', onComplaintStorage);
+    window.removeEventListener('rcm:complaints-changed', loadComplaints);
   }
 });
 </script>

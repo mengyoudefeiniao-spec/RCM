@@ -166,8 +166,9 @@
 
         <!-- 2.2 消息对话滚动视窗 -->
         <div
+          v-show="!complaintPanel"
           ref="messagesContainerRef"
-          class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8FBF8]"
+          class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#F8FBF8]"
         >
           <!-- 欢迎卡片与热门业务推荐 (深墨绿+暖砂金高质感) -->
           <div class="p-4 rounded-lg bg-white border border-[#D9E5DB] shadow-xs space-y-3">
@@ -444,7 +445,15 @@
         </div>
 
         <!-- 2.4 底部输入区域 (一体化卡片，宽松舒展) -->
-        <footer class="p-3.5 bg-white border-t border-[#D9E5DB]">
+        <ChatComplaintPanel
+          v-if="complaintPanel && showAppActions"
+          :mode="complaintPanel"
+          :complaint-id="activeComplaintId"
+          @close="complaintPanel = ''"
+          @submitted="openComplaintProgress"
+        />
+
+        <footer v-if="!complaintPanel" class="p-3.5 bg-white border-t border-[#D9E5DB] shrink-0">
           <div class="relative bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg p-2.5 focus-within:border-[#D3AF62] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#D3AF62]/15 transition-all duration-200">
             <el-input
               ref="inputRef"
@@ -489,6 +498,18 @@
             </div>
           </div>
         </footer>
+        <nav v-if="showAppActions" class="chat-app-actions grid grid-cols-3 gap-1.5 px-3 py-2 bg-white border-t border-[#D9E5DB] shrink-0">
+          <button type="button" class="chat-app-action" :aria-pressed="complaintPanel === 'create'" @click="openComplaintForm">
+            <el-icon><EditPen /></el-icon><span>{{ $t('chatComplaint.fileComplaint') }}</span>
+          </button>
+          <button type="button" class="chat-app-action" :aria-pressed="complaintPanel === 'progress'" @click="openComplaintProgress()">
+            <el-icon><Tickets /></el-icon><span>{{ $t('chatComplaint.progress') }}</span>
+            <span v-if="complaintUnread" class="rounded-full bg-[#C04442] text-white px-1 text-[9px]" :aria-label="$t('my.unreadCount', { count: complaintUnread })">{{ complaintUnread }}</span>
+          </button>
+          <button type="button" class="chat-app-action" @click="complaintPanel = ''; triggerHumanHandoff('APP_QUICK_ACTION')">
+            <el-icon><Headset /></el-icon><span>{{ $t('chat.transferHuman') }}</span>
+          </button>
+        </nav>
       </div>
     </transition>
 
@@ -604,6 +625,9 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { currentDirection } from '../../locales/index.js';
+import { useAuthStore } from '../../stores/auth.js';
+import { useMyNotificationsStore } from '../../stores/myNotifications.js';
+import ChatComplaintPanel from './ChatComplaintPanel.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   ChatDotRound,
@@ -616,7 +640,9 @@ import {
   Position,
   Loading,
   CircleCheck,
-  Warning
+  Warning,
+  EditPen,
+  Tickets
 } from '@element-plus/icons-vue';
 
 import {
@@ -636,6 +662,12 @@ import {
 } from '../../mock/data/chatMultiLangData.js';
 
 const route = useRoute();
+const auth = useAuthStore();
+const myNotifications = useMyNotificationsStore();
+const complaintUnread = computed(() => myNotifications.items.filter(item => item.type === 'complaint' && !item.read).length);
+const complaintPanel = ref('');
+const activeComplaintId = ref('');
+const showAppActions = computed(() => isAppMode.value && ['citizen', 'agent'].includes(auth.currentRole));
 const { t, locale, tm } = useI18n();
 const contentLang = computed(() => locale.value === 'ckb' ? 'ku' : locale.value);
 
@@ -899,7 +931,25 @@ function openChatWindow() {
 
 // 关闭窗口
 function closeWindow() {
+  complaintPanel.value = '';
   isOpen.value = false;
+}
+
+function openComplaintForm() {
+  activeComplaintId.value = '';
+  complaintPanel.value = 'create';
+}
+
+function openComplaintProgress(id = '') {
+  activeComplaintId.value = typeof id === 'string' ? id : '';
+  complaintPanel.value = 'progress';
+}
+
+function openComplaintNotice(event) {
+  detectAppMode();
+  if (!showAppActions.value) return;
+  isOpen.value = true;
+  openComplaintProgress(event?.detail?.id || route.query.complaint || '');
 }
 
 // 快捷发送热门问题
@@ -1249,6 +1299,9 @@ watch(
   }
 );
 
+watch(() => route.query.complaint, (id) => { if (id) nextTick(() => openComplaintNotice()); }, { immediate: true });
+watch(() => [auth.userProfile?.id, auth.currentRole], () => { complaintPanel.value = ''; activeComplaintId.value = ''; });
+
 onMounted(() => {
   detectAppMode();
   restoreMessagesFromStorage();
@@ -1256,6 +1309,7 @@ onMounted(() => {
   window.addEventListener('resize', detectAppMode);
   window.addEventListener('rcm-open-chat', openChatWindow);
   window.addEventListener('rcm-close-chat', closeWindow);
+  window.addEventListener('rcm-open-complaints', openComplaintNotice);
   window.addEventListener('rcm-language-changed', handleGlobalLanguageChange);
 });
 
@@ -1263,11 +1317,26 @@ onUnmounted(() => {
   window.removeEventListener('resize', detectAppMode);
   window.removeEventListener('rcm-open-chat', openChatWindow);
   window.removeEventListener('rcm-close-chat', closeWindow);
+  window.removeEventListener('rcm-open-complaints', openComplaintNotice);
   window.removeEventListener('rcm-language-changed', handleGlobalLanguageChange);
 });
 </script>
 
 <style scoped>
+.chat-app-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 4px;
+  border: 1px solid #D9E5DB;
+  border-radius: 8px;
+  color: #326445;
+  background: #F3F8F4;
+  font-size: 11px;
+  cursor: pointer;
+}
+.chat-app-action[aria-pressed="true"] { border-color: #D3AF62; background: #FDF3E0; }
 /* 悬浮球弹出动效 */
 .pop-enter-active,
 .pop-leave-active {
