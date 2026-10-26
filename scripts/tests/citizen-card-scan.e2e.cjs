@@ -30,25 +30,43 @@ async page => {
     const inputs = dialog.locator('input[type="file"]');
     assert(await inputs.count() === 2, 'Separate photo and gallery inputs');
     assert(await inputs.nth(1).getAttribute('capture') === 'environment', 'Rear camera requested');
-    const verification = await page.evaluate(async () => (await import('/src/api/warehouse.js')).verifyCitizenCardAndQuota({ cardNo: 'RC-10029381' }));
-    assert(verification.eligibleMembers === 3, 'Eligible members in ' + lang);
+    const family = await page.evaluate(async () => (await import('/src/api/citizen.js')).getFamilyByCardNo('RC-10029381'));
+    await page.evaluate(async () => {
+      window.cardScanRequests = [];
+      const client = (await import('/src/api/client.js')).default;
+      client.interceptors.request.use(config => { window.cardScanRequests.push({ url: config.url, method: config.method }); return config; });
+    });
     const before = await page.evaluate(async () => (await import('/src/api/agent.js')).getAgentLocalStocks('FA-00128'));
     await inputs.nth(lang === 'en' ? 1 : 0).setInputFiles(screenshot);
     await dialog.locator('.citizen-card-scan-details').waitFor({ timeout: 20000 });
     const details = await dialog.locator('.citizen-card-scan-details').innerText();
-    assert(details.includes('RC-10029381') && details.includes(verification.family.headName), 'Current citizen card information: ' + lang);
+    assert(details.includes('RC-10029381') && details.includes(family.headName), 'Current citizen card information: ' + lang);
+    const requests = await page.evaluate(() => window.cardScanRequests);
+    assert(requests.some(request => request.url === '/citizen/family/RC-10029381'), 'Card information lookup');
+    assert(!requests.some(request => request.url.includes('/citizen-claim/') || request.method !== 'get'), 'No eligibility, quota, claim history or write requests');
+    assert(!/ERR_|Duplicate Claim|Scan Status Exception/.test(await dialog.innerText()), 'No validation panel');
     if (lang !== 'zh') assert(!/[\u4e00-\u9fff]/.test(details), 'Localized current family: ' + lang);
     const after = await page.evaluate(async () => (await import('/src/api/agent.js')).getAgentLocalStocks('FA-00128'));
     assert(JSON.stringify(before) === JSON.stringify(after), 'Card recognition is read-only');
     assert(await page.locator('html').getAttribute('dir') === (['ar', 'ckb'].includes(lang) ? 'rtl' : 'ltr'), 'RTL direction');
     await page.screenshot({ path: '.playwright-cli/citizen-card-result-' + lang + '.png', animations: 'disabled' });
-    reports.push({ lang, eligibleMembers: verification.eligibleMembers, identified: true });
+    reports.push({ lang, informationOnly: true });
   }
   const dialog = page.locator('.app-scan-dialog');
   await dialog.locator('.scan-action-tray button').first().click();
+  await page.evaluate(() => {
+    const families = JSON.parse(localStorage.getItem('rcm_shared_families_ku'));
+    families[0].status = 'بەستراوە';
+    families[0].members.forEach(member => { member.status = 'بەستراوە'; });
+    localStorage.setItem('rcm_shared_families_ku', JSON.stringify(families));
+    window.cardScanRequests = [];
+  });
   await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/citizen-card-legacy.png');
   await dialog.locator('.citizen-card-scan-details').waitFor();
   assert(!(await dialog.innerText()).includes('STALE QR NAME'), 'Legacy QR displays the persisted family, not stale embedded fields');
+  assert((await dialog.innerText()).includes('بەستراوە'), 'Frozen users still show information');
+  assert(!(await dialog.innerText()).includes('ERR_'), 'Expired QR and zero eligible members do not trigger validation');
+  assert(!(await page.evaluate(() => window.cardScanRequests)).some(request => request.url.includes('/citizen-claim/')), 'No verification for frozen users');
   for (const lang of ['en', 'ar', 'ckb', 'zh']) {
     const expected = await page.evaluate(async lang => {
       const { setLanguage } = await import('/src/locales/index.js'); setLanguage(lang);
@@ -58,8 +76,9 @@ async page => {
   }
   await dialog.locator('.scan-action-tray button').first().click();
   await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/citizen-card-unknown.png');
-  await dialog.getByText('ERR_SYS', { exact: true }).waitFor();
+  const notFound = await page.evaluate(async () => (await import('/src/locales/index.js')).i18n.global.t('scanHandover.cardNotFound'));
+  await dialog.getByText(notFound, { exact: true }).waitFor();
   assert(await dialog.locator('.citizen-card-scan-details').count() === 0, 'Unknown cards never fall back to a sample family');
   assert(errors.length === 0, 'Runtime errors: ' + errors.join('; '));
-  return { reports, legacyQr: true, runtimeSwitch: true, unknownCardRejected: true, errors };
+  return { reports, noValidation: ['claim history', 'zero quota', 'frozen status', 'expired QR'], legacyQr: true, runtimeSwitch: true, unknownCardRejected: true, errors };
 }

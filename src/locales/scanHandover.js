@@ -12,4 +12,11 @@ const scannerMessages = {
   ckb: { capturePhoto: 'وێنە بگرە', supportedCodes: 'کۆدی داواکاریی بەشەخۆراک، کارتی هاووڵاتی یان پسووڵەی کڕین سکان بکە.', cardNotFound: 'کارتی بەشەخۆراک نەدۆزرایەوە. ژمارەکە بپشکنە و دووبارە سکان بکە.' }
 };
 
-export default Object.fromEntries(Object.entries(messages).map(([lang, labels]) => [lang, { ...labels, ...scannerMessages[lang] }]));
+const cardInformationMessages = {
+  zh: { cardInfoTitle: '电子配给卡用户信息', cardInfoLoading: '正在读取用户信息…', cardInfoUnavailable: '暂时无法读取用户信息，请稍后重试。' },
+  en: { cardInfoTitle: 'Ration Card User Information', cardInfoLoading: 'Loading user information…', cardInfoUnavailable: 'User information could not be loaded. Please try again later.' },
+  ar: { cardInfoTitle: 'معلومات صاحب البطاقة التموينية', cardInfoLoading: 'جارٍ تحميل معلومات صاحب البطاقة…', cardInfoUnavailable: 'تعذر تحميل معلومات صاحب البطاقة. يرجى المحاولة لاحقاً.' },
+  ckb: { cardInfoTitle: 'زانیاریی خاوەنی کارتی بەشەخۆراک', cardInfoLoading: 'زانیاریی خاوەن کارت بار دەکرێت…', cardInfoUnavailable: 'نەتوانرا زانیاریی خاوەن کارت بار بکرێت. تکایە دواتر هەوڵ بدەوە.' }
+};
+
+export default Object.fromEntries(Object.entries(messages).map(([lang, labels]) => [lang, { ...labels, ...scannerMessages[lang], ...cardInformationMessages[lang] }]));

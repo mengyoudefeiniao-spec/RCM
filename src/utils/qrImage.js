@@ -73,6 +73,21 @@ export async function decodeQrImage(file, { signal } = {}) {
         }
       }
     }
+    const { default: jsQR } = await import('jsqr');
+    checkAborted(signal);
+    for (const size of [...new Set([Math.min(2048, longestSide), longestSide].filter(size => size <= 4096))]) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      checkAborted(signal);
+      const scale = size / longestSide;
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      context.imageSmoothingEnabled = false;
+      context.globalCompositeOperation = 'source-over';
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+      const result = jsQR(pixels.data, canvas.width, canvas.height, { inversionAttempts: 'attemptBoth' });
+      if (result?.data?.trim()) { checkAborted(signal); return result.data; }
+    }
     // A phone screenshot can contain a small code surrounded by text and card artwork.
     // Scan overlapping square regions so those decorations do not dominate QR detection.
     const side = Math.min(image.naturalWidth, image.naturalHeight);
