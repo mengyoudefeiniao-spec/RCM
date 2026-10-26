@@ -41,7 +41,7 @@
         <div class="mt-2 font-mono text-xl font-bold text-[#2F5B44]">{{ money(incomeTotal) }}</div>
         <div class="mt-1 text-[11px] text-[#24483A]/80">{{ $t('agentFinance.kpiIncomeHint', { self: money(incomeSelf), subsidy: money(incomeSubsidy) }) }}</div>
       </div>
-      <div class="rounded-xl border border-[#F2E3C6] bg-[#FDF3E0]/70 p-4">
+      <div class="rounded-xl border border-[#F2E3C6] bg-[#FDF3E0]/70 p-4" data-ledger-kpi="expenses">
         <div class="flex items-center justify-between text-[11px] font-semibold text-[#6B5321]">
           <span>{{ $t('agentFinance.kpiExpense') }}</span>
           <el-icon :size="16" class="text-[#C9A13B]"><ShoppingCart /></el-icon>
@@ -57,7 +57,7 @@
         <div class="mt-2 font-mono text-xl font-bold" :class="netBalance >= 0 ? 'text-[#1F6842]' : 'text-[#C04442]'">{{ money(netBalance) }}</div>
         <div class="mt-1 text-[11px] text-[#8A9A8F]">{{ $t('agentFinance.kpiNetHint', { rate: netRateLabel }) }}</div>
       </div>
-      <div class="rounded-xl border border-[#E9D9D6] bg-white p-4">
+      <div class="rounded-xl border border-[#E9D9D6] bg-white p-4" data-ledger-kpi="payable">
         <div class="flex items-center justify-between text-[11px] font-semibold text-[#58685D]">
           <span>{{ $t('agentFinance.kpiPayable') }}</span>
           <el-icon :size="16" class="text-[#C04442]"><Wallet /></el-icon>
@@ -214,6 +214,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Coin, Refresh, Search, ShoppingCart, TrendCharts, Wallet } from '@element-plus/icons-vue';
+import { useAgentDataRefresh } from '../../../composables/useAgentDataRefresh.js';
 import * as echarts from 'echarts';
 import { getAgentCitizenOrders, getAgentLocalStocks, getG2BPurchaseOrders, getMyAgentCenters } from '../../../api/agent.js';
 
@@ -303,18 +304,18 @@ function inPeriod(order) {
   return time >= cutoff.value;
 }
 
-const incomeOrders = computed(() => incomeAll.value.filter(belongsToAgent).filter(inPeriod));
+const incomeOrders = computed(() => incomeAll.value.filter(belongsToAgent).filter(inPeriod).filter(order => order.status !== 'CANCELLED' && ['PAID','VERIFIED'].includes(order.payStatus)));
 const expenseOrders = computed(() => expenseAll.value.filter(belongsToAgent).filter(inPeriod));
 
 const incomeSelf = computed(() => incomeOrders.value.reduce((sum, order) => sum + Number(order.selfPayAmount || order.amount || 0), 0));
 const incomeSubsidy = computed(() => incomeOrders.value.reduce((sum, order) => sum + Number(order.subsidyAmount || 0), 0));
 const incomeTotal = computed(() => incomeSelf.value + incomeSubsidy.value);
 
-const paidExpenseOrders = computed(() => expenseOrders.value.filter((order) => order.payStatus === 'PAID' || Boolean(order.payTime)));
+const paidExpenseOrders = computed(() => expenseOrders.value.filter((order) => order.payStatus === 'PAID'));
 const paidExpenseCount = computed(() => paidExpenseOrders.value.length);
 const expenseTotal = computed(() => paidExpenseOrders.value.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0));
 
-const payableOrders = computed(() => expenseOrders.value.filter((order) => order.payStatus !== 'PAID' && !order.payTime && order.status !== 'REJECTED'));
+const payableOrders = computed(() => expenseOrders.value.filter((order) => order.payStatus !== 'PAID' && !['REJECTED','CANCELLED'].includes(order.status)));
 const payableCount = computed(() => payableOrders.value.length);
 const payableTotal = computed(() => payableOrders.value.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0));
 
@@ -362,7 +363,7 @@ const itemStats = computed(() => {
       row.salesAmount += Number(item.subtotal ?? itemQty * Number(item.unitPrice || 0));
     }
   }
-  for (const order of expenseOrders.value) {
+  for (const order of paidExpenseOrders.value) {
     for (const item of order.items || []) {
       const row = ensure(item);
       const itemQty = Number(item.qty || 0);
@@ -370,9 +371,9 @@ const itemStats = computed(() => {
       row.purchaseAmount += Number(item.subtotal ?? itemQty * Number(item.unitPrice || 0));
     }
   }
-  for (const stock of stocks.value) {
+  for (const stock of stocks.value.filter(belongsToAgent)) {
     const row = ensure(stock);
-    row.stock = Number(stock.currentOnHand || 0);
+    row.stock += Number(stock.currentOnHand || 0);
   }
 
   const days = effectiveDays.value;
@@ -612,7 +613,9 @@ watch(locale, () => nextTick(() => {
 }));
 
 // ---------------- 数据 ----------------
+let loadVersion = 0, alive = true;
 async function loadAll() {
+  const version = ++loadVersion;
   loading.value = true;
   try {
     const [centerList, g2bOrders, citizenOrders, stockList] = await Promise.all([
@@ -621,6 +624,7 @@ async function loadAll() {
       getAgentCitizenOrders({}),
       getAgentLocalStocks()
     ]);
+    if (!alive || version !== loadVersion) return;
     centers.value = toArray(centerList);
     expenseAll.value = toArray(g2bOrders);
     incomeAll.value = toArray(citizenOrders);
@@ -628,18 +632,21 @@ async function loadAll() {
     await nextTick();
     renderCharts();
   } catch {
-    ElMessage.error(t('agentFinance.loadFailed'));
+    if (alive && version === loadVersion) ElMessage.error(t('agentFinance.loadFailed'));
   } finally {
-    loading.value = false;
+    if (alive && version === loadVersion) loading.value = false;
   }
 }
 
+useAgentDataRefresh(loadAll);
+watch(locale, loadAll);
 onMounted(() => {
   loadAll();
   window.addEventListener('resize', handleResize);
 });
 
 onBeforeUnmount(() => {
+  alive = false; loadVersion++;
   window.removeEventListener('resize', handleResize);
   trendChart?.dispose();
   expenseChart?.dispose();

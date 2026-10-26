@@ -20,6 +20,7 @@ import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
 import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
+import { readProcurementOrders, writeProcurementOrder, presentProcurementOrder, normalizeProcurementItems, readAgentStockBase, writeAgentStockBase, projectProcurementStocks } from '../utils/agentProcurement.js';
 import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
 import chatComplaintMessages from '../locales/chatComplaint.js';
 import { ownsCustomerOrder, customerOrderSnapshot, customerOrderAnswer, validComplaintPhoto } from '../utils/customerOrders.js';
@@ -728,7 +729,7 @@ export async function mockDispatch(config) {
   let adminCardsStore = activeStores.adminCardsStore;
   let adminFamiliesStore = activeStores.adminFamiliesStore;
   let adminAgentsStore = activeStores.adminAgentsStore;
-  let g2bOrdersStore = activeStores.g2bOrdersStore;
+  let g2bOrdersStore = readProcurementOrders();
   let b2cReservationsStore = activeStores.b2cReservationsStore;
   let citizenPurchaseOrdersStore = activeStores.citizenPurchaseOrdersStore;
   let agentTimeSlotsStore = activeStores.agentTimeSlotsStore;
@@ -3868,140 +3869,66 @@ export async function mockDispatch(config) {
     return createResponse(list);
   }
 
-  // 5.11 G2B 集中批发采购订单列表 (SCM)
-  if (url.includes('/agent/g2b/orders') && method === 'GET') {
-    let result = [...(activeStores.g2bOrdersStore || g2bOrdersStore)];
-    if (params.status && params.status !== '全部') {
-      if (params.status === 'UNFINISHED') {
-        result = result.filter((o) => o.status !== 'COMPLETED');
-      } else {
-        result = result.filter((o) => o.status === params.status);
-      }
-    }
-    if (params.agentId) {
-      result = result.filter((o) => o.agentId === params.agentId);
-    }
+  const procurementProfile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
+  const procurementStaff = ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(procurementProfile.role) || procurementProfile.permissionCodes?.includes('agents.view');
+  const procurementAgentIds = procurementProfile.role === 'agent'
+    ? (Array.isArray(procurementProfile.agentIds) ? procurementProfile.agentIds.map(String) : procurementProfile.agentId || procurementProfile.agentCode ? [String(procurementProfile.agentId || procurementProfile.agentCode)] : procurementProfile.id === 'usr-agt-01' ? myAgentCentersStore.map(item => item.id) : [])
+    : procurementStaff ? myAgentCentersStore.map(item => item.id) : [];
+  const canAccessProcurement = order => procurementStaff || procurementAgentIds.includes(order.agentId);
+  const procurementWrite = procurementProfile.role === 'agent' || ['admin', 'minister_center', 'deputy_minister', 'director_planning'].includes(procurementProfile.role) || procurementProfile.permissionCodes?.includes('agents.edit');
+
+  if (url.endsWith('/agent/g2b/orders') && method === 'GET') {
+    if (!procurementStaff && procurementProfile.role !== 'agent') return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    let result = g2bOrdersStore.filter(canAccessProcurement);
+    if (params.status && params.status !== '全部') result = result.filter(order => params.status === 'UNFINISHED' ? order.status !== 'COMPLETED' : order.status === params.status);
+    if (params.agentId) result = result.filter(order => order.agentId === params.agentId);
     if (params.keyword) {
-      const kw = params.keyword.toLowerCase();
-      result = result.filter(
-        (o) =>
-          o.orderNo.toLowerCase().includes(kw) ||
-          o.pickupVoucherCode.toLowerCase().includes(kw) ||
-          o.centerName.toLowerCase().includes(kw)
-      );
+      const keyword = String(params.keyword).toLowerCase();
+      result = result.filter(order => [order.orderNo, order.pickupVoucherCode, order.centerName].some(value => String(value || '').toLowerCase().includes(keyword)));
     }
-    return createResponse(result);
+    return createResponse(result.map(order => presentProcurementOrder(order, localeCode)));
   }
 
-  // 5.12 提交 G2B 集中采购预约单 (SCM / V3 规则引擎)
-  // 关键规则：单中心物理绑定校验；在途+在库未超 1500 户 1.2 倍安全库存；未付款禁止生成仓储拣货
-  if (url.includes('/agent/g2b/orders') && method === 'POST' && !url.includes('/pay')) {
-    const { agentId, centerId, items, logisticsMode, timeSlot, deliveryVehicleNo } = data;
-    const targetAgent = myAgentCentersStore.find((a) => a.id === agentId) || myAgentCentersStore[0];
-
-    // 单中心绑定校验：严禁跨中心调货
-    if (targetAgent && String(targetAgent.centerId) !== String(centerId)) {
-      return createResponse(
-        {},
-        400,
-        isEn ? `[Single-Center Physical Affiliation Interception]: Street agent [${targetAgent.name}] is physically affiliated only with center [${targetAgent.centerName}]; cross-center procurement orders are strictly prohibited!` : `【单中心物理归属拦截】：街道代理【${targetAgent.name}】物理上仅隶属于中心【${targetAgent.centerName}】，严禁跨中心采购订货！`
-      );
-    }
-
-    // 1500 户安全库存冗余校验 (1.2 倍系数)
-    const households = targetAgent ? targetAgent.householdsCount : 1120;
-    const maxAllowedFlourKg = households * 9 * 1.2; // 每户标准9KG * 1.2倍冗余
-    const maxAllowedRiceKg = households * 4.5 * 1.2; // 每户标准4.5KG * 1.2倍冗余
-    const maxAllowedOilL = households * 1.2 * 1.2; // 每户标准1.2L * 1.2倍冗余
-
-    const requestedFlour = (items || []).filter((i) => i.itemCode?.includes('FLOUR')).reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
-    const requestedRice = (items || []).filter((i) => i.itemCode?.includes('RICE')).reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
-    const requestedOil = (items || []).filter((i) => i.itemCode?.includes('OIL')).reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
-
-    if (requestedFlour > maxAllowedFlourKg) {
-      return createResponse(
-        {},
-        400,
-        isEn ? `[Quota Overrun Interception]: This flour order quantity (${requestedFlour} KG) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedFlourKg.toFixed(0)} KG) for the current grid of ${households} households!` : `【配额超限拦截】：本次面粉订货量 (${requestedFlour} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedFlourKg.toFixed(0)} KG)！`
-      );
-    }
-    if (requestedRice > maxAllowedRiceKg) {
-      return createResponse(
-        {},
-        400,
-        isEn ? `[Quota Overrun Interception]: This rice order quantity (${requestedRice} KG) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedRiceKg.toFixed(0)} KG) for the current grid of ${households} households!` : `【配额超限拦截】：本次大米订货量 (${requestedRice} KG) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedRiceKg.toFixed(0)} KG)！`
-      );
-    }
-    if (requestedOil > maxAllowedOilL) {
-      return createResponse(
-        {},
-        400,
-        isEn ? `[Quota Overrun Interception]: This edible oil order quantity (${requestedOil} L) exceeds the 1.2x dynamic safety stock ceiling (${maxAllowedOilL.toFixed(0)} L) for the current grid of ${households} households!` : `【配额超限拦截】：本次食用油订货量 (${requestedOil} L) 超过当前网格 ${households} 户的 1.2 倍动态安全库存上限 (${maxAllowedOilL.toFixed(0)} L)！`
-      );
-    }
-
-    const orderNo = `ORD-${Date.now().toString().slice(-8)}`;
-    const totalAmount = (items || []).reduce((sum, i) => sum + (Number(i.qty || 0) * Number(i.unitPrice || 0)), 0);
-    const isPaid = data.payStatus === 'PAID' || data.isPaid === true;
-    const status = isPaid ? 'PAID_WMS_PICKING' : 'PENDING_PAYMENT';
-    const pickupVoucherCode = `PK-VOUCH-${centerId || '101'}-${Date.now().toString().slice(-4)}`;
-
-    const newOrder = {
-      orderNo,
-      agentId: targetAgent ? targetAgent.id : 'FA-00128',
-      agentName: targetAgent ? targetAgent.name : '卡尔赫第一配给中心综合代销站',
-      centerId: centerId || (targetAgent ? targetAgent.centerId : '101'),
-      centerName: targetAgent ? targetAgent.centerName : '卡尔赫第一配给中心 (曼苏尔)',
-      province: targetAgent ? targetAgent.province : '巴格达省',
-      items: items || [
-        { itemCode: 'FLOUR-WHT-02', itemName: '优质特级面粉 (标准白面)', qty: 5000, unit: '公斤 (KG)', unitPrice: 350, subtotal: 1750000 }
-      ],
-      totalAmount,
-      currency: 'IQD',
-      logisticsMode: logisticsMode || 'DISPATCH',
-      timeSlot: timeSlot || '2026-10-15 09:00-11:00',
-      deliveryVehicleNo: deliveryVehicleNo || '配送车待指派',
-      status: status,
-      payStatus: isPaid ? 'PAID' : 'UNPAID',
-      payChannel: isPaid ? (data.payChannel || 'PUBLIC_TREASURY_ACCOUNT') : null,
-      payTime: isPaid ? new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') : null,
-      pickupVoucherCode,
-      smsNotified: isPaid,
-      smsContent: isPaid ? `【伊拉克贸易部】集中采购单${orderNo}货款${totalAmount.toLocaleString()}第纳尔已核销入库，排期${timeSlot}履约，提货码${pickupVoucherCode}。` : null,
-      wmsTaskId: isPaid ? `WMS-TASK-WH01-${Date.now().toString().slice(-6)}` : null,
-      createdAt: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
-      remarks: '依据辖区服务户数配额提交集中采购，货款入国家粮食财政专管账户。'
-    };
-
-    g2bOrdersStore.unshift(newOrder);
-    if (activeStores.g2bOrdersStore && !activeStores.g2bOrdersStore.some(o => o.orderNo === newOrder.orderNo)) {
-      activeStores.g2bOrdersStore.unshift(newOrder);
-    }
-    return createResponse(newOrder, 200, (isEn ? 'G2B centralized procurement reservation submitted! Please complete the payment promptly to start central warehouse picking scheduling.' : 'G2B 集中采购预约单已提交！请尽快完成货款支付以启动中心仓拣货排期。'));
+  if (url.endsWith('/agent/g2b/orders') && method === 'POST') {
+    if (!procurementWrite) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    const targetAgent = myAgentCentersStore.find(agent => agent.id === data.agentId);
+    if (!targetAgent || !targetAgent.isCurrentActive || !canAccessProcurement({ agentId: data.agentId }) || String(targetAgent.centerId) !== String(data.centerId)) return createResponse({}, 403, i18n.global.t('agentProcurement.invalidAgent'));
+    let items;
+    try { items = normalizeProcurementItems(data.items); } catch { return createResponse({}, 400, i18n.global.t('agentProcurement.invalidItems')); }
+    const limits = { 'FLOUR-WHT-02': 9, 'RICE-BAS-01': 4.5, 'OIL-SUN-03': 1.2, 'SUGAR-WHT-04': 2 };
+    if (items.some(item => item.qty > Math.floor(Number(targetAgent.householdsCount || 0) * limits[item.itemCode] * 1.2))) return createResponse({}, 400, i18n.global.t('agentProcurement.invalidItems'));
+    const requestId = String(data.requestId || '');
+    const fingerprint = JSON.stringify([data.agentId, data.centerId, data.logisticsMode, data.timeSlot, items.map(item => [item.itemCode, item.qty])]);
+    const existing = requestId && g2bOrdersStore.find(order => order.requestId === requestId && order.createdBy === String(procurementProfile.id || procurementProfile.username));
+    if (existing) return existing.requestFingerprint === fingerprint ? createResponse(presentProcurementOrder(existing, localeCode)) : createResponse({}, 409, i18n.global.t('agentProcurement.duplicateRequest'));
+    const orderNo = `G2B-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const paid = data.payStatus === 'PAID' || data.isPaid === true;
+    const now = new Date().toISOString();
+    const order = { orderNo, requestId, requestFingerprint: fingerprint, createdBy: String(procurementProfile.id || procurementProfile.username), agentId: targetAgent.id, agentName: targetAgent.name, centerId: String(targetAgent.centerId), centerName: targetAgent.centerName, province: targetAgent.province,
+      items, totalAmount: items.reduce((sum, item) => sum + item.subtotal, 0), currency: 'IQD', logisticsMode: data.logisticsMode === 'PICKUP' ? 'PICKUP' : 'DISPATCH', timeSlot: String(data.timeSlot || ''), deliveryVehicleNo: String(data.deliveryVehicleNo || ''), status: paid ? 'PAID_WMS_PICKING' : 'PENDING_PAYMENT', payStatus: paid ? 'PAID' : 'UNPAID', payChannel: paid ? data.payChannel || 'PUBLIC_TREASURY_ACCOUNT' : null, payTime: paid ? now : null,
+      pickupVoucherCode: `PK-${orderNo}`, smsNotified: paid, smsContent: '', wmsTaskId: paid ? `WMS-${orderNo}` : null, createdAt: now, remarks: '' };
+    writeProcurementOrder(order);
+    appendSystemAudit({ actor: procurementProfile.name || procurementProfile.username, type: paid ? 'payment' : 'application', businessNo: orderNo, details: 'Created agent procurement order', after: { agentId: order.agentId, amount: order.totalAmount, payStatus: order.payStatus } });
+    return createResponse(presentProcurementOrder(order, localeCode), 200, i18n.global.t('agentProcurement.created'));
   }
 
-  // 5.13 支付 G2B 集中采购货款 (V3 资金入专管账户触发仓储出库)
-  if (url.match(/\/agent\/g2b\/orders\/([^/]+)\/pay/) && method === 'POST') {
-    const orderNo = url.split('/')[4];
-    const targetOrder = g2bOrdersStore.find((o) => o.orderNo === orderNo);
-
-    if (!targetOrder) {
-      return createResponse({}, 404, isEn ? 'The specified G2B purchase order does not exist!' : '指定的 G2B 采购单不存在！');
+  const procurementAction = url.match(/\/agent\/g2b\/orders\/([^/]+)\/(pay|receive)$/);
+  if (procurementAction && method === 'POST') {
+    const order = g2bOrdersStore.find(item => item.orderNo === decodeURIComponent(procurementAction[1]));
+    if (!order) return createResponse({}, 404, i18n.global.t('api.notFound'));
+    if (!procurementWrite || !canAccessProcurement(order)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    if (['CANCELLED', 'REJECTED'].includes(order.status)) return createResponse({}, 409, i18n.global.t('agentProcurement.invalidState'));
+    if (procurementAction[2] === 'pay') {
+      if (order.payStatus === 'PAID') return createResponse(presentProcurementOrder(order, localeCode));
+      order.payStatus = 'PAID'; order.status = 'PAID_WMS_PICKING'; order.payTime = new Date().toISOString(); order.payChannel = data.channel || 'PUBLIC_TREASURY_ACCOUNT'; order.wmsTaskId = `WMS-${order.orderNo}`; order.smsNotified = true;
+    } else {
+      if (order.status === 'COMPLETED') return createResponse(presentProcurementOrder(order, localeCode));
+      if (order.payStatus !== 'PAID' || !['PAID_WMS_PICKING', 'IN_TRANSIT'].includes(order.status) || data.confirmed !== true) return createResponse({}, 409, i18n.global.t('agentProcurement.invalidState'));
+      order.status = 'COMPLETED'; order.completedAt = new Date().toISOString(); order.receivedBy = procurementProfile.id || procurementProfile.username;
     }
-
-    targetOrder.payStatus = 'PAID';
-    targetOrder.status = 'PAID_WMS_PICKING';
-    targetOrder.payChannel = data.channel || 'PUBLIC_TREASURY_ACCOUNT';
-    targetOrder.payTime = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
-    targetOrder.wmsTaskId = `WMS-TASK-WH01-${Date.now().toString().slice(-6)}`;
-    targetOrder.smsNotified = true;
-    targetOrder.smsContent = `【伊拉克贸易部】您的G2B集中采购单${targetOrder.orderNo}货款${targetOrder.totalAmount.toLocaleString()}第纳尔已核销入库，排期${targetOrder.timeSlot}履约，提货码${targetOrder.pickupVoucherCode}。`;
-
-    return createResponse(
-      targetOrder,
-      200,
-      `货款 ${targetOrder.totalAmount.toLocaleString()} IQD 已成功入国家粮食专管账户！仓储拣货单【${targetOrder.wmsTaskId}】已生成，提货短信已送达！`
-    );
+    writeProcurementOrder(order);
+    appendSystemAudit({ actor: procurementProfile.name || procurementProfile.username, type: procurementAction[2] === 'pay' ? 'payment' : 'status_change', businessNo: order.orderNo, details: 'Updated agent procurement order', after: { status: order.status, payStatus: order.payStatus, amount: order.totalAmount } });
+    return createResponse(presentProcurementOrder(order, localeCode), 200, i18n.global.t(procurementAction[2] === 'pay' ? 'agentProcurement.paymentSuccess' : 'agentProcurement.receivedSuccess'));
   }
 
   // 5.13.1 代理端根据提货码/二维码检索订单 (GET)
@@ -4174,12 +4101,14 @@ export async function mockDispatch(config) {
 
     // 扣减代理商本地实物现货库存 (agentLocalStocksStore)
     const deductedItems = [];
+    const localStockBase = readAgentStockBase(targetOrder.agentId || 'FA-00128');
+    const projectedStocks = projectProcurementStocks(localStockBase, g2bOrdersStore);
     for (const it of targetOrder.items || []) {
-      const localStock = agentLocalStocksStore.find((s) => s.itemCode === it.itemCode);
+      const localStock = localStockBase.find((s) => s.itemCode === it.itemCode);
       const qty = Number(it.qty) || 0;
       if (localStock) {
-        const beforeOnHand = localStock.currentOnHand;
-        localStock.currentOnHand = Math.max(0, localStock.currentOnHand - qty);
+        const beforeOnHand = projectedStocks.find(stock => stock.itemCode === it.itemCode)?.currentOnHand ?? localStock.currentOnHand;
+        localStock.currentOnHand -= qty;
         localStock.b2cTotalSold = (localStock.b2cTotalSold || 0) + qty;
         deductedItems.push({
           itemCode: it.itemCode,
@@ -4187,10 +4116,12 @@ export async function mockDispatch(config) {
           qty,
           unit: it.unit,
           beforeOnHand,
-          afterOnHand: localStock.currentOnHand
+          afterOnHand: beforeOnHand - qty
         });
       }
     }
+
+    writeAgentStockBase(targetOrder.agentId || 'FA-00128', localStockBase);
 
     // 同步 b2cReservationsStore
     const b2cItem = b2cReservationsStore.find((r) => r.ticketNo === targetOrder.ticketNo || r.pickupCode === targetOrder.pickupCode);
@@ -4287,13 +4218,17 @@ export async function mockDispatch(config) {
     targetReservation.verifyMethod = verifyMethod || 'DYNAMIC_QR_CODE';
 
     // 扣减本地库存
+    const reservationAgentId = targetReservation.agentId || 'FA-00128';
+    const reservationStockBase = readAgentStockBase(reservationAgentId);
     for (const item of targetReservation.items || []) {
-      const localStock = agentLocalStocksStore.find((s) => s.itemCode === item.itemCode);
+      const localStock = reservationStockBase.find((s) => s.itemCode === item.itemCode);
       if (localStock) {
-        localStock.currentOnHand = Math.max(0, localStock.currentOnHand - (Number(item.qty) || 0));
+        localStock.currentOnHand -= Number(item.qty) || 0;
         localStock.b2cTotalSold += Number(item.qty) || 0;
       }
     }
+
+    writeAgentStockBase(reservationAgentId, reservationStockBase);
 
     return createResponse(
       targetReservation,
@@ -4309,20 +4244,22 @@ export async function mockDispatch(config) {
 
   // 5.17 查询代理实物库存与进销存账实自核台账 (RECONCILIATION)
   if (url.includes('/agent/local-stocks') && method === 'GET') {
-    return createResponse(agentLocalStocksStore);
+    const ids = params.agentId ? procurementAgentIds.filter(id => id === params.agentId) : procurementAgentIds;
+    return createResponse(ids.flatMap(id => projectProcurementStocks(readAgentStockBase(id), g2bOrdersStore)));
   }
 
-  // 5.18 本地库存实物盘点与报损录入 (INVENTORY)
   if (url.includes('/agent/local-stocks/inventory') && method === 'POST') {
-    const { itemCode, actualCount, lossAmount, lossReason } = data;
-    const target = agentLocalStocksStore.find((s) => s.itemCode === itemCode);
-    if (target) {
-      target.currentOnHand = Number(actualCount);
-      target.lossDamaged += Number(lossAmount || 0);
-      target.lastInventoryDate = new Date().toLocaleString('zh-CN', { hour12: false }).slice(0, 16);
-      target.reconciledStatus = 'BALANCED';
-    }
-    return createResponse(target, 200, (isEn ? 'Stocktake and damage loss synchronized to the ledger; book-to-physical calibration completed!' : '库存盘点与残损报损已同步至台账，账实校准完成！'));
+    const agentId = String(data.agentId || procurementAgentIds[0] || '');
+    if (!procurementWrite || !procurementAgentIds.includes(agentId)) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    const stocks = readAgentStockBase(agentId);
+    const target = stocks.find(stock => stock.itemCode === data.itemCode);
+    if (!target || !Number.isFinite(Number(data.actualCount)) || Number(data.actualCount) < 0 || !Number.isFinite(Number(data.lossAmount || 0)) || Number(data.lossAmount || 0) < 0) return createResponse({}, 400, i18n.global.t('agentProcurement.invalidItems'));
+    const projected = projectProcurementStocks(stocks, g2bOrdersStore).find(stock => stock.itemCode === data.itemCode);
+    target.currentOnHand = Number(data.actualCount) - projected.receivedDelta;
+    target.lossDamaged += Number(data.lossAmount || 0);
+    target.lastInventoryDate = new Date().toISOString(); target.reconciledStatus = 'BALANCED';
+    writeAgentStockBase(agentId, stocks);
+    return createResponse(projectProcurementStocks(stocks, g2bOrdersStore).find(stock => stock.itemCode === data.itemCode));
   }
 
   // 5.19 多维流转追溯穿透倒查 (TRACE)

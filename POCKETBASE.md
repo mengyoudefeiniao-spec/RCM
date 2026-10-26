@@ -91,3 +91,13 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 无需新增 PocketBase 集合。跨设备状态和评价继续使用现有 15 秒同步机制，附件通过 PocketBase 文件接口按需读取。上述业务校验位于当前 Mock 适配层，正式后端接入时须实现相同的身份及工单权限校验（见上文“API 规则与访问安全”）。
 
 本地回归：`node --test scripts/tests/customer-orders.test.mjs scripts/tests/customer-message-analysis.test.mjs scripts/tests/hold-to-talk.test.mjs`。浏览器回归脚本为 `scripts/tests/order-complaint.e2e.cjs`，可通过 `playwright-cli run-code --filename scripts/tests/order-complaint.e2e.cjs` 执行；需要预先打开浏览器会话及端口 3100 的 Vite 服务，并设置 `VITE_POCKETBASE_SYNC=false`。该脚本会清理隔离浏览器中的本地测试投诉和聊天记录，禁止针对线上同步环境运行。
+
+## 代理采购订单与台账联动
+
+代理 APP 的集中采购和管理 Web“代理管理 → 代理订单”共用与语言无关的采购记录。每笔采购保存为 `app_data` 中的 `rcm_shared_g2b_order_<采购单号>`，付款、收货更新原记录。库存盘点及公民提货后的库存基数按 `rcm_shared_agent_stock_<网点编号>_<物资编码>` 保存，无需新增集合。管理员默认汇总全部网点，可切换单个网点；代理接口按当前账号所属网点筛选。
+
+下单更新采购数量及采购金额；已付款订单更新资金支出和待收货数量，未付款订单计入应付。实际收到全部物资后，在采购单点击“确认收货入库”，才增加实物库存和累计收货数量。重复付款、重复确认收货不会重复计入。系统初始库存已包含初始已完成订单，因此汇总时只叠加初始数据之后的收货变化；公民提货和盘点继续更新对应网点的库存基数。
+
+同一浏览器内通过数据事件更新订单及台账；不同设备需使用同一 PocketBase 配置，已打开的页面在现有 15 秒同步周期内更新。切换中文、英文、阿拉伯语或库尔德语会使用同一订单和库存记录。
+
+本地回归：`node --test scripts/tests/agent-procurement.test.mjs`。浏览器脚本为 `scripts/tests/agent-procurement.e2e.cjs`，通过 `playwright-cli run-code --filename scripts/tests/agent-procurement.e2e.cjs` 执行，需要隔离浏览器和设置 `VITE_POCKETBASE_SYNC=false` 的本地 Vite 服务；该脚本会创建本地测试采购及收货记录。

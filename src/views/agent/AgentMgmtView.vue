@@ -579,13 +579,6 @@
             </div>
           </template>
           <div class="py-4 space-y-4">
-            <div class="p-3.5 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB]/80 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#2F7A50]"></span>
-                <span class="font-bold text-[#1F3326]">{{ $t('agent.orderAnalyticsBannerTitle') }}</span>
-              </div>
-              <span class="text-[11px] text-[#8A9A8F]">{{ $t('agent.orderAnalyticsBannerSub') }}</span>
-            </div>
             <AgentInventoryLedger />
           </div>
         </el-tab-pane>

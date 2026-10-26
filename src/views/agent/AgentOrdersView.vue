@@ -5,12 +5,13 @@
         <h1 class="text-base font-bold text-[#1B432C]">{{ $t('agentDelivery.centerInfo') }}</h1>
         <div v-if="activeCenter" class="flex items-center gap-2">
           <span class="rounded-full bg-[#E0F0E4] px-2.5 py-1 text-xs font-semibold text-[#276141]">{{ $t('agentDelivery.activeCenter') }}</span>
-          <el-dropdown v-if="availableCenters.length > 1" trigger="click" @command="selectCenter">
+          <el-dropdown v-if="staffView || availableCenters.length > 1" trigger="click" @command="selectCenter">
             <el-button size="small" type="primary" plain class="!m-0 !h-8" :aria-label="$t('agentDelivery.switchCenter')">
               {{ $t('agentDelivery.switchCenter') }} <el-icon class="ms-1"><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item v-if="staffView" command="ALL">{{ t('agentProcurement.allOutlets') }}</el-dropdown-item>
                 <el-dropdown-item v-for="center in availableCenters" :key="center.id" :command="center.id" :disabled="center.id === activeCenter.id">
                   <span class="block max-w-64 truncate text-start">{{ displayCenterName(center) }}</span>
                   <bdi dir="ltr" class="ms-2 text-xs text-[#718277]">{{ center.centerId }}</bdi>
@@ -20,7 +21,8 @@
           </el-dropdown>
         </div>
       </div>
-      <div v-if="activeCenter" class="space-y-3">
+      <p v-if="isAllAgents" class="text-xs text-[#526A59]">{{ t('agentProcurement.allHint') }}</p>
+      <div v-else-if="activeCenter" class="space-y-3">
         <div>
           <p class="text-xs text-[#718277]">{{ $t('agentDelivery.outletInfo') }}</p>
           <p class="mt-0.5 font-semibold text-[#183B28]">{{ outletName }}</p>
@@ -37,23 +39,27 @@
       <p v-else class="text-sm text-[#718277]">{{ $t('agentDelivery.noCenter') }}</p>
     </section>
     <!-- 代理订单：拆分后的代理端独立大模块 (集中采购订货流水) -->
-    <AgentG2BPanel v-if="activeCenter" :selected-center="activeCenter" :selected-center-name="centerName" />
+    <AgentG2BPanel v-if="activeCenter" :selected-center="activeCenter" :selected-center-name="centerName" :all-agents="isAllAgents" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '../../stores/auth.js';
 import { ArrowDown } from '@element-plus/icons-vue';
 import { getMyAgentCenters } from '@/api/agent';
 import AgentG2BPanel from './components/AgentG2BPanel.vue';
 
 const { t, locale } = useI18n();
+const auth = useAuthStore();
+const staffView = computed(() => !['agent','citizen'].includes(auth.currentRole));
 const centers = ref([]);
 const savedCenterId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('rcm_agent_order_center_id') : null;
-const selectedCenterId = ref(savedCenterId);
+const selectedCenterId = ref(staffView.value ? 'ALL' : savedCenterId);
+const isAllAgents = computed(() => staffView.value && selectedCenterId.value === 'ALL');
 const availableCenters = computed(() => centers.value.filter((center) => center.isCurrentActive));
-const activeCenter = computed(() => availableCenters.value.find((center) => center.id === selectedCenterId.value) || availableCenters.value[0] || null);
+const activeCenter = computed(() => isAllAgents.value ? { id: 'ALL', name: t('agentProcurement.allOutlets'), centerName: t('agentProcurement.allOutlets') } : availableCenters.value.find((center) => center.id === selectedCenterId.value) || availableCenters.value[0] || null);
 const isDemoCenter = computed(() => activeCenter.value?.id === 'FA-00128');
 function displayCenterName(center) {
   if (center.id === 'FA-00128') return t('my.demoCenterName');
@@ -64,6 +70,7 @@ const outletName = computed(() => isDemoCenter.value ? t('my.demoOutletName') : 
 const centerName = computed(() => activeCenter.value ? displayCenterName(activeCenter.value) : '');
 const centerAddress = computed(() => isDemoCenter.value ? t('my.demoAgentAddress') : activeCenter.value?.id === 'FD-00129' ? t('agentDelivery.demoSecondAddress') : activeCenter.value?.address || '');
 function selectCenter(centerId) {
+  if (staffView.value && centerId === 'ALL') { selectedCenterId.value = 'ALL'; return; }
   if (!availableCenters.value.some((center) => center.id === centerId)) return;
   selectedCenterId.value = centerId;
   sessionStorage.setItem('rcm_agent_order_center_id', centerId);

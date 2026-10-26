@@ -312,4 +312,4 @@ export function verifyAndClaimCitizenOrder(orderId, data) {
     data
   });
 }
-
+export const receiveG2BPurchaseOrder = orderNo => request({ url: `/agent/g2b/orders/${encodeURIComponent(orderNo)}/receive`, method: 'POST', data: { confirmed: true } });

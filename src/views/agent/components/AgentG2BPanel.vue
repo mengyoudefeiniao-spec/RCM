@@ -41,6 +41,7 @@
         type="primary"
         size="small"
         class="!m-0 !h-8 w-full shrink-0 font-bold shadow-xs sm:w-auto"
+        v-if="!allAgents"
         @click="openCreateModal"
       >
         <el-icon class="me-1"><Plus /></el-icon>
@@ -153,6 +154,7 @@
             {{ $t('agentG2B.btnPickupQR') }}
           </el-button>
 
+          <el-button v-if="canReceive(row)" size="small" type="primary" plain @click="confirmReceive(row)">{{ $t('agentProcurement.receipt') }}</el-button>
           <el-button
             size="small"
             class="!h-7 text-xs"
@@ -273,7 +275,7 @@
       </el-table-column>
 
       <!-- 操作栏提供二维码展示 (图标按钮 + tooltip) -->
-      <el-table-column :label="$t('agent.colActions')" width="104" fixed="right" align="center">
+      <el-table-column :label="$t('agent.colActions')" width="140" fixed="right" align="center">
         <template #default="{ row }">
           <div class="flex items-center justify-center gap-1">
             <el-tooltip v-if="row.status === 'PENDING_PAYMENT'" :content="$t('agentG2B.btnPayElectronic')" placement="top">
@@ -288,6 +290,7 @@
               </el-button>
             </el-tooltip>
 
+            <el-tooltip v-if="canReceive(row)" :content="$t('agentProcurement.receipt')" placement="top"><el-button size="small" type="primary" plain circle :aria-label="$t('agentProcurement.receipt')" @click="confirmReceive(row)"><el-icon><Box /></el-icon></el-button></el-tooltip>
             <el-tooltip :content="$t('agentG2B.btnDetail')" placement="top">
               <el-button size="small" type="primary" plain circle @click="viewOrderDetail(row)">
                 <el-icon><View /></el-icon>
@@ -557,7 +560,7 @@
       :title="$t('agentG2B.paymentModalTitle')"
       :amount="pendingOrderAmount"
       :business-no="pendingOrderNo"
-      :applicant-name="isEn ? 'Mohammed Jabbar (Station #1)' : '穆罕默德·贾巴尔 (第一配给代销店)'"
+      :applicant-name="$t('my.demoAgentName')"
       currency="IQD"
       @success="handlePaymentSuccess"
       @cancel="handlePaymentCancel"
@@ -645,10 +648,10 @@
 
 <script setup>
 import { isEnNow } from '../../../utils/langHint.js';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   Search,
   Refresh,
@@ -667,13 +670,15 @@ import {
   Loading
 } from '@element-plus/icons-vue';
 import QRCode from 'qrcode';
-import { getG2BPurchaseOrders, createG2BPurchaseOrder } from '../../../api/agent.js';
+import { getG2BPurchaseOrders, createG2BPurchaseOrder, payG2BPurchaseOrder, receiveG2BPurchaseOrder } from '../../../api/agent.js';
 import ElectronicPaymentDialog from '../../../components/common/ElectronicPaymentDialog.vue';
+import { useAgentDataRefresh } from '../../../composables/useAgentDataRefresh.js';
 import { createAgentGovernmentOrderQrPayload } from '../../../utils/qrPayload.js';
 
 const props = defineProps({
   selectedCenter: { type: Object, required: true },
-  selectedCenterName: { type: String, required: true }
+  selectedCenterName: { type: String, required: true },
+  allAgents: Boolean
 });
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -710,7 +715,7 @@ const formatG2BItemName = (name) => {
 
 const formatG2BUnit = (unit) => {
   if (!unit) return '';
-  if (isEn.value) return unit === '升' ? 'L' : 'KG';
+  if (isEn.value) return unit === '升' || unit === 'L' ? 'L' : 'KG';
   if (isAr.value) return unit === '升' || unit === 'L' ? 'لتر' : 'كجم';
   if (isKu.value) return unit === '升' || unit === 'L' ? 'لیتر' : 'کگم';
   return unit;
@@ -839,9 +844,11 @@ const disabledPastDates = (time) => {
   return time.getTime() < Date.now() - 8.64e7;
 };
 
+function nextDeliveryDate() { const date = new Date(); date.setDate(date.getDate() + 1); return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
+
 const form = ref({
   logisticsMode: 'DISPATCH',
-  deliveryDate: '2026-10-14',
+  deliveryDate: nextDeliveryDate(),
   deliverySlot: '08:00-10:00',
   deliveryVehicleNo: 'BAG-TRK-7841',
   flourQty: 5000,
@@ -856,23 +863,25 @@ const calculatedTotalAmount = computed(() => {
 });
 
 // 核心修复：兼容 Axios 响应拦截器解包或未解包格式 (需求 3)
+let requestVersion = 0, alive = true;
 const loadOrders = async () => {
+  const version = ++requestVersion;
   const requestedAgentId = props.selectedCenter.id;
   loading.value = true;
   try {
-    const res = await getG2BPurchaseOrders({ agentId: requestedAgentId });
+    const res = await getG2BPurchaseOrders(props.allAgents ? {} : { agentId: requestedAgentId });
     const list = Array.isArray(res) ? res : (res?.data || []);
-    if (props.selectedCenter.id === requestedAgentId) orders.value = list.filter((item) => item.agentId === requestedAgentId);
+    if (alive && version === requestVersion && props.selectedCenter.id === requestedAgentId) orders.value = props.allAgents ? list : list.filter((item) => item.agentId === requestedAgentId);
   } catch (error) {
-    ElMessage.error(t('agentG2B.loadOrdersError') || (isEnNow() ? 'Failed to load purchase orders' : '加载采购订单失败'));
+    if (alive && version === requestVersion) ElMessage.error(t('agentG2B.loadOrdersError') || (isEnNow() ? 'Failed to load purchase orders' : '加载采购订单失败'));
   } finally {
-    loading.value = false;
+    if (alive && version === requestVersion) loading.value = false;
   }
 };
 
 // 列表过滤逻辑：默认显示未完成的采购记录 (需求 3)
 const filteredOrders = computed(() => {
-  let list = orders.value.filter((item) => item.agentId === props.selectedCenter.id);
+  let list = props.allAgents ? orders.value : orders.value.filter((item) => item.agentId === props.selectedCenter.id);
 
   if (statusFilter.value === 'UNFINISHED') {
     // 默认显示未完成：非 COMPLETED
@@ -905,7 +914,7 @@ const handleFilter = () => {
 const openCreateModal = () => {
   form.value = {
     logisticsMode: 'DISPATCH',
-    deliveryDate: '2026-10-14',
+    deliveryDate: nextDeliveryDate(),
     deliverySlot: '08:00-10:00',
     deliveryVehicleNo: 'BAG-TRK-7841',
     flourQty: Math.min(5000, maxAllowed.value.flour),
@@ -958,6 +967,7 @@ const handleProceedToPayment = () => {
   pendingOrderNo.value = `ORD-${Date.now().toString().slice(-8)}`;
 
   pendingPayload.value = {
+    requestId: crypto.randomUUID(),
     agentId: props.selectedCenter.id,
     centerId: props.selectedCenter.centerId,
     logisticsMode: form.value.logisticsMode,
@@ -982,9 +992,9 @@ const handlePaymentSuccess = async () => {
   paymentDialogVisible.value = false;
   loading.value = true;
   try {
-    const res = await createG2BPurchaseOrder(pendingPayload.value);
+    const res = pendingPayload.value ? await createG2BPurchaseOrder(pendingPayload.value) : await payG2BPurchaseOrder(pendingOrderNo.value, { channel: 'PUBLIC_TREASURY_ACCOUNT' });
     const newOrder = res?.data || res;
-    ElMessage.success(t('agentG2B.paymentSuccessMsg') || (isEnNow() ? 'Procurement payment succeeded electronically! The purchase record has been added to the ledger.' : '采购货款电子支付成功！采购记录已新增入库。'));
+    ElMessage.success(t('agentProcurement.paymentSuccess'));
 
     // 本地优先追加，确保列表即时呈现
     if (newOrder && newOrder.orderNo) {
@@ -1038,6 +1048,7 @@ const handlePrintVoucher = () => {
 };
 
 const handlePayOrder = (row) => {
+  pendingPayload.value = null;
   pendingOrderAmount.value = row.totalAmount;
   pendingOrderNo.value = row.orderNo;
   paymentDialogVisible.value = true;
@@ -1047,9 +1058,19 @@ const viewOrderDetail = (row) => {
   showOrderQRCode(row);
 };
 
-onMounted(() => {
-  loadOrders();
-});
+const canReceive = row => row.payStatus === 'PAID' && ['PAID_WMS_PICKING', 'IN_TRANSIT'].includes(row.status);
+async function confirmReceive(row) {
+  try {
+    await ElMessageBox.confirm(t('agentProcurement.receiptConfirm'), t('agentProcurement.receipt'), { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' });
+    await receiveG2BPurchaseOrder(row.orderNo);
+    ElMessage.success(t('agentProcurement.receivedSuccess'));
+    await loadOrders();
+  } catch { /* A cancelled confirmation makes no changes; API errors are already displayed. */ }
+}
+useAgentDataRefresh(loadOrders);
+watch(locale, loadOrders);
+onBeforeUnmount(() => { alive = false; requestVersion++; });
+onMounted(() => { loadOrders(); });
 watch(() => props.selectedCenter.id, () => {
   orders.value = [];
   currentPage.value = 1;
