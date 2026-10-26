@@ -1,5 +1,6 @@
 <template>
   <div class="order-dispatch-tab space-y-4">
+    <template v-if="!scannerOnly">
     <!-- ======================================================== -->
     <!-- 1. 顶部操作栏：搜索筛选 + 【📸 扫码核验交货】核心大按钮 -->
     <!-- ======================================================== -->
@@ -442,6 +443,7 @@
       </template>
     </el-dialog>
 
+    </template>
     <!-- ======================================================== -->
     <!-- 4. 阶段 4 核心：高纵深 APP 风格扫码拍照核验与实物交接弹窗 -->
     <!-- 摄像头与相册图片共用凭证解析和订单核验流程 -->
@@ -886,6 +888,7 @@ import { scanOrderText, scanItemName, scanUnitKey } from '@/utils/scanOrderDispl
 
 const route = useRoute();
 const router = useRouter();
+const props = defineProps({ scannerOnly: { type: Boolean, default: false } });
 const isAppMode = computed(() => {
   return route.query.layout === 'app' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app');
 });
@@ -1702,6 +1705,7 @@ const crossTabUnsubs = [];
 
 // Restore the scan window on deep links/reloads as well as the dashboard scan action.
 watch(() => [route.query.action, route.query.demo, route.query.demoStep], ([action, demo, step]) => {
+  if (props.scannerOnly) return;
   if (action !== 'scan' && !(demo === 'true' && step === 'step6_2')) return;
   if (!scanVerifyModalVisible.value) openScanVerifyModal();
   if (action === 'scan') {
@@ -1710,6 +1714,7 @@ watch(() => [route.query.action, route.query.demo, route.query.demoStep], ([acti
 }, { immediate: true });
 
 onMounted(() => {
+  if (props.scannerOnly) return;
   loadOrders();
   priorityTimer = window.setInterval(() => { priorityNow.value = Date.now(); }, 60_000);
 
@@ -1737,6 +1742,8 @@ onBeforeUnmount(() => {
   stopCamera();
   crossTabUnsubs.forEach((fn) => fn && fn());
 });
+
+defineExpose({ openScanVerifyModal });
 </script>
 
 <style scoped>

@@ -428,12 +428,13 @@
         </div>
       </div>
     </el-drawer>
+    <OrderDispatchTab v-if="scanHostMounted" ref="scanHost" scanner-only />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { isDemoActive, demoSubStep, setDemoStep, activateDemo } from '../../../utils/demoState.js';
@@ -450,10 +451,12 @@ import {
 } from '@element-plus/icons-vue';
 import gsap from 'gsap';
 import ModuleDescTip from '../../../components/common/ModuleDescTip.vue';
+import OrderDispatchTab from '../../warehouse/components/OrderDispatchTab.vue';
 
 const { t, locale } = useI18n();
 const route = useRoute();
-const router = useRouter();
+const scanHost = ref(null);
+const scanHostMounted = ref(false);
 
 // 判断是否为独立 App 布局 (如 Portal 打开或带 layout=app)
 const isStandaloneLayout = computed(() => {
@@ -497,6 +500,7 @@ onMounted(() => {
   // 演示模式：URL 携带 demo 参数时激活 06 阶段引导（不自动弹扫码窗，由引导提示用户点击）
   if (route.query.demo === 'true') {
     activateDemo(String(route.query.demoStep || 'step6_1'));
+    if (route.query.demoStep === 'step6_2') handleTriggerScan();
   } else if (route.query.action === 'scan' || route.query.tab === 'verify') {
     // 若路由指定进入扫码核销，自动弹出扫码取景框
     handleTriggerScan();
@@ -508,6 +512,7 @@ watch(() => route.query, (q) => {
   if (q.demo === 'true' && isDemoActive.value) {
     const step = String(q.demoStep || 'step6_1');
     if (step && step !== demoSubStep.value) setDemoStep(step);
+    if (step === 'step6_2') handleTriggerScan();
   }
 });
 
@@ -585,20 +590,12 @@ const distributionRecords = computed(() => {
   return [...newlyAddedOrders.value, ...baseList];
 });
 
-function handleTriggerScan() {
+async function handleTriggerScan() {
   triggerPressEffect();
   if (isDemoActive.value && demoSubStep.value === 'step6_1') setDemoStep('step6_2');
-  const query = {
-    role: 'agent',
-    layout: 'app',
-    tab: 'delivery',
-    action: 'scan'
-  };
-  if (route.query.demo === 'true') {
-    query.demo = 'true';
-    query.demoStep = 'step6_2';
-  }
-  router.push({ path: '/warehouse', query });
+  scanHostMounted.value = true;
+  await nextTick();
+  scanHost.value?.openScanVerifyModal();
 }
 
 function goToOverview() {

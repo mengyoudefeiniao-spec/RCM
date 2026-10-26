@@ -4,7 +4,7 @@ async page => {
   const origin = new URL(page.url()).origin;
   assert(['localhost', '127.0.0.1'].includes(new URL(origin).hostname), 'Local server required');
   const errors = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto(origin + '/#/warehouse?role=agent&layout=app&tab=delivery');
+  await page.goto(origin + '/#/dashboard?role=agent&layout=app&mode=mobile');
   await page.locator('.splash-screen').waitFor({ state: 'hidden', timeout: 20000 });
   assert(!await page.evaluate(async () => (await import('/src/services/pocketBaseSync.js')).isPocketBaseSyncEnabled()), 'Disable PocketBase sync for regression');
   await page.evaluate(() => {
@@ -18,10 +18,11 @@ async page => {
   const labels = () => page.evaluate(async () => { const { i18n } = await import('/src/locales/index.js'); return { open: i18n.global.t('orderClaim.scanVerifyBtn'), confirm: i18n.global.t('orderClaim.confirmDeliveryBtn'), receipt: i18n.global.t('orderClaim.claimSuccessTitle'), sign: i18n.global.t('orderClaim.signTitle'), close: i18n.global.t('orderClaim.closeBtn') }; });
   const before = await page.evaluate(async () => (await import('/src/api/agent.js')).getAgentLocalStocks('FA-00128'));
   let copy = await labels();
-  await page.getByRole('button', { name: copy.open, exact: true }).first().click();
+  await page.locator('[data-demo-target="btn-scan-verify"]').click();
   const dialog = page.locator('.app-scan-dialog');
   await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/scan-handover-qr.png');
   await dialog.getByTestId('scan-item-card').first().waitFor();
+  assert(new URL(page.url()).hash.startsWith('#/dashboard'), 'Order scan stays on the operations overview');
   assert(await dialog.getByTestId('scan-item-card').count() === 4, 'Four commodity cards');
   const positions = await dialog.getByTestId('scan-item-card').evaluateAll(nodes => nodes.map(node => { const box = node.getBoundingClientRect(); return { x: box.x, y: box.y }; }));
   assert(Math.abs(positions[0].y - positions[1].y) < 2 && Math.abs(positions[2].y - positions[3].y) < 2 && positions[2].y > positions[0].y, 'Two rows of two cards');
@@ -55,13 +56,14 @@ async page => {
   assert(after.every(stock => repeated.find(row => row.itemCode === stock.itemCode).currentOnHand === stock.currentOnHand), 'Repeated verification does not duplicate deductions');
   await dialog.getByRole('button', { name: copy.close, exact: true }).click();
   await dialog.waitFor({ state: 'hidden' });
+  assert(new URL(page.url()).hash.startsWith('#/dashboard'), 'Completed handover stays on the operations overview');
   await page.evaluate(() => {
     const order = JSON.parse(localStorage.getItem('rcm_shared_orders_en')).find(row => row.orderId === 'SCAN-HANDOVER-E2E');
     order.agentId = 'UNKNOWN'; order.status = 'DISPATCHED'; order.updatedAt = new Date().toISOString(); order.deliveredAt = null;
     for (const key of Object.keys(localStorage)) if (key === 'rcm_shared_orders' || key.startsWith('rcm_shared_orders_')) localStorage.removeItem(key);
     localStorage.setItem('rcm_shared_orders_en', JSON.stringify([order]));
   });
-  await page.getByRole('button', { name: copy.open, exact: true }).first().click();
+  await page.locator('[data-demo-target="btn-scan-verify"]').click();
   await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/scan-handover-qr.png');
   await dialog.getByText('Could not load outlet stock. Scan again to retry.', { exact: true }).waitFor();
   assert(await dialog.getByRole('button', { name: copy.confirm, exact: true }).isDisabled(), 'Unavailable stock never uses fabricated quantities');

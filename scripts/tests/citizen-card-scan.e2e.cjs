@@ -26,6 +26,7 @@ async page => {
     await page.locator('[data-demo-target="btn-scan-verify"]').click();
     const dialog = page.locator('.app-scan-dialog');
     await dialog.waitFor();
+    assert(new URL(page.url()).hash.startsWith('#/dashboard'), 'Scanner opens within the operations overview');
     assert(await dialog.locator('.scan-source-button').count() === 2, 'Only camera scanning and gallery upload are shown');
     const inputs = dialog.locator('input[type="file"]');
     assert(await inputs.count() === 2, 'Separate photo and gallery inputs');
@@ -39,6 +40,7 @@ async page => {
     const before = await page.evaluate(async () => (await import('/src/api/agent.js')).getAgentLocalStocks('FA-00128'));
     await inputs.nth(lang === 'en' ? 1 : 0).setInputFiles(screenshot);
     await dialog.locator('.citizen-card-scan-details').waitFor({ timeout: 20000 });
+    assert(new URL(page.url()).hash.startsWith('#/dashboard'), 'Card scan stays on operations overview');
     const details = await dialog.locator('.citizen-card-scan-details').innerText();
     assert(details.includes('RC-10029381') && details.includes(family.headName), 'Current citizen card information: ' + lang);
     const requests = await page.evaluate(() => window.cardScanRequests);
@@ -51,9 +53,14 @@ async page => {
     assert(await page.locator('html').getAttribute('dir') === (['ar', 'ckb'].includes(lang) ? 'rtl' : 'ltr'), 'RTL direction');
     await page.screenshot({ path: '.playwright-cli/citizen-card-result-' + lang + '.png', animations: 'disabled' });
     reports.push({ lang, informationOnly: true });
+    const close = await page.evaluate(async () => (await import('/src/locales/index.js')).i18n.global.t('common.close'));
+    await dialog.locator('.scan-action-tray').getByRole('button', { name: close, exact: true }).click();
+    await dialog.waitFor({ state: 'hidden' });
+    assert(new URL(page.url()).hash.startsWith('#/dashboard'), 'Closing the card returns to the same overview');
+    assert(await page.locator('.mobile-agent-dashboard').isVisible(), 'Operations overview remains mounted');
   }
   const dialog = page.locator('.app-scan-dialog');
-  await dialog.locator('.scan-action-tray button').first().click();
+  await page.locator('[data-demo-target="btn-scan-verify"]').click();
   await page.evaluate(() => {
     const families = JSON.parse(localStorage.getItem('rcm_shared_families_ku'));
     families[0].status = 'بەستراوە';
