@@ -1,6 +1,9 @@
 // Agent delivery and purchasing surfaces share these keys in all shipped languages.
 export default {
   zh: {
+    vehicleTypes: { EXPRESS_TRUCK: '急送货车', COLD_CHAIN_VEHICLE: '冷链专车', REFRIGERATED_BOX_TRUCK: '厢式冷链货车', LIGHT_SUPPLY_VEHICLE: '轻型保供机动车', PICKUP_TRUCK: '自提卡车' },
+    deliveryTimes: { MINUTES_30: '30分钟内送达', MINUTES_45: '45分钟内送达', HOUR_1: '1小时内送达', HOURS_2: '2小时内送达', EVENING: '当日晚间送达', PICKUP_ANYTIME: '随时到店可提' },
+    stationSlotLabel: '代销站仓位 {slot}',
     scanCamera: '摄像头扫码', scanUpload: '从相册上传', scanImageHint: '选择包含完整二维码的 JPG、PNG 或 WebP 图片，最大 10 MB。', scanImageReading: '正在识别图片中的二维码…', scanImageInvalid: '请选择可读取的 JPG、PNG 或 WebP 图片。', scanImageTooLarge: '图片不能超过 10 MB，请压缩后重试。', scanImageNotFound: '图片中未识别到二维码，请上传清晰、完整的二维码图片。', scanAgain: '重新扫码',
     detailTitle: '配送订单详情', details: '查看订单详情', backToOrders: '返回配送订单',
     priorityOverdue: '配送已超时', prioritySoon: '即将超时', priorityCount: '{count} 单需优先处理',
@@ -25,6 +28,9 @@ export default {
     }
   },
   en: {
+    vehicleTypes: { EXPRESS_TRUCK: 'Express truck', COLD_CHAIN_VEHICLE: 'Cold chain vehicle', REFRIGERATED_BOX_TRUCK: 'Refrigerated box truck', LIGHT_SUPPLY_VEHICLE: 'Light supply vehicle', PICKUP_TRUCK: 'Self-pickup truck' },
+    deliveryTimes: { MINUTES_30: 'Within 30 minutes', MINUTES_45: 'Within 45 minutes', HOUR_1: 'Within 1 hour', HOURS_2: 'Within 2 hours', EVENING: 'Evening delivery', PICKUP_ANYTIME: 'Ready for pickup anytime' },
+    stationSlotLabel: 'Station depot {slot}',
     scanCamera: 'Scan with camera', scanUpload: 'Upload from gallery', scanImageHint: 'Choose a JPG, PNG or WebP image showing the complete QR code, up to 10 MB.', scanImageReading: 'Reading the QR code in the image…', scanImageInvalid: 'Choose a readable JPG, PNG or WebP image.', scanImageTooLarge: 'The image must be no larger than 10 MB. Please resize it and try again.', scanImageNotFound: 'No QR code was detected. Upload a clear image of the complete code.', scanAgain: 'Scan again',
     detailTitle: 'Delivery Order Details', details: 'View order details', backToOrders: 'Back to delivery orders',
     priorityOverdue: 'Delivery overdue', prioritySoon: 'Due soon', priorityCount: '{count} orders need priority',
@@ -49,6 +55,9 @@ export default {
     }
   },
   ar: {
+    vehicleTypes: { EXPRESS_TRUCK: 'شاحنة التوصيل السريع', COLD_CHAIN_VEHICLE: 'مركبة مبردة مخصصة', REFRIGERATED_BOX_TRUCK: 'شاحنة صندوقية مبردة', LIGHT_SUPPLY_VEHICLE: 'مركبة إمداد خفيفة', PICKUP_TRUCK: 'شاحنة الاستلام الذاتي' },
+    deliveryTimes: { MINUTES_30: 'خلال ٣٠ دقيقة', MINUTES_45: 'خلال ٤٥ دقيقة', HOUR_1: 'خلال ساعة واحدة', HOURS_2: 'خلال ساعتين', EVENING: 'التوصيل مساءً', PICKUP_ANYTIME: 'جاهز للاستلام في أي وقت' },
+    stationSlotLabel: 'مخزن المنفذ {slot}',
     scanCamera: 'المسح بالكاميرا', scanUpload: 'رفع صورة من المعرض', scanImageHint: 'اختر صورة JPG أو PNG أو WebP تُظهر رمز QR كاملاً، بحجم أقصى ١٠ ميغابايت.', scanImageReading: 'جارٍ قراءة رمز QR في الصورة…', scanImageInvalid: 'اختر صورة JPG أو PNG أو WebP قابلة للقراءة.', scanImageTooLarge: 'يجب ألا يتجاوز حجم الصورة ١٠ ميغابايت. يرجى تصغيرها والمحاولة مجدداً.', scanImageNotFound: 'لم يُكتشف رمز QR. ارفع صورة واضحة تُظهر الرمز كاملاً.', scanAgain: 'المسح مجدداً',
     detailTitle: 'تفاصيل طلب التوصيل', details: 'عرض تفاصيل الطلب', backToOrders: 'العودة إلى طلبات التوصيل',
     priorityOverdue: 'تأخر التوصيل', prioritySoon: 'اقترب موعد التوصيل', priorityCount: '{count} طلبات تتطلب الأولوية',
@@ -73,6 +82,9 @@ export default {
     }
   },
   ckb: {
+    vehicleTypes: { EXPRESS_TRUCK: 'بارهەڵگری خێرا', COLD_CHAIN_VEHICLE: 'ئۆتۆمبێلی ساردکەرەوە', REFRIGERATED_BOX_TRUCK: 'بارهەڵگری سندووقی ساردکەرەوە', LIGHT_SUPPLY_VEHICLE: 'ئۆتۆمبێلی سووکی دابینکردن', PICKUP_TRUCK: 'بارهەڵگری وەرگرتنی ڕاستەوخۆ' },
+    deliveryTimes: { MINUTES_30: 'لە ماوەی ٣٠ خولەکدا', MINUTES_45: 'لە ماوەی ٤٥ خولەکدا', HOUR_1: 'لە ماوەی یەک کاتژمێردا', HOURS_2: 'لە ماوەی دوو کاتژمێردا', EVENING: 'گەیاندنی ئێوارە', PICKUP_ANYTIME: 'هەر کاتێک ئامادەی وەرگرتنە' },
+    stationSlotLabel: 'کۆگای بنکە {slot}',
     scanCamera: 'سکان بە کامێرا', scanUpload: 'بارکردن لە گەلەری', scanImageHint: 'وێنەی JPG یان PNG یان WebP هەڵبژێرە کە کۆدی QR بە تەواوی پیشان بدات، زۆرترین ١٠ مێگابایت.', scanImageReading: 'کۆدی QR لە وێنەکە دەخوێندرێتەوە…', scanImageInvalid: 'وێنەیەکی خوێندنەوەکراوی JPG یان PNG یان WebP هەڵبژێرە.', scanImageTooLarge: 'قەبارەی وێنە نابێت لە ١٠ مێگابایت زیاتر بێت. تکایە بچووکی بکەرەوە و دووبارە هەوڵ بدەوە.', scanImageNotFound: 'کۆدی QR نەدۆزرایەوە. وێنەیەکی ڕوون و تەواوی کۆدەکە بار بکە.', scanAgain: 'دووبارە سکان بکە',
     detailTitle: 'وردەکاری داواکاری گەیاندن', details: 'بینینی وردەکاری داواکاری', backToOrders: 'گەڕانەوە بۆ داواکارییەکانی گەیاندن',
     priorityOverdue: 'گەیاندن دواکەوتووە', prioritySoon: 'کاتی گەیاندن نزیکە', priorityCount: '{count} داواکاری پێویستی بە پێشینەیە',

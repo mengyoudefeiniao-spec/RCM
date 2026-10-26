@@ -415,7 +415,7 @@
             </div>
             <div>
               <label class="block text-[#58685D] font-semibold mb-1">{{ $t('agentOrders.vehicleNoLabel') }}</label>
-              <el-input v-model="dispatchForm.vehicleNo" placeholder="BG-..." />
+              <el-input v-model="dispatchVehicleInput" placeholder="BG-..." />
             </div>
           </div>
 
@@ -662,7 +662,7 @@
             </div>
             <div class="p-3 flex justify-between gap-3">
               <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrVehicleLabel') }}</span>
-              <span class="text-end">{{ verifiedGovernmentOrder.deliveryVehicleNo || '—' }} ({{ verifiedGovernmentOrder.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }})</span>
+              <span class="text-end">{{ formatVehicleNo(verifiedGovernmentOrder.deliveryVehicleNo) || '—' }} ({{ verifiedGovernmentOrder.logisticsMode === 'DISPATCH' ? $t('agentG2B.modeDispatch') : $t('agentG2B.modePickup') }})</span>
             </div>
             <div class="p-3 flex justify-between gap-3">
               <span class="text-[#8A9A8F]">{{ $t('agentG2B.qrPaidAmountLabel') }}</span>
@@ -1061,6 +1061,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { parseRcmQrPayload } from '@/utils/qrPayload';
 import { decodeQrImage } from '@/utils/qrImage.js';
+import { canonicalDeliveryVehicle, formatDeliveryVehicle, formatDeliveryTime } from '@/utils/deliveryEnums.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -1167,34 +1168,8 @@ function formatDeliveryPerson(person) {
   return person;
 }
 
-function formatVehicleNo(vehicleNo) {
-  if (!vehicleNo) return '';
-  // 备货就绪场景的仓位标识（历史数据含中文「代销站仓位 A-02」）按当前语言转译
-  if (/代销站仓位|A-02/.test(vehicleNo)) return t('agentOrders.stationSlot', { slot: 'A-02' });
-  return vehicleNo;
-}
-
-function formatEstimatedTime(time) {
-  if (!time) return '';
-  const lang = locale.value;
-  if (lang === 'en') {
-    if (time.includes('30分钟')) return 'Within 30 mins';
-    if (time.includes('1小时')) return 'Within 1 hour';
-    if (time.includes('2小时')) return 'Within 2 hours';
-    if (time.includes('随时到店可提') || time.includes('可提')) return 'Ready for pickup anytime';
-  } else if (lang === 'ar') {
-    if (time.includes('30分钟')) return 'خلال 30 دقيقة';
-    if (time.includes('1小时')) return 'خلال ساعة واحدة';
-    if (time.includes('2小时')) return 'خلال ساعتين';
-    if (time.includes('随时到店可提') || time.includes('可提')) return 'جاهز للاستلام في أي وقت';
-  } else if (lang === 'ckb') {
-    if (time.includes('30分钟')) return 'لە ماوەی ٣٠ خولەکدا';
-    if (time.includes('1小时')) return 'لە ماوەی یەک کاتژمێردا';
-    if (time.includes('2小时')) return 'لە ماوەی ٢ کاتژمێردا';
-    if (time.includes('随时到店可提') || time.includes('可提')) return 'ئامادەیە بۆ وەرگرتن';
-  }
-  return time;
-}
+const formatVehicleNo = value => formatDeliveryVehicle(value, locale.value);
+const formatEstimatedTime = value => formatDeliveryTime(value, locale.value);
 
 function formatUnit(unit) {
   if (!unit) return '';
@@ -1256,22 +1231,27 @@ const selectedCourierId = ref('');
 const dispatchForm = ref({
   deliveryPerson: '哈希姆·阿里 (保供急送专员)',
   driverPhone: '+964 780 999 8811',
-  vehicleNo: 'BG-78219 (厢式冷链货车)',
+  vehicleNo: 'BG-78219 (EXPRESS_TRUCK)',
   estimatedTime: '30分钟内送达'
+});
+
+const dispatchVehicleInput = computed({
+  get: () => formatVehicleNo(dispatchForm.value.vehicleNo),
+  set: value => { dispatchForm.value.vehicleNo = canonicalDeliveryVehicle(value); }
 });
 
 const quickDrivers = [
   {
     name: '哈希姆·阿里 (保供急送专员)',
     phone: '+964 780 999 8811',
-    vehicleNo: 'BG-78219 (厢式冷链货车)',
+    vehicleNo: 'BG-78219 (EXPRESS_TRUCK)',
     time: '30分钟内送达'
   },
   {
     name: '萨米尔·卡西姆 (微网格骑手)',
     phone: '+964 771 223 9090',
-    vehicleNo: 'BG-33812 (轻型保供机动车)',
-    time: '45分钟内送达'
+    vehicleNo: 'BG-33812 (COLD_CHAIN_VEHICLE)',
+    time: '1小时内送达'
   }
 ];
 
@@ -1281,8 +1261,8 @@ function applyQuickDriver(idx) {
   if (d) {
     dispatchForm.value.deliveryPerson = idx === 0 ? (t('agentOrders.driver1Name') || d.name) : (t('agentOrders.driver2Name') || d.name);
     dispatchForm.value.driverPhone = d.phone;
-    dispatchForm.value.vehicleNo = idx === 0 ? (t('agentOrders.driver1Desc') || d.vehicleNo) : (t('agentOrders.driver2Desc') || d.vehicleNo);
-    dispatchForm.value.estimatedTime = idx === 0 ? (t('agentOrders.est30Mins') || d.time) : (t('agentOrders.est1Hour') || d.time);
+    dispatchForm.value.vehicleNo = d.vehicleNo;
+    dispatchForm.value.estimatedTime = d.time;
   }
   // 演示模式：用户点选配送员后推进至 04-3 确认出车发货（openDispatchModal 预填时弹窗尚未打开，不会误触发）
   if (isDemoActive.value && dispatchModalVisible.value) setDemoStep('step4_3');
@@ -1293,7 +1273,7 @@ function applyManagedCourier(id) {
   if (!courier) return;
   dispatchForm.value.deliveryPerson = courier.name;
   dispatchForm.value.driverPhone = courier.phone;
-  dispatchForm.value.vehicleNo = courier.vehicleNo || '';
+  dispatchForm.value.vehicleNo = canonicalDeliveryVehicle(courier.vehicleNo);
   if (isDemoActive.value && dispatchModalVisible.value) setDemoStep('step4_3');
 }
 

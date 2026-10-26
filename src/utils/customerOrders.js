@@ -1,4 +1,5 @@
 import messages from '../locales/chatOrders.js';
+import { formatDeliveryTime } from './deliveryEnums.js';
 
 export function ownsCustomerOrder(order, profile) {
   if (!profile?.id && !profile?.username) return false;
@@ -48,7 +49,7 @@ export function customerOrderAnswer(order, question, lang) {
   if (payment || (!delivery && !items)) lines.push(`${m.payment}: ${order.payStatus === 'PAID' ? m.paid : order.payStatus === 'UNPAID' ? m.unpaid : m.unknown}`, `${m.amount}: ${amount === null ? m.unknown : amount.toLocaleString('en-US') + ' IQD'}`);
   if (items || (!payment && !delivery)) lines.push(`${m.items}: ${(order.items || []).map(item => `${m[orderItemKey(item.itemCode)] || item.itemName || item.itemCode} ${item.qty} ${item.unit || ''}`).join(' / ')}`);
   lines.push(`${m.status}: ${m[orderStatusKey(order)]}`, `${m.delivery}: ${order.deliveryType === 'HOME_DELIVERY' ? m.home : m.pickup}`);
-  if (delivery) lines.push(`${m.tracking}: ${order.dispatchInfo?.dispatchedAt || m.noTracking}`, `${m.eta}: ${order.dispatchInfo?.estimatedTime || m.unknown}`);
+  if (delivery) lines.push(`${m.tracking}: ${order.dispatchInfo?.dispatchedAt || m.noTracking}`, `${m.eta}: ${formatDeliveryTime(order.dispatchInfo?.estimatedTime, lang) || m.unknown}`);
   lines.push(m.followup);
   return lines.join('\n');
 }

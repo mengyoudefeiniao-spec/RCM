@@ -63,7 +63,7 @@
             <dt class="text-[#718277]">{{ $t('agentDelivery.paymentAmount') }}</dt><dd><bdi dir="ltr">{{ Number(order.selfPayAmount || 0).toLocaleString() }} IQD</bdi></dd>
             <template v-if="order.dispatchInfo">
               <dt class="text-[#718277]">{{ $t('agentDelivery.courier') }}</dt><dd>{{ localizedField('courier', order.dispatchInfo.deliveryPerson) }}</dd>
-              <dt class="text-[#718277]">{{ $t('agentDelivery.vehicle') }}</dt><dd><bdi dir="ltr">{{ order.dispatchInfo.vehicleNo || '—' }}</bdi></dd>
+              <dt class="text-[#718277]">{{ $t('agentDelivery.vehicle') }}</dt><dd><bdi>{{ formatDeliveryVehicle(order.dispatchInfo.vehicleNo, locale) || '—' }}</bdi></dd>
             </template>
           </dl>
         </section>
@@ -82,6 +82,7 @@ import 'leaflet/dist/leaflet.css';
 import { getAgentCitizenOrder } from '@/api/agent';
 import { deliveryPriority } from '@/utils/deliveryPriority';
 import { resolveOrderNote } from '@/utils/orderNotes';
+import { formatDeliveryVehicle } from '@/utils/deliveryEnums.js';
 
 const route = useRoute();
 const router = useRouter();

@@ -130,7 +130,7 @@
               <dt class="text-[#718277]">{{ $t('citizenOrder.courier') }}</dt>
               <dd class="break-words">{{ order.dispatchInfo.deliveryPerson || '—' }}</dd>
               <dt class="text-[#718277]">{{ $t('citizenOrder.vehicle') }}</dt>
-              <dd><bdi dir="ltr">{{ order.dispatchInfo.vehicleNo || '—' }}</bdi></dd>
+              <dd><bdi>{{ formatDeliveryVehicle(order.dispatchInfo.vehicleNo, locale) || '—' }}</bdi></dd>
             </template>
             <template v-if="order.deliveredAt">
               <dt class="text-[#718277]">{{ $t('citizenOrder.deliveredAt') }}</dt>
@@ -151,6 +151,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { formatDeliveryVehicle } from '@/utils/deliveryEnums.js';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, Check, CopyDocument } from '@element-plus/icons-vue';
 import L from 'leaflet';
