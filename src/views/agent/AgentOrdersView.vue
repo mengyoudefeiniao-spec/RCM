@@ -4,9 +4,11 @@
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
           <h1 class="text-base font-bold text-[#1B432C]">{{ $t('agentDelivery.centerInfo') }}</h1>
-          <el-button v-if="activeCenter && !isAllAgents" size="small" type="primary" plain class="!m-0 !h-8" @click="warehouseMapVisible = true">
-            <el-icon class="me-1 shrink-0"><Location /></el-icon>{{ t('warehouseLocation.locate') }}
-          </el-button>
+          <el-tooltip v-if="activeCenter && !isAllAgents" :content="t('warehouseLocation.locate')" placement="top">
+            <el-button size="small" type="primary" plain circle class="!m-0 !size-8" :aria-label="t('warehouseLocation.locate')" @click="warehouseMapVisible = true">
+              <el-icon aria-hidden="true"><Location /></el-icon>
+            </el-button>
+          </el-tooltip>
         </div>
         <div v-if="activeCenter" class="flex items-center gap-2">
           <span class="rounded-full bg-[#E0F0E4] px-2.5 py-1 text-xs font-semibold text-[#276141]">{{ $t('agentDelivery.activeCenter') }}</span>

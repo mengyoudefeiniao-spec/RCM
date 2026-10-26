@@ -21,7 +21,11 @@ async (page) => {
   });
   const initialData = await page.evaluate(async () => (await import('/src/api/agent.js')).getMyAgentCenters());
   assert(initialData.find(center => center.centerId === '101').warehouseLocation.source === 'demo', 'Demo coordinates explicitly marked');
-  await page.getByRole('button', { name: '定位（导航）', exact: true }).click();
+  const navigationButton = page.getByRole('button', { name: '导航', exact: true });
+  assert((await navigationButton.innerText()).trim() === '', 'Navigation is an icon only button');
+  await navigationButton.hover();
+  await page.getByRole('tooltip').filter({ hasText: '导航' }).waitFor();
+  await navigationButton.click();
   let dialog = page.getByRole('dialog', { name: '配给仓库位置' });
   await dialog.locator('.leaflet-container').waitFor();
   assert(await dialog.locator('[data-lat="33.3152"][data-lng="44.3535"]').count() === 1, 'First center warehouse destination');
@@ -47,7 +51,7 @@ async (page) => {
   await dialog.waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '切换中心', exact: true }).click();
   await page.getByRole('menuitem').filter({ hasText: '哈奈根' }).click();
-  await page.getByRole('button', { name: '定位（导航）', exact: true }).click();
+  await page.getByRole('button', { name: '导航', exact: true }).click();
   dialog = page.getByRole('dialog', { name: '配给仓库位置' });
   await dialog.locator('[data-lat="34.348"][data-lng="45.383"].leaflet-container').waitFor();
   assert((await dialog.innerText()).includes('哈奈根第一配给中心'), 'Second center warehouse title');
@@ -66,7 +70,7 @@ async (page) => {
   }
   await dialog.getByRole('button', { name: '关闭', exact: true }).click();
   await dialog.waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '定位（导航）', exact: true }).click();
+  await page.getByRole('button', { name: '导航', exact: true }).click();
   await page.getByRole('dialog', { name: '配给仓库位置' }).locator('.leaflet-container').waitFor();
   assert(errors.length === 0, 'Browser exceptions: ' + errors.join(';'));
   return { passed: ['warehouse GIS marker', 'navigation URL', 'current position route', 'route failure', 'permission failure', 'switch center', 'four locales and RTL', 'close and reopen'], errors };
