@@ -1,5 +1,6 @@
 export default {
   zh: {
+    defaultFileName: '死亡证明示例_{reference}.png', defaultProofTitle: '死亡证明（示例材料）', defaultProofHint: '已预置死亡证明示例，可替换为本机文件。',
     action: '注销成员', title: '成员死亡注销申请', subtitle: '仅限成员死亡情形。提交法定死亡证明，经初审与终审批准后注销成员，并更新家庭配给人数。',
     member: '指定注销成员', chooseMember: '请选择已故的在册家庭成员', identity: '成员身份信息', deathProofNo: '死亡证明编号', deathProofPlaceholder: '填写法定死亡证明上的编号',
     proof: '上传死亡证明', proofHint: '上传 PDF、JPG 或 PNG 原件扫描件，最大 10 MB。证明须对应所选成员，真实性由审核人员核验。', chooseFile: '选择证明文件', noFile: '尚未选择死亡证明',
@@ -11,6 +12,7 @@ export default {
     reviewSubtitle: '统一受理分户、解冻、户主变更、代理转移、成员录入、成员转移及成员死亡注销申请，支持两级在线审批。'
   },
   en: {
+    defaultFileName: 'Death_certificate_sample_{reference}.png', defaultProofTitle: 'Death certificate (sample)', defaultProofHint: 'A sample certificate is prefilled. You can replace it with a local file.',
     action: 'Deregister member', title: 'Deceased member deregistration', subtitle: 'For deceased members only. Submit an official death certificate for staff and final review before membership and household ration counts change.',
     member: 'Member to deregister', chooseMember: 'Select the deceased registered member', identity: 'Member identity', deathProofNo: 'Death certificate number', deathProofPlaceholder: 'Enter the number on the official death certificate',
     proof: 'Upload death certificate', proofHint: 'Upload a PDF, JPG or PNG scan, up to 10 MB. The certificate must identify the selected member and will be checked by a reviewer.', chooseFile: 'Choose certificate', noFile: 'No death certificate selected',
@@ -22,6 +24,7 @@ export default {
     reviewSubtitle: 'Review household splits, unfreezing, head changes, agent transfers, member registration, member transfers and deceased member deregistration through two approval stages.'
   },
   ar: {
+    defaultFileName: 'شهادة_وفاة_نموذج_{reference}.png', defaultProofTitle: 'شهادة وفاة (نموذج)', defaultProofHint: 'تم إرفاق شهادة نموذجية مسبقاً. يمكنك استبدالها بملف من جهازك.',
     action: 'إلغاء تسجيل فرد', title: 'طلب إلغاء تسجيل فرد متوفى', subtitle: 'للمتوفين فقط. تُرفق شهادة وفاة رسمية للتحقق الأولي والموافقة النهائية قبل تعديل أفراد الأسرة وحصصها التموينية.',
     member: 'الفرد المطلوب إلغاء تسجيله', chooseMember: 'اختر الفرد المتوفى المسجل في الأسرة', identity: 'بيانات هوية الفرد', deathProofNo: 'رقم شهادة الوفاة', deathProofPlaceholder: 'أدخل الرقم الوارد في شهادة الوفاة الرسمية',
     proof: 'رفع شهادة الوفاة', proofHint: 'ارفع نسخة بصيغة PDF أو JPG أو PNG بحجم أقصاه 10 ميغابايت. يجب أن تخص الفرد المحدد، ويتحقق الموظف من صحتها.', chooseFile: 'اختيار الشهادة', noFile: 'لم يتم اختيار شهادة وفاة',
@@ -33,6 +36,7 @@ export default {
     reviewSubtitle: 'مراجعة فصل الأسر وإلغاء التجميد وتغيير رب الأسرة ونقل الوكيل وتسجيل الأفراد ونقلهم وإلغاء تسجيل المتوفين عبر مرحلتين من الموافقة.'
   },
   ckb: {
+    defaultFileName: 'نموونەی_بڕوانامەی_مردن_{reference}.png', defaultProofTitle: 'بڕوانامەی مردن (نموونە)', defaultProofHint: 'نموونەی بڕوانامە پێشوەختە دانراوە. دەتوانیت بە فایلێکی ئامێرەکەت بیگۆڕیت.',
     action: 'هەڵوەشاندنەوەی تۆماری ئەندام', title: 'داواکاری هەڵوەشاندنەوەی تۆماری ئەندامی کۆچکردوو', subtitle: 'تەنها بۆ ئەندامی کۆچکردووە. بڕوانامەی فەرمیی مردن باربکە؛ دوای پشکنینی سەرەتایی و پەسەندی کۆتایی، ژمارەی ئەندام و بەشە خۆراکییەکان نوێ دەکرێنەوە.',
     member: 'ئەندامی مەبەست', chooseMember: 'ئەندامی کۆچکردووی تۆمارکراو هەڵبژێرە', identity: 'زانیاری ناسنامەی ئەندام', deathProofNo: 'ژمارەی بڕوانامەی مردن', deathProofPlaceholder: 'ژمارەی سەر بڕوانامەی فەرمیی مردن بنووسە',
     proof: 'بارکردنی بڕوانامەی مردن', proofHint: 'وێنەی سکانکراو بە PDF، JPG یان PNG تا 10 مێگابایت باربکە. دەبێت بڕوانامەکە هی ئەندامی هەڵبژێردراو بێت و کارمەند پشکنینی بکات.', chooseFile: 'هەڵبژاردنی بڕوانامە', noFile: 'بڕوانامەی مردن هەڵنەبژێردراوە',

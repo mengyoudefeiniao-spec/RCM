@@ -38,13 +38,19 @@
           <h2 class="text-sm font-bold text-[#1B3123]">{{ $t('memberDeregistration.proof') }} <span class="text-[#A53A2D]">*</span></h2>
           <p class="text-xs leading-relaxed text-[#718277]">{{ $t('memberDeregistration.proofHint') }}</p>
           <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" @change="chooseProof" />
-          <div class="flex min-w-0 flex-wrap items-center gap-2 pt-1">
-            <span class="min-w-0 flex-1 break-all text-xs text-[#43554B]" aria-live="polite">{{ proof?.name || $t('memberDeregistration.noFile') }}</span>
-            <el-button plain :disabled="submitting || !targetMember" @click="fileInput?.click()"><el-icon class="me-1"><Upload /></el-icon>{{ $t('memberDeregistration.chooseFile') }}</el-button>
+          <div class="flex min-w-0 flex-col gap-3 pt-1">
+            <div class="flex min-w-0 items-start gap-2 rounded-lg bg-[#F3F8F4] p-3" aria-live="polite">
+              <el-icon class="mt-0.5 shrink-0 text-[#326445]"><Document /></el-icon>
+              <div class="min-w-0 flex-1 space-y-1">
+                <span class="block break-words text-xs font-semibold text-[#43554B]">{{ isDefaultProof ? $t('memberDeregistration.defaultFileName', { reference: deathProofNo || DEFAULT_DEATH_PROOF_NO }) : proof?.name }}</span>
+                <p v-if="isDefaultProof" class="text-xs leading-relaxed text-[#718277]">{{ $t('memberDeregistration.defaultProofHint') }}</p>
+              </div>
+            </div>
+            <el-button plain :disabled="submitting || !targetMember" class="!h-auto max-w-full self-end !whitespace-normal py-2" @click="fileInput?.click()"><el-icon class="me-1"><Upload /></el-icon>{{ $t('memberDeregistration.chooseFile') }}</el-button>
           </div>
         </div>
 
-        <el-checkbox v-model="deceasedConfirmed" :disabled="submitting" class="!h-auto items-start [&_.el-checkbox__label]:whitespace-normal [&_.el-checkbox__label]:text-xs [&_.el-checkbox__label]:leading-relaxed">{{ $t('memberDeregistration.confirmed') }}</el-checkbox>
+        <el-checkbox v-model="deceasedConfirmed" :disabled="submitting" class="member-declaration">{{ $t('memberDeregistration.confirmed') }}</el-checkbox>
 
         <aside class="rounded-lg border border-[#EED9AE] bg-[#FFFBF2] p-3 text-xs leading-relaxed text-[#6B5321]">
           <h2 class="mb-1 font-bold">{{ $t('memberDeregistration.noticeTitle') }}</h2>
@@ -61,10 +67,10 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Remove, Back, Upload } from '@element-plus/icons-vue';
+import { Remove, Back, Upload, Document } from '@element-plus/icons-vue';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { submitMemberDeregistration } from '../../api/citizen.js';
-import { isHouseholdHead, deregistrationSuccessors } from '../../utils/memberDeregistration.js';
+import { isHouseholdHead, deregistrationSuccessors, DEFAULT_DEATH_PROOF_NO, createDefaultDeathProofFile } from '../../utils/memberDeregistration.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -77,8 +83,9 @@ const targetMember = computed(() => members.value.find(member => member.id === t
 const isHead = computed(() => isHouseholdHead(targetMember.value));
 const successors = computed(() => deregistrationSuccessors(family.value, targetMember.value));
 const replacementHeadId = ref('');
-const deathProofNo = ref('');
+const deathProofNo = ref(DEFAULT_DEATH_PROOF_NO);
 const proof = ref(null);
+const isDefaultProof = ref(true);
 const fileInput = ref(null);
 const deceasedConfirmed = ref(false);
 const submitting = ref(false);
@@ -96,22 +103,30 @@ function chooseProof(event) {
     return;
   }
   proof.value = file;
+  isDefaultProof.value = false;
 }
 watch(targetMemberId, () => {
-  deathProofNo.value = '';
+  deathProofNo.value = DEFAULT_DEATH_PROOF_NO;
   deceasedConfirmed.value = false;
   replacementHeadId.value = '';
   proof.value = null;
+  isDefaultProof.value = true;
   if (fileInput.value) fileInput.value.value = '';
 });
 async function submit() {
   if (submitting.value) return;
   if (!targetMember.value) return ElMessage.warning(t('memberDeregistration.errorMember'));
-  if (!deathProofNo.value.trim() || !proof.value) return ElMessage.warning(t('memberDeregistration.errorProof'));
+  if (!deathProofNo.value.trim() || (!proof.value && !isDefaultProof.value)) return ElMessage.warning(t('memberDeregistration.errorProof'));
   if (!deceasedConfirmed.value) return ElMessage.warning(t('memberDeregistration.errorConfirm'));
   if (isHead.value && !successors.value.some(member => member.id === replacementHeadId.value)) return ElMessage.warning(t('memberDeregistration.errorSuccessor'));
   submitting.value = true;
   try {
+    const attachment = isDefaultProof.value
+      ? await createDefaultDeathProofFile({ t, locale: locale.value, member: targetMember.value, cardNo: family.value.rationCardNo, reference: deathProofNo.value.trim() }).catch(error => {
+        ElMessage.error(t('memberDeregistration.uploadFailed'));
+        throw error;
+      })
+      : proof.value;
     await submitMemberDeregistration({
       cardNo: family.value.rationCardNo,
       targetMemberId: targetMember.value.id,
@@ -119,7 +134,7 @@ async function submit() {
       deathProofNo: deathProofNo.value.trim(),
       deceasedConfirmed: true,
       replacementHeadId: isHead.value ? replacementHeadId.value : ''
-    }, proof.value);
+    }, attachment);
     ElMessage.success(t('memberDeregistration.submitSuccess'));
     goBack();
   } catch { /* The request layer presents the localized error. */ }
@@ -128,3 +143,30 @@ async function submit() {
 onMounted(() => citizenStore.fetchFamilies());
 watch(locale, () => citizenStore.fetchFamilies());
 </script>
+
+<style scoped>
+.member-declaration {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  white-space: normal;
+}
+.member-declaration :deep(.el-checkbox__input) {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+}
+.member-declaration :deep(.el-checkbox__label) {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline-start: 0.5rem;
+  padding-inline-end: 0;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  text-align: start;
+  font-size: 0.75rem;
+  line-height: 1.65;
+}
+</style>
