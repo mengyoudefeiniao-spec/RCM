@@ -37,7 +37,7 @@
         <div class="space-y-2 rounded-lg border border-[#D9E5DB] p-3">
           <h2 class="text-sm font-bold text-[#1B3123]">{{ $t('memberDeregistration.proof') }} <span class="text-[#A53A2D]">*</span></h2>
           <p class="text-xs leading-relaxed text-[#718277]">{{ $t('memberDeregistration.proofHint') }}</p>
-          <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" @change="chooseProof" />
+          <input ref="fileInput" type="file" class="hidden" :disabled="submitting" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" @change="chooseProof" />
           <div class="flex min-w-0 flex-col gap-3 pt-1">
             <div class="flex min-w-0 items-start gap-2 rounded-lg bg-[#F3F8F4] p-3" aria-live="polite">
               <el-icon class="mt-0.5 shrink-0 text-[#326445]"><Document /></el-icon>
@@ -46,7 +46,7 @@
                 <p v-if="isDefaultProof" class="text-xs leading-relaxed text-[#718277]">{{ $t('memberDeregistration.defaultProofHint') }}</p>
               </div>
             </div>
-            <el-button plain :disabled="submitting || !targetMember" class="!h-auto max-w-full self-end !whitespace-normal py-2" @click="fileInput?.click()"><el-icon class="me-1"><Upload /></el-icon>{{ $t('memberDeregistration.chooseFile') }}</el-button>
+            <el-button plain native-type="button" :disabled="submitting" class="!h-auto max-w-full self-end !whitespace-normal py-2" @click="fileInput?.click()"><el-icon class="me-1"><Upload /></el-icon>{{ $t('memberDeregistration.chooseFile') }}</el-button>
           </div>
         </div>
 
@@ -104,14 +104,13 @@ function chooseProof(event) {
   }
   proof.value = file;
   isDefaultProof.value = false;
+  deceasedConfirmed.value = false;
+  event.target.value = '';
 }
 watch(targetMemberId, () => {
-  deathProofNo.value = DEFAULT_DEATH_PROOF_NO;
+  // Retain an uploaded certificate and its number even when chosen before the member.
   deceasedConfirmed.value = false;
   replacementHeadId.value = '';
-  proof.value = null;
-  isDefaultProof.value = true;
-  if (fileInput.value) fileInput.value.value = '';
 });
 async function submit() {
   if (submitting.value) return;
