@@ -959,6 +959,7 @@ export default {
     "sourceMemberEntry": "إضافة فرد",
     "sourceMemberTransfer": "نقل فرد",
     "statusPendingStaff": "بانتظار تدقيق الموظف",
+    "pendingCountLabel": "قيد المراجعة: {count}",
     "statusPendingManager": "بانتظار موافقة المدير",
     "statusApproved": "تمت الموافقة",
     "statusRejected": "مرفوض",

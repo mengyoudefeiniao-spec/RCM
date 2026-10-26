@@ -7,6 +7,7 @@ import { MOCK_REVIEW_TICKETS as MOCK_REVIEW_TICKETS_ZH } from '../mock/data/revi
 import { MOCK_REVIEW_TICKETS as MOCK_REVIEW_TICKETS_EN } from '../mock/data/en/reviewData.js';
 import { MOCK_FAMILIES as MOCK_FAMILIES_ZH } from '../mock/data/citizenData.js';
 import { MOCK_FAMILIES as MOCK_FAMILIES_EN } from '../mock/data/en/citizenData.js';
+import { createDemoFamilyNameLocalizer, familyLanguage, mergeFamilyUpdate } from './familyMemberNames.js';
 
 const STORAGE_KEY_TICKETS = 'rcm_shared_tickets';
 const LEGACY_STORAGE_KEY_TICKETS = 'rcm_shared_tickets';
@@ -76,11 +77,17 @@ function getKurdishFamilies() {
 }
 
 export function getInitialFamilies(lang) {
+  lang = familyLanguage(lang);
   if (lang === 'en') return JSON.parse(JSON.stringify(MOCK_FAMILIES_EN));
   if (lang === 'ar') return getArabicFamilies();
   if (lang === 'ku') return getKurdishFamilies();
   return JSON.parse(JSON.stringify(MOCK_FAMILIES_ZH));
 }
+
+const FAMILY_LANGUAGES = ['zh', 'en', 'ar', 'ku'];
+export const localizeDemoFamilyNames = createDemoFamilyNameLocalizer(
+  Object.fromEntries(FAMILY_LANGUAGES.map(lang => [lang, getInitialFamilies(lang)]))
+);
 
 /**
  * 格式化当前时间为 YYYY-MM-DD HH:mm
@@ -535,7 +542,7 @@ export function updateSharedOrder(orderId, updates) {
 // =====================================================================
 
 export function getSharedFamilies(langOverride) {
-  const lang = langOverride || getActiveLanguage();
+  const lang = familyLanguage(langOverride || getActiveLanguage());
   const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
   try {
     const raw = localStorage.getItem(storageKey);
@@ -562,10 +569,11 @@ export function getSharedFamilies(langOverride) {
             });
           });
         }
-        if (cleaned.length !== parsed.length || localizedFreezeStatusChanged) {
-          localStorage.setItem(storageKey, JSON.stringify(cleaned));
+        const localized = cleaned.map(family => localizeDemoFamilyNames(family, lang));
+        if (cleaned.length !== parsed.length || localizedFreezeStatusChanged || localized.some((family, index) => family !== cleaned[index])) {
+          localStorage.setItem(storageKey, JSON.stringify(localized));
         }
-        if (cleaned.length > 0) return cleaned;
+        if (localized.length > 0) return localized;
       }
     }
   } catch (e) {
@@ -587,11 +595,11 @@ export function getSharedFamily(cardNo, langOverride) {
 }
 
 export function updateSharedFamily(cardNo, updater, langOverride) {
-  const currentLang = langOverride || getActiveLanguage();
-  const langs = ['zh', 'en', 'ar', 'ku'];
+  const currentLang = familyLanguage(langOverride || getActiveLanguage());
+  const source = getSharedFamily(cardNo, currentLang);
   let currentResult = null;
 
-  langs.forEach((lang) => {
+  FAMILY_LANGUAGES.forEach((lang) => {
     const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
     const list = getSharedFamilies(lang);
     const index = list.findIndex((f) => f.rationCardNo === cardNo);
@@ -600,8 +608,9 @@ export function updateSharedFamily(cardNo, updater, langOverride) {
       if (typeof updater === 'function') {
         list[index] = updater(list[index], lang);
       } else {
-        list[index] = { ...list[index], ...updater };
+        list[index] = mergeFamilyUpdate(list[index], updater, source);
       }
+      list[index] = JSON.parse(JSON.stringify(localizeDemoFamilyNames(list[index], lang)));
 
       try {
         localStorage.setItem(storageKey, JSON.stringify(list));
@@ -625,7 +634,7 @@ export function updateSharedFamily(cardNo, updater, langOverride) {
 }
 
 export function addSharedFamily(newFamily, langOverride) {
-  const lang = langOverride || getActiveLanguage();
+  const lang = familyLanguage(langOverride || getActiveLanguage());
   const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
   const list = getSharedFamilies(lang);
   list.unshift(newFamily);

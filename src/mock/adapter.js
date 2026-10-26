@@ -72,6 +72,7 @@ import {
   updateSharedOrder,
   getSharedFamilies,
   getSharedFamily,
+  localizeDemoFamilyNames,
   updateSharedFamily
 } from '../utils/sharedSession.js';
 
@@ -561,10 +562,10 @@ syncCitizenContact(readMyData('citizen', 'profile', null));
 // 读取——若只更新其中一处，会造成「家庭代理 5 人 / 配给购买 4 人」的额度分裂
 function syncFamilyAcrossPools(family) {
   if (!family || !family.rationCardNo) return;
-  Object.values(multiLangStores).forEach((stores) => {
+  Object.entries(multiLangStores).forEach(([lang, stores]) => {
     const target = (stores.familiesStore || []).find((f) => f.rationCardNo === family.rationCardNo);
     if (target && target !== family) {
-      target.members = family.members;
+      target.members = getSharedFamilies(lang).find(item => item.rationCardNo === family.rationCardNo)?.members || localizeDemoFamilyNames(family, lang).members;
       target.memberCount = family.memberCount;
     }
   });
@@ -1438,14 +1439,14 @@ export async function mockDispatch(config) {
   // 2. 公民与家庭管理模块 (Citizen & Family)
   // ==========================================
   if (url.includes('/citizen/families') && method === 'GET') {
-    const sharedFams = getSharedFamilies();
+    const sharedFams = getSharedFamilies(reqLang);
     const familyList = sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore;
     return createResponse(localizeFamilyAgentNames(familyList));
   }
 
   if (url.match(/\/citizen\/family\/([^/]+)/) && method === 'GET') {
     const cardNo = url.split('/').pop();
-    const sharedFam = getSharedFamily(cardNo);
+    const sharedFam = getSharedFamily(cardNo, reqLang);
     const family = sharedFam || familiesStore.find((f) => f.rationCardNo === cardNo) || familiesStore[0];
     return createResponse(localizeFamilyAgentNames([family])[0]);
   }
@@ -1494,12 +1495,12 @@ export async function mockDispatch(config) {
   // 更新成员信息与状态（支持冻结/解冻/资料修改）(PUT)
   if (url.match(/\/citizen\/members\/([^/]+)/) && method === 'PUT') {
     const memberId = url.split('/').pop();
-    const sharedFams = getSharedFamilies();
+    const sharedFams = getSharedFamilies(reqLang);
     sharedFams.forEach((f) => {
       const target = f.members.find((m) => m.id === memberId || m.nationalId === memberId);
       if (target) {
         Object.assign(target, data, { isUpdatedInSystem: true });
-        updateSharedFamily(f.rationCardNo, { members: f.members });
+        updateSharedFamily(f.rationCardNo, { members: f.members }, reqLang);
       }
     });
 

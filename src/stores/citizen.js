@@ -17,14 +17,17 @@ export const useCitizenStore = defineStore('citizen', () => {
   const families = ref([]);
   const currentFamily = ref(null);
   const loading = ref(false);
+  let familyRequest = 0;
 
   /**
    * 加载所有家庭配给卡档案
    */
   async function fetchFamilies() {
+    const request = ++familyRequest;
     loading.value = true;
     try {
       const data = await getFamilyList();
+      if (request !== familyRequest) return;
       families.value = data;
       if (currentFamily.value && data.length > 0) {
         const found = data.find((f) => f.rationCardNo === currentFamily.value.rationCardNo);
@@ -33,7 +36,7 @@ export const useCitizenStore = defineStore('citizen', () => {
         currentFamily.value = data[0];
       }
     } finally {
-      loading.value = false;
+      if (request === familyRequest) loading.value = false;
     }
   }
 

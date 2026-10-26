@@ -1084,6 +1084,7 @@ export default {
     "managerApprove": "Final Approval (Enact & Update Records)",
     "managerReject": "Final Rejection",
     "filterTitle": "Pending Tickets Filter",
+    "pendingCountLabel": "Pending review: {count}",
     "filterMatch": "Matched {count} / {total} tickets",
     "searchPlaceholder": "Search ID, applicant, card, target, reason...",
     "selectProvince": "Select Province",

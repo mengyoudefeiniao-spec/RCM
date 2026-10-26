@@ -1,5 +1,9 @@
 # PocketBase 业务数据同步设置
 
+家庭姓名按 `rcm_shared_families_zh/en/ar/ku` 保存；界面语言 `ckb` 对应存储键 `ku`。成员资料或资格更新按身份编号同步业务字段，并保留各语言原有姓名。已知演示成员的历史串语言姓名会在读取时修复；自行登记或已更正的姓名保持原文。新成员登记的演示默认姓名统一使用英文，切换界面语言不改写正在填写的姓名。
+
+历史数据定点修复：运行 `node scripts/repair-family-member-names.mjs` 预览，再加 `--apply` 仅修复已知演示身份的姓名。脚本会在 `.playwright-cli/` 备份原记录，不重置家庭、成员名单、联系方式或资格状态。可通过 `POCKETBASE_URL`、`POCKETBASE_COLLECTION` 和可选的 `POCKETBASE_TOKEN` 指定实例及授权。
+
 前端使用当前演示 API，PocketBase 作为共享业务数据存储。启动时先从 PocketBase 读取共享数据；若集合中还没有记录，首次运行的设备会把已有业务缓存写入 PocketBase。后续业务缓存写入会同步到 PocketBase，已打开的客户端每 15 秒读取一次更新。
 
 ## APP 客服投诉与办理通知

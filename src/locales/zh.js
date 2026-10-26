@@ -1084,6 +1084,7 @@ export default {
     "managerApprove": "终审批准通过 (正式签发并生效业务)",
     "managerReject": "终审驳回申请",
     "filterTitle": "待办工单筛选",
+    "pendingCountLabel": "待审核：{count}",
     "filterMatch": "匹配 {count} / {total} 笔",
     "searchPlaceholder": "搜索工单号/申请人/卡号/目标/事由",
     "selectProvince": "选择省市",

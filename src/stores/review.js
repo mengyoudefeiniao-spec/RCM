@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   getReviewTicketList,
   submitStaffOpinion,
@@ -9,12 +9,14 @@ import { ElMessage, ElNotification } from 'element-plus';
 import { i18n } from '../locales/index.js';
 import { getSharedTickets, updateSharedTicket } from '../utils/sharedSession.js';
 import { onTabMessage } from '../utils/crossTabBus.js';
+import { isPendingReview, REVIEW_SOURCE_KEYS } from '../utils/reviewPresentation.js';
 
 export const useReviewStore = defineStore('review', () => {
   const tickets = ref([]);
   const selectedTicket = ref(null);
   const filterSource = ref('全部');
   const loading = ref(false);
+  const pendingCount = computed(() => tickets.value.filter(isPendingReview).length);
 
   // 初始化跨标签页业务公文实时监听器 (公民端标签页提交 -> 政府端标签页秒级接收)
   if (typeof window !== 'undefined') {
@@ -61,11 +63,13 @@ export const useReviewStore = defineStore('review', () => {
 
       // 2. 根据来源进行过滤
       let data = sharedList;
-      if (source && source !== '全部') {
-        data = sharedList.filter((item) => item.source === source);
+      if (source && source !== '全部' && source !== 'All') {
+        const sourceKey = REVIEW_SOURCE_KEYS[source];
+        data = sharedList.filter(item => item.source === source || (sourceKey && REVIEW_SOURCE_KEYS[item.source] === sourceKey));
       }
 
-      tickets.value = data;
+      // 导航徽标与来源计数始终读取完整工单池，筛选只影响当前列表/选中项。
+      tickets.value = sharedList;
       if (data.length > 0) {
         if (!selectedTicket.value || !data.some((t) => t.id === selectedTicket.value.id)) {
           selectedTicket.value = data[0];
@@ -150,6 +154,7 @@ export const useReviewStore = defineStore('review', () => {
     selectedTicket,
     filterSource,
     loading,
+    pendingCount,
     fetchTickets,
     selectTicket,
     reviewStaff,

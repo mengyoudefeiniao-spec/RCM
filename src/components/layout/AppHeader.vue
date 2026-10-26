@@ -3,7 +3,7 @@
     <!-- 全宽顶栏：针对 Google Pixel 9 手机优化高度与右侧控件排列 -->
     <div class="w-full px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->
-      <div class="flex items-center gap-2 sm:gap-3 lg:gap-5 min-w-0">
+      <div class="flex flex-1 items-center gap-2 sm:gap-3 lg:gap-5 min-w-0">
         <!-- 平台标识与名称 (固定左上角，APP 视口内禁用点击跳转) -->
         <div
           class="flex items-center gap-2.5 shrink-0"
@@ -33,7 +33,7 @@
         <div v-if="!isAppMode" class="hidden xl:block h-5 w-px bg-[#E5CEA1] shrink-0"></div>
 
         <!-- 核心系统快捷导航 (桌面端且非 APP 模式) -->
-        <nav v-if="!isAppMode" class="hidden md:flex items-center gap-1 text-xs shrink-0">
+        <nav v-if="!isAppMode" class="app-module-nav hidden md:flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-xs">
           <!-- 1. 数据看板：配给代理或管理角色可见 -->
           <router-link
             v-if="canViewDashboard && authStore.hasPermission('dashboard.view')"
@@ -58,15 +58,16 @@
 
           <!-- 3. 审核工作台：仅 Admin 管理角色可见 -->
           <router-link
-            v-if="authStore.hasPermission('review.view') && (authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('review.view'))"
+            v-if="canViewReview"
             to="/review"
+            :title="`${$t('nav.review')} · ${$t('review.pendingCountLabel', { count: pendingReviewCount })}`"
             class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
             :class="$route.path === '/review' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
           >
             <el-icon><Stamp /></el-icon>
             <span>{{ $t('nav.review') }}</span>
-            <span v-if="pendingReviewCount > 0" class="w-4 h-4 rounded-full bg-[#C04442] text-white text-[10px] flex items-center justify-center font-bold">
-              {{ pendingReviewCount }}
+            <span class="review-nav-count inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold tabular-nums" :class="pendingReviewCount > 0 ? 'bg-[#C04442] text-white' : 'bg-[#E9F1EB] text-[#58685D]'" :aria-label="$t('review.pendingCountLabel', { count: pendingReviewCount })" role="status">
+              <bdi dir="ltr">{{ pendingReviewCount > 99 ? '99+' : pendingReviewCount }}</bdi>
             </span>
           </router-link>
 
@@ -213,7 +214,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
@@ -244,9 +245,11 @@ import {
 
 const router = useRouter();
 const route = useRoute();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
+const canViewReview = computed(() => authStore.hasPermission('review.view') && (authStore.isAdmin || authStore.userProfile?.permissionCodes?.includes('review.view')));
+watch([locale, canViewReview], () => { if (canViewReview.value) reviewStore.fetchTickets(reviewStore.filterSource); }, { immediate: true });
 const messageStore = useMessageCenterStore();
 const notificationsVisible = ref(false), messageVisible = ref(false), selectedMessage = ref(null);
 const messageAccess = computed(() => resolveMessageAccess(authStore.userProfile));
@@ -270,9 +273,6 @@ function getNavTarget(path) {
 }
 
 onMounted(() => {
-  if (authStore.isAdmin) {
-    reviewStore.fetchTickets('全部');
-  }
   if (canViewMessageNotifications.value) {
     refreshMessageCounts();
     messageTimer = setInterval(refreshMessageCounts, 30000);
@@ -298,7 +298,7 @@ async function previewMessage(item) { selectedMessage.value = item; messageVisib
 function viewMessageDetails() { if (!selectedMessage.value) return; const id = selectedMessage.value.id; messageVisible.value = false; notificationsVisible.value = false; router.push({ path: '/messages', query: { detail: id } }); }
 
 const pendingReviewCount = computed(() => {
-  return reviewStore.tickets.filter((t) => t.status.includes('待')).length;
+  return reviewStore.pendingCount;
 });
 
 // 数据看板仅限配给代理或者任意管理角色可见
@@ -388,6 +388,9 @@ async function handleLogout() {
 </script>
 
 <style scoped>
+.app-module-nav { scrollbar-width: none; }
+.app-module-nav::-webkit-scrollbar { display: none; }
+.app-module-nav > a { flex-shrink: 0; }
 /* 移动端底部导航安全区适配 */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 8px);

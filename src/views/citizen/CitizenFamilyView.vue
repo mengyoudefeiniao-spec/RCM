@@ -1079,12 +1079,6 @@ const newMemberForm = reactive({
   relation: '子女',
   phone: ''
 });
-let lastDemoMemberName = '';
-watch(locale, () => {
-  const nextName = t('citizen.demoMemberName');
-  if (newMemberForm.name === lastDemoMemberName) newMemberForm.name = nextName;
-  lastDemoMemberName = nextName;
-});
 
 // 计算是否未满 12 岁
 const isUnder12 = computed(() => {
@@ -1102,8 +1096,8 @@ function handleBirthDateChange() {
 
 function openAddMemberDialog() {
   addMemberStep.value = 1;
-  newMemberForm.name = t('citizen.demoMemberName');
-  lastDemoMemberName = newMemberForm.name;
+  // 新登记姓名是业务原文；演示默认使用英文，切换界面语言不改写正在填写的姓名。
+  newMemberForm.name = t('citizen.demoMemberName', {}, { locale: 'en' });
   newMemberForm.nationalId = '201982910488';
   newMemberForm.birthDate = '2019-05-15';
   newMemberForm.gender = '男';

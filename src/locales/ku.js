@@ -959,6 +959,7 @@ export default {
     "sourceMemberEntry": "زیادکردنی ئەندام",
     "sourceMemberTransfer": "گواستنەوەی ئەندام",
     "statusPendingStaff": "چاوەڕوانی وردبینی کارمەند",
+    "pendingCountLabel": "چاوەڕوانی پشکنین: {count}",
     "statusPendingManager": "چاوەڕوانی پەسەندی بەڕێوەبەر",
     "statusApproved": "پەسەندکراو",
     "statusRejected": "ڕەتکراوەتەوە",

@@ -379,6 +379,7 @@ import { provinceLabel } from '../../utils/dataLabels.js';
 import { useReviewStore } from '../../stores/review.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { localizeUnfreezeCase, resolveUnfreezeCaseKey } from '../../utils/unfreezeCase.js';
+import { REVIEW_SOURCE_KEYS, reviewTicketField } from '../../utils/reviewPresentation.js';
 import { Stamp, Refresh, Document, Check, Search, Back } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
@@ -387,7 +388,6 @@ const reviewStore = useReviewStore();
 const authStore = useAuthStore();
 
 function localizedTicketField(ticket, field, fallback) {
-  const value = fallback ?? ticket?.[field] ?? '';
   const unfreezeType = ticket?.payload?.unfreezeType;
   const unfreezeCaseKey = resolveUnfreezeCaseKey(unfreezeType);
   if (unfreezeCaseKey && ['appType', 'categoryType'].includes(field)) {
@@ -395,9 +395,7 @@ function localizedTicketField(ticket, field, fallback) {
     if (field === 'appType') return t('review.unfreezeAppType', { type });
     return t('review.unfreezeCategoryType', { type });
   }
-  if (!ticket || (locale.value !== 'ar' && locale.value !== 'ckb')) return value;
-  const key = `review.ticketData.${ticket.id}.${field}`;
-  return te(key, locale.value) ? t(key) : value;
+  return reviewTicketField(ticket, field, locale.value, t, te, fallback);
 }
 
 function localizedProvinceOption(province) {
@@ -436,22 +434,7 @@ function handleSelectTicket(tk) {
 
 const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '代理转移', '成员录入', '成员转移'];
 
-const sourceKeyMap = {
-  '全部': 'sourceAll',
-  'All': 'sourceAll',
-  '申请分户': 'sourceSplit',
-  'Split Household': 'sourceSplit',
-  '申请解冻': 'sourceUnfreeze',
-  'Unfreeze Card': 'sourceUnfreeze',
-  '变更户主': 'sourceChangeHead',
-  'Change Head': 'sourceChangeHead',
-  '代理转移': 'sourceTransferAgent',
-  'Transfer Agent': 'sourceTransferAgent',
-  '成员录入': 'sourceMemberEntry',
-  'Member Entry': 'sourceMemberEntry',
-  '成员转移': 'sourceMemberTransfer',
-  'Transfer Member': 'sourceMemberTransfer'
-};
+const sourceKeyMap = REVIEW_SOURCE_KEYS;
 
 function getSourceDisplayName(src) {
   const key = sourceKeyMap[src];
@@ -590,8 +573,8 @@ const filteredTickets = computed(() => {
     const kw = filterKeyword.value.trim().toLowerCase();
     list = list.filter(t =>
       (t.id && t.id.toLowerCase().includes(kw)) ||
-      (t.applicantName && t.applicantName.toLowerCase().includes(kw)) ||
-      (t.targetMemberName && t.targetMemberName.toLowerCase().includes(kw)) ||
+      String(localizedTicketField(t, 'applicantName')).toLowerCase().includes(kw) ||
+      String(localizedTicketField(t, 'targetMemberName')).toLowerCase().includes(kw) ||
       (t.cardNo && t.cardNo.toLowerCase().includes(kw)) ||
       (t.reason && t.reason.toLowerCase().includes(kw)) ||
       (t.appType && t.appType.toLowerCase().includes(kw))
