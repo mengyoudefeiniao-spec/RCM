@@ -105,8 +105,8 @@ public class MainActivity extends Activity {
             public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if ("appassets.androidplatform.net".equals(uri.getHost())) return assetLoader.shouldInterceptRequest(uri);
-                if ("https".equalsIgnoreCase(uri.getScheme())
-                        && BuildConfig.POCKETBASE_HOST.equalsIgnoreCase(uri.getHost())) return null;
+                if (RemoteResourcePolicy.allows(uri.getScheme(), uri.getHost(), uri.getPort(),
+                        request.getMethod(), uri.getPath(), BuildConfig.POCKETBASE_HOST)) return null;
                 return offlineResponse(403, "Offline");
             }
 
@@ -114,7 +114,16 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 // Keep the local application in the WebView. External links are handed to Android.
                 Uri uri = request.getUrl();
-                return !"appassets.androidplatform.net".equals(uri.getHost());
+                if (AppSupportBridge.isAppUrl(uri)) return false;
+                if (request.isForMainFrame() && "https".equalsIgnoreCase(uri.getScheme())) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri)
+                                .addCategory(Intent.CATEGORY_BROWSABLE));
+                    } catch (android.content.ActivityNotFoundException ignored) {
+                        // Keep the app open if no browser or navigation app can handle the link.
+                    }
+                }
+                return true;
             }
         });
 

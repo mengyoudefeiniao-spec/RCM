@@ -7,7 +7,7 @@ const sourceRoot = path.resolve(packageRoot, '..');
 const sourcePath = path.join(sourceRoot, 'src', 'components', 'layout', 'AppLayout.vue');
 const overrideDir = path.join(packageRoot, 'source-overrides');
 const overridePath = path.join(overrideDir, 'AppLayout.vue');
-let source = await readFile(sourcePath, 'utf8');
+let source = (await readFile(sourcePath, 'utf8')).replace(/\r\n/g, '\n');
 
 function replaceOnce(input, before, after, description) {
   const first = input.indexOf(before);

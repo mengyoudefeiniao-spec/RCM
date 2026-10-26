@@ -4,7 +4,11 @@ This directory contains the Android wrapper, frontend build, SDK toolchain, and 
 
 The app API remains in demo/mock mode; PocketBase synchronizes the persisted demo business records and uploaded attachments. Login is still a local demo login. Do not expose real user data through anonymous PocketBase rules; production use needs a real authentication and authorization design. Required collection fields and API rules are documented in `POCKETBASE.md` at the repository root.
 
-Some screens reference third-party map tiles and sample photos. Those remain network-dependent and may not be available offline.
+Map screens use HTTPS OpenStreetMap tiles and OSRM driving routes; the GIS overview also uses CARTO Voyager tiles. The native WebView explicitly allows these read-only map resources alongside the configured PocketBase host. Other remote resources, including sample photos, remain blocked by default. Maps still need a working network connection. HTTPS navigation links open in an installed browser or navigation app.
+
+If a map works in the desktop APP preview but shows a blank basemap in an installed APK, check the native `RemoteResourcePolicy` as well as the phone's network. An application-generated `403 Offline` cannot be fixed by enabling a phone proxy. Changes to this native policy require rebuilding and reinstalling both APKs; updating the website alone does not update an installed app.
+
+Run `node --test scripts/tests/android-map-network.test.mjs` from the repository root to check the native policy against the map URLs used by the app. The regression compiles and executes the production Java policy with JDK 17 (`JAVA_HOME`, the bundled build location, or Java on `PATH`).
 
 The customer service complaint form uses Android's installed speech recognition service for voice input. Microphone permission is requested when the user starts recording; supported languages depend on the device's speech service. Complaint completion notices use native Android notifications after permission is granted, and tapping a notice opens the related complaint progress. These services are exposed only to the bundled app's top-level asset origin. Business data still synchronizes while the WebView is running; delivery after the app has fully closed requires a separately deployed background push service.
 
