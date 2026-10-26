@@ -350,7 +350,7 @@ async function loadData() {
   }
 }
 
-const applicationSourceCodes = new Set(['TRF', 'TRM', 'SPL', 'HED', 'UNF']);
+const applicationSourceCodes = new Set(['TRF', 'TRM', 'SPL', 'HED', 'UNF', 'DRG']);
 const filteredApplicationRecords = computed(() => applicationRecords.value.filter((record) => {
   const mode = applicationReviewMode(record);
   return (!applicationTypeFilter.value || record.sourceCode === applicationTypeFilter.value)
@@ -380,7 +380,7 @@ function refreshApplicationHistory() {
 function applicationStatusKey(record) {
   const value = `${record.status || ''} ${record.managerDecision || ''}`.toLowerCase();
   if (/reject|denied|驳回|未通过|不予|مرفوض|رفض|پەسەند نەکرا/.test(value)) return 'rejected';
-  if (/approv|passed|通过|核准|生效|تمت الموافقة|مقبول|پەسەندکرا/.test(value)) return 'approved';
+  if (/approv|passed|通过|核准|生效|办结|批准|تمت الموافقة|مقبول|پەسەندکرا/.test(value)) return 'approved';
   if (/pending|待|review|审核中|قيد|انتظار|پشکنین/.test(value)) return 'pending';
   return 'pending';
 }

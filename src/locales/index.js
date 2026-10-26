@@ -31,9 +31,15 @@ import changeHeadMessages from './changeHead.js';
 import chatComplaintMessages from './chatComplaint.js';
 import chatOrderMessages from './chatOrders.js';
 import complaintAnalyticsMessages from './complaintAnalytics.js';
+import memberDeregistrationMessages from './memberDeregistration.js';
 
 function withCitizenApplications(messages, lang) {
   const merged = { ...messages, chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const deregistration = memberDeregistrationMessages[lang];
+  merged.memberDeregistration = deregistration;
+  merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action } };
+  merged.review = { ...merged.review, sourceDeregistration: deregistration.action, subtitle: deregistration.reviewSubtitle };
+  merged.systemExtras = { ...merged.systemExtras, reviewTypeDeregistration: deregistration.reviewPermission };
   for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang]]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };

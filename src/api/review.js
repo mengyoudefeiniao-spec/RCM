@@ -1,5 +1,10 @@
 import { request } from './client.js';
 
+export const getReviewAttachment = (ticketId, fileId) => request({
+  url: `/review/attachments/${encodeURIComponent(ticketId)}/${encodeURIComponent(fileId)}`,
+  method: 'GET'
+});
+
 /**
  * 获取电子审核待办工单清单 (GET)
  * 支持按【来源】筛选：全部、申请分户、申请解冻、变更户主、成员录入、成员转移

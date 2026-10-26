@@ -26,6 +26,7 @@ export const PERMISSION_CATALOG = [
   { moduleKey: 'moduleReview', code: 'review.process.unfreeze', featureKey: 'reviewTypeUnfreeze', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.split', featureKey: 'reviewTypeSplit', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.changeHead', featureKey: 'reviewTypeChangeHead', parentCode: 'review.process' },
+  { moduleKey: 'moduleReview', code: 'review.process.memberDeregistration', featureKey: 'reviewTypeDeregistration', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.memberEntry', featureKey: 'reviewTypeMemberEntry', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.memberTransfer', featureKey: 'reviewTypeMemberTransfer', parentCode: 'review.process' },
   { moduleKey: 'moduleReview', code: 'review.process.agentTransfer', featureKey: 'reviewTypeAgentTransfer', parentCode: 'review.process' },
@@ -63,6 +64,8 @@ export const REGION_SCOPED_PERMISSION_CODES = [...REVIEW_TYPE_CODES, ...WAREHOUS
 
 // 审核工单来源（中英文）→ 三级审核权限码
 const SOURCE_TO_CODE = {
+  '注销成员': 'review.process.memberDeregistration',
+  'Member Deregistration': 'review.process.memberDeregistration',
   '申请解冻': 'review.process.unfreeze',
   'Unfreeze Card': 'review.process.unfreeze',
   '申请分户': 'review.process.split',

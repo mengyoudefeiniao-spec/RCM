@@ -7,6 +7,7 @@ export const REVIEW_SOURCE_KEYS = {
   '申请分户': 'sourceSplit', 'Split Household': 'sourceSplit',
   '申请解冻': 'sourceUnfreeze', 'Unfreeze Card': 'sourceUnfreeze', 'Card unfreeze': 'sourceUnfreeze',
   '变更户主': 'sourceChangeHead', 'Change Head': 'sourceChangeHead',
+  '注销成员': 'sourceDeregistration', 'Member Deregistration': 'sourceDeregistration',
   '代理转移': 'sourceTransferAgent', 'Transfer Agent': 'sourceTransferAgent',
   '成员录入': 'sourceMemberEntry', 'Member Entry': 'sourceMemberEntry',
   '成员转移': 'sourceMemberTransfer', 'Transfer Member': 'sourceMemberTransfer'
@@ -36,7 +37,11 @@ function seedField(ticket, field) {
 export function reviewTicketField(ticket, field, locale, t, te, fallback) {
   const value = fallback ?? ticket?.[field] ?? '';
   if (!ticket) return value;
-  const person = ['targetMemberName', 'applicantName'].includes(field);
+  if (ticket.sourceCode === 'DRG') {
+    if (['appType', 'categoryType'].includes(field)) return t('memberDeregistration.applicationType');
+    if (field === 'reason') return t('memberDeregistration.reason', { reference: ticket.payload?.deathProofNo || '' });
+  }
+  const person = ['targetMemberName', 'applicantName', 'replacementHeadName'].includes(field);
   if (person) {
     const name = localizeDemoFamilyNames({ rationCardNo: ticket.cardNo, headName: value }, locale).headName;
     if (name !== value) return name;

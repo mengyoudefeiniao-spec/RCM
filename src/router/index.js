@@ -65,6 +65,12 @@ const routes = [
         meta: { title: '变更户主申请', roles: ['citizen'] }
       },
       {
+        path: 'citizen/member-deregistration',
+        name: 'MemberDeregistration',
+        component: () => import('../views/citizen/MemberDeregistrationView.vue'),
+        meta: { titleKey: 'memberDeregistration.title', roles: ['citizen'] }
+      },
+      {
         path: 'citizen/unfreeze',
         name: 'Unfreeze',
         component: () => import('../views/citizen/UnfreezeView.vue'),

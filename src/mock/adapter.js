@@ -16,6 +16,8 @@ import {
 } from '../utils/businessRules.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
+import { isHouseholdHead, matchesDeregistrationMember, deregistrationSuccessors } from '../utils/memberDeregistration.js';
+import { isPendingReview } from '../utils/reviewPresentation.js';
 import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
 import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
@@ -634,6 +636,47 @@ function applyApprovedUnfreeze(ticket) {
 function getActiveMemberCount(family) {
   if (!family || !Array.isArray(family.members)) return 0;
   return family.members.filter((m) => !m || !/冻结|Frozen/i.test(m.status || '')).length;
+}
+
+function applyApprovedMemberDeregistration(ticket) {
+  const payload = ticket.payload;
+  const appliedAt = new Date().toISOString();
+  const updated = updateSharedFamily(ticket.cardNo, (family, lang) => {
+    const member = (family.members || []).find(item => matchesDeregistrationMember(item, payload));
+    if (!member) return family;
+    const members = family.members.filter(item => !matchesDeregistrationMember(item, payload));
+    let headName = family.headName;
+    if (isHouseholdHead(member)) {
+      const successor = members.find(item => item.id === payload.replacementHeadId);
+      if (successor) {
+        successor.relation = { zh: '户主', en: 'Head', ar: 'رب الأسرة', ku: 'سەرۆکی خێزان' }[lang];
+        headName = successor.name;
+      }
+    }
+    return {
+      ...family, members, memberCount: members.length, headName,
+      deregisteredMembers: [...(family.deregisteredMembers || []), {
+        ...member, deregisteredAt: appliedAt, deregistrationReason: 'DEATH', ticketId: ticket.id,
+        deathProofNo: payload.deathProofNo, attachments: ticket.attachments
+      }]
+    };
+  });
+  if (!updated) return;
+  syncFamilyAcrossPools(updated);
+  Object.entries(multiLangStores).forEach(([lang, stores]) => {
+    const family = getSharedFamilies(lang).find(item => item.rationCardNo === ticket.cardNo);
+    if (!family) return;
+    for (const collection of [stores.familiesStore, stores.adminCardsStore, stores.adminFamiliesStore]) {
+      const target = (collection || []).find(item => (item.cardNo || item.rationCardNo) === ticket.cardNo);
+      if (!target) continue;
+      Object.assign(target, { members: family.members, memberCount: family.memberCount, headName: family.headName });
+      if (target.quotas) target.quotas = {
+        flour: family.memberCount * quotaPerPerson('FLOUR-WHT-02'), rice: family.memberCount * quotaPerPerson('RICE-BAS-01'),
+        oil: family.memberCount * quotaPerPerson('OIL-SUN-03'), sugar: family.memberCount * quotaPerPerson('SUGAR-WHT-04')
+      };
+    }
+  });
+  ticket.payload = { ...payload, appliedAt };
 }
 
 export function getActiveLang(config) {
@@ -1534,6 +1577,52 @@ export async function mockDispatch(config) {
     return createResponse({ success: true, memberId }, 200, msg);
   }
 
+  // Death is the only permitted deregistration reason. Persist the original
+  // certificate before accepting a ticket; submission never alters membership.
+  if (url.endsWith('/citizen/member-deregistration') && method === 'POST') {
+    if (!(data instanceof FormData)) return createResponse({}, 400, i18n.global.t('memberDeregistration.errorProof'));
+    const fields = Object.fromEntries(data.entries());
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === fields.cardNo);
+    const member = family?.members?.find(item => matchesDeregistrationMember(item, fields));
+    if (!member) return createResponse({}, 400, i18n.global.t('memberDeregistration.errorMember'));
+    if (fields.deceasedConfirmed !== 'true') return createResponse({}, 400, i18n.global.t('memberDeregistration.errorConfirm'));
+    const file = data.get('deathProof');
+    const deathProofNo = String(fields.deathProofNo || '').trim();
+    if (!deathProofNo || deathProofNo.length > 100 || !(file instanceof File) || !file.size) return createResponse({}, 400, i18n.global.t('memberDeregistration.errorProof'));
+    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type) || file.size > 10 * 1024 * 1024) return createResponse({}, 400, i18n.global.t('memberDeregistration.invalidFile'));
+    const replacement = deregistrationSuccessors(family, member).find(item => String(item.id) === fields.replacementHeadId);
+    if (isHouseholdHead(member) && !replacement) return createResponse({}, 400, i18n.global.t('memberDeregistration.errorSuccessor'));
+    const payload = {
+      type: 'memberDeregistration', cardNo: family.rationCardNo, targetMemberId: member.id,
+      targetNationalId: member.nationalId, targetMemberName: member.name,
+      deathProofNo, deceasedConfirmed: true,
+      replacementHeadId: isHouseholdHead(member) ? replacement.id : '',
+      replacementHeadName: isHouseholdHead(member) ? replacement.name : ''
+    };
+    const duplicate = ['zh', 'en', 'ar', 'ku'].some(lang => getSharedTickets(lang).some(ticket => ticket.sourceCode === 'DRG'
+      && ticket.cardNo === family.rationCardNo && matchesDeregistrationMember(member, ticket.payload) && isPendingReview(ticket)));
+    if (duplicate) return createResponse({}, 409, i18n.global.t('memberDeregistration.duplicate'));
+    let fileId;
+    try {
+      fileId = await saveMockMessageAttachment(file, 'death-certificate');
+    } catch {
+      return createResponse({}, 500, i18n.global.t('memberDeregistration.uploadFailed'));
+    }
+    const ticketId = `REV-DRG-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
+    const ticket = {
+      id: ticketId, sourceCode: 'DRG', source: '注销成员', reviewMode: 'manual',
+      categoryType: i18n.global.t('memberDeregistration.applicationType'), appType: i18n.global.t('memberDeregistration.applicationType'),
+      cardNo: family.rationCardNo, applicantName: family.headName, targetMemberName: member.name,
+      province: family.province, center: family.district,
+      reason: i18n.global.t('memberDeregistration.reason', { reference: deathProofNo }),
+      payload, attachments: [{ name: file.name, fileId, size: file.size, mimeType: file.type, type: 'required', verified: false }]
+    };
+    // Existing installations keep separate language caches in PocketBase.
+    // Publish this same business ticket to each so every review language sees it.
+    for (const lang of ['zh', 'en', 'ar', 'ku']) addSharedTicket(ticket, lang);
+    return createResponse({ ticketId }, 200, i18n.global.t('memberDeregistration.submitSuccess'));
+  }
+
   // 变更户主 (POST)
   if (url.includes('/citizen/change-head') && method === 'POST') {
     const { cardNo, newHeadId, deathProofNo } = data;
@@ -2353,6 +2442,18 @@ export async function mockDispatch(config) {
     });
   }
 
+  const reviewAttachmentMatch = url.match(/\/review\/attachments\/([^/?]+)\/([^/?]+)$/);
+  if (reviewAttachmentMatch && method === 'GET') {
+    const ticket = getSharedTickets().find(item => item.id === decodeURIComponent(reviewAttachmentMatch[1]));
+    const attachment = ticket?.attachments?.find(item => item.fileId === decodeURIComponent(reviewAttachmentMatch[2]));
+    if (!attachment) return createResponse({}, 404, i18n.global.t('memberDeregistration.proofFailed'));
+    try {
+      const stored = await getMockMessageAttachment(attachment.fileId);
+      if (stored) return createResponse({ ...stored, name: attachment.name });
+    } catch { /* Present the same localized failure for missing or inaccessible bytes. */ }
+    return createResponse({}, 404, i18n.global.t('memberDeregistration.proofFailed'));
+  }
+
   // 4. 审核工单池 (GET)
   if (url.includes('/review/tickets') && method === 'GET') {
     const sharedTickets = getSharedTickets();
@@ -2369,6 +2470,9 @@ export async function mockDispatch(config) {
   if (url.includes('/review/staff-opinion') && method === 'POST') {
     const { ticketId, staffOpinion, staffName } = data;
     const ticket = ticketsStore.find((t) => t.id === ticketId) || getSharedTickets().find((t) => t.id === ticketId);
+    if (ticket?.sourceCode === 'DRG' && !['待分部初审', 'Pending Staff Review'].includes(ticket.status)) {
+      return createResponse({}, 409, i18n.global.t('memberDeregistration.reviewStateError'));
+    }
     if (ticket) {
       ticket.status = isEn ? 'Pending Manager Review' : '待经理终审';
       ticket.staffOpinion = staffOpinion;
@@ -2397,6 +2501,17 @@ export async function mockDispatch(config) {
   if (url.includes('/review/manager-decision') && method === 'POST') {
     const { ticketId, decision, notes, managerName } = data;
     const ticket = ticketsStore.find((t) => t.id === ticketId) || getSharedTickets().find((t) => t.id === ticketId);
+    if (ticket?.sourceCode === 'DRG') {
+      if (ticket.payload?.appliedAt) return createResponse({}, 409, i18n.global.t('memberDeregistration.reviewStateError'));
+      if (!['待经理终审', 'Pending Manager Review'].includes(ticket.status)) return createResponse({}, 409, i18n.global.t('memberDeregistration.reviewStateError'));
+      if (decision === '接受' || decision === 'Approved') {
+        const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === ticket.cardNo);
+        const member = family?.members?.find(item => matchesDeregistrationMember(item, ticket.payload));
+        if (!member) return createResponse({}, 409, i18n.global.t('memberDeregistration.errorMember'));
+        if (!ticket.payload.deceasedConfirmed || !ticket.payload.deathProofNo || !ticket.attachments?.some(file => file.fileId)) return createResponse({}, 400, i18n.global.t('memberDeregistration.errorProof'));
+        if (isHouseholdHead(member) && !deregistrationSuccessors(family, member).some(item => item.id === ticket.payload.replacementHeadId)) return createResponse({}, 409, i18n.global.t('memberDeregistration.errorSuccessor'));
+      }
+    }
     if (ticket) {
       const isAccept = decision === '接受' || decision === 'Approved';
       ticket.status = isAccept ? (isEn ? 'Approved' : '已批准') : (isEn ? 'Rejected' : '已驳回');
@@ -2416,7 +2531,10 @@ export async function mockDispatch(config) {
 
       // 若终审接受，自动落地对应业务实体变更
       if (isAccept && ticket.payload) {
-        if (ticket.payload.type === 'transferAgent') {
+        if (ticket.sourceCode === 'DRG' && ticket.payload.type === 'memberDeregistration') {
+          ticket.attachments = ticket.attachments.map(file => ({ ...file, verified: true, verifiedAt: ticket.managerDecidedAt, verifiedBy: ticket.managerName }));
+          applyApprovedMemberDeregistration(ticket);
+        } else if (ticket.payload.type === 'transferAgent') {
           // 跨省代理转移终审落地
           const targetFam = getSharedFamily(ticket.payload.cardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
           if (targetFam) {
@@ -2486,7 +2604,8 @@ export async function mockDispatch(config) {
       managerDecision: isAccept ? (isEn ? 'Approved' : '接受') : (isEn ? 'Rejected' : '已驳回'),
       managerNotes: notes,
       managerName: ticket?.managerName || managerName,
-      managerDecidedAt: ticket?.managerDecidedAt || new Date().toISOString().replace('T', ' ').slice(0, 16)
+      managerDecidedAt: ticket?.managerDecidedAt || new Date().toISOString().replace('T', ' ').slice(0, 16),
+      ...(ticket?.sourceCode === 'DRG' ? { payload: ticket.payload, attachments: ticket.attachments } : {})
     });
 
     return createResponse(ticket, 200, (isEn ? `Final review adjudicated as [${decision}]!` : `终审已裁决为【${decision}】！`));

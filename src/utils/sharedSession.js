@@ -259,8 +259,8 @@ export function getSharedTickets(langOverride) {
   return initial;
 }
 
-export function addSharedTicket(ticketPayload) {
-  const lang = getActiveLanguage();
+export function addSharedTicket(ticketPayload, langOverride) {
+  const lang = langOverride || getActiveLanguage();
   const isEn = lang === 'en';
   const currentList = getSharedTickets(lang);
   const storageKey = `${STORAGE_KEY_TICKETS}_${lang}`;

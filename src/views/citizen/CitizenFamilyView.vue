@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <!-- 2. 核心政务服务金刚区 (5大高频业务办理直通车) -->
+      <!-- 2. 公民自主申办入口（六项服务，三列两行） -->
       <div class="bg-white rounded-lg p-4 border border-[#D9E5DB] shadow-xs">
         <div class="flex items-center justify-between pb-3 border-b border-[#E9F1EB] mb-3">
           <span class="text-xs font-bold text-[#326445] flex items-center gap-1.5">
@@ -76,69 +76,26 @@
           <span class="text-[11px] text-[#8A9A8F]">{{ $t('citizenCard.fastTrackSubtitle') }}</span>
         </div>
 
-        <div class="grid grid-cols-5 gap-1.5 text-center select-none">
-          <!-- 1. 申请代理转移 -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToService('/citizen/transfer-agent')"
+        <div class="grid grid-cols-3 gap-x-2 gap-y-3 text-center">
+          <button
+            v-for="service in citizenServices"
+            :key="service.path"
+            type="button"
+            class="flex min-w-0 flex-col items-center gap-2 rounded-lg px-1 py-2 transition-colors hover:bg-[#F3F8F4] active:bg-[#E9F1EB] focus-visible:outline-2 focus-visible:outline-[#D3AF62]"
+            @click="navigateToService(service.path)"
           >
-            <div class="w-11 h-11 rounded-lg bg-[#E1F4E4] text-[#326445] flex items-center justify-center text-lg border border-[#CFE2D5] shadow-xs">
-              <el-icon><Switch /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyAgentTransfer') }}</span>
-          </div>
-
-          <!-- 2. 申请成员转移 -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToService('/citizen/member-transfer')"
-          >
-            <div class="w-11 h-11 rounded-lg bg-[#FDF3E0] text-[#B8934A] flex items-center justify-center text-lg border border-[#EED9AE] shadow-xs">
-              <el-icon><User /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyMemberTransfer') }}</span>
-          </div>
-
-          <!-- 3. 申请分户 -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToService('/citizen/split-household')"
-          >
-            <div class="w-11 h-11 rounded-lg bg-[#EFF5F1] text-[#B8934A] flex items-center justify-center text-lg border border-[#C9DBCE] shadow-xs">
-              <el-icon><Share /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applySplitHousehold') }}</span>
-          </div>
-
-          <!-- 4. 变更户主 -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToService('/citizen/change-head')"
-          >
-            <div class="w-11 h-11 rounded-lg bg-[#FDF3E0] text-[#D3AF62] flex items-center justify-center text-lg border border-[#EED9AE] shadow-xs">
-              <el-icon><UserFilled /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyChangeHead') }}</span>
-          </div>
-
-          <!-- 5. 申请解冻 -->
-          <div
-            class="flex flex-col items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#F3F8F4] active:scale-95 transition-all cursor-pointer"
-            @click="navigateToService('/citizen/unfreeze')"
-          >
-            <div class="w-11 h-11 rounded-lg bg-[#FBEAE9] text-[#C04442] flex items-center justify-center text-lg border border-[#F2D5D4] shadow-xs">
-              <el-icon><Unlock /></el-icon>
-            </div>
-            <span class="text-[10px] font-medium text-[#43554B] leading-tight">{{ $t('citizenCard.applyUnfreeze') }}</span>
-          </div>
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-xl shadow-xs" :class="service.tone">
+              <el-icon><component :is="service.icon" /></el-icon>
+            </span>
+            <span class="w-full break-words text-xs font-medium leading-relaxed text-[#43554B]">{{ $t(service.label) }}</span>
+          </button>
         </div>
       </div>
 
       <!-- 3. 家庭在册成员卡片流 (Mobile Card Flow) -->
       <div class="bg-white rounded-lg p-4 border border-[#D9E5DB] shadow-xs space-y-3">
         <div
-          class="flex gap-2 pb-2 border-b border-[#E9F1EB]"
-          :class="isAppMode ? 'flex-col items-stretch' : 'flex-row items-center justify-between'"
+          class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E9F1EB]"
         >
           <div class="min-w-0 flex items-center gap-1.5" :class="isAppMode ? 'flex-wrap' : ''">
             <span class="w-1.5 h-3.5 shrink-0 bg-[#326445] rounded-full"></span>
@@ -151,7 +108,7 @@
             type="primary"
             size="small"
             class="!px-2.5 !py-1 text-xs font-bold"
-            :class="isAppMode ? 'self-start max-w-full !h-auto !whitespace-normal' : ''"
+            :class="isAppMode ? '!ms-auto shrink-0 max-w-full !h-auto !whitespace-normal' : ''"
             @click="openAddMemberDialog"
           >
             <el-icon class="me-1"><Plus /></el-icon>
@@ -271,6 +228,10 @@
             <el-button type="info" plain @click="navigateToService('/citizen/unfreeze')">
               <el-icon class="me-1"><Unlock /></el-icon>
               {{ $t('citizen.applyUnfreeze') }}
+            </el-button>
+            <el-button type="danger" plain @click="navigateToService('/citizen/member-deregistration')">
+              <el-icon class="me-1"><Remove /></el-icon>
+              {{ $t('memberDeregistration.action') }}
             </el-button>
           </div>
         </div>
@@ -843,6 +804,7 @@ import {
   Share,
   User,
   UserFilled,
+  Remove,
   Unlock,
   Switch,
   Plus,
@@ -859,6 +821,15 @@ import {
 import { ElMessage } from 'element-plus';
 import QRCode from 'qrcode';
 import { onTabMessage } from '../../utils/crossTabBus.js';
+
+const citizenServices = [
+  { path: '/citizen/transfer-agent', label: 'citizenCard.applyAgentTransfer', icon: Switch, tone: 'bg-[#E1F4E4] border-[#CFE2D5] text-[#326445]' },
+  { path: '/citizen/member-transfer', label: 'citizenCard.applyMemberTransfer', icon: User, tone: 'bg-[#FDF3E0] border-[#EED9AE] text-[#B8934A]' },
+  { path: '/citizen/split-household', label: 'citizenCard.applySplitHousehold', icon: Share, tone: 'bg-[#EFF5F1] border-[#C9DBCE] text-[#326445]' },
+  { path: '/citizen/change-head', label: 'citizenCard.applyChangeHead', icon: UserFilled, tone: 'bg-[#FDF3E0] border-[#EED9AE] text-[#B8934A]' },
+  { path: '/citizen/unfreeze', label: 'citizenCard.applyUnfreeze', icon: Unlock, tone: 'bg-[#EFF5F1] border-[#C9DBCE] text-[#326445]' },
+  { path: '/citizen/member-deregistration', label: 'memberDeregistration.action', icon: Remove, tone: 'bg-[#FBEAE9] border-[#F2D5D4] text-[#A53A2D]' }
+];
 import { localizeFreezeReason } from '../../utils/freezeReason.js';
 import { createCitizenCardQrPayload } from '../../utils/qrPayload.js';
 

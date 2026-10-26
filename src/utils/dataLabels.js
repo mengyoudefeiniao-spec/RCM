@@ -76,6 +76,7 @@ export function commodityLabel(t, name) {
 }
 
 const BUSINESS_KEYS = {
+  '注销成员': 'sourceDeregistration', 'Member Deregistration': 'sourceDeregistration',
   '变更户主': 'sourceChangeHead', 'Change Head': 'sourceChangeHead',
   '申请解冻': 'sourceUnfreeze', 'Unfreeze Card': 'sourceUnfreeze',
   '申请分户': 'sourceSplit', 'Split Household': 'sourceSplit',

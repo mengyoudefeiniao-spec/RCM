@@ -1,5 +1,12 @@
 import { request } from './client.js';
 
+export function submitMemberDeregistration(fields, file) {
+  const data = new FormData();
+  Object.entries(fields).forEach(([key, value]) => data.append(key, String(value)));
+  data.append('deathProof', file);
+  return request({ url: '/citizen/member-deregistration', method: 'POST', data, headers: { 'Content-Type': 'multipart/form-data' } });
+}
+
 /**
  * 分页与条件查询家庭配给卡档案列表 (GET)
  */

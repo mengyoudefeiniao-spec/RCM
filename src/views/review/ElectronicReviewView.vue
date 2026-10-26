@@ -252,6 +252,10 @@
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('review.centerLabel') }}</span>
                 <span class="text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'province') }} · {{ localizedTicketField(reviewStore.selectedTicket, 'center') }}</span>
               </div>
+              <div v-if="reviewStore.selectedTicket.sourceCode === 'DRG' && reviewStore.selectedTicket.payload?.replacementHeadName">
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('memberDeregistration.successor') }}</span>
+                <span class="font-bold text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'replacementHeadName', reviewStore.selectedTicket.payload.replacementHeadName) }}</span>
+              </div>
               <!-- 受理时的业务规则版本：历史业务不随规则调整追溯改写 -->
               <div v-if="reviewStore.selectedTicket.rulesVersion">
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('businessRules.appliedVersion') }}</span>
@@ -271,13 +275,17 @@
               <div
                 v-for="(att, attIndex) in reviewStore.selectedTicket.attachments"
                 :key="att.name"
-                class="p-2 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] flex items-center justify-between text-xs"
+                class="p-2 rounded-lg bg-[#F3F8F4] border border-[#D9E5DB] flex flex-wrap items-center justify-between gap-2 text-xs"
               >
-                <div class="flex items-center gap-2">
+                <div class="flex min-w-0 items-center gap-2">
                   <el-icon class="text-[#326445]"><Document /></el-icon>
-                  <bdi dir="ltr" class="font-mono text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, `attachment${attIndex}`, att.name) }}</bdi>
+                  <bdi dir="ltr" class="min-w-0 break-all font-mono text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, `attachment${attIndex}`, att.name) }}</bdi>
                 </div>
-                <el-tag size="small" type="success">{{ $t('review.sealValid') }}</el-tag>
+                <div v-if="att.fileId" class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                  <el-tag size="small" :type="att.verified ? 'success' : 'warning'">{{ $t(att.verified ? 'review.sealValid' : 'memberDeregistration.pendingProof') }}</el-tag>
+                  <el-button size="small" plain :loading="downloadingFileId === att.fileId" @click="downloadAttachment(att)">{{ $t('memberDeregistration.downloadProof') }}</el-button>
+                </div>
+                <el-tag v-else size="small" type="success">{{ $t('review.sealValid') }}</el-tag>
               </div>
             </div>
           </div>
@@ -294,7 +302,7 @@
               </span>
             </div>
 
-            <div v-if="reviewStore.selectedTicket.staffOpinion" class="p-3 bg-[#EFF5F1]/40 rounded-lg border border-[#E1F4E4] space-y-1">
+            <div v-if="reviewStore.selectedTicket.staffReviewedAt || reviewStore.selectedTicket.staffOpinion" class="p-3 bg-[#EFF5F1]/40 rounded-lg border border-[#E1F4E4] space-y-1">
               <div class="text-[11px] text-[#8A9A8F]">{{ $t('review.staffReviewerLabel') }}{{ reviewStore.selectedTicket.staffName }}</div>
               <div class="text-[#1F3326]">{{ reviewStore.selectedTicket.staffOpinion }}</div>
             </div>
@@ -329,7 +337,7 @@
               </span>
             </div>
 
-            <div v-if="reviewStore.selectedTicket.managerNotes && reviewStore.selectedTicket.managerDecision !== '待决' && reviewStore.selectedTicket.managerDecision !== 'Pending'" class="p-3 bg-[#FDF3E0]/40 rounded-lg border border-[#FDF3E0] space-y-1">
+            <div v-if="reviewStore.selectedTicket.managerDecidedAt || (reviewStore.selectedTicket.managerNotes && reviewStore.selectedTicket.managerDecision !== '待决' && reviewStore.selectedTicket.managerDecision !== 'Pending')" class="p-3 bg-[#FDF3E0]/40 rounded-lg border border-[#FDF3E0] space-y-1">
               <div class="text-[11px] text-[#8A9A8F]">{{ $t('review.managerReviewerLabel') }}{{ reviewStore.selectedTicket.managerName }}</div>
               <div class="text-[#1F3326]">{{ reviewStore.selectedTicket.managerNotes }}</div>
             </div>
@@ -380,12 +388,29 @@ import { useReviewStore } from '../../stores/review.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { localizeUnfreezeCase, resolveUnfreezeCaseKey } from '../../utils/unfreezeCase.js';
 import { REVIEW_SOURCE_KEYS, reviewTicketField } from '../../utils/reviewPresentation.js';
+import { getReviewAttachment } from '../../api/review.js';
 import { Stamp, Refresh, Document, Check, Search, Back } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
 const { t, te, locale } = useI18n();
 const reviewStore = useReviewStore();
 const authStore = useAuthStore();
+const downloadingFileId = ref('');
+
+async function downloadAttachment(attachment) {
+  if (downloadingFileId.value) return;
+  downloadingFileId.value = attachment.fileId;
+  try {
+    const file = await getReviewAttachment(reviewStore.selectedTicket.id, attachment.fileId);
+    const link = document.createElement('a');
+    link.href = file.dataUrl;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch { /* The request layer presents the localized error. */ }
+  finally { downloadingFileId.value = ''; }
+}
 
 function localizedTicketField(ticket, field, fallback) {
   const unfreezeType = ticket?.payload?.unfreezeType;
@@ -432,7 +457,7 @@ function handleSelectTicket(tk) {
   mobileTab.value = 'detail';
 }
 
-const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '代理转移', '成员录入', '成员转移'];
+const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '注销成员', '代理转移', '成员录入', '成员转移'];
 
 const sourceKeyMap = REVIEW_SOURCE_KEYS;
 
@@ -457,6 +482,7 @@ const statusKeyMap = {
   '待经理终审': 'statusPendingManager',
   'Pending Manager Review': 'statusPendingManager',
   '已批准': 'statusApproved',
+  '已办结归档': 'statusApproved',
   'Approved': 'statusApproved',
   '已驳回': 'statusRejected',
   '已拒绝': 'statusRejected',
@@ -471,7 +497,7 @@ function getStatusDisplayName(st) {
 function getStatusTagType(st) {
   if (st === '待分部初审' || st === 'Pending Staff Review') return 'warning';
   if (st === '待经理终审' || st === 'Pending Manager Review') return 'primary';
-  if (st === '已批准' || st === 'Approved') return 'success';
+  if (st === '已批准' || st === '已办结归档' || st === 'Approved') return 'success';
   return 'danger';
 }
 
