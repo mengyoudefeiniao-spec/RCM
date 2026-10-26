@@ -4,7 +4,7 @@
       type="button"
       class="voice-hold-button flex items-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D3AF62] disabled:cursor-not-allowed disabled:opacity-60"
       :class="[
-        iconOnly ? 'h-11 min-w-[108px] max-w-[42vw] justify-center gap-2 px-3' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
+        iconOnly ? 'h-11 w-32 max-w-[34vw] min-w-0 justify-center gap-2 px-2' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
         recording ? 'border-[#E5B8B8] bg-[#FBEAE9] text-[#A03E3C]' : 'border-[#C7DED0] bg-[#F3F8F4] text-[#326445] hover:border-[#D3AF62]'
       ]"
       :disabled="disabled || state.phase === 'finishing'"

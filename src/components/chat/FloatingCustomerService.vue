@@ -495,7 +495,7 @@
                 <!-- 发送按钮 (深墨绿主品牌按钮) -->
                 <button
                   type="button"
-                  class="px-4 py-1.5 rounded-lg font-medium text-xs flex items-center space-x-1.5 text-white shadow-xs transition-all duration-200 cursor-pointer"
+                  class="h-11 w-32 max-w-[34vw] min-w-0 shrink-0 justify-center gap-1.5 rounded-lg px-2 font-medium text-xs flex items-center text-white shadow-xs transition-all duration-200 cursor-pointer"
                   :class="inputQuery.trim() && !isThinking && !voiceInputActive
                     ? (serviceMode === 'HUMAN' ? 'bg-[#C9A13B] hover:bg-[#7A5F21] active:scale-95' : 'bg-[#326445] hover:bg-[#2A5440] active:scale-95')
                     : 'bg-[#C9DBCE] cursor-not-allowed'"
