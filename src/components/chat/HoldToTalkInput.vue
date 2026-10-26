@@ -4,7 +4,7 @@
       type="button"
       class="voice-hold-button flex items-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D3AF62] disabled:cursor-not-allowed disabled:opacity-60"
       :class="[
-        iconOnly ? 'h-10 w-10 justify-center' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
+        iconOnly ? 'h-14 w-14 justify-center' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
         recording ? 'border-[#E5B8B8] bg-[#FBEAE9] text-[#A03E3C]' : 'border-[#C7DED0] bg-[#F3F8F4] text-[#326445] hover:border-[#D3AF62]'
       ]"
       :disabled="disabled || state.phase === 'finishing'"
@@ -15,6 +15,7 @@
       @pointerdown="startPointer"
       @pointerup="releasePointer"
       @pointercancel="releasePointer"
+      @lostpointercapture="releasePointer"
       @keydown="startKey"
       @keyup="releaseKey"
       @blur="releaseKeyboardHold"
@@ -22,7 +23,7 @@
       @contextmenu.prevent
     >
       <span class="flex shrink-0 items-center justify-center" :class="iconOnly ? '' : ['h-10 w-10 rounded-full', recording ? 'bg-[#F2D5D4]' : 'bg-[#E1F4E4]']">
-        <el-icon class="text-lg" :class="{ 'animate-pulse': recording, 'animate-spin': state.phase === 'finishing' }"><Loading v-if="state.phase === 'finishing'" /><Microphone v-else /></el-icon>
+        <el-icon class="text-xl" :class="{ 'animate-pulse': recording, 'animate-spin': state.phase === 'finishing' }"><Loading v-if="state.phase === 'finishing'" /><Microphone v-else /></el-icon>
       </span>
       <span v-if="!iconOnly" class="flex min-w-0 flex-1 flex-col gap-0.5">
         <span class="text-sm font-semibold leading-snug">{{ buttonLabel }}</span>
@@ -69,6 +70,7 @@ const errorKey = computed(() => {
   return ['not-allowed', 'service-not-allowed', 'audio-capture'].includes(error) ? 'chatComplaint.voiceDenied' : 'chatComplaint.voiceFailed';
 });
 let pointerId = null;
+let activePointerType = '';
 let captureTarget = null;
 let heldKey = '';
 
@@ -97,6 +99,7 @@ function startPointer(event) {
   dismissKeyboard();
   // Anchor the gesture before recognition publishes state and updates the icon.
   pointerId = event.pointerId;
+  activePointerType = event.pointerType || '';
   captureTarget = event.currentTarget;
   try { captureTarget.setPointerCapture(pointerId); } catch { /* Window release listeners provide a fallback. */ }
   if (!start()) release();
@@ -125,12 +128,19 @@ function release() {
   const id = pointerId;
   const target = captureTarget;
   pointerId = null;
+  activePointerType = '';
   captureTarget = null;
   heldKey = '';
   try { if (id !== null && target?.hasPointerCapture(id)) target.releasePointerCapture(id); } catch { /* Capture may already have been lost. */ }
   session.stop();
 }
 function onVisibilityChange() { if (document.hidden) release(); }
+function onWindowBlur() {
+  // Mobile speech/permission UI can briefly blur the WebView while the finger
+  // is still down. Keep touch holds alive until a real release or page hide.
+  if (pointerId !== null && activePointerType === 'touch' && !document.hidden) return;
+  release();
+}
 
 watch(locale, release);
 watch(() => props.disabled, disabled => { if (disabled) release(); });
@@ -141,7 +151,7 @@ onMounted(() => {
   window.addEventListener('pointercancel', releasePointer, true);
   window.addEventListener('pointermove', checkPointerButtons, true);
   window.addEventListener('keyup', releaseKey, true);
-  window.addEventListener('blur', release);
+  window.addEventListener('blur', onWindowBlur);
   window.addEventListener('pagehide', release);
   document.addEventListener('visibilitychange', onVisibilityChange);
 });
@@ -152,7 +162,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointercancel', releasePointer, true);
   window.removeEventListener('pointermove', checkPointerButtons, true);
   window.removeEventListener('keyup', releaseKey, true);
-  window.removeEventListener('blur', release);
+  window.removeEventListener('blur', onWindowBlur);
   window.removeEventListener('pagehide', release);
   document.removeEventListener('visibilitychange', onVisibilityChange);
 });
