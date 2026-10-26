@@ -67,7 +67,7 @@
           isExpanded
             ? 'end-2 bottom-2 sm:end-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[740px] h-[90vh] sm:h-[88vh] max-h-[820px]'
             : (isAppMode
-                ? 'h-[72vh]'
+                ? ''
                 : 'end-2 bottom-2 sm:end-4 sm:bottom-4 w-[calc(100vw-16px)] sm:w-[480px] h-[86vh] sm:h-[84vh] max-h-[720px]')
         ]"
         :style="isAppMode ? chatWindowAppStyle : undefined"
@@ -752,16 +752,20 @@ const chatWindowAppStyle = computed(() => {
     return {
       insetInlineStart: '10px',
       insetInlineEnd: '10px',
+      top: '64px',
       bottom: '64px',
-      maxHeight: 'calc(100vh - 120px)'
+      height: 'auto',
+      maxHeight: 'none'
     };
   }
   // 桌面端 Pixel 9 仿真视口预览：居中严密包裹在 412px 视口内
   return {
     width: '388px',
     insetInlineStart: 'calc(50% - 194px)',
+    top: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 68px)',
     bottom: 'calc(max(16px, (100vh - min(924px, 100vh - 20px)) / 2) + 64px)',
-    maxHeight: 'calc(min(924px, 100vh - 20px) - 100px)'
+    height: 'auto',
+    maxHeight: 'none'
   };
 });
 
