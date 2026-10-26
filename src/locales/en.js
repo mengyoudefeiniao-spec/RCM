@@ -2388,6 +2388,14 @@ export default {
     "tenThousandUnit": "0k"
   },
   "agentInventoryLedger": {
+    "itemFlour": "Wheat Flour",
+    "itemRice": "Long-Grain Rice",
+    "itemOil": "Vegetable Oil",
+    "itemSugar": "White Sugar",
+    "causeTransit": "In-transit handling loss",
+    "causeWeighing": "Accumulated weighing deviation",
+    "causePackaging": "Packaging damage",
+    "causeEvaporation": "Moisture evaporation",
     "citizenStatsTitle": "Citizen Service Statistics",
     "citizenFamilies": "Served Families",
     "familiesUnit": "HH",

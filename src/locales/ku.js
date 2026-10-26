@@ -2277,6 +2277,14 @@ export default {
     "tenThousandUnit": "دە هەزار"
   },
   "agentInventoryLedger": {
+    "itemFlour": "ئارد",
+    "itemRice": "برنج",
+    "itemOil": "ڕوونی ڕووەکی",
+    "itemSugar": "شەکر",
+    "causeTransit": "زیانی گواستنەوە",
+    "causeWeighing": "کۆبوونەوەی هەڵەی کێش",
+    "causePackaging": "تێکچوونی پاکێج",
+    "causeEvaporation": "هەڵمبوونی شێداری",
     "citizenStatsTitle": "ئاماری خزمەتگوزاری هاوڵاتییان",
     "citizenFamilies": "خێزانی خزمەتگوزاریکراو",
     "familiesUnit": "ماڵ",

@@ -2277,6 +2277,14 @@ export default {
     "tenThousandUnit": "عشرة آلاف"
   },
   "agentInventoryLedger": {
+    "itemFlour": "الدقيق",
+    "itemRice": "الأرز",
+    "itemOil": "الزيت النباتي",
+    "itemSugar": "السكر",
+    "causeTransit": "فقدان أثناء النقل",
+    "causeWeighing": "تراكم انحراف الوزن",
+    "causePackaging": "تلف العبوات",
+    "causeEvaporation": "تبخر الرطوبة",
     "citizenStatsTitle": "إحصاءات خدمة المواطنين",
     "citizenFamilies": "الأسر المخدومة",
     "familiesUnit": "أسرة",

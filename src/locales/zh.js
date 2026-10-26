@@ -2389,6 +2389,14 @@ export default {
     "tenThousandUnit": "万"
   },
   "agentInventoryLedger": {
+    "itemFlour": "小麦粉",
+    "itemRice": "大米",
+    "itemOil": "植物油",
+    "itemSugar": "食糖",
+    "causeTransit": "运输转运损耗",
+    "causeWeighing": "累积称重误差",
+    "causePackaging": "包装破损",
+    "causeEvaporation": "水分自然蒸发",
     "citizenStatsTitle": "公民服务统计",
     "citizenFamilies": "在册服务家庭",
     "familiesUnit": "户",
