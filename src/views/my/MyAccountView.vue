@@ -1,5 +1,10 @@
 <template>
   <div class="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7 space-y-5 text-[#1F3326]">
+    <header v-if="isListPage" class="flex items-center gap-3" data-my-list-header>
+      <el-button circle :aria-label="$t('common.back')" @click="closeList"><el-icon class="rtl-mirror-icon"><ArrowLeft /></el-icon></el-button>
+      <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t(expandedList === 'applications' ? 'my.applicationHistory' : 'my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
+    </header>
+    <template v-if="!isListPage">
     <header class="space-y-1">
       <h1 class="text-xl font-bold">{{ isCitizen ? $t('my.citizenTitle') : $t('my.agentTitle') }}</h1>
       <p class="text-sm text-[#58685D]">{{ isCitizen ? $t('my.citizenSubtitle') : $t('my.agentSubtitle') }}</p>
@@ -46,7 +51,8 @@
       </div>
     </template>
 
-    <section v-if="isCitizen" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
+    </template>
+    <section v-if="isCitizen && (!isListPage || expandedList === 'applications')" data-my-list="applications" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
           <el-icon class="shrink-0 text-[#326445]"><DocumentChecked /></el-icon>
@@ -55,11 +61,12 @@
             <p class="mt-0.5 text-xs text-[#8A9A8F]">{{ $t('my.applicationHistorySubtitle') }}</p>
           </div>
         </div>
-        <el-button size="small" text :aria-expanded="showApplicationFilters" @click="showApplicationFilters = !showApplicationFilters">
+        <el-button v-if="!isListPage" size="small" text type="primary" class="shrink-0" @click="openList('applications')">{{ $t('my.viewAll') }}<el-icon class="ms-1 rtl-mirror-icon"><ArrowRight /></el-icon></el-button>
+        <el-button v-else size="small" text :aria-expanded="showApplicationFilters" @click="showApplicationFilters = !showApplicationFilters">
           <el-icon class="me-1"><Filter /></el-icon>{{ $t('my.applicationFilterToggle') }}
         </el-button>
       </div>
-      <div v-if="showApplicationFilters" class="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg bg-[#F8FAF8] p-3">
+      <div v-if="isListPage && showApplicationFilters" class="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg bg-[#F8FAF8] p-3">
         <el-select v-model="applicationTypeFilter" :placeholder="$t('my.applicationFilterType')" clearable>
           <el-option :label="$t('my.applicationAnyType')" value="" />
           <el-option v-for="code in applicationSourceCodes" :key="code" :label="$t(`my.applicationTypes.${code}`)" :value="code" />
@@ -77,8 +84,8 @@
         <div class="sm:col-span-2 flex justify-end"><el-button size="small" text @click="clearApplicationFilters">{{ $t('my.applicationClearFilters') }}</el-button></div>
       </div>
       <div v-if="applicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.noApplicationHistory') }}</div>
-      <div v-else-if="filteredApplicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.applicationNoMatches') }}</div>
-      <article v-for="record in filteredApplicationRecords" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
+      <div v-else-if="isListPage && filteredApplicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.applicationNoMatches') }}</div>
+      <article v-for="record in displayedApplications" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-sm font-semibold text-[#1F3326]">{{ $t(`my.applicationTypes.${record.sourceCode}`) }}</h3>
           <div class="flex flex-wrap items-center gap-1.5">
@@ -90,34 +97,46 @@
           <span>{{ $t('my.applicationNumber') }} <bdi dir="ltr" class="font-mono">{{ record.id }}</bdi></span>
           <span dir="ltr">{{ formatDate(record.submittedAt) }}</span>
         </div>
-        <p class="text-xs leading-relaxed text-[#58685D] break-words">{{ applicationResult(record) }}</p>
+        <p class="text-xs leading-relaxed text-[#58685D] break-words" :class="{ 'line-clamp-2': !isListPage }">{{ applicationResult(record) }}</p>
       </article>
+      <p v-if="!isListPage && applicationRecords.length" class="text-xs text-[#8A9A8F]">{{ $t('my.previewCount', { shown: displayedApplications.length, total: applicationRecords.length }) }}</p>
     </section>
 
-    <section v-if="isCitizen || currentTab === 'notifications'" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
+    <section v-if="expandedList === 'notifications' || (!isListPage && (isCitizen || currentTab === 'notifications'))" data-my-list="notifications" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2 min-w-0">
           <el-icon class="shrink-0 text-[#326445]"><Bell /></el-icon>
           <h2 class="font-bold">{{ $t('my.notificationCenter') }}</h2>
           <span v-if="unreadCount" class="inline-flex min-w-6 h-6 items-center justify-center rounded-full bg-[#FDF3E0] px-1.5 text-xs font-bold text-[#7A5F21]" :aria-label="$t('my.unreadCount', { count: unreadCount })">{{ unreadCount }}</span>
         </div>
-        <el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button>
+        <div class="flex flex-wrap items-center gap-1 ms-auto">
+          <el-button v-if="unreadCount" size="small" text type="primary" @click="markAllRead">{{ $t('my.markAllRead') }}</el-button>
+          <el-button v-if="!isListPage" size="small" text type="primary" @click="openList('notifications')">{{ $t('my.viewAll') }}<el-icon class="ms-1 rtl-mirror-icon"><ArrowRight /></el-icon></el-button>
+        </div>
       </div>
       <div v-if="notifications.length === 0" class="py-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noNotifications') }}</div>
-      <div v-for="item in notifications" :key="item.id" class="border-t border-[#E9F1EB] py-3 first:border-t-0">
+      <div v-for="item in displayedNotifications" :key="item.id" class="my-notification border-t border-[#E9F1EB] py-3 first:border-t-0">
         <button type="button" class="w-full text-start flex items-start gap-3 rounded-lg p-2 -mx-2 hover:bg-[#F8FAF8] transition-colors" @click="openNotification(item)">
           <span class="mt-1 size-2 shrink-0 rounded-full" :class="item.read ? 'bg-[#D9E5DB]' : 'bg-[#C9A13B]'" />
           <span class="min-w-0 flex-1">
             <span class="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5"><span class="font-semibold text-sm">{{ notificationTitle(item, role) }}</span><span class="text-[11px] text-[#8A9A8F] shrink-0" dir="ltr">{{ formatDate(item.createdAt) }}</span></span>
-            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]">{{ notificationBody(item, role) }}</span>
+            <span class="block mt-1 text-xs leading-relaxed text-[#58685D]" :class="{ 'line-clamp-2': !isListPage }">{{ notificationBody(item, role) }}</span>
             <span v-if="item.materialStatus === 'submitted'" class="block mt-1 text-xs text-[#326445]">{{ $t('my.materialSubmitted') }}</span>
             <span class="block mt-1 text-xs font-semibold text-[#326445]">{{ $t('my.viewRelated') }}</span>
           </span>
           <el-icon class="rtl-mirror-icon mt-1 text-[#58685D]"><ArrowRight /></el-icon>
         </button>
       </div>
+      <p v-if="!isListPage && notifications.length" class="text-xs text-[#8A9A8F]">{{ $t('my.previewCount', { shown: displayedNotifications.length, total: notifications.length }) }}</p>
     </section>
 
+    <nav v-if="isListPage && pageCount > 1" class="sticky bottom-0 flex items-center justify-between gap-2 rounded-xl border border-[#D9E5DB] bg-white/95 p-3 shadow-sm" :aria-label="$t('my.pagination')" data-my-pagination>
+      <el-button size="small" :disabled="listPage === 1" @click="changeListPage(listPage - 1)"><el-icon class="me-1 rtl-mirror-icon"><ArrowLeft /></el-icon>{{ $t('my.previousPage') }}</el-button>
+      <span class="text-xs text-[#58685D] whitespace-nowrap" role="status">{{ $t('my.pageIndicator', { page: listPage, total: pageCount }) }}</span>
+      <el-button size="small" :disabled="listPage === pageCount" @click="changeListPage(listPage + 1)">{{ $t('my.nextPage') }}<el-icon class="ms-1 rtl-mirror-icon"><ArrowRight /></el-icon></el-button>
+    </nav>
+
+    <template v-if="!isListPage">
     <section v-if="!isCitizen && currentTab === 'outlets'" class="space-y-3">
       <h2 class="font-bold">{{ $t('my.outletInfo') }}</h2>
       <div v-if="!outlets.length" class="rounded-xl bg-white p-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noOutlets') }}</div>
@@ -149,6 +168,7 @@
       <el-button class="w-full !m-0 !justify-start" text type="danger" @click="handleLogout"><el-icon class="me-2"><SwitchButton /></el-icon>{{ $t('my.logout') }}</el-button>
     </section>
 
+    </template>
     <el-dialog v-model="contactDialogOpen" :title="$t('my.editContact')" width="min(92vw, 440px)" append-to-body>
       <el-form label-position="top" @submit.prevent="saveContact">
         <el-form-item :label="$t('my.email')"><el-input v-model.trim="contactForm.email" type="email" dir="ltr" /></el-form-item>
@@ -266,11 +286,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter, Camera, Monitor } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter, Camera, Monitor } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
@@ -287,12 +307,18 @@ const citizenStore = useCitizenStore();
 const notificationStore = useMyNotificationsStore();
 const role = computed(() => authStore.currentRole);
 const isCitizen = computed(() => role.value === 'citizen');
+const expandedList = computed(() => route.query.list === 'notifications' ? 'notifications' : isCitizen.value && route.query.list === 'applications' ? 'applications' : '');
+const isListPage = computed(() => Boolean(expandedList.value));
+const PREVIEW_SIZE = 3;
+const PAGE_SIZE = 5;
+let previewScroll = 0;
+let openedFromPreview = false;
 const isAppMode = computed(() => route.query.layout === 'app' || sessionStorage.getItem('rcm_layout_mode') === 'app');
 const profile = ref({ email: '', phone: '', address: '' });
 const agentProfile = ref(null);
 const outlets = ref([]);
 const couriers = ref([]);
-const notifications = computed(() => notificationStore.items);
+const notifications = computed(() => [...notificationStore.items].sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0)));
 const unreadCount = computed(() => notificationStore.unreadCount);
 const applicationRecords = ref([]);
 const showApplicationFilters = ref(false);
@@ -358,6 +384,48 @@ const filteredApplicationRecords = computed(() => applicationRecords.value.filte
     && (!applicationReviewFilter.value || mode === applicationReviewFilter.value)
     && (!applicationSearch.value || String(record.id || '').toLowerCase().includes(applicationSearch.value.toLowerCase()));
 }));
+const listTotal = computed(() => expandedList.value === 'applications' ? filteredApplicationRecords.value.length : notifications.value.length);
+const pageCount = computed(() => Math.max(1, Math.ceil(listTotal.value / PAGE_SIZE)));
+const listPage = computed(() => {
+  const requested = Number(route.query.page);
+  return Math.min(pageCount.value, Number.isSafeInteger(requested) && requested > 0 ? requested : 1);
+});
+const displayedApplications = computed(() => isListPage.value
+  ? filteredApplicationRecords.value.slice((listPage.value - 1) * PAGE_SIZE, listPage.value * PAGE_SIZE)
+  : applicationRecords.value.slice(0, PREVIEW_SIZE));
+const displayedNotifications = computed(() => isListPage.value
+  ? notifications.value.slice((listPage.value - 1) * PAGE_SIZE, listPage.value * PAGE_SIZE)
+  : notifications.value.slice(0, PREVIEW_SIZE));
+
+function openList(list) {
+  previewScroll = document.querySelector('main')?.scrollTop || window.scrollY;
+  openedFromPreview = true;
+  if (list === 'applications') { clearApplicationFilters(); showApplicationFilters.value = true; }
+  router.push({ query: { ...route.query, list, page: undefined } });
+}
+
+function closeList() {
+  if (openedFromPreview) router.back();
+  else router.replace({ query: { ...route.query, list: undefined, page: undefined } });
+}
+
+function changeListPage(page) {
+  const next = Math.max(1, Math.min(pageCount.value, page));
+  router.replace({ query: { ...route.query, page: next === 1 ? undefined : String(next) } });
+}
+
+watch([expandedList, listPage], async ([list], [previousList]) => {
+  if (!list && !previousList) return;
+  await nextTick();
+  const top = list ? 0 : previewScroll;
+  if (isAppMode.value) document.querySelector('main')?.scrollTo({ top, behavior: 'instant' });
+  window.scrollTo({ top: isAppMode.value ? 0 : top, behavior: 'instant' });
+  if (!list) openedFromPreview = false;
+});
+watch([applicationTypeFilter, applicationStatusFilter, applicationReviewFilter, applicationSearch], () => {
+  if (expandedList.value === 'applications' && route.query.page) changeListPage(1);
+});
+
 function getApplicationSourceCode(ticket) {
   if (applicationSourceCodes.has(ticket.sourceCode)) return ticket.sourceCode;
   const source = `${ticket.source || ''} ${ticket.categoryType || ''} ${ticket.appType || ''}`.toLowerCase();

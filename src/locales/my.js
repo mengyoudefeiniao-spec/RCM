@@ -1,6 +1,8 @@
 // “我的”模块使用独立词包，四种已上线语言保持相同的键结构。
 export default {
   zh: {
+    viewAll: '查看所有', previewCount: '最近 {shown} 条 · 共 {total} 条', listTotal: '共 {count} 条',
+    pagination: '列表分页', previousPage: '上一页', nextPage: '下一页', pageIndicator: '第 {page} / {total} 页',
     nav: '我的', title: '我的', citizenTitle: '公民账户', agentTitle: '代理账户',
     citizenSubtitle: '管理个人资料与配给消息', agentSubtitle: '管理网点、配送人员与业务消息',
     demoCitizenName: '艾哈迈德·哈桑·萨利赫', demoAgentName: '穆罕默德·贾巴尔·拉希德',
@@ -67,6 +69,8 @@ export default {
     }
   },
   en: {
+    viewAll: 'View all', previewCount: 'Latest {shown} of {total}', listTotal: '{count} records',
+    pagination: 'List pagination', previousPage: 'Previous', nextPage: 'Next', pageIndicator: 'Page {page} / {total}',
     nav: 'My', title: 'My Account', citizenTitle: 'Citizen Account', agentTitle: 'Agent Account',
     citizenSubtitle: 'Manage your profile and ration updates', agentSubtitle: 'Manage outlets, couriers and updates',
     demoCitizenName: 'Ahmed Hassan Saleh', demoAgentName: 'Mohammed Jabbar Al-Rasheed',
@@ -133,6 +137,8 @@ export default {
     }
   },
   ar: {
+    viewAll: 'عرض الكل', previewCount: 'أحدث {shown} من {total}', listTotal: '{count} سجلات',
+    pagination: 'صفحات القائمة', previousPage: 'السابق', nextPage: 'التالي', pageIndicator: 'الصفحة {page} / {total}',
     nav: 'حسابي', title: 'حسابي', citizenTitle: 'حساب المواطن', agentTitle: 'حساب الوكيل',
     citizenSubtitle: 'إدارة البيانات الشخصية وإشعارات الحصة التموينية', agentSubtitle: 'إدارة المنافذ والمندوبين والإشعارات',
     demoCitizenName: 'أحمد حسن صالح', demoAgentName: 'محمد جبار الرشيد',
@@ -199,6 +205,8 @@ export default {
     }
   },
   ckb: {
+    viewAll: 'هەمووی ببینە', previewCount: 'نوێترین {shown} لە {total}', listTotal: '{count} تۆمار',
+    pagination: 'لاپەڕەکانی لیست', previousPage: 'پێشوو', nextPage: 'دواتر', pageIndicator: 'لاپەڕە {page} / {total}',
     nav: 'هەژمارەکەم', title: 'هەژمارەکەم', citizenTitle: 'هەژماری هاووڵاتی', agentTitle: 'هەژماری بریکار',
     citizenSubtitle: 'بەڕێوەبردنی زانیاری کەسی و ئاگادارکردنەوەکانی بەشەخۆراک', agentSubtitle: 'بەڕێوەبردنی بنکەکان و گەیەنەران و ئاگادارکردنەوەکان',
     demoCitizenName: 'ئەحمەد حەسەن ساڵح', demoAgentName: 'محەمەد جەبار ڕەشید',
