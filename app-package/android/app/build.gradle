@@ -21,14 +21,14 @@ android {
         citizen {
             dimension 'audience'
             applicationIdSuffix '.citizen'
-            resValue 'string', 'app_name', 'RCM 公民服务'
+            resValue 'string', 'app_name', 'Citizen APP'
             buildConfigField 'String', 'APP_ROLE', '"citizen"'
             buildConfigField 'String', 'POCKETBASE_HOST', "\"${pocketBaseHost}\""
         }
         agent {
             dimension 'audience'
             applicationIdSuffix '.agent'
-            resValue 'string', 'app_name', 'RCM 代理工作台'
+            resValue 'string', 'app_name', 'Agent APP'
             buildConfigField 'String', 'APP_ROLE', '"agent"'
             buildConfigField 'String', 'POCKETBASE_HOST', "\"${pocketBaseHost}\""
         }
