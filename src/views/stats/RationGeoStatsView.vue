@@ -90,28 +90,39 @@
         </div>
 
         <!-- 底部控制条 -->
-        <div class="absolute bottom-4 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-[600] bg-white/95 backdrop-blur rounded-full shadow-lg border border-[#E4EAE5] px-2 py-1.5 flex items-center gap-1 flex-wrap justify-center max-w-[92%]">
-          <el-radio-group v-model="warehouseFilter" size="small" class="!me-1">
-            <el-radio-button value="all">{{ $t('geoStats.filterAll') }}</el-radio-button>
-            <el-radio-button value="assigned">{{ $t('geoStats.filterAssigned') }}</el-radio-button>
-            <el-radio-button value="vacant">{{ $t('geoStats.filterVacant') }}</el-radio-button>
+        <div class="geo-map-controls absolute bottom-4 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-[600]">
+          <el-radio-group v-model="warehouseFilter" size="small" class="geo-warehouse-filter" :aria-label="$t('geoStats.warehouseLayer')">
+            <el-radio-button value="all" class="geo-filter-all">
+              <el-icon class="geo-filter-check" aria-hidden="true"><Check /></el-icon>{{ $t('geoStats.filterAll') }}
+            </el-radio-button>
+            <el-radio-button value="assigned" class="geo-filter-assigned">
+              <el-icon class="geo-filter-check" aria-hidden="true"><Check /></el-icon>{{ $t('geoStats.filterAssigned') }}
+            </el-radio-button>
+            <el-radio-button value="vacant" class="geo-filter-vacant">
+              <el-icon class="geo-filter-check" aria-hidden="true"><Check /></el-icon>{{ $t('geoStats.filterVacant') }}
+            </el-radio-button>
           </el-radio-group>
           <button
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
-            :class="showWarehouseLayer ? 'bg-[#2F7A50] text-white' : 'text-[#4A5A50] hover:bg-[#F0F5F1]'"
+            type="button"
+            class="geo-layer-toggle geo-layer-warehouse"
+            :class="{ 'is-active': showWarehouseLayer }"
+            :aria-pressed="showWarehouseLayer"
             @click="toggleLayer('warehouse')"
           >
+            <el-icon class="geo-layer-state" aria-hidden="true"><Check v-if="showWarehouseLayer" /><Minus v-else /></el-icon>
             {{ $t('geoStats.warehouseLayer') }}
           </button>
           <button
-            class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
-            :class="showAgentLayer ? 'bg-[#1E3A5F] text-white' : 'text-[#4A5A50] hover:bg-[#F0F5F1]'"
+            type="button"
+            class="geo-layer-toggle geo-layer-agent"
+            :class="{ 'is-active': showAgentLayer }"
+            :aria-pressed="showAgentLayer"
             @click="toggleLayer('agent')"
           >
+            <el-icon class="geo-layer-state" aria-hidden="true"><Check v-if="showAgentLayer" /><Minus v-else /></el-icon>
             {{ $t('geoStats.agentLayer') }}
           </button>
-          <el-divider direction="vertical" />
-          <el-button size="small" text bg @click="resetView">
+          <el-button size="small" text bg class="geo-map-reset" @click="resetView">
             <el-icon class="me-1"><Refresh /></el-icon>{{ $t('geoStats.resetView') }}
           </el-button>
         </div>
@@ -269,7 +280,7 @@ import * as echarts from 'echarts';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ElMessage } from 'element-plus';
-import { DataAnalysis, Refresh, Back, ArrowDown } from '@element-plus/icons-vue';
+import { DataAnalysis, Refresh, Back, ArrowDown, Check, Minus } from '@element-plus/icons-vue';
 import {
   PROVINCE_STATS, GEO_STAT_THEMES, FACILITY_POINTS, IRAQ_GEO_JSON,
   getMetricLabel, NATIONAL_SUMMARY
@@ -425,6 +436,9 @@ function onMapReady() {
     maxZoom: 12
   }).addTo(map);
 
+  // 独立点位窗格高于区域图层 (400)，低于提示框 (650)。区域高亮不会遮住点位。
+  map.createPane('facilityPane').style.zIndex = '450';
+
   geoLayer = L.geoJSON(IRAQ_GEO_JSON, {
     style: (feature) => featureStyle(feature),
     onEachFeature: (feature, layer) => {
@@ -442,6 +456,7 @@ function onMapReady() {
   const hal = PROVINCE_STATS.find(p => p.id === 'HAL');
   if (hal) {
     halabjaMarker = L.circleMarker([hal.lat, hal.lng], {
+      pane: 'facilityPane',
       radius: 9, color: '#C8A45C', weight: 2, fillColor: '#C8A45C', fillOpacity: 0.85
     }).addTo(map);
     halabjaMarker.bindTooltip(() => tooltipHtml(hal), { className: 'geo-tooltip', opacity: 1 });
@@ -450,21 +465,21 @@ function onMapReady() {
 
   // 标记只创建一次存入数组，图层组在 applyLayerVisibility 中按需重建，
   // 避免 clearLayers 导致标记永久丢失（切换图层/筛选后无法恢复）。
-  // 点位使用 Canvas 渲染器，避免数百个 SVG 节点导致图层切换/筛选卡顿
-  const pointRenderer = L.canvas({ padding: 0.3 });
+  // SVG 仅让点位路径接收事件，空白处可穿透到省域，避免上层 Canvas 遮挡省域交互。
+  const pointRenderer = L.svg({ pane: 'facilityPane', padding: 0.3 });
   warehouseMarkers = [];
   agentMarkers = [];
   for (const pt of FACILITY_POINTS) {
     const isWarehouse = pt.type === 'warehouse';
     const marker = L.circleMarker([pt.lat, pt.lng], Object.assign(isWarehouse ? {
-      radius: 4,
-      color: '#FFFFFF', weight: 0.8,
+      radius: 5,
+      color: '#FFFFFF', weight: 1.5,
       fillColor: pt.status === 'vacant' ? '#C8A45C' : '#2F7A50', fillOpacity: 0.92
     } : {
-      radius: 2.5, stroke: false,
-      fillColor: '#1E3A5F', fillOpacity: 0.7
-    }, { renderer: pointRenderer }));
-    marker.bindTooltip(`${facilityPointLabel(t, locale.value, pt)} · ${pt.households} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
+      radius: 3.5, color: '#FFFFFF', weight: 1,
+      fillColor: '#1E3A5F', fillOpacity: 0.95
+    }, { pane: 'facilityPane', renderer: pointRenderer }));
+    marker.bindTooltip(() => `${facilityPointLabel(t, locale.value, pt)} · ${formatInt(pt.households)} ${t('scrollHome.householdsUnit')}`, { direction: 'top' });
     marker.on('click', () => selectProvince(pt.province));
     (isWarehouse ? warehouseMarkers : agentMarkers).push(marker);
   }
@@ -473,7 +488,7 @@ function onMapReady() {
 
 function tooltipHtml(prov) {
   if (!prov) return '';
-  const displayName = locale.value === 'zh' ? `${prov.name} ${prov.enName}` : prov.enName;
+  const displayName = provinceLabel(t, locale.value, prov);
   return `<div style="font-family:inherit">
     <div style="font-weight:700;font-size:12px;color:#152233">${displayName}</div>
     <div style="font-size:11px;color:#4A5A50;margin-top:2px">${metricLabel(activeMetric.value)}: <b style="font-family:monospace">${formatMetricValue(prov[activeMetric.value])}</b> ${activeMetricUnit.value}</div>
@@ -670,6 +685,7 @@ watch(activeMetric, () => {
 });
 
 watch(warehouseFilter, applyLayerVisibility);
+watch(locale, renderPanelCharts);
 
 watch(selectedProvinceName, () => {
   renderPanelCharts();
@@ -710,6 +726,96 @@ onBeforeUnmount(() => {
 
 <style>
 .geo-stats-page .leaflet-container { background: #DDE7DD; font: inherit; }
+.geo-stats-page .geo-map-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 8px;
+  border: 1px solid #C4CFC6;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 6px 24px rgba(21, 34, 51, 0.2);
+}
+.geo-stats-page .geo-warehouse-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #EAF0EC;
+}
+.geo-stats-page .geo-warehouse-filter .el-radio-button {
+  --geo-filter-color: #1E3A5F;
+  --el-radio-button-checked-bg-color: var(--geo-filter-color);
+  --el-radio-button-checked-border-color: var(--geo-filter-color);
+  --el-radio-button-checked-text-color: #FFFFFF;
+}
+.geo-stats-page .geo-warehouse-filter .geo-filter-assigned { --geo-filter-color: #246340; }
+.geo-stats-page .geo-warehouse-filter .geo-filter-vacant { --geo-filter-color: #8A5A12; }
+.geo-stats-page .geo-warehouse-filter .el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #4A5A50;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.geo-stats-page .geo-warehouse-filter .el-radio-button:not(.is-active) .el-radio-button__inner:hover {
+  background: #FFFFFF;
+  color: var(--geo-filter-color);
+}
+.geo-stats-page .geo-warehouse-filter .el-radio-button.is-active .el-radio-button__inner {
+  /* 覆盖全局主题中单选按钮的 !important，保留三种筛选的独立状态色。 */
+  border-color: var(--geo-filter-color) !important;
+  background: var(--geo-filter-color) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 5px rgba(21, 34, 51, 0.22) !important;
+}
+.geo-stats-page .geo-filter-check { visibility: hidden; }
+.geo-stats-page .is-active .geo-filter-check { visibility: visible; }
+.geo-stats-page .geo-layer-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #A9B8AD;
+  border-radius: 10px;
+  background: #F5F7F5;
+  color: #536159;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.geo-stats-page .geo-layer-toggle:hover { background: #EAF0EC; }
+.geo-stats-page .geo-layer-toggle.is-active {
+  border-color: #246340;
+  background: #246340;
+  color: #FFFFFF;
+  box-shadow: 0 2px 5px rgba(21, 34, 51, 0.22);
+}
+.geo-stats-page .geo-layer-agent.is-active { border-color: #1E3A5F; background: #1E3A5F; }
+.geo-stats-page .geo-layer-state { border: 1px solid currentColor; border-radius: 50%; padding: 2px; width: 16px; height: 16px; }
+.geo-stats-page .geo-layer-toggle:focus-visible,
+.geo-stats-page .geo-warehouse-filter .el-radio-button:has(:focus-visible) .el-radio-button__inner {
+  outline: 2px solid #1E3A5F;
+  outline-offset: 3px;
+}
+.geo-stats-page .geo-map-reset { margin-inline-start: 0; }
 .geo-tooltip.leaflet-tooltip {
   background: #FFFFFF;
   border: 1px solid #E4EAE5;
