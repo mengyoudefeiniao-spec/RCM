@@ -554,10 +554,10 @@
             <div v-if="!cameraActive && !isFinalScanDemo" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/90">
               <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
               <div class="w-20 h-20 rounded-lg border-2 border-[#3E9B68]/20 flex items-center justify-center text-[#3E9B68]/40 text-3xl mb-1.5">
-                <el-icon><Picture v-if="scanSource === 'image'" /><Camera v-else /></el-icon>
+                <el-icon><Picture v-if="scanSource !== 'camera'" /><Camera v-else /></el-icon>
               </div>
               <p class="text-[10px] text-center px-3" :class="cameraError ? 'text-[#FCA5A5]' : 'text-[#A7D9BC]'">
-                {{ scanSource === 'image' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
+                {{ scanSource !== 'camera' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
               </p>
             </div>
 
@@ -598,13 +598,15 @@
               <button type="button" class="scan-source-button" :class="{ 'is-active': scanSource === 'camera' }" :aria-pressed="scanSource === 'camera'" :disabled="scanBusy" @click="resumeCameraScan">
                 <el-icon class="text-xl"><Camera /></el-icon><span>{{ $t('agentDelivery.scanCamera') }}</span>
               </button>
-              <button type="button" class="scan-source-button" :class="{ 'is-active': scanSource === 'image' }" :aria-pressed="scanSource === 'image'" :disabled="scanBusy" @click="chooseQrImage">
+              <button type="button" class="scan-source-button" :class="{ 'is-active': scanSource === 'image' }" :aria-pressed="scanSource === 'image'" :disabled="scanBusy" @click="chooseQrImage(false)">
                 <el-icon class="text-xl"><Picture /></el-icon><span>{{ $t('agentDelivery.scanUpload') }}</span>
               </button>
             </div>
             <input ref="qrImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="readQrImage" />
+            <input ref="qrPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden @change="readQrImage" />
+            <p class="text-[10px] text-center text-[#A7D9BC] leading-relaxed">{{ $t('scanHandover.supportedCodes') }}</p>
             <p v-if="imageErrorKey" role="alert" class="text-[11px] leading-relaxed text-[#FCA5A5]">{{ $t(imageErrorKey) }}</p>
-            <p v-else class="text-[10px] text-center text-[#A7D9BC] leading-relaxed" role="status">{{ scanSource === 'image' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}</p>
+            <p v-else class="text-[10px] text-center text-[#A7D9BC] leading-relaxed" role="status">{{ scanSource !== 'camera' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}</p>
 
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#1F3326]/80">
               <button
@@ -693,41 +695,7 @@
           class="flex-1 min-h-0 flex flex-col overflow-hidden"
         >
           <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 custom-scrollbar">
-          <div class="rounded-xl bg-[#E1F4E4] border border-[#C7E0CE] p-4 text-center">
-            <div class="mx-auto mb-2 w-12 h-12 rounded-full bg-white text-[#326445] flex items-center justify-center">
-              <el-icon class="text-2xl"><CircleCheck /></el-icon>
-            </div>
-            <div class="text-lg font-bold text-[#1F3326]">{{ verifiedCitizenCard.headName || $t('citizenCard.legalHeadName') }}</div>
-            <div class="text-xs text-[#58685D] font-mono mt-1">{{ verifiedCitizenCard.cardNo }}</div>
-            <div class="text-xs text-[#326445] mt-1">{{ $t('citizenCard.totalMembersRegistered', { count: verifiedCitizenCard.memberCount || 0 }) }}</div>
-          </div>
-
-          <div class="rounded-xl bg-white border border-[#D9E5DB] divide-y divide-[#E9F1EB] text-xs">
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizenCard.linkedPaperBook') }}</span>
-              <span class="font-mono text-end">{{ verifiedCitizenCard.paperCardNo || '—' }}</span>
-            </div>
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizen.province') }} / {{ $t('citizen.district') }}</span>
-              <span class="text-end">{{ [verifiedCitizenCard.province, verifiedCitizenCard.district].filter(Boolean).join(' · ') || '—' }}</span>
-            </div>
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizenCard.agentStore') }}</span>
-              <span class="text-end">{{ verifiedCitizenCard.agentName || '—' }}</span>
-            </div>
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizenCard.agentCodePrefix') }}</span>
-              <span class="font-mono">{{ verifiedCitizenCard.agentId || '—' }}</span>
-            </div>
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizenCard.securityCipherLabel') }}</span>
-              <span class="font-mono text-end">{{ verifiedCitizenCard.verificationCode || '—' }}</span>
-            </div>
-            <div class="p-3 flex justify-between gap-3">
-              <span class="text-[#8A9A8F]">{{ $t('citizenCard.recordActive') }}</span>
-              <span class="font-bold text-[#326445]">{{ verifiedCitizenCard.status || $t('citizenCard.statusActive') }}</span>
-            </div>
-          </div>
+            <CitizenCardScanDetails :card="verifiedCitizenCard" />
 
           </div>
           <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
@@ -763,6 +731,7 @@
               </div>
             </div>
 
+            <CitizenCardScanDetails v-if="verifiedCitizenCard" :card="verifiedCitizenCard" />
             <!-- 异常明细（按错误码渲染） -->
             <div class="rounded-xl bg-white border border-[#E5B8B8] divide-y divide-[#F3E3E3] text-xs">
               <!-- ERR_FROZEN：红色提示冻结原因 -->
@@ -1035,6 +1004,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { parseRcmQrPayload } from '@/utils/qrPayload';
 import { decodeQrImage } from '@/utils/qrImage.js';
+import { verifiedCitizenCardPayload } from '@/utils/citizenCardScan.js';
+import CitizenCardScanDetails from './CitizenCardScanDetails.vue';
 import { canonicalDeliveryVehicle, formatDeliveryVehicle, formatDeliveryTime } from '@/utils/deliveryEnums.js';
 import { scanOrderText, scanItemName, scanUnitKey } from '@/utils/scanOrderDisplay.js';
 
@@ -1307,6 +1278,7 @@ const selectedOrderId = ref('');
 const cameraError = ref('');
 const scanSource = ref('camera');
 const qrImageInput = ref(null);
+const qrPhotoInput = ref(null);
 const imageDecoding = ref(false);
 const imageErrorKey = ref('');
 const scanBusy = computed(() => imageDecoding.value || lookupLoading.value || cardVerifyLoading.value);
@@ -1326,21 +1298,22 @@ function invalidateScanSession() {
   cardVerifyLoading.value = false;
 }
 
-function chooseQrImage() {
-  if (scanBusy.value || !qrImageInput.value) return;
-  scanSource.value = 'image';
+function chooseQrImage(capture = false) {
+  const input = capture ? qrPhotoInput.value : qrImageInput.value;
+  if (scanBusy.value || !input) return;
+  scanSource.value = capture ? 'photo' : 'image';
   imageErrorKey.value = '';
   cameraError.value = '';
   stopCamera();
-  qrImageInput.value.value = '';
-  qrImageInput.value.click();
+  input.value = '';
+  input.click();
 }
 
 async function readQrImage(event) {
   const file = event.target.files?.[0];
   event.target.value = '';
   if (!file || !scanVerifyModalVisible.value || claimStep.value !== 'camera' || scanBusy.value) return;
-  scanSource.value = 'image';
+  scanSource.value = event.target === qrPhotoInput.value ? 'photo' : 'image';
   stopCamera();
   imageController?.abort();
   const controller = new AbortController();
@@ -1405,8 +1378,8 @@ async function startCamera() {
       audio: false,
       video: {
         facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
       }
     }, videoRef.value, (result, _error, decodeControls) => {
       if (token !== cameraStartToken || !scanVerifyModalVisible.value || claimStep.value !== 'camera' || scanSource.value !== 'camera') {
@@ -1527,6 +1500,7 @@ async function verifyCitizenCardScan(cardPayload) {
     const res = await verifyCitizenCardAndQuota({ cardNo: cardPayload?.cardNo });
     if (!isScanCurrent(token)) return;
     const verification = res?.data || res;
+    const currentCard = verifiedCitizenCardPayload(cardPayload, verification);
 
     // 重复领取场景：拉取本期已核销流水用于红色面板展示
     let claimedRecords = [];
@@ -1543,10 +1517,10 @@ async function verifyCitizenCardScan(cardPayload) {
     }
 
     if (!isScanCurrent(token)) return;
-    const scanError = evaluateCitizenCardScan(cardPayload, { verification, claimedRecords });
+    verifiedCitizenCard.value = currentCard;
+    const scanError = evaluateCitizenCardScan(currentCard, { verification, claimedRecords });
     if (scanError) {
       scanStatusError.value = scanError;
-      verifiedCitizenCard.value = null;
       verifiedOrder.value = null;
       claimStep.value = 'scan-error';
       ElMessage.error(t(`scanGuard.${scanErrorMeta.value.titleKey}`));
@@ -1554,7 +1528,6 @@ async function verifyCitizenCardScan(cardPayload) {
     }
 
     scanStatusError.value = null;
-    verifiedCitizenCard.value = cardPayload;
     verifiedOrder.value = null;
     claimStep.value = 'citizen-card';
     ElMessage.success(t('citizenCard.qrScanSuccessMsg'));

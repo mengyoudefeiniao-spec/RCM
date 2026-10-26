@@ -13,18 +13,9 @@ export function createPickupOrderQrPayload(pickupCode) {
 export function createCitizenCardQrPayload(family, verificationCode) {
   return JSON.stringify({
     type: CITIZEN_CARD_QR_TYPE,
-    version: 1,
+    version: 2,
     cardNo: family?.rationCardNo || 'RC-10029381',
-    paperCardNo: family?.oldPaperCardNo || '',
-    headName: family?.headName || '',
-    memberCount: Array.isArray(family?.members) ? family.members.length : 0,
-    province: family?.province || '',
-    district: family?.district || '',
-    agentName: family?.agentName || '',
-    agentId: family?.agentId || '',
-    status: family?.status || '',
-    // 冻结原因随码下发，便于代理终端扫码时直接展示（稳定代码/历史词根，展示层经 i18n 转译）
-    freezeReason: family?.freezeReason || '',
+    // Keep the screen QR sparse. The scanner resolves current names, status and quota by cardNo.
     verificationCode: verificationCode || '',
     issuedAt: new Date().toISOString()
   });

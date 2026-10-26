@@ -14,6 +14,7 @@ import {
   getApprovalLevels,
   ageFromBirthDate
 } from '../utils/businessRules.js';
+import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import { isHouseholdHead, matchesDeregistrationMember, deregistrationSuccessors } from '../utils/memberDeregistration.js';
@@ -3336,31 +3337,13 @@ export async function mockDispatch(config) {
 
   // 4.13 末端配给智能读卡核验 (SCM / UNICODE)
   if (url.includes('/warehouse/citizen-claim/verify') && method === 'GET') {
-    const cardInput = (params.cardNo || 'RC-10029381').trim();
-    const family =
-      familiesStore.find((f) => f.rationCardNo === cardInput || f.oldPaperCardNo === cardInput || f.headName.includes(cardInput)) ||
-      familiesStore[0];
-
-    const eligibleMembers = (family.members || []).filter((m) => m.status === '正常').length;
-    // 检查本月是否已核销
-    const alreadyClaimed = citizenClaimsStore.some(
-      (c) => c.rationCardNo === family.rationCardNo && c.claimPeriod.includes('2026年10月')
-    );
-
-    const quotaInfo = {
-      family,
-      cardNo: family.rationCardNo,
-      headName: family.headName,
-      eligibleMembers,
-      alreadyClaimed,
-      claimPeriod: '2026年10月份配额',
-      quotaList: [
-        { itemName: '精制大米', quotaPerHead: 3.0, totalQuota: eligibleMembers * 3.0, unit: 'KG' },
-        { itemName: '特级面粉', quotaPerHead: 9.0, totalQuota: eligibleMembers * 9.0, unit: 'KG' },
-        { itemName: '食用植物油', quotaPerHead: 1.0, totalQuota: eligibleMembers * 1.0, unit: 'L' },
-        { itemName: '纯精白糖', quotaPerHead: 1.0, totalQuota: eligibleMembers * 1.0, unit: 'KG' }
-      ]
-    };
+    const cardInput = String(params.cardNo || '').trim();
+    const family = getSharedFamilies(reqLang).find(f => f.rationCardNo === cardInput || f.oldPaperCardNo === cardInput || f.headName === cardInput);
+    if (!cardInput || !family) return createResponse(null, 404, i18n.global.t('scanHandover.cardNotFound'));
+    const quotaInfo = buildCitizenCardVerification(family, citizenClaimsStore, [
+      { itemCode: 'RICE-BAS-01', unit: 'KG' }, { itemCode: 'FLOUR-WHT-02', unit: 'KG' },
+      { itemCode: 'OIL-SUN-03', unit: 'L' }, { itemCode: 'SUGAR-WHT-04', unit: 'KG' }
+    ].map(item => ({ ...item, itemName: i18n.global.t(`businessRules.items.${item.itemCode}`), quotaPerHead: quotaPerPerson(item.itemCode) })));
     return createResponse(quotaInfo);
   }
 

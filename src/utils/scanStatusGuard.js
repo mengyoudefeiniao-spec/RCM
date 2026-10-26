@@ -42,9 +42,9 @@ const ERROR_META = Object.freeze({
   [SCAN_ERROR_CODES.SYS]: { titleKey: 'errSysTitle', guideKey: 'errSysGuide' }
 });
 
-const FROZEN_STATUS = /冻结|frozen|freeze/i;
-const CANCELLED_STATUS = /注销|吊销|撤销|cancell|revok/i;
-const LOST_STATUS = /挂失|丢失|遗失|lost|missing/i;
+const FROZEN_STATUS = /冻结|frozen|freeze|مجمد|مجمّد|بەستراو/iu;
+const CANCELLED_STATUS = /注销|吊销|撤销|cancell|revok|ملغ|هەڵوەشا/iu;
+const LOST_STATUS = /挂失|丢失|遗失|lost|missing|مفقود|ونبوو/iu;
 
 function round1(value) {
   return Math.round(Number(value) * 10) / 10;
@@ -59,7 +59,7 @@ export function computeRemainingQuota(quotaList) {
   if (!Array.isArray(quotaList)) return 0;
   return round1(quotaList.reduce((sum, item) => {
     if (!item) return sum;
-    const remaining = Number(item.remainingQuota ?? item.totalQuota ?? 0) - Number(item.claimedQty ?? 0);
+    const remaining = item.remainingQuota != null ? Number(item.remainingQuota) : Number(item.totalQuota ?? 0) - Number(item.claimedQty ?? 0);
     return sum + (Number.isFinite(remaining) ? remaining : 0);
   }, 0));
 }
@@ -93,7 +93,7 @@ export function createScanSystemError(detail = '') {
  * @param {string} [payload.issuedAt] 二维码签发时间 (ISO)
  * @param {object} [ctx] 云端核验上下文
  * @param {object} [ctx.verification] 云端配额核验结果（verifyCitizenCardAndQuota）
- * @param {number} [ctx.requestedQty] 本次请求量（标准份额），缺省按在册成员数推算
+ * @param {number} [ctx.requestedQty] 本次请求量（标准份额），缺省按核验通过成员与当前标准推算
  * @param {Array<object>} [ctx.claimedRecords] 本期已核销记录（ERR_DUPLICATE 展示用）
  * @param {number} [ctx.now] 当前时间戳（测试注入用）
  * @returns {null | { code: string, cardNo: string, headName?: string, freezeReason?: string,
@@ -134,9 +134,10 @@ export function evaluateCitizenCardScan(payload, ctx = {}) {
 
     const remaining = computeRemainingQuota(verification.quotaList);
     const memberCount = Number(payload.memberCount) > 0 ? Number(payload.memberCount) : 0;
-    const requested = Number(ctx.requestedQty) > 0
-      ? Number(ctx.requestedQty)
-      : (memberCount > 0 ? round1(memberCount * PER_HEAD_QUOTA_UNITS) : 0);
+    const eligibleMembers = Number.isFinite(Number(verification.eligibleMembers))
+      ? Math.max(0, Number(verification.eligibleMembers)) : memberCount;
+    const quotaPerHead = (verification.quotaList || []).reduce((sum, item) => sum + Number(item?.quotaPerHead || 0), 0) || PER_HEAD_QUOTA_UNITS;
+    const requested = Number(ctx.requestedQty) > 0 ? Number(ctx.requestedQty) : round1((eligibleMembers || memberCount) * quotaPerHead);
     if (requested > 0 && remaining + 0.05 < requested) {
       return {
         code: SCAN_ERROR_CODES.QUOTA,

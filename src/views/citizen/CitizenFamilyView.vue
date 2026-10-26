@@ -750,7 +750,7 @@
               v-if="cardQrDataUrl"
               :src="cardQrDataUrl"
               :alt="$t('citizenCard.qrVerifyTitle')"
-              class="w-full h-full object-contain"
+              class="w-full h-full object-contain [image-rendering:pixelated]"
             />
             <el-icon v-else class="text-2xl text-[#8A9A8F] is-loading"><Loading /></el-icon>
           </div>

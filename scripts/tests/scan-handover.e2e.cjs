@@ -20,7 +20,7 @@ async page => {
   let copy = await labels();
   await page.getByRole('button', { name: copy.open, exact: true }).first().click();
   const dialog = page.locator('.app-scan-dialog');
-  await dialog.locator('input[type="file"]').setInputFiles('.playwright-cli/scan-handover-qr.png');
+  await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/scan-handover-qr.png');
   await dialog.getByTestId('scan-item-card').first().waitFor();
   assert(await dialog.getByTestId('scan-item-card').count() === 4, 'Four commodity cards');
   const positions = await dialog.getByTestId('scan-item-card').evaluateAll(nodes => nodes.map(node => { const box = node.getBoundingClientRect(); return { x: box.x, y: box.y }; }));
@@ -62,7 +62,7 @@ async page => {
     localStorage.setItem('rcm_shared_orders_en', JSON.stringify([order]));
   });
   await page.getByRole('button', { name: copy.open, exact: true }).first().click();
-  await dialog.locator('input[type="file"]').setInputFiles('.playwright-cli/scan-handover-qr.png');
+  await dialog.locator('input[type="file"]:not([capture])').setInputFiles('.playwright-cli/scan-handover-qr.png');
   await dialog.getByText('Could not load outlet stock. Scan again to retry.', { exact: true }).waitFor();
   assert(await dialog.getByRole('button', { name: copy.confirm, exact: true }).isDisabled(), 'Unavailable stock never uses fabricated quantities');
   assert(errors.length === 0, 'Browser exceptions: ' + errors.join(';'));

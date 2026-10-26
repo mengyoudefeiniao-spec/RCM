@@ -47,13 +47,14 @@ export async function decodeQrImage(file, { signal } = {}) {
     const reader = new BrowserQRCodeReader();
     // Screenshots and phone photos benefit from different sampling scales.
     // Bound each canvas to keep decoding memory reasonable on mobile devices.
-    const sizes = [...new Set([2048, 4096, 1024].map(size => Math.min(size, longestSide)))];
+    const sizes = [...new Set([Math.min(2048, longestSide), Math.min(4096, longestSide), Math.min(4096, longestSide * 2), Math.min(4096, longestSide * 4), Math.min(1024, longestSide)])];
     for (const size of sizes) {
       await new Promise(resolve => setTimeout(resolve, 0));
       checkAborted(signal);
       const scale = size / longestSide;
       canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
       canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      context.imageSmoothingEnabled = false;
       context.globalCompositeOperation = 'source-over';
       context.fillStyle = '#fff';
       context.fillRect(0, 0, canvas.width, canvas.height);
@@ -69,6 +70,31 @@ export async function decodeQrImage(file, { signal } = {}) {
           if (text?.trim()) { checkAborted(signal); return text; }
         } catch (error) {
           if (error.code === 'aborted') throw error;
+        }
+      }
+    }
+    // A phone screenshot can contain a small code surrounded by text and card artwork.
+    // Scan overlapping square regions so those decorations do not dominate QR detection.
+    const side = Math.min(image.naturalWidth, image.naturalHeight);
+    if (longestSide / side > 1.4) {
+      const end = longestSide - side;
+      const steps = Math.min(7, Math.ceil(end / (side / 2)));
+      for (let step = 0; step <= steps; step++) {
+        const offset = Math.round(end * step / steps);
+        const sx = image.naturalWidth > image.naturalHeight ? offset : 0;
+        const sy = image.naturalHeight > image.naturalWidth ? offset : 0;
+        for (const factor of [2, 4]) {
+          await new Promise(resolve => setTimeout(resolve, 0));
+          checkAborted(signal);
+          canvas.width = canvas.height = Math.min(2048, side * factor);
+          context.imageSmoothingEnabled = false;
+          context.globalCompositeOperation = 'source-over';
+          context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, sx, sy, side, side, 0, 0, canvas.width, canvas.height);
+          try {
+            const text = reader.decodeFromCanvas(canvas).getText();
+            if (text?.trim()) { checkAborted(signal); return text; }
+          } catch (error) { if (error.code === 'aborted') throw error; }
         }
       }
     }
