@@ -1229,17 +1229,19 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="mapDialogOpen" :title="$t('warehouse.agentMapTitle')" width="min(92vw, 700px)" append-to-body @opened="renderAgentMap">
+    <el-dialog v-model="mapDialogOpen" :title="$t('warehouse.agentMapTitle')" width="min(94vw, 700px)" append-to-body @opened="renderAgentMap">
       <div class="space-y-3">
-        <div ref="agentMapElement" class="h-72 sm:h-96 overflow-hidden rounded-lg border border-[#D9E5DB] bg-[#EAF1E7]" role="application" :aria-label="$t('warehouse.agentMapTitle')" />
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="min-w-0 flex-1 text-[11px] leading-relaxed text-[#58685D]">{{ $t('warehouse.agentMapPreview') }}</p>
-          <el-button size="small" @click="routeFromCurrentLocation" :loading="agentMapLoading">
-            <el-icon class="me-1"><Location /></el-icon>{{ $t('warehouse.mapUseLocation') }}
-          </el-button>
-          <el-button size="small" type="primary" plain tag="a" :href="googleMapsRouteUrl" target="_blank" rel="noopener noreferrer">
-            {{ $t('warehouse.mapOpenGoogle') }}
-          </el-button>
+        <div ref="agentMapElement" class="h-60 sm:h-96 overflow-hidden rounded-lg border border-[#D9E5DB] bg-[#EAF1E7]" role="application" :aria-label="$t('warehouse.agentMapTitle')" />
+        <div class="space-y-2">
+          <p class="text-[11px] leading-relaxed text-[#58685D] break-words">{{ $t('warehouse.agentMapPreview') }}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <el-button class="w-full min-w-0" size="small" @click="routeFromCurrentLocation" :loading="agentMapLoading">
+              <el-icon class="me-1 shrink-0"><Location /></el-icon><span class="truncate">{{ $t('warehouse.mapUseLocation') }}</span>
+            </el-button>
+            <el-button class="w-full min-w-0" size="small" type="primary" plain tag="a" :href="googleMapsRouteUrl" target="_blank" rel="noopener noreferrer">
+              <span class="truncate">{{ $t('warehouse.mapOpenGoogle') }}</span>
+            </el-button>
+          </div>
         </div>
         <div class="flex items-center gap-2 text-xs" :class="agentMapError ? 'text-amber-700' : 'text-[#326445]'" aria-live="polite">
           <el-icon class="shrink-0"><Location /></el-icon>
