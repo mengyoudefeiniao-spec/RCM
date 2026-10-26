@@ -4,7 +4,7 @@
       type="button"
       class="voice-hold-button flex items-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D3AF62] disabled:cursor-not-allowed disabled:opacity-60"
       :class="[
-        iconOnly ? 'h-14 w-14 justify-center' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
+        iconOnly ? 'h-11 min-w-[108px] max-w-[42vw] justify-center gap-2 px-3' : 'w-full min-h-16 gap-3 px-3 py-2.5 text-start',
         recording ? 'border-[#E5B8B8] bg-[#FBEAE9] text-[#A03E3C]' : 'border-[#C7DED0] bg-[#F3F8F4] text-[#326445] hover:border-[#D3AF62]'
       ]"
       :disabled="disabled || state.phase === 'finishing'"
@@ -25,6 +25,7 @@
       <span class="flex shrink-0 items-center justify-center" :class="iconOnly ? '' : ['h-10 w-10 rounded-full', recording ? 'bg-[#F2D5D4]' : 'bg-[#E1F4E4]']">
         <el-icon class="text-xl" :class="{ 'animate-pulse': recording, 'animate-spin': state.phase === 'finishing' }"><Loading v-if="state.phase === 'finishing'" /><Microphone v-else /></el-icon>
       </span>
+      <span v-if="iconOnly" class="min-w-0 truncate whitespace-nowrap text-xs font-semibold leading-none">{{ buttonLabel }}</span>
       <span v-if="!iconOnly" class="flex min-w-0 flex-1 flex-col gap-0.5">
         <span class="text-sm font-semibold leading-snug">{{ buttonLabel }}</span>
         <span class="text-[11px] leading-snug opacity-80">{{ t(recording ? 'chatComplaint.listening' : 'chatComplaint.voiceMaxDuration') }}</span>
