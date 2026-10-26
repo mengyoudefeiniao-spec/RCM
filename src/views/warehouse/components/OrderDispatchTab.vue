@@ -444,7 +444,7 @@
 
     <!-- ======================================================== -->
     <!-- 4. 阶段 4 核心：高纵深 APP 风格扫码拍照核验与实物交接弹窗 -->
-    <!-- (先打开摄像头拍照扫码，拍照识别后再弹出确认单) -->
+    <!-- 摄像头与相册图片共用凭证解析和订单核验流程 -->
     <!-- ======================================================== -->
     <el-dialog
       v-model="scanVerifyModalVisible"
@@ -475,10 +475,11 @@
           <div class="flex items-center gap-2">
             <!-- 补光灯/手电筒开关 (仅相机步骤展示) -->
             <button
-              v-if="claimStep === 'camera'"
+              v-if="claimStep === 'camera' && scanSource === 'camera'"
               type="button"
               class="w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer"
               :class="isFlashOn ? 'bg-[#DFC08B] text-[#1B3123] shadow-[0_0_12px_#D9B567]' : 'bg-[#1F3326] text-[#C9DBCE] hover:bg-[#43554B]'"
+              :disabled="scanBusy"
               @click="toggleFlashlight"
             >
               <span>⚡</span>
@@ -486,9 +487,10 @@
             <div
               v-else
               class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-              :class="claimStep === 'scan-error' ? 'bg-[#F6D9D9]/90 text-[#C04442]' : 'bg-[#E1F4E4]/90 text-[#2F5B44]'"
+              :class="claimStep === 'camera' ? 'bg-[#1F3326] text-[#C9DBCE]' : claimStep === 'scan-error' ? 'bg-[#F6D9D9]/90 text-[#C04442]' : 'bg-[#E1F4E4]/90 text-[#2F5B44]'"
             >
-              {{ claimStep === 'scan-error' ? '✕' : '✓' }}
+              <el-icon v-if="claimStep === 'camera'"><Picture /></el-icon>
+              <span v-else>{{ claimStep === 'scan-error' ? '✕' : '✓' }}</span>
             </div>
             <div>
               <div class="text-xs font-bold flex items-center gap-1" :class="claimStep === 'camera' ? 'text-white' : 'text-[#1B3123]'">
@@ -532,9 +534,9 @@
           <!-- 核心相机取景器窗口 (自适应高度，带最大高度限制) -->
           <div class="relative w-full flex-1 min-h-[180px] max-h-[340px] rounded-lg overflow-hidden bg-black border border-[#1F3326] shadow-2xl flex items-center justify-center">
             <!-- 公民卡二维码状态核验中的加载遮罩 -->
-            <div v-if="cardVerifyLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#12241A]/85 rounded-lg">
+            <div v-if="scanBusy" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#12241A]/85 rounded-lg" role="status">
               <el-icon class="is-loading text-2xl text-[#6FBF92]"><Loading /></el-icon>
-              <span class="text-[11px] text-[#A7D9BC] mt-1.5 tracking-wide">{{ $t('scanGuard.verifying') }}</span>
+              <span class="text-[11px] text-[#A7D9BC] mt-1.5 tracking-wide">{{ $t(imageDecoding ? 'agentDelivery.scanImageReading' : 'scanGuard.verifying') }}</span>
             </div>
             <!-- 真实摄像头视频流预览 -->
             <video
@@ -551,10 +553,10 @@
             <div v-if="!cameraActive && !isFinalScanDemo" class="absolute inset-0 flex flex-col items-center justify-center bg-[#12241A]/90">
               <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
               <div class="w-20 h-20 rounded-lg border-2 border-[#3E9B68]/20 flex items-center justify-center text-[#3E9B68]/40 text-3xl mb-1.5">
-                <el-icon><Camera /></el-icon>
+                <el-icon><Picture v-if="scanSource === 'image'" /><Camera v-else /></el-icon>
               </div>
               <p class="text-[10px] text-center px-3" :class="cameraError ? 'text-[#FCA5A5]' : 'text-[#A7D9BC]'">
-                {{ cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
+                {{ scanSource === 'image' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
               </p>
             </div>
 
@@ -570,7 +572,7 @@
             </button>
 
             <!-- 取景器四角定位框 -->
-            <div class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-[#6FBF92]/80 rounded-lg flex items-center justify-center pointer-events-none z-10">
+            <div v-if="scanSource === 'camera'" class="relative w-48 h-48 sm:w-52 sm:h-52 border-2 border-dashed border-[#6FBF92]/80 rounded-lg flex items-center justify-center pointer-events-none z-10">
               <!-- 四角强化 L 标 -->
               <div class="absolute -top-1 -start-1 w-4 h-4 border-t-3 border-s-3 border-[#6FBF92]"></div>
               <div class="absolute -top-1 -end-1 w-4 h-4 border-t-3 border-e-3 border-[#6FBF92]"></div>
@@ -582,7 +584,7 @@
             </div>
 
             <!-- 取景提示浮条 -->
-            <div class="absolute bottom-2.5 inset-x-4 z-20 flex justify-center">
+            <div v-if="scanSource === 'camera'" class="absolute bottom-2.5 inset-x-4 z-20 flex justify-center">
               <span class="px-3 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[#A7D9BC] text-[10px] tracking-wide border border-[#3E9B68]/30">
                 {{ $t('orderClaim.scanningHint') }}
               </span>
@@ -591,22 +593,23 @@
 
           <!-- 取景器下半部分：自动扫码状态与手动输入 -->
           <div v-if="!isFinalScanDemo" class="pt-2 pb-1 shrink-0 space-y-2 z-20">
-            <div class="flex flex-col items-center justify-center">
-              <div class="w-12 h-12 rounded-full border-2 border-white/70 bg-[#3E9B68] flex items-center justify-center text-white shadow-[0_0_16px_rgba(62,155,104,0.5)]">
-                <el-icon class="text-2xl" :class="cameraActive ? 'animate-pulse' : ''"><Camera /></el-icon>
-              </div>
-              <span class="text-[10px] text-[#A7D9BC] mt-1 tracking-wider font-medium">
-                {{ cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}
-              </span>
-              <el-button v-if="cameraError" size="small" type="success" plain class="mt-1" @click="startCamera">
-                {{ $t('common.refresh') }}
-              </el-button>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" class="scan-source-button" :class="{ 'is-active': scanSource === 'camera' }" :aria-pressed="scanSource === 'camera'" :disabled="scanBusy" @click="resumeCameraScan">
+                <el-icon class="text-xl"><Camera /></el-icon><span>{{ $t('agentDelivery.scanCamera') }}</span>
+              </button>
+              <button type="button" class="scan-source-button" :class="{ 'is-active': scanSource === 'image' }" :aria-pressed="scanSource === 'image'" :disabled="scanBusy" @click="chooseQrImage">
+                <el-icon class="text-xl"><Picture /></el-icon><span>{{ $t('agentDelivery.scanUpload') }}</span>
+              </button>
             </div>
+            <input ref="qrImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="readQrImage" />
+            <p v-if="imageErrorKey" role="alert" class="text-[11px] leading-relaxed text-[#FCA5A5]">{{ $t(imageErrorKey) }}</p>
+            <p v-else class="text-[10px] text-center text-[#A7D9BC] leading-relaxed" role="status">{{ scanSource === 'image' ? $t('agentDelivery.scanImageHint') : cameraError || (cameraActive ? $t('agentOrders.cameraScanningHint') : $t('agentOrders.cameraStartingHint')) }}</p>
 
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[#1F3326]/80">
               <button
                 type="button"
                 class="text-[11px] text-[#8A9A8F] hover:text-white underline cursor-pointer"
+                :disabled="scanBusy"
                 @click="showManualInput = !showManualInput"
               >
                 {{ showManualInput ? $t('agentOrders.collapseInput') : $t('agentOrders.manualInput') }}
@@ -617,12 +620,13 @@
             <div v-if="showManualInput" class="flex items-center gap-1.5 pt-0.5">
               <el-input
                 v-model="scanInputCode"
+                :disabled="scanBusy"
                 size="small"
                 :placeholder="$t('agentOrders.manualInputPlaceholder')"
                 clearable
                 @keyup.enter="handleLookupCode"
               />
-              <el-button size="small" type="primary" :loading="lookupLoading" @click="handleLookupCode">
+              <el-button size="small" type="primary" :loading="lookupLoading" :disabled="scanBusy" @click="handleLookupCode">
                 {{ $t('agentOrders.queryBtn') }}
               </el-button>
             </div>
@@ -677,7 +681,7 @@
           </div>
           <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
             <el-button type="success" class="w-full whitespace-normal leading-snug" @click="retakePhoto">
-              {{ $t('agentOrders.retakePhotoBtn') }}
+              {{ $t('agentDelivery.scanAgain') }}
             </el-button>
           </div>
         </div>
@@ -727,7 +731,7 @@
           </div>
           <div class="scan-action-tray shrink-0 p-3 bg-white/95 border-t border-[#D9E5DB]/90 z-20">
             <el-button type="success" class="w-full whitespace-normal leading-snug" @click="retakePhoto">
-              {{ $t('agentOrders.retakePhotoBtn') }}
+              {{ $t('agentDelivery.scanAgain') }}
             </el-button>
           </div>
         </div>
@@ -875,7 +879,7 @@
                   <span class="font-mono text-[10px] text-[#2F5B44]">{{ $t('agentOrders.codeLabel') }}: {{ verifiedOrder.pickupCode }}</span>
                 </div>
               </div>
-              <el-button size="small" text type="info" @click="retakePhoto">{{ $t('agentOrders.retakePhotoBtn') }}</el-button>
+              <el-button size="small" text type="info" @click="retakePhoto">{{ $t('agentDelivery.scanAgain') }}</el-button>
             </div>
 
             <!-- 户主与送货信息卡片 -->
@@ -971,7 +975,7 @@
             </el-button>
 
             <el-button size="small" class="w-full text-[#58685D]" @click="retakePhoto">
-              {{ $t('agentOrders.retakePhotoBtn') }}
+              {{ $t('agentDelivery.scanAgain') }}
             </el-button>
           </div>
         </div>
@@ -1056,6 +1060,7 @@ import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { parseRcmQrPayload } from '@/utils/qrPayload';
+import { decodeQrImage } from '@/utils/qrImage.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -1074,6 +1079,7 @@ import {
   SuccessFilled,
   Document,
   Camera,
+  Picture,
   Printer,
   Loading
 } from '@element-plus/icons-vue';
@@ -1323,6 +1329,72 @@ const claimReceipt = ref(null);
 const scanStatusError = ref(null);
 const selectedOrderId = ref('');
 const cameraError = ref('');
+const scanSource = ref('camera');
+const qrImageInput = ref(null);
+const imageDecoding = ref(false);
+const imageErrorKey = ref('');
+const scanBusy = computed(() => imageDecoding.value || lookupLoading.value || cardVerifyLoading.value);
+let imageController = null;
+let scanSessionToken = 0;
+let cameraRetryTimer;
+
+const isScanCurrent = token => token === scanSessionToken && scanVerifyModalVisible.value;
+function invalidateScanSession() {
+  scanSessionToken += 1;
+  imageController?.abort();
+  imageController = null;
+  window.clearTimeout(cameraRetryTimer);
+  imageDecoding.value = false;
+  imageErrorKey.value = '';
+  lookupLoading.value = false;
+  cardVerifyLoading.value = false;
+}
+
+function chooseQrImage() {
+  if (scanBusy.value || !qrImageInput.value) return;
+  scanSource.value = 'image';
+  imageErrorKey.value = '';
+  cameraError.value = '';
+  stopCamera();
+  qrImageInput.value.value = '';
+  qrImageInput.value.click();
+}
+
+async function readQrImage(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file || !scanVerifyModalVisible.value || claimStep.value !== 'camera' || scanBusy.value) return;
+  scanSource.value = 'image';
+  stopCamera();
+  imageController?.abort();
+  const controller = new AbortController();
+  imageController = controller;
+  const token = scanSessionToken;
+  imageDecoding.value = true;
+  imageErrorKey.value = '';
+  try {
+    const text = await decodeQrImage(file, { signal: controller.signal });
+    if (!isScanCurrent(token) || controller.signal.aborted) return;
+    imageDecoding.value = false;
+    await handleScannedQr(text);
+  } catch (error) {
+    if (!isScanCurrent(token) || controller.signal.aborted || error.code === 'aborted') return;
+    imageErrorKey.value = error.code === 'image-too-large' ? 'agentDelivery.scanImageTooLarge'
+      : error.code === 'no-qr' ? 'agentDelivery.scanImageNotFound' : 'agentDelivery.scanImageInvalid';
+  } finally {
+    if (isScanCurrent(token) && imageController === controller) {
+      imageDecoding.value = false;
+      imageController = null;
+    }
+  }
+}
+
+function resumeCameraScan() {
+  if (scanBusy.value) return;
+  scanSource.value = 'camera';
+  imageErrorKey.value = '';
+  void startCamera();
+}
 
 // 扫码状态异常对应的界面词条键（标题 / 处理指引）
 const scanErrorMeta = computed(() => (
@@ -1339,7 +1411,8 @@ let scanHandled = false;
 
 async function startCamera() {
   if (isFinalScanDemo.value) return;
-  if (!videoRef.value || !scanVerifyModalVisible.value) return;
+  if (!videoRef.value || !scanVerifyModalVisible.value || claimStep.value !== 'camera' || scanSource.value !== 'camera' || scanBusy.value) return;
+  stopCamera();
   const token = ++cameraStartToken;
   cameraError.value = '';
   cameraActive.value = false;
@@ -1360,6 +1433,10 @@ async function startCamera() {
         height: { ideal: 720 }
       }
     }, videoRef.value, (result, _error, decodeControls) => {
+      if (token !== cameraStartToken || !scanVerifyModalVisible.value || claimStep.value !== 'camera' || scanSource.value !== 'camera') {
+        decodeControls?.stop();
+        return;
+      }
       if (!result || scanHandled) return;
       scanHandled = true;
       decodeControls?.stop();
@@ -1390,10 +1467,13 @@ function stopCamera() {
   scannerControls?.stop();
   scannerControls = null;
   if (videoRef.value) {
+    const stream = videoRef.value.srcObject;
+    stream?.getTracks?.().forEach(track => track.stop());
     videoRef.value.pause?.();
     videoRef.value.srcObject = null;
   }
   cameraActive.value = false;
+  isFlashOn.value = false;
 }
 
 async function toggleFlashlight() {
@@ -1411,6 +1491,9 @@ async function toggleFlashlight() {
 
 // 打开扫码核验弹窗并开始连续识别二维码
 function openScanVerifyModal(order = null) {
+  invalidateScanSession();
+  stopCamera();
+  scanSource.value = 'camera';
   scanInputCode.value = '';
   verifiedOrder.value = null;
   verifiedCitizenCard.value = null;
@@ -1429,6 +1512,7 @@ function openScanVerifyModal(order = null) {
 }
 
 async function handleScannedQr(rawValue) {
+  if (!scanVerifyModalVisible.value || claimStep.value !== 'camera') return;
   const decoded = parseRcmQrPayload(rawValue);
   if (!decoded) {
     ElMessage.warning(t('orderClaim.scanError'));
@@ -1461,9 +1545,11 @@ async function handleScannedQr(rawValue) {
  * - 异常：进入红色拦截面板，展示错误码/明细与处理引导（严禁异常发货）
  */
 async function verifyCitizenCardScan(cardPayload) {
+  const token = scanSessionToken;
   cardVerifyLoading.value = true;
   try {
     const res = await verifyCitizenCardAndQuota({ cardNo: cardPayload?.cardNo });
+    if (!isScanCurrent(token)) return;
     const verification = res?.data || res;
 
     // 重复领取场景：拉取本期已核销流水用于红色面板展示
@@ -1480,6 +1566,7 @@ async function verifyCitizenCardScan(cardPayload) {
       }
     }
 
+    if (!isScanCurrent(token)) return;
     const scanError = evaluateCitizenCardScan(cardPayload, { verification, claimedRecords });
     if (scanError) {
       scanStatusError.value = scanError;
@@ -1496,6 +1583,7 @@ async function verifyCitizenCardScan(cardPayload) {
     claimStep.value = 'citizen-card';
     ElMessage.success(t('citizenCard.qrScanSuccessMsg'));
   } catch (err) {
+    if (!isScanCurrent(token)) return;
     console.error('公民卡状态核验失败', err);
     scanStatusError.value = {
       ...createScanSystemError(err?.message),
@@ -1506,7 +1594,7 @@ async function verifyCitizenCardScan(cardPayload) {
     verifiedOrder.value = null;
     claimStep.value = 'scan-error';
   } finally {
-    cardVerifyLoading.value = false;
+    if (isScanCurrent(token)) cardVerifyLoading.value = false;
   }
 }
 
@@ -1533,14 +1621,17 @@ function formatIssuedAt(iso) {
 
 // 查询提货码对应的订单
 async function handleLookupCode() {
+  if (!scanVerifyModalVisible.value || claimStep.value !== 'camera' || lookupLoading.value || cardVerifyLoading.value) return;
   const code = scanInputCode.value.trim();
   if (!code) {
     ElMessage.warning(t('orderClaim.scanPlaceholder'));
     return;
   }
+  const token = scanSessionToken;
   lookupLoading.value = true;
   try {
     const res = await lookupCitizenOrderByCode(code);
+    if (!isScanCurrent(token)) return;
     stopCamera();
     const order = res?.data || res;
     if (!order?.orderId || !order?.pickupCode) throw new Error('订单查询结果不完整');
@@ -1556,18 +1647,23 @@ async function handleLookupCode() {
     claimStep.value = 'confirm';
     ElMessage.success(t('orderClaim.pickupOrderMatchedMsg'));
   } catch (err) {
+    if (!isScanCurrent(token)) return;
     console.error('检索提货订单失败', err);
     ElMessage.error(t('orderClaim.scanError'));
   } finally {
-    lookupLoading.value = false;
-    if (scanVerifyModalVisible.value && claimStep.value === 'camera') {
+    if (isScanCurrent(token)) lookupLoading.value = false;
+    if (isScanCurrent(token) && claimStep.value === 'camera' && scanSource.value === 'camera') {
       scanHandled = false;
-      window.setTimeout(() => startCamera(), 250);
+      window.clearTimeout(cameraRetryTimer);
+      cameraRetryTimer = window.setTimeout(() => startCamera(), 250);
     }
   }
 }
 
 function retakePhoto() {
+  invalidateScanSession();
+  stopCamera();
+  scanSource.value = 'camera';
   verifiedOrder.value = null;
   verifiedCitizenCard.value = null;
   verifiedGovernmentOrder.value = null;
@@ -1638,8 +1734,15 @@ function completeScanDemo() {
 }
 
 function handleModalClosed() {
-  stopCamera();
+  if (!scanVerifyModalVisible.value) stopCamera();
 }
+
+watch(scanVerifyModalVisible, visible => {
+  if (!visible) {
+    invalidateScanSession();
+    stopCamera();
+  }
+}, { flush: 'sync' });
 
 // 加载订单列表
 async function loadOrders() {
@@ -1874,12 +1977,18 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.clearInterval(priorityTimer);
+  invalidateScanSession();
   stopCamera();
   crossTabUnsubs.forEach((fn) => fn && fn());
 });
 </script>
 
 <style scoped>
+.scan-source-button { display: flex; align-items: center; justify-content: center; gap: .45rem; min-height: 2.75rem; padding: .6rem .5rem; border: 1px solid #43554B; border-radius: .65rem; background: #1F3326; color: #C9DBCE; font-size: .75rem; font-weight: 600; line-height: 1.5; cursor: pointer; }
+.scan-source-button.is-active { background: #326445; border-color: #7FA48C; color: white; }
+.scan-source-button:hover { border-color: #D3AF62; }
+.scan-source-button:focus-visible { outline: 2px solid #D3AF62; outline-offset: 2px; }
+.scan-source-button:disabled { opacity: .6; cursor: wait; }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

@@ -1,6 +1,7 @@
 // Agent delivery and purchasing surfaces share these keys in all shipped languages.
 export default {
   zh: {
+    scanCamera: '摄像头扫码', scanUpload: '从相册上传', scanImageHint: '选择包含完整二维码的 JPG、PNG 或 WebP 图片，最大 10 MB。', scanImageReading: '正在识别图片中的二维码…', scanImageInvalid: '请选择可读取的 JPG、PNG 或 WebP 图片。', scanImageTooLarge: '图片不能超过 10 MB，请压缩后重试。', scanImageNotFound: '图片中未识别到二维码，请上传清晰、完整的二维码图片。', scanAgain: '重新扫码',
     detailTitle: '配送订单详情', details: '查看订单详情', backToOrders: '返回配送订单',
     priorityOverdue: '配送已超时', prioritySoon: '即将超时', priorityCount: '{count} 单需优先处理',
     expectedBy: '最迟配送时间', estimatedDeadline: '根据现有订单时间估算',
@@ -24,6 +25,7 @@ export default {
     }
   },
   en: {
+    scanCamera: 'Scan with camera', scanUpload: 'Upload from gallery', scanImageHint: 'Choose a JPG, PNG or WebP image showing the complete QR code, up to 10 MB.', scanImageReading: 'Reading the QR code in the image…', scanImageInvalid: 'Choose a readable JPG, PNG or WebP image.', scanImageTooLarge: 'The image must be no larger than 10 MB. Please resize it and try again.', scanImageNotFound: 'No QR code was detected. Upload a clear image of the complete code.', scanAgain: 'Scan again',
     detailTitle: 'Delivery Order Details', details: 'View order details', backToOrders: 'Back to delivery orders',
     priorityOverdue: 'Delivery overdue', prioritySoon: 'Due soon', priorityCount: '{count} orders need priority',
     expectedBy: 'Delivery deadline', estimatedDeadline: 'Estimated from available order times',
@@ -47,6 +49,7 @@ export default {
     }
   },
   ar: {
+    scanCamera: 'المسح بالكاميرا', scanUpload: 'رفع صورة من المعرض', scanImageHint: 'اختر صورة JPG أو PNG أو WebP تُظهر رمز QR كاملاً، بحجم أقصى ١٠ ميغابايت.', scanImageReading: 'جارٍ قراءة رمز QR في الصورة…', scanImageInvalid: 'اختر صورة JPG أو PNG أو WebP قابلة للقراءة.', scanImageTooLarge: 'يجب ألا يتجاوز حجم الصورة ١٠ ميغابايت. يرجى تصغيرها والمحاولة مجدداً.', scanImageNotFound: 'لم يُكتشف رمز QR. ارفع صورة واضحة تُظهر الرمز كاملاً.', scanAgain: 'المسح مجدداً',
     detailTitle: 'تفاصيل طلب التوصيل', details: 'عرض تفاصيل الطلب', backToOrders: 'العودة إلى طلبات التوصيل',
     priorityOverdue: 'تأخر التوصيل', prioritySoon: 'اقترب موعد التوصيل', priorityCount: '{count} طلبات تتطلب الأولوية',
     expectedBy: 'آخر موعد للتوصيل', estimatedDeadline: 'تقدير استناداً إلى أوقات الطلب المتاحة',
@@ -70,6 +73,7 @@ export default {
     }
   },
   ckb: {
+    scanCamera: 'سکان بە کامێرا', scanUpload: 'بارکردن لە گەلەری', scanImageHint: 'وێنەی JPG یان PNG یان WebP هەڵبژێرە کە کۆدی QR بە تەواوی پیشان بدات، زۆرترین ١٠ مێگابایت.', scanImageReading: 'کۆدی QR لە وێنەکە دەخوێندرێتەوە…', scanImageInvalid: 'وێنەیەکی خوێندنەوەکراوی JPG یان PNG یان WebP هەڵبژێرە.', scanImageTooLarge: 'قەبارەی وێنە نابێت لە ١٠ مێگابایت زیاتر بێت. تکایە بچووکی بکەرەوە و دووبارە هەوڵ بدەوە.', scanImageNotFound: 'کۆدی QR نەدۆزرایەوە. وێنەیەکی ڕوون و تەواوی کۆدەکە بار بکە.', scanAgain: 'دووبارە سکان بکە',
     detailTitle: 'وردەکاری داواکاری گەیاندن', details: 'بینینی وردەکاری داواکاری', backToOrders: 'گەڕانەوە بۆ داواکارییەکانی گەیاندن',
     priorityOverdue: 'گەیاندن دواکەوتووە', prioritySoon: 'کاتی گەیاندن نزیکە', priorityCount: '{count} داواکاری پێویستی بە پێشینەیە',
     expectedBy: 'دوا کاتی گەیاندن', estimatedDeadline: 'خەمڵاندن لەسەر بنەمای کاتی داواکاری',
