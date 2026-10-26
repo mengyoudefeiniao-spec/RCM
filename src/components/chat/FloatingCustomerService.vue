@@ -636,7 +636,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { currentDirection } from '../../locales/index.js';
 import { useAuthStore } from '../../stores/auth.js';
@@ -681,6 +681,7 @@ import {
 } from '../../mock/data/chatMultiLangData.js';
 
 const route = useRoute();
+const router = useRouter();
 const auth = useAuthStore();
 const myNotifications = useMyNotificationsStore();
 const complaintUnread = computed(() => myNotifications.items.filter(item => item.type === 'complaint' && !item.read).length);
@@ -1374,7 +1375,13 @@ watch(
   }
 );
 
-watch(() => route.query.complaint, (id) => { if (id) nextTick(() => openComplaintNotice()); }, { immediate: true });
+// The component can mount before the router restores the first URL. Only open
+// complaint links on subsequent navigation, never during that initial restore.
+const stopComplaintRouteWatch = router.afterEach((to, from, failure) => {
+  if (!failure && from.matched.length && to.query.complaint && to.query.complaint !== from.query.complaint) {
+    nextTick(() => openComplaintNotice());
+  }
+});
 watch(() => [auth.userProfile?.id, auth.currentRole], () => {
   complaintPanel.value = ''; activeComplaintId.value = ''; activeOrder.value = null; orderPickerOpen.value = false;
   messages.value = messages.value.filter(msg => msg.id?.startsWith('MSG-INIT'));
@@ -1394,6 +1401,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  stopComplaintRouteWatch();
   window.removeEventListener('resize', detectAppMode);
   window.removeEventListener('rcm-open-chat', openChatWindow);
   window.removeEventListener('rcm-close-chat', closeWindow);

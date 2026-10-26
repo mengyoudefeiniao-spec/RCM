@@ -1,5 +1,6 @@
 <template>
-  <div class="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7 space-y-5 text-[#1F3326]">
+  <div class="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7 space-y-5 text-[#1F3326]"
+    @touchstart.passive="startListSwipe" @touchend.passive="endListSwipe" @touchcancel.passive="cancelListSwipe" @click.capture="guardSwipeClick">
     <header v-if="isListPage" class="flex items-center gap-3" data-my-list-header>
       <el-button circle :aria-label="$t('common.back')" @click="closeList"><el-icon class="rtl-mirror-icon"><ArrowLeft /></el-icon></el-button>
       <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t(expandedList === 'applications' ? 'my.applicationHistory' : 'my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
@@ -52,7 +53,7 @@
     </template>
 
     </template>
-    <section v-if="isCitizen && (!isListPage || expandedList === 'applications')" data-my-list="applications" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
+    <section v-if="isCitizen && (!isListPage || expandedList === 'applications')" data-my-list="applications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
           <el-icon class="shrink-0 text-[#326445]"><DocumentChecked /></el-icon>
@@ -102,7 +103,7 @@
       <p v-if="!isListPage && applicationRecords.length" class="text-xs text-[#8A9A8F]">{{ $t('my.previewCount', { shown: displayedApplications.length, total: applicationRecords.length }) }}</p>
     </section>
 
-    <section v-if="expandedList === 'notifications' || (!isListPage && (isCitizen || currentTab === 'notifications'))" data-my-list="notifications" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
+    <section v-if="expandedList === 'notifications' || (!isListPage && (isCitizen || currentTab === 'notifications'))" data-my-list="notifications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2 min-w-0">
           <el-icon class="shrink-0 text-[#326445]"><Bell /></el-icon>
@@ -130,10 +131,11 @@
       <p v-if="!isListPage && notifications.length" class="text-xs text-[#8A9A8F]">{{ $t('my.previewCount', { shown: displayedNotifications.length, total: notifications.length }) }}</p>
     </section>
 
-    <nav v-if="isListPage && pageCount > 1" class="sticky bottom-0 flex items-center justify-between gap-2 rounded-xl border border-[#D9E5DB] bg-white/95 p-3 shadow-sm" :aria-label="$t('my.pagination')" data-my-pagination>
-      <el-button size="small" :disabled="listPage === 1" @click="changeListPage(listPage - 1)"><el-icon class="me-1 rtl-mirror-icon"><ArrowLeft /></el-icon>{{ $t('my.previousPage') }}</el-button>
-      <span class="text-xs text-[#58685D] whitespace-nowrap" role="status">{{ $t('my.pageIndicator', { page: listPage, total: pageCount }) }}</span>
-      <el-button size="small" :disabled="listPage === pageCount" @click="changeListPage(listPage + 1)">{{ $t('my.nextPage') }}<el-icon class="ms-1 rtl-mirror-icon"><ArrowRight /></el-icon></el-button>
+    <nav v-if="isListPage && pageCount > 1" class="flex justify-center py-1" :aria-label="$t('my.pagination')" data-my-pagination @keydown="handlePaginationKey">
+      <span class="sr-only" role="status" aria-live="polite">{{ $t('my.pageIndicator', { page: listPage, total: pageCount }) }}</span>
+      <button v-for="page in visiblePageIndicators" :key="page" type="button" class="my-page-indicator"
+        :class="{ 'is-current': page === listPage }" :aria-current="page === listPage ? 'page' : undefined"
+        :aria-label="$t('my.pageIndicator', { page, total: pageCount })" @click="changeListPage(page)"><span /></button>
     </nav>
 
     <template v-if="!isListPage">
@@ -390,6 +392,53 @@ const listPage = computed(() => {
   const requested = Number(route.query.page);
   return Math.min(pageCount.value, Number.isSafeInteger(requested) && requested > 0 ? requested : 1);
 });
+// Keep the indicators within narrow phone screens, even for long histories.
+const visiblePageIndicators = computed(() => {
+  const count = Math.min(7, pageCount.value);
+  const start = Math.max(1, Math.min(listPage.value - 3, pageCount.value - count + 1));
+  return Array.from({ length: count }, (_, index) => start + index);
+});
+const isRtl = computed(() => ['ar', 'ckb', 'ku'].includes(locale.value));
+let listSwipe = null;
+let suppressClickUntil = 0;
+
+function startListSwipe(event) {
+  listSwipe = null;
+  if (!isListPage.value || pageCount.value <= 1 || event.touches.length !== 1
+    || !event.target.closest('[data-my-list]')
+    || event.target.closest('input, textarea, select, [role="combobox"], [contenteditable="true"]')) return;
+  const touch = event.touches[0];
+  listSwipe = { id: touch.identifier, x: touch.clientX, y: touch.clientY, time: Date.now() };
+}
+
+function cancelListSwipe() { listSwipe = null; }
+
+function endListSwipe(event) {
+  const start = listSwipe;
+  listSwipe = null;
+  if (!start || event.touches.length) return;
+  const touch = Array.from(event.changedTouches).find(item => item.identifier === start.id);
+  if (!touch) return;
+  const dx = touch.clientX - start.x;
+  const dy = touch.clientY - start.y;
+  if (Date.now() - start.time > 1000 || Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  suppressClickUntil = Date.now() + 400;
+  changeListPage(listPage.value + ((isRtl.value ? dx > 0 : dx < 0) ? 1 : -1));
+}
+
+function guardSwipeClick(event) {
+  if (Date.now() < suppressClickUntil) { event.preventDefault(); event.stopPropagation(); }
+}
+
+async function handlePaginationKey(event) {
+  const pagination = event.currentTarget;
+  const delta = { ArrowLeft: isRtl.value ? 1 : -1, ArrowRight: isRtl.value ? -1 : 1 }[event.key];
+  if (delta === undefined && event.key !== 'Home' && event.key !== 'End') return;
+  event.preventDefault();
+  await changeListPage(event.key === 'Home' ? 1 : event.key === 'End' ? pageCount.value : listPage.value + delta);
+  await nextTick();
+  pagination.querySelector('[aria-current="page"]')?.focus({ preventScroll: true });
+}
 const displayedApplications = computed(() => isListPage.value
   ? filteredApplicationRecords.value.slice((listPage.value - 1) * PAGE_SIZE, listPage.value * PAGE_SIZE)
   : applicationRecords.value.slice(0, PREVIEW_SIZE));
@@ -411,7 +460,7 @@ function closeList() {
 
 function changeListPage(page) {
   const next = Math.max(1, Math.min(pageCount.value, page));
-  router.replace({ query: { ...route.query, page: next === 1 ? undefined : String(next) } });
+  return router.replace({ query: { ...route.query, page: next === 1 ? undefined : String(next) } });
 }
 
 watch([expandedList, listPage], async ([list], [previousList]) => {
@@ -722,3 +771,26 @@ onBeforeUnmount(() => {
   window.removeEventListener('storage', refreshApplicationHistory);
 });
 </script>
+
+<style scoped>
+.my-swipe-list { touch-action: pan-y pinch-zoom; }
+.my-page-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 44px;
+  padding: 0 3px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.my-page-indicator span {
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: #d1d5d8;
+  transition: background-color 160ms;
+}
+.my-page-indicator.is-current span { background: #0067c0; }
+.my-page-indicator:focus-visible { outline: 2px solid #0067c0; outline-offset: -2px; }
+</style>
