@@ -977,6 +977,8 @@ export default {
     "managerDecisionSuccess": "صدر القرار النهائي: {decision}",
     "defaultStaffOpinion": "طوبقت البيانات مع سجلات الأحوال المدنية بوزارة الداخلية وتأكدت صحة المستندات الرسمية؛ أوصي بالموافقة.",
     "defaultManagerNotes": "المعاملة مطابقة لإجراءات الموافقة الاستثنائية بوزارة التجارة؛ أوافق على رأي الموظف وإصدار القرار.",
+    "unfreezeAppType": "طلب رفع التجميد ({type})",
+    "unfreezeCategoryType": "اعتراض رفع التجميد ({type})",
     "ticketData": {
       "REV-SPL-001": {
         "appType": "فصل بطاقة التموين (مسار الفرد الواحد)",

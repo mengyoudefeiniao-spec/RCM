@@ -1134,7 +1134,9 @@ export default {
     "staffSubmitSuccess": "第一级初审意见已提交，流转至经理终审",
     "managerDecisionSuccess": "终审已裁决为【{decision}】",
     "defaultStaffOpinion": "经调阅内政部户籍底册比对属实，官方证明材料核验通过，建议准予办理。",
-    "defaultManagerNotes": "符合贸易部例外审批规程，同意专员审查意见，准予签发。"
+    "defaultManagerNotes": "符合贸易部例外审批规程，同意专员审查意见，准予签发。",
+    "unfreezeAppType": "解冻申请（{type}情形）",
+    "unfreezeCategoryType": "解冻申诉（{type}情形）"
   },
   "warehouse": {
     "selectProvinces": "请选择供应省市 (支持多选，制定每月配给计划)",

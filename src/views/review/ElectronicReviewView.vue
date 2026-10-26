@@ -378,6 +378,7 @@ import { useI18n } from 'vue-i18n';
 import { provinceLabel } from '../../utils/dataLabels.js';
 import { useReviewStore } from '../../stores/review.js';
 import { useAuthStore } from '../../stores/auth.js';
+import { localizeUnfreezeCase, resolveUnfreezeCaseKey } from '../../utils/unfreezeCase.js';
 import { Stamp, Refresh, Document, Check, Search, Back } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 
@@ -387,6 +388,13 @@ const authStore = useAuthStore();
 
 function localizedTicketField(ticket, field, fallback) {
   const value = fallback ?? ticket?.[field] ?? '';
+  const unfreezeType = ticket?.payload?.unfreezeType;
+  const unfreezeCaseKey = resolveUnfreezeCaseKey(unfreezeType);
+  if (unfreezeCaseKey && ['appType', 'categoryType'].includes(field)) {
+    const type = localizeUnfreezeCase(unfreezeType, t);
+    if (field === 'appType') return t('review.unfreezeAppType', { type });
+    return t('review.unfreezeCategoryType', { type });
+  }
   if (!ticket || (locale.value !== 'ar' && locale.value !== 'ckb')) return value;
   const key = `review.ticketData.${ticket.id}.${field}`;
   return te(key, locale.value) ? t(key) : value;

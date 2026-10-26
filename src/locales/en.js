@@ -1134,7 +1134,9 @@ export default {
     "staffSubmitSuccess": "Preliminary review submitted, forwarded to manager",
     "managerDecisionSuccess": "Final decision submitted: [{decision}]",
     "defaultStaffOpinion": "Verified against Ministry of Interior civil registry, official credentials confirmed, recommended for approval.",
-    "defaultManagerNotes": "Meets Ministry exception criteria, staff review endorsed, approved for issuance."
+    "defaultManagerNotes": "Meets Ministry exception criteria, staff review endorsed, approved for issuance.",
+    "unfreezeAppType": "Unfreeze Application ({type} Scenario)",
+    "unfreezeCategoryType": "Unfreeze Appeal ({type} Scenario)"
   },
   "warehouse": {
     "selectProvinces": "Select Supply Provinces (Multi-select supported)",
