@@ -509,6 +509,7 @@
             class="w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer"
             :class="claimStep === 'camera' ? 'bg-[#1F3326] hover:bg-[#43554B] text-[#C9DBCE]' : 'bg-[#E9F1EB] hover:bg-[#D9E5DB] text-[#58685D]'"
             @click="scanVerifyModalVisible = false"
+            :aria-label="$t('common.close')"
           >
             ✕
           </button>
@@ -525,7 +526,7 @@
           <div v-if="targetPresetOrder" class="z-20 mb-1.5 shrink-0">
             <div class="p-2 rounded-lg bg-[#1F3326]/90 border border-[#43554B]/80 text-[11px] flex items-center justify-between">
               <span class="text-[#C9DBCE] truncate">
-                📸 {{ $t('agentOrders.verifyTarget') }}: <strong class="text-[#6FBF92] font-bold">{{ targetPresetOrder.headName }}</strong>
+                📸 {{ $t('agentOrders.verifyTarget') }}: <strong class="text-[#6FBF92] font-bold">{{ scanOrderText(targetPresetOrder.headName, 'recipient', locale) }}</strong>
               </span>
               <span class="font-mono text-[#8A9A8F] text-[10px]">#{{ targetPresetOrder.orderId?.slice(-6) }}</span>
             </div>
@@ -875,7 +876,7 @@
               <div class="flex items-center gap-2">
                 <el-icon class="text-[#2F7A50] text-lg"><CircleCheck /></el-icon>
                 <div>
-                  <span class="font-bold text-[#12241A] block text-xs">{{ $t('orderClaim.matchedOrderTitle') }}</span>
+                  <span class="font-bold text-[#12241A] block text-xs">{{ $t('scanHandover.matchedTitle') }}</span>
                   <span class="font-mono text-[10px] text-[#2F5B44]">{{ $t('agentOrders.codeLabel') }}: {{ verifiedOrder.pickupCode }}</span>
                 </div>
               </div>
@@ -885,8 +886,8 @@
             <!-- 户主与送货信息卡片 -->
             <div class="p-3 rounded-lg bg-white/80 border border-[#D9E5DB]/80 backdrop-blur-sm shadow-sm space-y-1.5 text-xs">
               <div class="flex items-center justify-between text-[#1F3326]">
-                <span class="font-bold text-sm">{{ verifiedOrder.headName }}</span>
-                <span class="font-mono text-[#58685D]">{{ verifiedOrder.phone }}</span>
+                <span class="min-w-0 break-words font-bold text-sm">{{ scanOrderText(verifiedOrder.headName, 'recipient', locale) }}</span>
+                <bdi dir="ltr" class="shrink-0 ms-2 font-mono text-[#58685D]">{{ verifiedOrder.phone }}</bdi>
               </div>
               <div class="flex items-center justify-between text-[11px] text-[#58685D]">
                 <span>{{ $t('orderClaim.cardNo') }}: <b class="font-mono text-[#1F3326]">{{ verifiedOrder.cardNo }}</b></span>
@@ -894,40 +895,29 @@
                   {{ verifiedOrder.deliveryType === 'HOME_DELIVERY' ? $t('agentOrders.typeDelivery') : $t('agentOrders.typePickup') }}
                 </span>
               </div>
-              <div class="text-[11px] text-[#58685D] truncate flex items-center gap-1">
+              <div class="text-[11px] text-[#58685D] flex items-start gap-1 whitespace-normal">
                 <el-icon class="text-[#8A9A8F] shrink-0"><Location /></el-icon>
-                <span class="truncate">{{ verifiedOrder.deliveryAddress || verifiedOrder.agentName }}</span>
+                <span class="break-words">{{ scanOrderText(verifiedOrder.deliveryAddress, 'address', locale) || formatAgentName(verifiedOrder.agentName) }}</span>
               </div>
             </div>
 
             <!-- 配发物资明细与代销站现货库存实时扣减预演 -->
             <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-[11px] font-bold text-[#43554B]">
-                <span>{{ $t('orderClaim.itemsTitle') }}</span>
-                <span class="text-[#2F5B44] font-mono text-[10px]">{{ $t('agentOrders.actualStockBeforeAfter') }}</span>
-              </div>
+              <h3 class="text-xs font-bold text-[#43554B]">{{ $t('scanHandover.title') }}</h3>
+              <p v-if="claimStockLoading || claimStockError" role="status" class="text-[11px] text-[#7A5F21]">{{ $t(claimStockLoading ? 'scanHandover.stockLoading' : 'scanHandover.stockLoadFailed') }}</p>
 
-              <div class="space-y-1.5">
+              <div class="grid grid-cols-2 gap-2" data-testid="scan-item-grid">
                 <div
                   v-for="(item, idx) in verifiedOrder.items"
-                  :key="idx"
-                  class="p-2.5 rounded-lg bg-white/80 border border-[#D9E5DB]/80 backdrop-blur-sm shadow-sm flex items-center justify-between text-xs"
+                  :key="item.itemCode || idx"
+                  class="min-w-0 p-2.5 rounded-lg bg-white/80 border border-[#D9E5DB]/80 shadow-sm text-xs space-y-1.5"
+                  data-testid="scan-item-card"
                 >
-                  <div>
-                    <div class="font-bold text-[#1F3326]">{{ formatItemName(item.itemName) }}</div>
-                    <div class="text-[10px] text-[#8A9A8F] mt-0.5 font-mono">
-                      {{ $t('agentOrders.actualIssued') }}: <b class="text-[#1B3123] font-bold">{{ item.qty }}{{ item.unit }}</b>
-                    </div>
-                  </div>
-
-                  <div class="text-end font-mono">
-                    <div class="text-[11px] text-[#58685D]">
-                      <span>{{ getStockOnHand(item.itemCode) }} {{ item.unit }}</span>
-                      <span class="text-[#C04442] font-bold mx-1">-{{ item.qty }}</span>
-                    </div>
-                    <div class="text-xs font-bold text-[#2F5B44] mt-0.5">
-                      {{ $t('agentOrders.stockRemaining') }}: {{ Math.max(0, getStockOnHand(item.itemCode) - item.qty) }} {{ item.unit }}
-                    </div>
+                  <h4 class="font-bold leading-snug break-words text-[#1F3326]">{{ scanItemName(item, locale) }}</h4>
+                  <div class="flex flex-wrap items-center justify-between gap-x-1 gap-y-0.5 text-[11px]"><span class="text-[#58685D]">{{ $t('scanHandover.issued') }}</span><bdi class="font-bold" dir="ltr">{{ scanQuantity(item.qty, item) }}</bdi></div>
+                  <div class="border-t border-[#E1EAE3] pt-1.5 space-y-1 text-[10px]">
+                    <div class="flex flex-wrap justify-between gap-x-1 gap-y-0.5 text-[#58685D]"><span>{{ $t('scanHandover.before') }}</span><bdi dir="ltr">{{ scanQuantity(getStockOnHand(item.itemCode), item) }}</bdi></div>
+                    <div class="flex flex-wrap justify-between gap-x-1 gap-y-0.5 font-bold text-[#2F5B44]"><span>{{ $t('scanHandover.after') }}</span><bdi dir="ltr">{{ scanQuantity(getStockOnHand(item.itemCode) == null ? null : Math.max(0, getStockOnHand(item.itemCode) - Number(item.qty || 0)), item) }}</bdi></div>
                   </div>
                 </div>
               </div>
@@ -935,30 +925,13 @@
 
             <!-- 自付规费结算与财政全额直补信息 -->
             <div class="p-2.5 rounded-lg bg-[#D3AF62]/10 border border-[#D3AF62]/30 backdrop-blur-sm flex items-center justify-between text-xs">
-              <span class="text-[#6B5321] font-medium text-[11px]">{{ $t('orderClaim.subsidyNote') }}</span>
+              <span class="text-[#6B5321] font-medium text-[11px]">{{ $t('scanHandover.subsidy') }}</span>
               <div class="text-end">
-                <span class="text-[10px] text-[#7A5F21] block">{{ $t('agentOrders.settledPaidFee') }}</span>
-                <span class="font-mono font-bold text-[#5A4718] text-sm">IQD {{ (verifiedOrder.selfPayAmount || 0).toLocaleString() }}</span>
+                <span class="text-[10px] text-[#7A5F21] block">{{ $t('scanHandover.paid') }}</span>
+                <bdi dir="ltr" class="font-mono font-bold text-[#5A4718] text-sm">IQD {{ Number(verifiedOrder.selfPayAmount || 0).toLocaleString(locale) }}</bdi>
               </div>
             </div>
 
-            <!-- 数字签名交接确认区域 -->
-            <div class="p-3 rounded-lg bg-[#5C8A6B]/10 border border-[#5C8A6B]/30 backdrop-blur-sm space-y-1.5 text-xs">
-              <div class="flex items-center justify-between text-[#1F3326] font-bold">
-                <span>{{ $t('orderClaim.signTitle') }}</span>
-                <el-tag size="small" type="success" effect="dark" class="scale-90 font-mono">DIGITAL SIGNED</el-tag>
-              </div>
-              <div class="p-2 bg-white/90 rounded-lg border border-[#E1F4E4] flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="text-base">✍️</span>
-                  <span class="min-w-0 break-words font-mono italic font-bold text-[#1F3326] text-xs">{{ verifiedOrder.headName }} ({{ $t('agentOrders.citizenSignedNote') }})</span>
-                </div>
-                <span class="shrink-0 ms-2 text-[10px] text-[#8A9A8F] font-mono">{{ new Date().toISOString().slice(0, 10) }}</span>
-              </div>
-              <div class="text-[10px] text-[#2A5440]/80">
-                {{ $t('orderClaim.signCitizenConfirmed') }}
-              </div>
-            </div>
           </div>
 
           <!-- 底部固定操作托盘 (永远位于视口底部，绝不被弹窗挡住) -->
@@ -967,6 +940,7 @@
               type="success"
               size="large"
               :loading="claiming"
+              :disabled="claimStockLoading || claimStockError || verifiedOrder.items?.some(item => getStockOnHand(item.itemCode) == null)"
               class="w-full h-auto min-h-12 whitespace-normal text-center leading-snug font-bold shadow-md rounded-lg bg-[#2F7A50] hover:bg-[#2F5B44] border-none text-white text-sm py-2.5"
               @click="submitConfirmClaim"
             >
@@ -974,7 +948,7 @@
               {{ $t('orderClaim.confirmDeliveryBtn') }}
             </el-button>
 
-            <el-button size="small" class="w-full text-[#58685D]" @click="retakePhoto">
+            <el-button size="small" class="!m-0 w-full text-[#58685D]" @click="retakePhoto">
               {{ $t('agentDelivery.scanAgain') }}
             </el-button>
           </div>
@@ -1008,15 +982,15 @@
               </div>
 
               <div class="flex items-center justify-between border-b border-[#D9E5DB] pb-2">
-                <span class="font-bold text-[#1F3326] text-xs">{{ $t('agentOrders.receiptTitle') }}</span>
+                <span class="font-bold text-[#1F3326] text-xs">{{ $t('scanHandover.receipt') }}</span>
                 <span class="font-mono text-[#2F5B44] font-bold text-xs">{{ claimReceipt.claimVoucherNo }}</span>
               </div>
 
               <div class="grid grid-cols-2 gap-1.5 text-[11px] text-[#58685D]">
-                <div>{{ $t('agentOrders.receivingFamily') }}: <b class="text-[#1B3123]">{{ claimReceipt.order?.headName }}</b></div>
+                <div>{{ $t('agentOrders.receivingFamily') }}: <b class="text-[#1B3123]">{{ scanOrderText(claimReceipt.order?.headName, 'recipient', locale) }}</b></div>
                 <div>{{ $t('orderClaim.cardNo') }}: <b class="text-[#1B3123] font-mono">{{ claimReceipt.order?.cardNo }}</b></div>
                 <div>{{ $t('agentOrders.deliveryTime') }}: <span class="font-mono">{{ claimReceipt.deliveredAt }}</span></div>
-                <div>{{ $t('agentOrders.redemptionStation') }}: <span class="font-bold text-[#1F3326]">{{ isEn ? 'Karkh 1st Station' : '卡尔赫第一代销站' }}</span></div>
+                <div>{{ $t('agentOrders.redemptionStation') }}: <span class="font-bold text-[#1F3326]">{{ formatAgentName(claimReceipt.order?.agentName) }}</span></div>
               </div>
 
               <!-- 扣减清单 -->
@@ -1027,8 +1001,8 @@
                   :key="idx"
                   class="flex items-center justify-between text-[11px] bg-[#F3F8F4]/80 p-1.5 rounded border border-[#D9E5DB]/60"
                 >
-                  <span class="font-medium text-[#1F3326]">{{ formatItemName(it.itemName) }}</span>
-                  <span class="font-mono font-bold text-[#2F5B44]">-{{ it.qty }}{{ it.unit }} (余: {{ it.afterOnHand }}{{ it.unit }})</span>
+                  <span class="font-medium text-[#1F3326]">{{ scanItemName(it, locale) }}</span>
+                  <span class="font-mono font-bold text-[#2F5B44]">-<bdi dir="ltr">{{ scanQuantity(it.qty, it) }}</bdi> · {{ $t('agentOrders.stockRemaining') }}: <bdi dir="ltr">{{ scanQuantity(it.afterOnHand, it) }}</bdi></span>
                 </div>
               </div>
             </div>
@@ -1062,6 +1036,7 @@ import { BrowserQRCodeReader } from '@zxing/browser';
 import { parseRcmQrPayload } from '@/utils/qrPayload';
 import { decodeQrImage } from '@/utils/qrImage.js';
 import { canonicalDeliveryVehicle, formatDeliveryVehicle, formatDeliveryTime } from '@/utils/deliveryEnums.js';
+import { scanOrderText, scanItemName, scanUnitKey } from '@/utils/scanOrderDisplay.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -1088,7 +1063,8 @@ import {
   getAgentCitizenOrders,
   dispatchCitizenOrder,
   lookupCitizenOrderByCode,
-  verifyAndClaimCitizenOrder
+  verifyAndClaimCitizenOrder,
+  getAgentLocalStocks
 } from '@/api/agent';
 import { verifyCitizenCardAndQuota, getCitizenClaimRecords } from '@/api/warehouse';
 import { evaluateCitizenCardScan, createScanSystemError, getScanErrorMeta } from '@/utils/scanStatusGuard';
@@ -1212,16 +1188,34 @@ const statusFilter = ref('ALL');
 const deliveryTypeFilter = ref('ALL');
 
 // 本地现货库存表
-const localStocks = ref([
-  { itemCode: 'FLOUR-WHT-02', itemName: '战略储备优质小麦面粉', currentOnHand: 12500, unit: 'kg' },
-  { itemCode: 'RICE-BAS-01', itemName: '一级进口长粒大米', currentOnHand: 4800, unit: 'kg' },
-  { itemCode: 'OIL-SUN-03', itemName: '一级精炼葵花籽食用油', currentOnHand: 3200, unit: 'L' },
-  { itemCode: 'SUGAR-WHT-04', itemName: '纯正精制战略白砂糖', currentOnHand: 2900, unit: 'kg' }
-]);
+const localStocks = ref([]);
+const claimStockLoading = ref(false), claimStockError = ref(false);
 
 function getStockOnHand(itemCode) {
   const s = localStocks.value.find((it) => it.itemCode === itemCode);
-  return s ? s.currentOnHand : 1000;
+  return s?.currentOnHand != null && Number.isFinite(Number(s.currentOnHand)) ? Number(s.currentOnHand) : null;
+}
+
+function scanQuantity(quantity, item) {
+  if (quantity == null || !Number.isFinite(Number(quantity))) return '—';
+  const key = scanUnitKey(item);
+  const unit = key ? t(`scanHandover.${key}`) : item?.unit || '';
+  return `${new Intl.NumberFormat(locale.value).format(Number(quantity))} ${unit}`.trim();
+}
+
+async function loadClaimStocks(order, token) {
+  localStocks.value = []; claimStockError.value = false; claimStockLoading.value = true;
+  try {
+    if (!order.agentId) throw new Error('Missing outlet');
+    const result = await getAgentLocalStocks(order.agentId);
+    if (!isScanCurrent(token)) return;
+    localStocks.value = Array.isArray(result) ? result : result?.data || [];
+    claimStockError.value = (order.items || []).some(item => getStockOnHand(item.itemCode) == null);
+  } catch {
+    if (isScanCurrent(token)) claimStockError.value = true;
+  } finally {
+    if (isScanCurrent(token)) claimStockLoading.value = false;
+  }
 }
 
 // 快速派单弹窗
@@ -1627,7 +1621,9 @@ async function handleLookupCode() {
     verifiedOrder.value = order;
     selectedOrderId.value = order.orderId;
     claimStep.value = 'confirm';
-    ElMessage.success(t('orderClaim.pickupOrderMatchedMsg'));
+    await loadClaimStocks(order, token);
+    if (!isScanCurrent(token)) return;
+    ElMessage.success(t('scanHandover.matched'));
   } catch (err) {
     if (!isScanCurrent(token)) return;
     console.error('检索提货订单失败', err);
@@ -2008,14 +2004,15 @@ onBeforeUnmount(() => {
   animation: shutterFlash 0.3s ease-out forwards;
 }
 
-:deep(.app-scan-dialog-overlay) {
+:global(.el-overlay.app-scan-dialog-overlay) {
   background-color: rgba(31, 51, 38, 0.42) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
 }
 
-:deep(.app-scan-dialog) {
+:global(.el-dialog.app-scan-dialog) {
   margin: auto !important;
+  padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   height: min(78vh, 690px) !important;
@@ -2030,20 +2027,22 @@ onBeforeUnmount(() => {
   border: none !important;
 }
 
-:deep(.app-scan-dialog .el-dialog__header) {
+:global(.app-scan-dialog .el-dialog__header) {
   display: none !important;
 }
 
-:deep(.app-scan-dialog .el-dialog__body) {
+:global(.app-scan-dialog .el-dialog__body) {
   padding: 0 !important;
   height: 100% !important;
+  max-height: none !important;
+  flex: 1 1 auto !important;
   min-height: 0 !important;
   display: flex !important;
   overflow: hidden !important;
   background: transparent !important;
 }
 
-:deep(.app-scan-dialog .el-dialog__body > div) {
+:global(.app-scan-dialog .el-dialog__body > div) {
   flex: 1 1 auto !important;
   height: 100% !important;
   min-height: 0 !important;

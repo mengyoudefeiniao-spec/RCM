@@ -109,3 +109,9 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 地图沿用公民端的 Leaflet/OpenStreetMap，用户点击“我的位置”后才请求设备定位，并通过 OSRM 规划驾车路线；Google 地图按钮始终指向当前仓库。定位拒绝、底图或路线服务不可用时显示本地化提示，关闭弹窗会清理地图及未完成的路线请求。
 
 本地回归：`node --test scripts/tests/warehouse-location.test.mjs`；浏览器脚本 `scripts/tests/warehouse-location.e2e.cjs` 需在关闭 PocketBase 同步的隔离本地环境运行，使用模拟定位、瓦片和路线响应验证正常及失败流程。
+
+### 扫码交付确认
+
+代理扫码后的确认单以两列卡片展示物资，四种物资为两行。物资名称和单位按稳定编码及当前语言显示；已知演示姓名、完整地址使用对应翻译，自定义姓名和地址保留原文，不替换街道或门牌。库存预览读取订单所属网点的库存接口，缺少数据时显示提示并禁用确认按钮。数字交接签收展示已移除，原交付核销和库存扣减流程继续使用现有接口与存储。
+
+单元回归：`node --test scripts/tests/scan-handover.test.mjs`。先运行 `node scripts/tests/prepare-scan-handover.mjs` 生成测试二维码，再通过 `playwright-cli run-code --filename scripts/tests/scan-handover.e2e.cjs` 执行浏览器回归。需要在仓库根目录运行，使用关闭 PocketBase 同步的隔离本地环境；脚本会重置该测试浏览器的订单缓存并执行测试交付。

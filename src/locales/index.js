@@ -17,6 +17,7 @@ import businessRulesMessages from './businessRules.js';
 import agentFinanceMessages from './agentFinance.js';
 import agentProcurementMessages from './agentProcurement.js';
 import warehouseLocationMessages from './warehouseLocation.js';
+import scanHandoverMessages from './scanHandover.js';
 import agentDeliveryMessages from './agentDelivery.js';
 import adminCenterMessages from './adminCenter.js';
 import systemManagementLabels from './systemManagementLabels.js';
@@ -32,7 +33,7 @@ import chatOrderMessages from './chatOrders.js';
 import complaintAnalyticsMessages from './complaintAnalytics.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang] };
+  const merged = { ...messages, chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang]]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };
