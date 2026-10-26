@@ -66,7 +66,8 @@ async (page) => {
   await page.locator('.electronic-payment-dialog').getByRole('button', { name: /一键填入/ }).click();
   await page.getByRole('dialog').filter({ hasText: '物资提货核验二维码与出库凭证' }).waitFor({ state: 'visible', timeout: 20000 });
   const uiOrder = (await api(page, 'getG2BPurchaseOrders', {})).find(order => !orderIdsBeforeUi.includes(order.orderNo));
-  assert(uiOrder.totalAmount === 3720000 && uiOrder.payStatus === 'PAID', 'APP form and electronic payment');
+  assert(uiOrder.totalAmount === 4120000 && uiOrder.payStatus === 'PAID', 'APP form and electronic payment');
+  assert(uiOrder.items.length === 4 && uiOrder.items.find(item => item.itemCode === 'SUGAR-WHT-04')?.qty === 1000, 'Four commodities including sugar');
   await Promise.all([web.close(), inventory.close(), finance.close()]);
   return { passed: ['shared orders', 'live Web list', 'live funds', 'live inventory', 'official prices', 'idempotent create/pay/receive', 'unpaid to paid', 'outlet filter', 'invalid data', 'reload', 'four languages', 'APP form and electronic payment'], orderNo: order.orderNo };
 }

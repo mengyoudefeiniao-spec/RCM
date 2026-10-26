@@ -355,7 +355,7 @@
             <span class="text-[11px] text-[#8A9A8F]">{{ $t('agentG2B.strategicReserveSub') }}</span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 sm:gap-2.5 text-center">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 text-center">
             <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
               <div class="text-[10px] text-[#58685D]">{{ $t('agentG2B.itemFlourTitle') }}</div>
               <div class="font-mono font-bold text-[#1B3123] text-xs sm:text-base mt-0.5 text-[#2A5440]">
@@ -378,6 +378,13 @@
                 {{ stockText(centerStock.oil) }} <span v-if="centerStock.oil != null" class="text-[10px] font-normal text-[#58685D]">L</span>
               </div>
               <div class="text-[9px] sm:text-[10px] text-[#2F7A50] mt-0.5 truncate">{{ centerStock.oil == null ? $t('agentDelivery.stockUnavailable') : $t('agentG2B.itemOilLoc') }}</div>
+            </div>
+            <div class="p-2 sm:p-2.5 bg-white rounded-lg border border-[#D9E5DB] shadow-2xs">
+              <div class="text-[10px] text-[#58685D]">{{ $t('businessRules.items.SUGAR-WHT-04') }}</div>
+              <div class="font-mono font-bold text-[#2A5440] text-xs sm:text-base mt-0.5">
+                {{ stockText(centerStock.sugar) }} <span v-if="centerStock.sugar != null" class="text-[10px] font-normal text-[#58685D]">KG</span>
+              </div>
+              <div v-if="centerStock.sugar == null" class="text-[9px] sm:text-[10px] text-[#58685D] mt-0.5">{{ $t('agentDelivery.stockUnavailable') }}</div>
             </div>
           </div>
         </div>
@@ -527,6 +534,23 @@
                     {{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.oil.toLocaleString(), unit: 'L' }) }}
                   </el-tag>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 bg-white rounded-lg border border-[#D9E5DB] space-y-1.5" data-testid="procurement-sugar">
+            <div class="flex flex-wrap items-center justify-between gap-1 text-[11px]">
+              <span class="font-bold text-[#1F3326]">{{ $t('agentProcurement.sugarItemSpec') }}</span>
+              <bdi dir="ltr" class="font-mono text-[#2A5440] font-bold">{{ ((Number(form.sugarQty) || 0) * 400).toLocaleString(locale) }} IQD</bdi>
+            </div>
+            <div class="grid grid-cols-12 gap-2 items-center">
+              <div class="col-span-12 sm:col-span-5">
+                <el-input-number v-model="form.sugarQty" :min="0" :max="maxAllowed.sugar" :step="100" :precision="0" size="small" class="w-full" :aria-label="$t('businessRules.items.SUGAR-WHT-04')" />
+              </div>
+              <div class="col-span-12 sm:col-span-7 text-[10px] sm:text-[11px] text-[#58685D] flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span class="text-[#8A9A8F]">{{ $t('agentG2B.quotaUpperLimit', { limit: agentQuotaLimits.sugar.toLocaleString(), unit: 'KG' }) }}</span>
+                <span v-if="centerStock.sugar != null" class="text-[#8A9A8F]">{{ $t('agentG2B.centerStockUpperLimit', { limit: centerStock.sugar.toLocaleString(), unit: 'KG' }) }}</span>
+                <el-tag size="small" type="success" effect="plain" class="scale-90 font-mono origin-left rtl:origin-right">{{ $t('agentG2B.orderLimitTag', { limit: maxAllowed.sugar.toLocaleString(), unit: 'KG' }) }}</el-tag>
               </div>
             </div>
           </div>
@@ -805,8 +829,8 @@ const currentCenterName = computed(() => props.selectedCenterName);
 
 // 1. 配给中心（中心仓）实时可用库存数据 (需求 2)
 const centerStock = computed(() => props.selectedCenter.id === 'FA-00128'
-  ? { flour: 92400, rice: 184500, oil: 34100 }
-  : { flour: null, rice: null, oil: null });
+  ? { flour: 92400, rice: 184500, oil: 34100, sugar: null }
+  : { flour: null, rice: null, oil: null, sugar: null });
 const stockText = (value) => value == null ? '—' : value.toLocaleString();
 
 // 2. 代理辖区签约户数与标准配额安全冗余 (1.2倍冗余系数，硬上限1500户)
@@ -817,21 +841,24 @@ const safetyFactor = 1.2;
 const householdQuota = {
   flour: 9, // KG/户
   rice: 4.5, // KG/户
-  oil: 1.2 // L/户
+  oil: 1.2, // L/户
+  sugar: 2 // KG/户，与采购接口的白糖配额一致
 };
 
 // 代理辖区额度上限计算
 const agentQuotaLimits = computed(() => ({
   flour: Math.floor(householdsCount.value * householdQuota.flour * safetyFactor), // 12,096 KG
   rice: Math.floor(householdsCount.value * householdQuota.rice * safetyFactor), // 6,048 KG
-  oil: Math.floor(householdsCount.value * householdQuota.oil * safetyFactor) // 1,612 L
+  oil: Math.floor(householdsCount.value * householdQuota.oil * safetyFactor), // 1,612 L
+  sugar: Math.floor(householdsCount.value * householdQuota.sugar * safetyFactor)
 }));
 
 // 双重硬约束上限：既不能超过代理户数额度限制，也不能超过中心仓实时库存 (需求 2)
 const maxAllowed = computed(() => ({
   flour: centerStock.value.flour == null ? agentQuotaLimits.value.flour : Math.min(agentQuotaLimits.value.flour, centerStock.value.flour),
   rice: centerStock.value.rice == null ? agentQuotaLimits.value.rice : Math.min(agentQuotaLimits.value.rice, centerStock.value.rice),
-  oil: centerStock.value.oil == null ? agentQuotaLimits.value.oil : Math.min(agentQuotaLimits.value.oil, centerStock.value.oil)
+  oil: centerStock.value.oil == null ? agentQuotaLimits.value.oil : Math.min(agentQuotaLimits.value.oil, centerStock.value.oil),
+  sugar: centerStock.value.sugar == null ? agentQuotaLimits.value.sugar : Math.min(agentQuotaLimits.value.sugar, centerStock.value.sugar)
 }));
 
 // 待提交采购单暂存数据
@@ -853,13 +880,15 @@ const form = ref({
   deliveryVehicleNo: 'BAG-TRK-7841',
   flourQty: 5000,
   riceQty: 2500,
-  oilQty: 600
+  oilQty: 600,
+  sugarQty: 1000
 });
 
 const calculatedTotalAmount = computed(() => {
   return (Number(form.value.flourQty) || 0) * 350 +
     (Number(form.value.riceQty) || 0) * 500 +
-    (Number(form.value.oilQty) || 0) * 1200;
+    (Number(form.value.oilQty) || 0) * 1200 +
+    (Number(form.value.sugarQty) || 0) * 400;
 });
 
 // 核心修复：兼容 Axios 响应拦截器解包或未解包格式 (需求 3)
@@ -919,7 +948,8 @@ const openCreateModal = () => {
     deliveryVehicleNo: 'BAG-TRK-7841',
     flourQty: Math.min(5000, maxAllowed.value.flour),
     riceQty: Math.min(2500, maxAllowed.value.rice),
-    oilQty: Math.min(600, maxAllowed.value.oil)
+    oilQty: Math.min(600, maxAllowed.value.oil),
+    sugarQty: Math.min(1000, maxAllowed.value.sugar)
   };
   createModalVisible.value = true;
 };
@@ -933,7 +963,7 @@ const handleProceedToPayment = () => {
   }
 
   // 2. 数量非空校验
-  if (form.value.flourQty <= 0 && form.value.riceQty <= 0 && form.value.oilQty <= 0) {
+  if (form.value.flourQty <= 0 && form.value.riceQty <= 0 && form.value.oilQty <= 0 && form.value.sugarQty <= 0) {
     ElMessage.warning(t('agentG2B.atLeastOneItemWarning') || (isEnNow() ? 'Please enter a quantity for at least one procurement item' : '请至少填报一项采购物资数量'));
     return;
   }
@@ -962,6 +992,11 @@ const handleProceedToPayment = () => {
     return;
   }
 
+  if (form.value.sugarQty > maxAllowed.value.sugar) {
+    ElMessage.warning(t('agentProcurement.sugarLimitWarning'));
+    return;
+  }
+
   const compositeTimeSlot = `${form.value.deliveryDate} ${form.value.deliverySlot}`;
   pendingOrderAmount.value = calculatedTotalAmount.value;
   pendingOrderNo.value = `ORD-${Date.now().toString().slice(-8)}`;
@@ -976,7 +1011,8 @@ const handleProceedToPayment = () => {
     items: [
       { itemCode: 'FLOUR-WHT-02', itemName: isEn.value ? 'Standard Wheat Flour' : '优质特级面粉 (标准白面)', qty: form.value.flourQty, unit: 'KG', unitPrice: 350, subtotal: form.value.flourQty * 350 },
       { itemCode: 'RICE-BAS-01', itemName: isEn.value ? 'Refined Basmati Rice' : '精制大米 (巴斯马蒂一等品)', qty: form.value.riceQty, unit: 'KG', unitPrice: 500, subtotal: form.value.riceQty * 500 },
-      { itemCode: 'OIL-SUN-03', itemName: isEn.value ? 'Refined Vegetable Oil' : '精炼食用植物油 (葵花籽配方)', qty: form.value.oilQty, unit: 'L', unitPrice: 1200, subtotal: form.value.oilQty * 1200 }
+      { itemCode: 'OIL-SUN-03', itemName: isEn.value ? 'Refined Vegetable Oil' : '精炼食用植物油 (葵花籽配方)', qty: form.value.oilQty, unit: 'L', unitPrice: 1200, subtotal: form.value.oilQty * 1200 },
+      { itemCode: 'SUGAR-WHT-04', itemName: t('businessRules.items.SUGAR-WHT-04'), qty: Number(form.value.sugarQty) || 0, unit: 'KG', unitPrice: 400, subtotal: (Number(form.value.sugarQty) || 0) * 400 }
     ],
     isPaid: true,
     payStatus: 'PAID',

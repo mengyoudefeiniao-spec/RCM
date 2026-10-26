@@ -19,6 +19,16 @@ test('paid purchases increase pending receipts without pretending the goods are 
   const stock = projectProcurementStocks(base, [order], [])[0];
   assert.equal(stock.pendingReceipt, 10); assert.equal(stock.orderedQty, 10); assert.equal(stock.currentOnHand, 100); assert.equal(stock.g2bTotalIn, 200);
 });
+test('sugar uses the fourth commodity price and follows payment and receipt accounting', () => {
+  const items = normalizeProcurementItems([{ itemCode: 'FLOUR-WHT-02', qty: 0 }, { itemCode: 'RICE-BAS-01', qty: 0 }, { itemCode: 'OIL-SUN-03', qty: 0 }, { itemCode: 'SUGAR-WHT-04', qty: 12, unitPrice: 1 }]);
+  assert.equal(items.length, 1); assert.equal(items[0].subtotal, 4800); assert.equal(items[0].unit, 'KG');
+  const sugarOrder = { ...order, totalAmount: 4800, items };
+  const sugarBase = [{ agentId: 'A', itemCode: 'SUGAR-WHT-04', currentOnHand: 100, g2bTotalIn: 200 }];
+  assert.equal(projectProcurementStocks(sugarBase, [sugarOrder], [])[0].pendingReceipt, 12);
+  assert.equal(procurementSummary([sugarOrder]).paidAmount, 4800);
+  const received = projectProcurementStocks(sugarBase, [{ ...sugarOrder, status: 'COMPLETED' }], [])[0];
+  assert.equal(received.currentOnHand, 112); assert.equal(received.pendingReceipt, 0);
+});
 test('confirmed receipts enter stock once and seeded receipts are not counted twice', () => {
   const received = { ...order, status: 'COMPLETED' };
   const stock = projectProcurementStocks(base, mergeProcurementOrders([received, received], []), [])[0];
