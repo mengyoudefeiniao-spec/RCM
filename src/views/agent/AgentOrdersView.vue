@@ -2,7 +2,12 @@
   <div class="agent-orders-view space-y-4">
     <section class="rounded-xl border border-[#D9E5DB] bg-gradient-to-br from-[#F3F8F4] to-white p-4 shadow-sm sm:p-5 text-start">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h1 class="text-base font-bold text-[#1B432C]">{{ $t('agentDelivery.centerInfo') }}</h1>
+        <div class="flex min-w-0 flex-wrap items-center gap-2">
+          <h1 class="text-base font-bold text-[#1B432C]">{{ $t('agentDelivery.centerInfo') }}</h1>
+          <el-button v-if="activeCenter && !isAllAgents" size="small" type="primary" plain class="!m-0 !h-8" @click="warehouseMapVisible = true">
+            <el-icon class="me-1 shrink-0"><Location /></el-icon>{{ t('warehouseLocation.locate') }}
+          </el-button>
+        </div>
         <div v-if="activeCenter" class="flex items-center gap-2">
           <span class="rounded-full bg-[#E0F0E4] px-2.5 py-1 text-xs font-semibold text-[#276141]">{{ $t('agentDelivery.activeCenter') }}</span>
           <el-dropdown v-if="staffView || availableCenters.length > 1" trigger="click" @command="selectCenter">
@@ -40,6 +45,7 @@
     </section>
     <!-- 代理订单：拆分后的代理端独立大模块 (集中采购订货流水) -->
     <AgentG2BPanel v-if="activeCenter" :selected-center="activeCenter" :selected-center-name="centerName" :all-agents="isAllAgents" />
+    <WarehouseLocationDialog v-model="warehouseMapVisible" :center="isAllAgents ? null : activeCenter" :center-name="isAllAgents ? '' : centerName" />
   </div>
 </template>
 
@@ -47,14 +53,16 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth.js';
-import { ArrowDown } from '@element-plus/icons-vue';
+import { ArrowDown, Location } from '@element-plus/icons-vue';
 import { getMyAgentCenters } from '@/api/agent';
 import AgentG2BPanel from './components/AgentG2BPanel.vue';
+import WarehouseLocationDialog from '../../components/common/WarehouseLocationDialog.vue';
 
 const { t, locale } = useI18n();
 const auth = useAuthStore();
 const staffView = computed(() => !['agent','citizen'].includes(auth.currentRole));
 const centers = ref([]);
+const warehouseMapVisible = ref(false);
 const savedCenterId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('rcm_agent_order_center_id') : null;
 const selectedCenterId = ref(staffView.value ? 'ALL' : savedCenterId);
 const isAllAgents = computed(() => staffView.value && selectedCenterId.value === 'ALL');

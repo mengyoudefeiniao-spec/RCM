@@ -101,3 +101,11 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 同一浏览器内通过数据事件更新订单及台账；不同设备需使用同一 PocketBase 配置，已打开的页面在现有 15 秒同步周期内更新。切换中文、英文、阿拉伯语或库尔德语会使用同一订单和库存记录。
 
 本地回归：`node --test scripts/tests/agent-procurement.test.mjs`。浏览器脚本为 `scripts/tests/agent-procurement.e2e.cjs`，通过 `playwright-cli run-code --filename scripts/tests/agent-procurement.e2e.cjs` 执行，需要隔离浏览器和设置 `VITE_POCKETBASE_SYNC=false` 的本地 Vite 服务；该脚本会创建本地测试采购及收货记录。
+
+### 代理订单中的仓库 GIS 导航
+
+“配给中心信息”旁的定位按钮使用当前中心的 `warehouseLocation`（兼容 `warehouseCoords`），经纬度支持 `lat/lng` 或 `latitude/longitude`。不会把代理网点的地址或 GPS 当成仓库位置。当前 Mock 接口为中心 101、496、108 补充 `source: "demo"` 的示例仓库坐标，四种语言一致，地图显示演示提示；接口提供的仓库坐标优先使用。缺少有效坐标时显示空状态。
+
+地图沿用公民端的 Leaflet/OpenStreetMap，用户点击“我的位置”后才请求设备定位，并通过 OSRM 规划驾车路线；Google 地图按钮始终指向当前仓库。定位拒绝、底图或路线服务不可用时显示本地化提示，关闭弹窗会清理地图及未完成的路线请求。
+
+本地回归：`node --test scripts/tests/warehouse-location.test.mjs`；浏览器脚本 `scripts/tests/warehouse-location.e2e.cjs` 需在关闭 PocketBase 同步的隔离本地环境运行，使用模拟定位、瓦片和路线响应验证正常及失败流程。

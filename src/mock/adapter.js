@@ -21,6 +21,7 @@ import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } fr
 import { createAdminCredential, publicAdminAccount } from '../utils/adminCredentials.js';
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
 import { readProcurementOrders, writeProcurementOrder, presentProcurementOrder, normalizeProcurementItems, readAgentStockBase, writeAgentStockBase, projectProcurementStocks } from '../utils/agentProcurement.js';
+import { DEMO_CENTER_WAREHOUSE_LOCATIONS } from './data/centerWarehouseLocations.js';
 import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
 import chatComplaintMessages from '../locales/chatComplaint.js';
 import { ownsCustomerOrder, customerOrderSnapshot, customerOrderAnswer, validComplaintPhoto } from '../utils/customerOrders.js';
@@ -3436,7 +3437,7 @@ export async function mockDispatch(config) {
   // ==========================================
   // 5.1 查询当前登录代理人名下的中心列表 (SCM)
   if (url.includes('/agent/my-centers') && method === 'GET') {
-    let result = [...myAgentCentersStore];
+    let result = myAgentCentersStore.map(center => ({ ...center, warehouseLocation: center.warehouseLocation || center.warehouseCoords || DEMO_CENTER_WAREHOUSE_LOCATIONS[center.centerId] || null }));
     if (params.status && params.status !== '全部') {
       result = result.filter((c) => c.status === params.status);
     }
