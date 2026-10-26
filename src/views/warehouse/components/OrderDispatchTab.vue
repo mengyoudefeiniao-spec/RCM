@@ -1203,7 +1203,9 @@ const priorityFor = (order) => deliveryPriority(order, priorityNow.value);
 const urgentCount = computed(() => orders.value.filter((order) => priorityFor(order).rank <= 1).length);
 const formatDeadline = (timestamp) => new Intl.DateTimeFormat(locale.value === 'zh' ? 'zh-CN' : locale.value === 'ckb' ? 'ckb-IQ' : locale.value === 'ar' ? 'ar-IQ' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }).format(timestamp);
 function openOrderDetails(order) {
-  router.push({ name: 'AgentDeliveryOrderDetail', params: { orderId: order.orderId }, query: { role: 'agent', layout: isAppMode.value ? 'app' : 'web' } });
+  const orderId = order.orderId || order.id || order.ticketNo || order.pickupCode;
+  if (!orderId) { ElMessage.warning(t('agentDelivery.orderNotFound')); return; }
+  router.push({ name: 'AgentDeliveryOrderDetail', params: { orderId }, query: { role: 'agent', layout: isAppMode.value ? 'app' : 'web' } });
 }
 const searchKeyword = ref('');
 const statusFilter = ref('ALL');

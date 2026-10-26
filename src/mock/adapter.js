@@ -65,7 +65,8 @@ import {
   getSharedTickets,
   addSharedTicket,
   updateSharedTicket,
-  getSharedOrders,
+  getSharedOrderPool,
+  findSharedOrder,
   addSharedOrder,
   updateSharedOrder,
   getSharedFamilies,
@@ -2050,7 +2051,7 @@ export async function mockDispatch(config) {
     const memberCount = getActiveMemberCount(family) || family?.memberCount || family?.members?.length || 4;
 
     // 计算当月已购数量 (从订单历史汇总)
-    const cardOrders = getSharedOrders(isEn ? 'en' : 'zh').filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
+    const cardOrders = getSharedOrderPool(localeCode).filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
     const consumedMap = {
       'FLOUR-WHT-02': 0,
       'RICE-BAS-01': 0,
@@ -2159,13 +2160,7 @@ export async function mockDispatch(config) {
   const citizenOrderByIdMatch = url.match(/\/citizen\/ration\/orders\/([^/?]+)$/);
   if (citizenOrderByIdMatch && method === 'GET') {
     const orderId = decodeURIComponent(citizenOrderByIdMatch[1]);
-    // 订单按语言分池存放，详情按当前语言优先、再回退其它语言池，避免切换语言后详情丢失
-    const pools = isEn ? ['en', 'zh'] : ['zh', 'en'];
-    let found = null;
-    for (const lang of pools) {
-      found = (getSharedOrders(lang) || []).find((item) => item.orderId === orderId || item.id === orderId || item.pickupCode === orderId);
-      if (found) break;
-    }
+    const found = findSharedOrder(orderId, localeCode);
     if (!found) return createResponse({}, 404, i18n.global.t('citizenOrder.orderNotFound'));
     // 为 GIS 地图补齐收货点与配送网点坐标（已有坐标优先）
     const geo = demoOrderGeo(orderId);
@@ -2178,7 +2173,7 @@ export async function mockDispatch(config) {
 
   if (url.includes('/citizen/ration/orders') && method === 'GET') {
     const cardNo = params.cardNo;
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
+    const sharedOrders = getSharedOrderPool(localeCode);
     let list = [...sharedOrders];
     if (cardNo) {
       list = list.filter((o) => o.cardNo === cardNo);
@@ -2218,7 +2213,7 @@ export async function mockDispatch(config) {
     };
 
     // 累计已购
-    const currentOrdersPool = getSharedOrders(isEn ? 'en' : 'zh') || citizenPurchaseOrdersStore;
+    const currentOrdersPool = getSharedOrderPool(localeCode) || citizenPurchaseOrdersStore;
     const cardOrders = currentOrdersPool.filter((o) => o.cardNo === cardNo && o.status !== 'CANCELLED');
     const alreadyConsumedMap = { 'FLOUR-WHT-02': 0, 'RICE-BAS-01': 0, 'OIL-SUN-03': 0, 'SUGAR-WHT-04': 0 };
     cardOrders.forEach((ord) => {
@@ -3937,7 +3932,7 @@ export async function mockDispatch(config) {
     if (!code) {
       return createResponse({}, 400, isEn ? 'Please enter the pickup voucher code or scan the QR code' : '请输入提货凭证码或扫描二维码');
     }
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
+    const sharedOrders = getSharedOrderPool(localeCode);
     const sourcePool = sharedOrders;
     const matched = sourcePool.find((o) =>
       (o.pickupCode && o.pickupCode.toLowerCase() === code) ||
@@ -3956,8 +3951,7 @@ export async function mockDispatch(config) {
   const citizenOrderDetailMatch = url.match(/\/agent\/citizen-orders\/([^/?]+)$/);
   if (citizenOrderDetailMatch && method === 'GET') {
     const orderId = decodeURIComponent(citizenOrderDetailMatch[1]);
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
-    const order = sharedOrders.find((item) => item.orderId === orderId || item.id === orderId);
+    const order = findSharedOrder(orderId, localeCode);
     if (!order) return createResponse({}, 404, i18n.global.t('agentDelivery.orderNotFound'));
     const demoPositions = {
       'PO-20261013-1001': { lat: 33.3277, lng: 44.3674, accuracy: 'approximate' },
@@ -3967,9 +3961,8 @@ export async function mockDispatch(config) {
   }
 
   if (url.includes('/agent/citizen-orders') && !url.includes('/dispatch') && !url.includes('/lookup') && !url.includes('/verify-claim') && method === 'GET') {
-    // 订单按语言分池存放；当前语言池为空时回退另一语言池，避免切换语言后资金台账/配送列表丢失历史订单
-    let sharedOrders = getSharedOrders(isEn ? 'en' : 'zh') || [];
-    if (!sharedOrders.length) sharedOrders = getSharedOrders(isEn ? 'zh' : 'en') || [];
+    // List, details and fulfillment share the same deduplicated business pool.
+    const sharedOrders = getSharedOrderPool(localeCode);
     // PocketBase/共享缓存是订单列表的唯一来源；空数组表示已清空，不能回退到内存演示数据。
     let result = [...sharedOrders];
     const orderTimestamp = (order) => {
@@ -4003,10 +3996,8 @@ export async function mockDispatch(config) {
   // 5.13.3 代理端安排配送或标记备货就绪 (POST)
   if (url.includes('/agent/citizen-orders') && url.includes('/dispatch') && method === 'POST') {
     const parts = url.split('/');
-    const orderId = parts[parts.indexOf('citizen-orders') + 1];
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
-    const sourcePool = sharedOrders;
-    const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId);
+    const orderId = decodeURIComponent(parts[parts.indexOf('citizen-orders') + 1]);
+    const targetOrder = findSharedOrder(orderId, localeCode);
 
     if (!targetOrder) {
       return createResponse({}, 404, i18n.global.t('agentDelivery.orderNotFoundById', { orderId }));
@@ -4060,10 +4051,10 @@ export async function mockDispatch(config) {
   // 5.13.4 阶段 4 核心：扫描二维码/输入提货码核验交货并扣减实物库存 (POST)
   if (url.includes('/agent/citizen-orders') && url.includes('/verify-claim') && method === 'POST') {
     const parts = url.split('/');
-    const orderId = parts[parts.indexOf('citizen-orders') + 1];
-    const sharedOrders = getSharedOrders(isEn ? 'en' : 'zh');
+    const orderId = decodeURIComponent(parts[parts.indexOf('citizen-orders') + 1]);
+    const sharedOrders = getSharedOrderPool(localeCode);
     const sourcePool = sharedOrders;
-    const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.pickupCode === orderId || (data && (data.orderId === o.orderId || data.pickupCode === o.pickupCode)));
+    const targetOrder = sourcePool.find((o) => o.orderId === orderId || o.id === orderId || o.pickupCode === orderId || (data && (data.orderId === o.orderId || data.pickupCode === o.pickupCode)));
 
     if (!targetOrder) {
       return createResponse({}, 404, isEn ? `No order voucher pending verification & delivery was found` : `未检索到需核销交割的订单凭据`);
@@ -4955,9 +4946,7 @@ export async function mockDispatch(config) {
   const actorProfile = () => JSON.parse(sessionStorage.getItem('rcm_user_profile') || '{}');
   const customerOrders = () => {
     const profile = actorProfile();
-    const preferred = isEn ? 'en' : 'zh';
-    const alternate = isEn ? 'zh' : 'en';
-    const all = [...(getSharedOrders(preferred) || []), ...(getSharedOrders(alternate) || []), ...(profile.role === 'agent' ? g2bOrdersStore : [])];
+    const all = [...getSharedOrderPool(localeCode), ...(profile.role === 'agent' ? g2bOrdersStore : [])];
     const byId = new Map();
     for (const order of all) {
       const id = order.orderId || order.id || order.orderNo;

@@ -354,18 +354,12 @@ export function getSharedOrders(langOverride) {
   const lang = langOverride || getActiveLanguage();
   const storageKey = `${STORAGE_KEY_ORDERS}_${lang}`;
 
-  // 一次性迁移清理历史不分语言的旧缓存
-  try {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY_ORDERS)) {
-      localStorage.removeItem(STORAGE_KEY_ORDERS);
-    }
-  } catch (e) {
-    // ignore
-  }
-
   try {
     const raw = localStorage.getItem(storageKey);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const orders = JSON.parse(raw);
+      return Array.isArray(orders) ? orders : [];
+    }
   } catch (e) {
     console.warn('[SharedSession] Failed to parse orders', e);
   }
@@ -377,6 +371,78 @@ export function getSharedOrders(langOverride) {
     // ignore
   }
   return initial;
+}
+
+const ORDER_LANGUAGES = ['zh', 'en', 'ar', 'ku', 'ckb'];
+const orderReferences = order => [...new Set([order?.orderId, order?.id, order?.ticketNo, order?.pickupCode]
+  .filter(value => value !== undefined && value !== null && String(value).trim())
+  .map(value => String(value).trim()))];
+
+function storedOrderPools(preferred) {
+  const languages = [...new Set([preferred, ...ORDER_LANGUAGES])];
+  const keys = [...languages.map(lang => `${STORAGE_KEY_ORDERS}_${lang}`), STORAGE_KEY_ORDERS];
+  const pools = [];
+  for (const key of keys) {
+    const raw = localStorage.getItem(key);
+    if (raw === null) continue;
+    try {
+      const records = JSON.parse(raw);
+      pools.push({ key, records: Array.isArray(records) ? records : [] });
+    } catch {
+      // A broken/empty business cache must not resurrect demo orders.
+      pools.push({ key, records: [] });
+    }
+  }
+  return pools;
+}
+
+function orderRevision(order) {
+  return Math.max(0, ...[order.updatedAt, order.deliveredAt, order.cancelledAt, order.dispatchInfo?.dispatchedAt, order.paidAt, order.createdAt]
+    .map(value => Date.parse(String(value || '').replace(' ', 'T'))).filter(Number.isFinite));
+}
+
+const ORDER_STATUS_RANK = { PAID: 1, PENDING_DELIVERY: 1, PENDING_PICKUP: 1, DISPATCHED: 2, READY_FOR_PICKUP: 2, CANCELLED: 3, DELIVERED: 4 };
+function mergeOrderCopies(current, incoming) {
+  if (!current) return incoming;
+  const difference = orderRevision(incoming) - orderRevision(current);
+  const incomingIsNewer = difference > 0 || (difference === 0
+    && (ORDER_STATUS_RANK[incoming.status] || 0) > (ORDER_STATUS_RANK[current.status] || 0));
+  return incomingIsNewer ? { ...current, ...incoming } : { ...incoming, ...current };
+}
+
+// Languages are presentation preferences, not separate sets of business orders.
+// Merge only persisted pools, retaining explicit empty arrays and avoiding seed
+// initialization of missing language copies. Prefer the latest business state.
+export function getSharedOrderPool(langOverride) {
+  const language = langOverride || getActiveLanguage();
+  const preferred = language === 'ckb' ? 'ku' : language;
+  let pools = storedOrderPools(preferred);
+  if (!pools.length) pools = [{ records: getSharedOrders(preferred) }];
+  const groups = new Set();
+  const byReference = new Map();
+  for (const { records } of pools) {
+    for (const order of records) {
+      const references = orderReferences(order);
+      if (!references.length || !order || typeof order !== 'object') continue;
+      const matches = [...new Set(references.map(reference => byReference.get(reference)).filter(Boolean))];
+      const group = matches[0] || { record: null, references: new Set() };
+      for (const match of matches.slice(1)) {
+        group.record = mergeOrderCopies(group.record, match.record);
+        match.references.forEach(reference => group.references.add(reference));
+        groups.delete(match);
+      }
+      group.record = mergeOrderCopies(group.record, { ...order, orderId: String(order.orderId || group.record?.orderId || references[0]).trim() });
+      references.forEach(reference => group.references.add(reference));
+      group.references.forEach(reference => byReference.set(reference, group));
+      groups.add(group);
+    }
+  }
+  return [...groups].map(group => group.record);
+}
+
+export function findSharedOrder(reference, langOverride) {
+  const id = String(reference ?? '').trim();
+  return id ? getSharedOrderPool(langOverride).find(order => orderReferences(order).includes(id)) || null : null;
 }
 
 export function addSharedOrder(orderData, langOverride) {
@@ -432,34 +498,34 @@ export function addSharedOrder(orderData, langOverride) {
 }
 
 export function updateSharedOrder(orderId, updates) {
-  // 与 Tickets/Families 一致：同步更新所有语言副本，保证跨语言状态一致
-  const langs = ['zh', 'en'];
+  // Update every existing copy, including Arabic/Sorani and legacy records.
+  // Do not create another language's seed pool while updating an order.
   let currentResult = null;
   const currentLang = getActiveLanguage();
-
-  langs.forEach((lang) => {
-    const orders = getSharedOrders(lang);
-    const storageKey = `${STORAGE_KEY_ORDERS}_${lang}`;
-    const index = orders.findIndex((o) => o.orderId === orderId || o.id === orderId || o.pickupCode === orderId);
-
-    if (index !== -1) {
-      orders[index] = { ...orders[index], ...updates };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(orders));
-      } catch (e) {
-        // ignore
-      }
-
-      if (lang === currentLang) {
-        currentResult = orders[index];
-      }
+  const reference = String(orderId ?? '').trim();
+  if (!reference) return null;
+  const timestamp = new Date().toISOString();
+  for (const { key, records } of storedOrderPools(currentLang)) {
+    let changed = false;
+    for (let index = 0; index < records.length; index += 1) {
+      if (!orderReferences(records[index]).includes(reference)) continue;
+      records[index] = { ...records[index], ...updates, updatedAt: timestamp };
+      changed = true;
+      if (!currentResult || key === `${STORAGE_KEY_ORDERS}_${currentLang}`) currentResult = records[index];
     }
-  });
+    if (!changed) continue;
+    try {
+      localStorage.setItem(key, JSON.stringify(records));
+    } catch (error) {
+      console.error('[SharedSession] Failed to update order', error);
+    }
+  }
+  if (!currentResult) return null;
 
   // 跨标签页广播：订单核销/状态更新！
-  safeBroadcast('ORDER_UPDATED', currentResult || { orderId, ...updates });
+  safeBroadcast('ORDER_UPDATED', currentResult);
   if (updates.status === 'DELIVERED') {
-    safeBroadcast('ORDER_VERIFIED', currentResult || { orderId, ...updates });
+    safeBroadcast('ORDER_VERIFIED', currentResult);
   }
   return currentResult;
 }
