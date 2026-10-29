@@ -5,7 +5,7 @@
       <div v-if="isAppMode" class="login-app-toolbar"><LanguageSwitcher /></div>
       <div class="login-scroll-content">
         <header class="login-header">
-          <div class="flex justify-center"><AppLogo size="lg" theme="light" /></div>
+          <div class="flex justify-center"><AppLogo :size="112" theme="light" /></div>
           <h1>{{ $t('loginPage.title') }}</h1>
           <p>{{ $t('loginPage.ministry') }}</p>
         </header>
@@ -297,7 +297,7 @@ async function handleSecondaryVerifySuccess() {
   box-shadow: 0 20px 50px -10px #0f231d59;
 }
 .login-scroll-content { padding: 32px; }
-.login-header { margin-bottom: 28px; text-align: center; }
+.login-header { margin-bottom: 40px; text-align: center; }
 .login-header h1 {
   margin-top: 12px;
   color: #1f3326;
@@ -354,13 +354,23 @@ async function handleSecondaryVerifySuccess() {
   border-bottom: 1px solid #2f5b44;
 }
 .login-app-mode .login-scroll-content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 24px 16px;
+  padding: 32px 24px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: #32644533 transparent;
+}
+.login-app-mode .login-header {
+  flex-shrink: 0;
+  margin-block-start: auto;
+}
+.login-app-mode .login-content {
+  flex-shrink: 0;
+  margin-block-end: auto;
 }
 @media (max-width: 639px) {
   .login-scroll-content { padding: 24px 16px; }
