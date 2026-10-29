@@ -10,6 +10,12 @@
       </el-form-item>
       <el-form-item :label="$t('registrationFlow.nationalId')" required><el-input v-model.trim="form.nationalId" class="bidi-ltr" /></el-form-item>
       <el-form-item :label="$t('registrationFlow.phone')" required><el-input v-model.trim="form.phone" class="bidi-ltr" /></el-form-item>
+      <el-form-item :label="$t('register.pwdLabel')" required>
+        <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('registrationFlow.passwordPlaceholder')" />
+      </el-form-item>
+      <el-form-item :label="$t('register.confirmPwdLabel')" required>
+        <el-input v-model="form.confirmPassword" type="password" show-password autocomplete="new-password" :placeholder="$t('register.confirmPwdPlaceholder')" />
+      </el-form-item>
       <el-form-item :label="$t('register.smsLabel')" required>
         <div class="flex gap-2 w-full"><el-input v-model.trim="form.smsCode" class="bidi-ltr" maxlength="6" /><el-button :loading="sending" :disabled="!isMock || cooldown > 0 || sending" @click="sendCode">{{ cooldown > 0 ? $t('registrationFlow.resendCountdown', { seconds: cooldown }) : $t('register.getSmsCode') }}</el-button></div>
       </el-form-item>
@@ -32,7 +38,7 @@ const { isCompact, dialogWidth } = useCompactDialog(680);
 const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 const visible = ref(props.modelValue);
 const provinces = ['baghdad','nineveh','basra','diyala','kirkuk','anbar','erbil','sulaymaniyah','duhok','babylon','karbala','najaf','wasit','salahuddin','qadisiyyah','muthanna','dhiqar','maysan','halabja'];
-const blank = () => ({ province: '', nationalId: '', phone: '', smsCode: '' });
+const blank = () => ({ province: '', nationalId: '', phone: '', password: '', confirmPassword: '', smsCode: '' });
 const form = reactive(blank());
 const exampleCode = ref('');
 const sending = ref(false);
@@ -50,7 +56,7 @@ onUnmounted(() => clearInterval(cooldownTimer));
 watch(() => props.modelValue, value => { visible.value = value; if (value) { Object.assign(form, blank()); exampleCode.value = ''; updateCooldown(); } });
 watch(() => form.phone, () => { form.smsCode = ''; exampleCode.value = ''; });
 function close() { visible.value = false; emit('update:modelValue', false); }
-function fillExample() { Object.assign(form, { province: 'baghdad', nationalId: '198004198271', phone: '07801234567' }); }
+function fillExample() { Object.assign(form, { province: 'baghdad', nationalId: '198004198271', phone: '07801234567', password: 'iq-pass-2026', confirmPassword: 'iq-pass-2026' }); }
 async function sendCode() {
   if (!isMock || sending.value || cooldown.value > 0) return;
   if (!form.phone) { ElMessage.warning(t('register.msgPhoneRequired')); return; }
@@ -66,13 +72,18 @@ async function sendCode() {
   finally { sending.value = false; }
 }
 async function submit() {
-  if (!form.province || !form.nationalId || !form.phone || !form.smsCode) { ElMessage.warning(t('registrationFlow.required')); return; }
+  if (registering.value) return;
+  if (!form.province || !form.nationalId || !form.phone || !form.password || !form.confirmPassword || !form.smsCode) { ElMessage.warning(t('registrationFlow.required')); return; }
+  if (form.password.length < 8) { ElMessage.warning(t('registrationFlow.passwordPlaceholder')); return; }
+  if (form.password !== form.confirmPassword) { ElMessage.warning(t('register.msgPwdMismatch')); return; }
   registering.value = true;
   try {
     const result = await registerCitizen({ ...form });
-    emit('registered', result);
+    emit('registered', { ...result, username: form.phone });
     close();
-    ElMessageBox.alert(t('registrationFlow.demoRegistered', { password: result.demoPassword }), t('register.title')).catch(() => {});
+    form.password = '';
+    form.confirmPassword = '';
+    ElMessageBox.alert(t('registrationFlow.demoRegistered'), t('register.title')).catch(() => {});
   } catch { ElMessage.error(t('register.msgRegisterFail')); }
   finally { registering.value = false; }
 }

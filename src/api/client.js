@@ -86,7 +86,7 @@ client.interceptors.response.use(
 
     // Keep the first-login ID instructions visible until the user dismisses them.
     if (res.code === 428 && response.config.url === '/auth/login') {
-      ElMessageBox.alert(res.message || i18n.global.t('registrationFlow.firstLoginUnavailable'), i18n.global.t('registrationFlow.identity')).catch(() => {});
+      ElMessageBox.alert(res.message || i18n.global.t('registrationFlow.firstLoginUnavailable'), i18n.global.t('registrationFlow.firstLoginTitle')).catch(() => {});
       return Promise.reject(new Error(res.message || 'Identity verification required'));
     }
 

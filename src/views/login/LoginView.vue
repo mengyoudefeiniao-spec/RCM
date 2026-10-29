@@ -10,6 +10,7 @@
           <p>{{ $t('loginPage.ministry') }}</p>
         </header>
         <section class="login-content">
+          <p v-if="isDefaultDemoAccount" class="login-demo-notice">{{ $t('loginPage.demoAccountNotice') }}</p>
           <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
             <el-form-item :label="$t('loginPage.username')" prop="username">
               <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
@@ -28,7 +29,7 @@
     </main>
 
     <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
-    <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" />
+    <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" @registered="handleRegistered" />
 
     <!-- 弹窗 2: 新设备登录二次核验选择弹窗 (用户需求 2.2) -->
     <el-dialog
@@ -104,6 +105,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const isMockMode = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 
 const isAppMode = computed(() => {
   if (route.query.layout === 'app' || route.query.mode === 'mobile') return true;
@@ -154,9 +156,15 @@ const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
 
 const loginForm = reactive({
-  username: '',
-  password: ''
+  username: isMockMode ? 'RC-10029381' : '',
+  password: isMockMode ? 'iq-pass-2026' : ''
 });
+const isDefaultDemoAccount = computed(() => isMockMode && loginForm.username === 'RC-10029381');
+
+function handleRegistered(result) {
+  loginForm.username = result.username;
+  loginForm.password = '';
+}
 
 // 当前选中的模式指示高亮
 const activeMode = computed(() => {
@@ -192,7 +200,7 @@ const loginRules = computed(() => ({
 }));
 
 async function handleLogin() {
-  if (!formRef.value) return;
+  if (!formRef.value || loading.value) return;
   await formRef.value.validate(async (valid) => {
     if (valid) {
       // 1. 如果管理员角色在手机端登录，阻断并提示请切换到浏览器操作
@@ -216,6 +224,12 @@ async function handleLogin() {
           await executeDirectLogin();
           return;
         }
+      }
+
+      // The existing mock citizen account is ready for demonstration; newly registered accounts still require verification.
+      if (isDefaultDemoAccount.value) {
+        await executeDirectLogin();
+        return;
       }
 
       // 2. 判断是否为未授信新设备终端：强制触发二次身份认证核验 (修复之前直接进入系统的Bug)
@@ -312,6 +326,7 @@ async function handleSecondaryVerifySuccess() {
   line-height: 1.6;
 }
 .login-content :deep(.el-form-item) { margin-bottom: 24px; }
+.login-demo-notice { margin-bottom: 16px; color: #58685d; font-size: .75rem; line-height: 1.6; }
 .login-content :deep(.el-form-item__error) {
   position: static;
   flex-basis: 100%;

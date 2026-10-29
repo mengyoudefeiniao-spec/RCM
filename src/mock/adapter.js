@@ -1151,7 +1151,8 @@ export async function mockDispatch(config) {
       (entry) => entry.phone === username || entry.nationalId === username
     );
     if (registered) {
-      if (data.password !== 'iq-pass-2026') return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+      const expectedDigest = registered.passwordDigest || await passwordDigest('iq-pass-2026');
+      if (await passwordDigest(data.password || '') !== expectedDigest) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
       return createResponse({}, 428, i18n.global.t('registrationFlow.firstLoginUnavailable'));
     }
     const managedUsers = readCenter('system_users', systemSeed.users);
@@ -1434,6 +1435,12 @@ export async function mockDispatch(config) {
 
   // This account is a tab-local demonstration; first login remains blocked until real verification exists.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
+    if (typeof data.password !== 'string' || data.password.length < 8) {
+      return createResponse({}, 400, i18n.global.t('registrationFlow.passwordPlaceholder'));
+    }
+    if (data.password !== data.confirmPassword) {
+      return createResponse({}, 400, i18n.global.t('register.msgPwdMismatch'));
+    }
     const sms = JSON.parse(sessionStorage.getItem('rcm_demo_registration_sms') || 'null');
     if (!data.province || !data.nationalId || !data.phone || !sms || sms.phone !== data.phone || sms.code !== data.smsCode || sms.expires < Date.now()) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.invalidCode'));
@@ -1442,10 +1449,10 @@ export async function mockDispatch(config) {
     if (accounts.some(account => account.phone === data.phone || account.nationalId === data.nationalId)) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.duplicateAccount'));
     }
-    accounts.push({ province: data.province, nationalId: data.nationalId, phone: data.phone });
+    accounts.push({ province: data.province, nationalId: data.nationalId, phone: data.phone, passwordDigest: await passwordDigest(data.password) });
     sessionStorage.setItem('rcm_demo_registrations', JSON.stringify(accounts));
     sessionStorage.removeItem('rcm_demo_registration_sms');
-    return createResponse({ demoPassword: 'iq-pass-2026' });
+    return createResponse({ success: true, identityVerificationRequired: true });
   }
 
   // 1.4 活体人脸识别与统一国民卡双因子核验
