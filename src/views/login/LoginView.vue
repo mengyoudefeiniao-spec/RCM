@@ -1,235 +1,31 @@
 <template>
-  <div
-    class="font-sans text-[#1F3326] transition-all duration-300"
-    :class="[
-      isAppMode
-        ? 'h-screen max-h-screen overflow-hidden bg-[#1B3123]/10 py-1 sm:py-2.5 justify-center items-center flex flex-col'
-        : 'min-h-screen flex items-center justify-center p-4 relative overflow-hidden'
-    ]"
-    :style="!isAppMode ? loginBgStyle : {}"
-  >
-    <!-- 国际化语言切换选择器 (Web 桌面端右上角浮动) -->
-    <div v-if="!isAppMode" class="absolute top-4 end-4 z-20">
-      <LanguageSwitcher />
-    </div>
-
-    <!-- 背景暖砂金与翡翠墨绿光影装饰 (Web 桌面端) -->
-    <template v-if="!isAppMode">
-      <div class="absolute -top-32 -start-32 w-96 h-96 rounded-full bg-[#D3AF62]/15 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-32 -end-32 w-96 h-96 rounded-full bg-[#326445]/40 blur-3xl pointer-events-none"></div>
-    </template>
-
-    <!-- 登录主视口容器：APP 模式下自适应 Pixel 9 手机视口 (412px 宽，最大 924px 高，内部滚动)；Web 模式下居中居宽 -->
-    <div
-      class="w-full transition-all duration-300 relative min-h-0 bg-white"
-      :class="[
-        isAppMode
-          ? 'sm:w-[412px] sm:max-w-[412px] sm:mx-auto sm:rounded-[28px] sm:shadow-2xl sm:overflow-hidden sm:border sm:border-[#D9E5DB] flex flex-col'
-          : 'max-w-md w-full rounded-lg p-4 sm:p-8 space-y-4 sm:space-y-5 relative z-10 border border-[#D9E5DB] shadow-2xl'
-      ]"
-      :style="isAppMode ? { height: 'min(924px, calc(100vh - 20px))', maxHeight: 'calc(100vh - 20px)' } : { boxShadow: '0 20px 50px -10px rgba(15, 35, 29, 0.35)' }"
-    >
-      <!-- APP 模式手机顶部微型顶栏 (固定在手机内部顶部，含 Logo 与语言选择器) -->
-      <div
-        v-if="isAppMode"
-        class="w-full px-3 h-12 bg-[#326445] text-white flex items-center justify-between shrink-0 shadow-xs border-b border-[#2F5B44]"
-      >
-        <div class="flex items-center gap-2">
-          <AppLogo size="sm" />
-          <span class="text-xs font-bold text-white tracking-wider">RCM</span>
-        </div>
-        <LanguageSwitcher />
-      </div>
-
-      <!-- 登录表单内容区域 (APP 模式在手机内部滚动) -->
-      <div
-        :class="[
-          isAppMode
-            ? 'flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 custom-pixel-scrollbar'
-            : 'space-y-4 sm:space-y-5'
-        ]"
-      >
-        <!-- 官方徽标与标题 (契合伊拉克配给卡官方体系) -->
-        <div class="text-center space-y-1.5">
-          <div class="flex justify-center">
-            <AppLogo size="lg" theme="light" />
-          </div>
-          <div>
-            <div class="text-xs font-bold text-[#D3AF62] font-sans" dir="rtl">البطاقة التموينية</div>
-            <h2 class="text-base sm:text-lg font-bold text-[#1F3326] tracking-normal">
-              Ration Card Management
-            </h2>
-            <div class="text-[9px] text-[#8A9A8F] font-mono tracking-wider mt-0.5">
-              REPUBLIC OF IRAQ · MINISTRY OF TRADE
-            </div>
-          </div>
-        </div>
-
-        <!-- 新设备终端安全状态条 -->
-        <div class="p-2.5 rounded-lg border flex items-center justify-between text-xs" :class="isTrustedDevice ? 'bg-[#E1F4E4] border-[#C7DED0] text-[#2F7A50]' : 'bg-[#FDF3E0] border-[#E5CEA1] text-[#7A5F21]'">
-          <div class="flex items-center gap-1.5">
-            <el-icon><Monitor /></el-icon>
-            <span>{{ $t('login.deviceStatus') || '终端状态：' }}<strong class="font-mono">{{ isTrustedDevice ? ($t('login.trustedDevice') || '已受信任授信设备') : ($t('login.untrustedDevice') || '未授信新设备终端') }}</strong></span>
-          </div>
-          <el-button type="info" text size="small" @click="toggleDeviceTrust">
-            {{ isTrustedDevice ? ($t('login.simulateNewDevice') || '模拟新设备') : ($t('login.restoreTrust') || '恢复授信') }}
-          </el-button>
-        </div>
-
-        <!-- 登录表单 -->
-        <el-form
-          ref="formRef"
-          :model="loginForm"
-          :rules="loginRules"
-          label-position="top"
-          @keyup.enter="handleLogin"
-        >
-          <el-form-item :label="$t('login.usernameLabel') || '配给卡号 / 手机号 / 账号'" prop="username">
-            <el-input
-              v-model="loginForm.username"
-              :placeholder="$t('login.usernamePlaceholder') || '例如：admin 或 RC-10029381'"
-              size="large"
-              :prefix-icon="User"
-              clearable
-            />
+  <div class="login-page">
+    <div class="login-language"><LanguageSwitcher /></div>
+    <main class="login-card">
+      <header class="login-header">
+        <h1>{{ $t('loginPage.title') }}</h1>
+        <p>{{ $t('loginPage.ministry') }}</p>
+      </header>
+      <section class="login-content">
+        <h2>{{ $t('login.accountLogin') }}</h2>
+        <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
+          <el-form-item :label="$t('loginPage.username')" prop="username">
+            <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
           </el-form-item>
-
-          <el-form-item :label="$t('login.passwordLabel') || '密码'" prop="password">
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              :placeholder="$t('login.passwordPlaceholder') || '请输入登录密码'"
-              size="large"
-              :prefix-icon="Lock"
-              show-password
-            />
+          <el-form-item :label="$t('login.passwordLabel')" prop="password">
+            <el-input v-model="loginForm.password" type="password" :placeholder="$t('login.passwordPlaceholder')" size="large" :prefix-icon="Lock" show-password />
           </el-form-item>
-
-          <div class="flex items-center justify-between text-xs text-[#58685D] mb-2">
-            <el-checkbox v-model="rememberMe">{{ $t('login.rememberDevice') || '记住当前设备' }}</el-checkbox>
-            <span class="text-[#D3AF62] font-medium cursor-pointer hover:underline" @click="quickNfcDialogVisible = true">
-              {{ $t('login.nfcAuth') || '生物特征 / NFC 免密认证' }}
-            </span>
+          <div class="login-options">
+            <el-button text type="primary" @click="quickNfcDialogVisible = true">{{ $t('login.nfcAuth') }}</el-button>
           </div>
-
-          <el-button
-            type="primary"
-            size="large"
-            class="w-full font-bold shadow-md tracking-wide"
-            style="background: #326445; border-color: #326445; color: #FFFFFF;"
-            :loading="loading"
-            @click="handleLogin"
-          >
-            {{ $t('login.loginBtn') }}
-          </el-button>
+          <el-button type="primary" size="large" class="login-submit" :loading="loading" native-type="submit">{{ $t('login.loginBtn') }}</el-button>
         </el-form>
-
-        <!-- 纸质配给卡数字化注册通道入口 -->
-        <div class="bg-[#FDF3E0] border border-[#E5CEA1] rounded-lg p-2.5 flex items-center justify-between text-xs">
-          <span class="text-[#58685D] font-medium">{{ $t('login.firstTimePaper') || '首次使用持纸质配给卡？' }}</span>
-          <el-button
-            type="primary"
-            plain
-            size="small"
-            class="font-bold px-4"
-            data-demo-target="btn-register"
-            style="color: #326445; border-color: #D3AF62; background-color: #FDF3E0;"
-            @click="handleStartRegister"
-          >
-            {{ $t('login.registerBtn') }}
-          </el-button>
+        <div class="login-register">
+          <span>{{ $t('loginPage.noAccount') }}</span>
+          <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
         </div>
-
-        <!-- 国家物资配给总门户直达通道 (全场景终端跳转页面) -->
-        <div
-          class="rounded-lg border border-[#D3AF62]/60 bg-gradient-to-r rtl:bg-gradient-to-l from-[#FDF3E0] to-[#FDF3E0] p-2.5 flex items-center justify-between text-xs cursor-pointer hover:border-[#D3AF62] hover:shadow-2xs transition-all select-none"
-          @click="$router.push('/portal')"
-        >
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-[#D3AF62] text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <el-icon :size="16"><Compass /></el-icon>
-            </div>
-            <div>
-              <div class="font-bold text-[#326445]">{{ $t('login.portalCardTitle') || '国家食品保障总门户 (Portal)' }}</div>
-              <div class="text-[10px] text-[#8A9A8F]">{{ $t('login.portalCardDesc') || '跨端终端导航：公民APP · 代理APP · 管理Web' }}</div>
-            </div>
-          </div>
-          <div class="flex items-center text-[#7A5F21] font-bold text-[11px] gap-0.5">
-            <span>{{ $t('login.portalCardEnter') || '进入' }}</span>
-            <el-icon class="rtl-mirror-icon"><Right /></el-icon>
-          </div>
-        </div>
-
-        <!-- 快速演示预设身份与模式切换 (3个图标对应: 1.公民B2C APP模式; 2.代理C2B APP模式; 3.管理员Web模式) -->
-        <div class="pt-3 border-t border-[#D9E5DB] space-y-2">
-          <div class="text-[11px] text-[#8A9A8F] font-semibold text-center flex items-center justify-center gap-1">
-            <span>{{ $t('login.quickPresetTitle') || '快速演示预设身份切换' }}</span>
-            <span class="text-[10px] text-[#8A9A8F] font-normal">{{ $t('login.quickPresetHint') || '（点击图标切换模式）' }}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <!-- 1. 公民角色登录的B2C APP模式 -->
-            <div
-              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'citizen_b2c' ? 'border-[#326445] bg-[#E2F4E4] shadow-sm ring-1 ring-[#326445]/40' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#326445]/60 hover:bg-[#E2F4E4]/60'"
-              @click="handleSelectPreset('citizen_b2c')"
-            >
-              <div
-                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'citizen_b2c' ? 'bg-[#326445] text-white shadow-xs' : 'bg-[#E2F4E4] text-[#326445]'"
-              >
-                <el-icon :size="18"><Iphone /></el-icon>
-              </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#326445] transition-colors">
-                {{ $t('login.presetCitizenRole') || '公民角色' }}
-              </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E1F4E4] text-[#326445]">
-                {{ $t('login.presetCitizenMode') || 'B2C APP模式' }}
-              </div>
-            </div>
-
-            <!-- 2. 代理登录的C2B APP模式 -->
-            <div
-              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'agent_c2b' ? 'border-[#D3AF62] bg-[#FDF3E0] shadow-sm ring-1 ring-[#D3AF62]/50' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#D3AF62]/60 hover:bg-[#FDF3E0]/50'"
-              @click="handleSelectPreset('agent_c2b')"
-            >
-              <div
-                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'agent_c2b' ? 'bg-[#D3AF62] text-white shadow-xs' : 'bg-[#FDF3E0] text-[#7A5F21]'"
-              >
-                <el-icon :size="18"><Shop /></el-icon>
-              </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#D3AF62] transition-colors">
-                {{ $t('login.presetAgentRole') || '代理角色' }}
-              </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#FDF3E0] text-[#7A5F21]">
-                {{ $t('login.presetAgentMode') || 'C2B APP模式' }}
-              </div>
-            </div>
-
-            <!-- 3. 管理员角色登录的web模式 -->
-            <div
-              class="group border rounded-lg p-2 sm:p-2.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-1"
-              :class="activeMode === 'admin_web' ? 'border-[#326445] bg-[#E2F4E4] shadow-sm ring-1 ring-[#326445]/40' : 'border-[#D9E5DB] bg-[#F3F8F4] hover:border-[#326445]/60 hover:bg-[#E2F4E4]/60'"
-              @click="handleSelectPreset('admin_web')"
-            >
-              <div
-                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-                :class="activeMode === 'admin_web' ? 'bg-[#326445] text-white shadow-xs' : 'bg-[#E2F4E4] text-[#326445]'"
-              >
-                <el-icon :size="18"><Monitor /></el-icon>
-              </div>
-              <div class="text-[11px] sm:text-xs font-bold text-[#1F3326] group-hover:text-[#326445] transition-colors">
-                {{ $t('login.presetAdminRole') || '管理员' }}
-              </div>
-              <div class="text-[10px] px-1 py-0.2 rounded font-medium bg-[#E2F4E4] text-[#326445]">
-                {{ $t('login.presetAdminMode') || 'Web模式' }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
     <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" />
@@ -286,7 +82,7 @@
     <!-- 弹窗 5: 快捷生物特征 / NFC 免密感应核验 -->
     <el-dialog
       v-model="quickNfcDialogVisible"
-      title="统一国民卡 NFC 芯片及活体人脸核验"
+      :title="$t('loginPage.nfcTitle')"
       width="420px"
       align-center
     >
@@ -295,14 +91,14 @@
           <el-icon :size="36"><Iphone /></el-icon>
         </div>
         <div>
-          <div class="text-sm font-bold text-[#1F3326]">请将统一国民卡贴近设备 NFC 区域</div>
-          <div class="text-xs text-[#8A9A8F] mt-1">系统将自动校验生物活体特征与内政部身份芯片存根</div>
+          <div class="text-sm font-bold text-[#1F3326]">{{ $t('loginPage.nfcInstruction') }}</div>
+          <div class="text-xs text-[#8A9A8F] mt-1">{{ $t('loginPage.nfcDemoNotice') }}</div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="quickNfcDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="quickNfcLoading" @click="simulateQuickNfcPass">
-          模拟感应核验通过
+        <el-button @click="quickNfcDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button v-if="isMockMode" type="primary" :loading="quickNfcLoading" @click="simulateQuickNfcPass">
+          {{ $t('loginPage.nfcDemoButton') }}
         </el-button>
       </template>
     </el-dialog>
@@ -310,7 +106,6 @@
 </template>
 
 <script setup>
-import { isEnNow } from '../../utils/langHint.js';
 import { i18n } from '../../locales/index.js';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -319,19 +114,13 @@ import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
-import AppLogo from '../../components/common/AppLogo.vue';
-import { isDemoActive, demoSubStep, setDemoStep, activateDemo, deactivateDemo } from '../../utils/demoState.js';
+import { isDemoActive, setDemoStep, activateDemo } from '../../utils/demoState.js';
 import {
   User,
   Lock,
   Iphone,
-  Monitor,
-  Shop,
-  Document,
   Camera,
-  Location,
-  Compass,
-  Right
+  Location
 } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -345,11 +134,8 @@ const isAppMode = computed(() => {
   return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
 });
 
-const loginBgStyle = "background: radial-gradient(circle at 15% 20%, rgba(211, 175, 98, 0.16) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(211, 175, 98, 0.12) 0%, transparent 45%), linear-gradient(135deg, #12241A 0%, #326445 50%, #12241A 100%);";
-
 const formRef = ref(null);
 const loading = ref(false);
-const rememberMe = ref(true);
 
 function handleStartRegister() {
   if (isDemoActive.value) {
@@ -359,10 +145,6 @@ function handleStartRegister() {
 }
 
 onMounted(() => {
-  if (isAppMode.value) {
-    loginForm.username = 'RC-10029381';
-    loginForm.password = 'iq-pass-2026';
-  }
   if (route.query.demo === 'true') {
     activateDemo(String(route.query.demoStep || 'step1_1'));
   } else if (route.query.mode === 'register' || route.query.action === 'register') {
@@ -389,28 +171,17 @@ function isAdminAccount(username) {
 // 终端授信状态
 const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true');
 
-function toggleDeviceTrust() {
-  if (isTrustedDevice.value) {
-    localStorage.removeItem('rcm_trusted_device');
-    isTrustedDevice.value = false;
-    ElMessage.warning(i18n.global.t('login.switchedToUntrusted'));
-  } else {
-    localStorage.setItem('rcm_trusted_device', 'true');
-    isTrustedDevice.value = true;
-    ElMessage.success(i18n.global.t('login.switchedToTrusted'));
-  }
-}
-
 // 弹窗控制
 const registerDialogVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
 const quickNfcDialogVisible = ref(false);
 const quickNfcLoading = ref(false);
+const isMockMode = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 
 const loginForm = reactive({
-  username: 'admin',
-  password: 'iq-pass-2026'
+  username: '',
+  password: ''
 });
 
 // 当前选中的模式指示高亮
@@ -441,40 +212,10 @@ const currentAccountDisplayName = computed(() => {
   return loginForm.username || '配给申请人';
 });
 
-// 快捷演示预设切换：公民 B2C APP模式 / 代理 C2B APP模式 / 管理员 Web模式
-function handleSelectPreset(mode) {
-  if (mode === 'citizen_b2c') {
-    loginForm.username = 'RC-10029381';
-    loginForm.password = 'iq-pass-2026';
-    ElMessage.success((isEnNow() ? 'Switched to the [Citizen Role Login · B2C APP Mode] preset account' : '已切换为【公民角色登录 · B2C APP模式】预设账号'));
-  } else if (mode === 'agent_c2b') {
-    loginForm.username = 'FA-00128';
-    loginForm.password = 'iq-pass-2026';
-    ElMessage.success((isEnNow() ? 'Switched to the [Agent Login · C2B APP Mode] preset account' : '已切换为【代理登录 · C2B APP模式】预设账号'));
-  } else if (mode === 'admin_web') {
-    // 3. 管理员角色登录的web模式（如果是手机登录，提示请切换到浏览器操作）
-    if (checkIsMobile()) {
-      ElMessageBox.alert(
-        '管理员角色登录为 Web 模式（含审查调度总控台），仅支持在 PC 电脑端浏览器操作。检测到您当前为手机移动终端，请切换到浏览器操作！',
-        '请切换到浏览器操作',
-        {
-          confirmButtonText: '我知道了',
-          type: 'warning',
-          center: true
-        }
-      );
-      return;
-    }
-    loginForm.username = 'admin';
-    loginForm.password = 'iq-pass-2026';
-    ElMessage.success((isEnNow() ? 'Switched to the [Administrator Role Login · Web Mode] preset account' : '已切换为【管理员角色登录 · Web模式】预设账号'));
-  }
-}
-
-const loginRules = {
-  username: [{ required: true, message: (isEnNow() ? 'Please enter the ration card number or account' : '请输入配给卡号或账号'), trigger: 'blur' }],
-  password: [{ required: true, message: (isEnNow() ? 'Please enter the password' : '请输入密码'), trigger: 'blur' }]
-};
+const loginRules = computed(() => ({
+  username: [{ required: true, message: i18n.global.t('loginPage.usernameRequired'), trigger: 'blur' }],
+  password: [{ required: true, message: i18n.global.t('loginPage.passwordRequired'), trigger: 'blur' }]
+}));
 
 async function handleLogin() {
   if (!formRef.value) return;
@@ -483,10 +224,10 @@ async function handleLogin() {
       // 1. 如果管理员角色在手机端登录，阻断并提示请切换到浏览器操作
       if (isAdminAccount(loginForm.username) && checkIsMobile()) {
         ElMessageBox.alert(
-          '管理员角色仅支持在 PC 电脑端浏览器操作。检测到您当前为手机移动终端，请切换到浏览器操作！',
-          '请切换到浏览器操作',
+          i18n.global.t('loginPage.adminDesktopOnly'),
+          i18n.global.t('loginPage.desktopTitle'),
           {
-            confirmButtonText: '我知道了',
+            confirmButtonText: i18n.global.t('common.confirm'),
             type: 'warning',
             center: true
           }
@@ -520,9 +261,8 @@ async function executeDirectLogin() {
   try {
     const ok = await authStore.login(loginForm.username, loginForm.password);
     if (ok) {
-      if (rememberMe.value) {
-        localStorage.setItem('rcm_trusted_device', 'true');
-      }
+      localStorage.setItem('rcm_trusted_device', 'true');
+      isTrustedDevice.value = true;
       // 根据选中的预设演示身份自动重定向至适配视口
       if (activeMode.value === 'agent_c2b' || (isAppMode.value && authStore.currentRole === 'agent')) {
         router.push('/dashboard?role=agent&mode=mobile&layout=app');
@@ -551,8 +291,6 @@ function openBiometricVerify() {
 
 // 新设备二次认证成功回调
 async function handleSecondaryVerifySuccess() {
-  localStorage.setItem('rcm_trusted_device', 'true');
-  isTrustedDevice.value = true;
   ElMessage.success(i18n.global.t('login.newDeviceVerificationPassed'));
   executeDirectLogin();
 }
@@ -562,9 +300,11 @@ async function simulateQuickNfcPass() {
   setTimeout(async () => {
     quickNfcLoading.value = false;
     quickNfcDialogVisible.value = false;
-    ElMessage.success((isEnNow() ? 'Unified national card NFC read succeeded; liveness face match consistent ✓' : '统一国民卡 NFC 读取成功，活体人脸比对一致 ✓'));
-    await authStore.login('RC-10029381', 'iq-pass-2026');
+    const ok = await authStore.login('RC-10029381', 'iq-pass-2026');
+    if (!ok) return;
+    ElMessage.success(i18n.global.t('loginPage.nfcDemoSuccess'));
     localStorage.setItem('rcm_trusted_device', 'true');
+    isTrustedDevice.value = true;
     if (isAppMode.value) {
       router.push('/citizen?role=citizen&layout=app');
     } else {
@@ -576,14 +316,16 @@ async function simulateQuickNfcPass() {
 </script>
 
 <style scoped>
-.custom-pixel-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-pixel-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(50, 100, 69, 0.2);
-  border-radius: 4px;
-}
-.custom-pixel-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
+.login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; background: radial-gradient(circle at 12% 12%, #526b4b 0, transparent 35%), linear-gradient(145deg, #12241a, #234b35); position: relative; }
+.login-language { position: absolute; top: 20px; inset-inline-end: 20px; z-index: 2; }
+.login-card { width: min(100%, 460px); overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 24px 64px #091b1180; }
+.login-header { padding: 36px 32px 30px; text-align: center; color: #fff; background: linear-gradient(140deg, #1b3928, #326445); }
+.login-header h1 { font-size: 1.55rem; line-height: 1.3; font-weight: 700; }
+.login-header p { margin-top: 10px; color: #e4d0a5; font-size: .75rem; line-height: 1.6; }
+.login-content { padding: 32px; }
+.login-content h2 { color: #1f3326; font-size: 1.05rem; font-weight: 700; margin-bottom: 24px; }
+.login-options { display: flex; justify-content: flex-end; margin: -5px 0 14px; }
+.login-submit { width: 100%; font-weight: 700; }
+.login-register { margin-top: 28px; padding-top: 22px; border-top: 1px solid #e5ede7; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #58685d; font-size: .875rem; }
+@media (max-width: 480px) { .login-page { padding: 70px 16px 24px; } .login-header { padding: 30px 24px 26px; } .login-content { padding: 26px 24px; } }
 </style>
