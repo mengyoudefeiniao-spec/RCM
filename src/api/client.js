@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { i18n } from '../locales/index.js';
 
 // 创建统一的 Axios 实例
@@ -82,6 +82,12 @@ client.interceptors.response.use(
       localStorage.removeItem('rcm_user_profile');
       window.location.hash = '#/login';
       return Promise.reject(new Error(res.message || 'Unauthorized'));
+    }
+
+    // Keep the first-login ID instructions visible until the user dismisses them.
+    if (res.code === 428 && response.config.url === '/auth/login') {
+      ElMessageBox.alert(res.message || i18n.global.t('registrationFlow.firstLoginUnavailable'), i18n.global.t('registrationFlow.identity')).catch(() => {});
+      return Promise.reject(new Error(res.message || 'Identity verification required'));
     }
 
     // 其它业务异常：统一弹出 Element Plus 提示

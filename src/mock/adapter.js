@@ -1152,7 +1152,7 @@ export async function mockDispatch(config) {
     );
     if (registered) {
       if (data.password !== 'iq-pass-2026') return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
-      return createResponse({}, 400, i18n.global.t('registrationFlow.firstLoginUnavailable'));
+      return createResponse({}, 428, i18n.global.t('registrationFlow.firstLoginUnavailable'));
     }
     const managedUsers = readCenter('system_users', systemSeed.users);
     const managedUser = managedUsers.find((entry) => entry.username === username);
