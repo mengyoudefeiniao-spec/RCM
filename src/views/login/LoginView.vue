@@ -494,6 +494,15 @@ async function handleLogin() {
         return;
       }
 
+      // New demo accounts must reach the first-login identity gate before the older device flow.
+      if (import.meta.env.VITE_APP_MOCK_MODE === 'true') {
+        const accounts = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]');
+        if (accounts.some(account => account.phone === loginForm.username || account.nationalId === loginForm.username)) {
+          await executeDirectLogin();
+          return;
+        }
+      }
+
       // 2. 判断是否为未授信新设备终端：强制触发二次身份认证核验 (修复之前直接进入系统的Bug)
       if (!isTrustedDevice.value) {
         newDeviceVerifyDialogVisible.value = true;
