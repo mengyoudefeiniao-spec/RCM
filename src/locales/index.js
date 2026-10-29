@@ -34,10 +34,11 @@ import complaintAnalyticsMessages from './complaintAnalytics.js';
 import memberDeregistrationMessages from './memberDeregistration.js';
 import registrationFlowMessages from './registrationFlow.js';
 import loginPageMessages from './loginPage.js';
+import firstLoginVerificationMessages from './firstLoginVerification.js';
 import memberVerificationMessages from './memberVerification.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], loginPage: loginPageMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const merged = { ...messages, memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   const deregistration = memberDeregistrationMessages[lang];
   merged.memberDeregistration = deregistration;
   merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action } };

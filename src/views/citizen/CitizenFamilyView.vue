@@ -1,5 +1,6 @@
 <template>
   <div class="citizen-family-view space-y-6">
+    <el-alert v-if="authStore.userProfile?.needsFamilySetup" :title="$t('firstLoginVerification.familyPending')" type="info" :closable="false" show-icon />
     <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="citizenStore.currentFamily?.rationCardNo || ''" @requested="citizenStore.fetchFamilies()" />
     <!-- ======================================================== -->
     <!-- 移动端 APP 视图 (针对 Google Pixel 9 412px 视口极致适配) -->
@@ -813,6 +814,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
+import { useAuthStore } from '../../stores/auth.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
@@ -855,6 +857,7 @@ const route = useRoute();
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const citizenStore = useCitizenStore();
+const authStore = useAuthStore();
 const remoteVisible = ref(false);
 const remoteMember = ref(null);
 const verificationStatus = member => ['pending', 'passed', 'failed', 'manual'].includes(member.verification?.status) ? member.verification.status : 'pending';

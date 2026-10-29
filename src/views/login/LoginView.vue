@@ -30,6 +30,13 @@
 
     <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
     <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" @registered="handleRegistered" />
+    <FirstLoginVerifyDialog
+      v-if="authStore.pendingIdentityVerification"
+      v-model="firstLoginVerifyVisible"
+      :verification="authStore.pendingIdentityVerification"
+      @success="handleFirstLoginVerified"
+      @cancel="authStore.pendingIdentityVerification = null"
+    />
 
     <!-- 弹窗 2: 新设备登录二次核验选择弹窗 (用户需求 2.2) -->
     <el-dialog
@@ -90,6 +97,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
+import FirstLoginVerifyDialog from '../../components/auth/FirstLoginVerifyDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
@@ -152,6 +160,7 @@ const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true
 
 // 弹窗控制
 const registerDialogVisible = ref(false);
+const firstLoginVerifyVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
 
@@ -248,9 +257,17 @@ async function executeDirectLogin() {
   loading.value = true;
   try {
     const ok = await authStore.login(loginForm.username, loginForm.password);
+    if (!ok && authStore.pendingIdentityVerification) {
+      firstLoginVerifyVisible.value = true;
+      return;
+    }
     if (ok) {
       localStorage.setItem('rcm_trusted_device', 'true');
       isTrustedDevice.value = true;
+      if (authStore.userProfile?.needsFamilySetup) {
+        await router.push({ path: '/citizen', query: isAppMode.value ? { layout: 'app' } : {} });
+        return;
+      }
       // 根据选中的预设演示身份自动重定向至适配视口
       if (activeMode.value === 'agent_c2b' || (isAppMode.value && authStore.currentRole === 'agent')) {
         router.push('/dashboard?role=agent&mode=mobile&layout=app');
@@ -270,6 +287,15 @@ async function executeDirectLogin() {
   } finally {
     loading.value = false;
   }
+}
+
+async function handleFirstLoginVerified(result) {
+  authStore.completeIdentityLogin(result);
+  firstLoginVerifyVisible.value = false;
+  localStorage.setItem('rcm_trusted_device', 'true');
+  isTrustedDevice.value = true;
+  ElMessage.success(i18n.global.t('firstLoginVerification.success'));
+  await router.push({ path: '/citizen', query: isAppMode.value ? { layout: 'app' } : {} });
 }
 
 function openBiometricVerify() {

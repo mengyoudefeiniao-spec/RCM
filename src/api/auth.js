@@ -77,6 +77,14 @@ export function verifyBiometricFace(data) {
   });
 }
 
+export function readFirstLoginIdentity(data) {
+  return request({ url: '/auth/first-login/read-identity', method: 'POST', data });
+}
+
+export function completeFirstLoginVerification(data) {
+  return request({ url: '/auth/first-login/verify', method: 'POST', data });
+}
+
 /**
  * 记录指定家庭成员的远程核验申请 (POST)
  */

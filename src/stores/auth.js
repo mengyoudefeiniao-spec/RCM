@@ -172,6 +172,7 @@ function getInitialToken() {
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(getInitialToken());
   const userProfile = ref(getInitialProfile());
+  const pendingIdentityVerification = ref(null);
 
   const isAuthenticated = computed(() => !!token.value);
   const currentRole = computed(() => userProfile.value?.role || 'minister_center');
@@ -205,16 +206,12 @@ export const useAuthStore = defineStore('auth', () => {
    * 登录
    */
   async function login(username, password) {
+    pendingIdentityVerification.value = null;
     try {
       const res = await loginUser({ username, password });
-      token.value = res.token;
-      userProfile.value = res.user;
+      completeIdentityLogin(res);
 
-      sessionStorage.setItem('rcm_auth_token', res.token);
-      sessionStorage.setItem('rcm_user_profile', JSON.stringify(res.user));
-      localStorage.setItem('rcm_auth_token', res.token);
-
-      const demoNameKey = res.user.role === 'citizen'
+      const demoNameKey = res.user.needsFamilySetup ? null : res.user.role === 'citizen'
         ? 'login.demoCitizenName'
         : res.user.role === 'agent'
           ? 'login.demoAgentName'
@@ -223,14 +220,28 @@ export const useAuthStore = defineStore('auth', () => {
       ElMessage.success(i18n.global.t('login.welcomeMessage', { name: displayName }));
       return true;
     } catch (err) {
+      if (err.code === 428 && err.verification?.challenge) {
+        pendingIdentityVerification.value = err.verification;
+      }
       return false;
     }
+  }
+
+  function completeIdentityLogin(result) {
+    if (!result?.token || !result?.user) throw new Error('Missing authenticated session');
+    token.value = result.token;
+    userProfile.value = result.user;
+    sessionStorage.setItem('rcm_auth_token', result.token);
+    sessionStorage.setItem('rcm_user_profile', JSON.stringify(result.user));
+    localStorage.setItem('rcm_auth_token', result.token);
+    pendingIdentityVerification.value = null;
   }
 
   /**
    * 退出登录
    */
   async function logout() {
+    pendingIdentityVerification.value = null;
     token.value = '';
     userProfile.value = null;
     sessionStorage.removeItem('rcm_auth_token');
@@ -316,6 +327,8 @@ export const useAuthStore = defineStore('auth', () => {
     isMobileVerificationActive,
     setMobileVerificationActive,
     login,
+    pendingIdentityVerification,
+    completeIdentityLogin,
     logout,
     switchRole,
     setSessionUser

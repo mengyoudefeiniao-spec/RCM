@@ -732,6 +732,23 @@ export function createResponse(data = {}, code = 200, message = 'success') {
   };
 }
 
+const FIRST_LOGIN_CHALLENGE_KEY = 'rcm_first_login_challenge';
+const demoVerificationToken = () => Array.from(crypto.getRandomValues(new Uint8Array(24)), byte => byte.toString(16).padStart(2, '0')).join('');
+function pendingFirstLogin(challenge) {
+  const pending = JSON.parse(sessionStorage.getItem(FIRST_LOGIN_CHALLENGE_KEY) || 'null');
+  return pending && pending.challenge === challenge && pending.expiresAt > Date.now() ? pending : null;
+}
+function registeredCitizenSession(account) {
+  const user = {
+    id: `registered-${account.nationalId}`, username: account.phone,
+    name: account.nationalId, nationalId: account.nationalId, phone: account.phone,
+    provinceCode: account.province, role: 'citizen', needsFamilySetup: true,
+    familyId: null, familyNumber: null, rationCardNo: null, cardNo: null, paperCardNo: null,
+    identityVerification: account.identityVerification
+  };
+  return { token: `mock-registered-${account.nationalId}`, user };
+}
+
 /**
  * Mock 路由分发器
  */
@@ -1153,7 +1170,12 @@ export async function mockDispatch(config) {
     if (registered) {
       const expectedDigest = registered.passwordDigest || await passwordDigest('iq-pass-2026');
       if (await passwordDigest(data.password || '') !== expectedDigest) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
-      return createResponse({}, 428, i18n.global.t('registrationFlow.firstLoginUnavailable'));
+      if (registered.identityVerification?.status === 'passed' && registered.identityVerification?.simulated === true) {
+        return createResponse(registeredCitizenSession(registered));
+      }
+      const pending = { challenge: demoVerificationToken(), nationalId: registered.nationalId, expiresAt: Date.now() + 300000 };
+      sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
+      return createResponse(pending, 428, i18n.global.t('firstLoginVerification.instruction'));
     }
     const managedUsers = readCenter('system_users', systemSeed.users);
     const managedUser = managedUsers.find((entry) => entry.username === username);
@@ -1191,11 +1213,14 @@ export async function mockDispatch(config) {
   }
 
   if (url.includes('/auth/profile') && method === 'GET') {
+    const current = JSON.parse(sessionStorage.getItem('rcm_user_profile') || 'null');
+    if (current?.needsFamilySetup) return createResponse(current);
     const user = MOCK_USERS[0];
     return createResponse(user);
   }
 
   if (url.includes('/auth/logout') && method === 'POST') {
+    sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
     return createResponse({ success: true }, 200, (isEn ? 'Signed out successfully' : '登出成功'));
   }
 
@@ -1433,7 +1458,7 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
-  // This account is a tab-local demonstration; first login remains blocked until real verification exists.
+  // Accounts and their verification results are local demonstrations, never production identities.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
     if (typeof data.password !== 'string' || data.password.length < 8) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.passwordPlaceholder'));
@@ -1453,6 +1478,29 @@ export async function mockDispatch(config) {
     sessionStorage.setItem('rcm_demo_registrations', JSON.stringify(accounts));
     sessionStorage.removeItem('rcm_demo_registration_sms');
     return createResponse({ success: true, identityVerificationRequired: true });
+  }
+
+  if (url === '/auth/first-login/read-identity' && method === 'POST') {
+    const pending = pendingFirstLogin(data.challenge);
+    if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
+    pending.readToken = demoVerificationToken();
+    sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
+    return createResponse({ nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false });
+  }
+
+  if (url === '/auth/first-login/verify' && method === 'POST') {
+    const pending = pendingFirstLogin(data.challenge);
+    if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
+    if (!pending.readToken || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true) {
+      return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
+    }
+    const accounts = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]');
+    const account = accounts.find(entry => entry.nationalId === pending.nationalId);
+    if (!account) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
+    account.identityVerification = { status: 'passed', simulated: true, verifiedAt: new Date().toISOString() };
+    sessionStorage.setItem('rcm_demo_registrations', JSON.stringify(accounts));
+    sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
+    return createResponse({ ...registeredCitizenSession(account), passed: true, simulated: true });
   }
 
   // 1.4 活体人脸识别与统一国民卡双因子核验
@@ -1488,6 +1536,8 @@ export async function mockDispatch(config) {
   // 2. 公民与家庭管理模块 (Citizen & Family)
   // ==========================================
   if (url.includes('/citizen/families') && method === 'GET') {
+    const current = JSON.parse(sessionStorage.getItem('rcm_user_profile') || 'null');
+    if (current?.needsFamilySetup) return createResponse([]);
     const sharedFams = getSharedFamilies(reqLang);
     const familyList = sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore;
     return createResponse(localizeFamilyAgentNames(familyList));

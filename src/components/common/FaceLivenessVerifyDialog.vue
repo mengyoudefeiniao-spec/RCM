@@ -13,6 +13,7 @@
   >
     <!-- 全屏/移动端自适应容器 -->
     <div class="p-2 sm:p-4 space-y-3 select-none">
+      <el-alert v-if="notice" :title="notice" type="warning" :closable="false" show-icon />
       <!-- 顶部：抬头与核验对象 -->
       <div class="flex items-center justify-between border-b border-[#D9E5DB] pb-2.5 px-1">
         <div class="flex items-center gap-2">
@@ -358,6 +359,10 @@ const props = defineProps({
   allowQuickPass: {
     type: Boolean,
     default: true
+  },
+  notice: {
+    type: String,
+    default: ''
   }
 });
 
@@ -401,6 +406,7 @@ const progressPercent = computed(() => {
 let stepTimer = null;
 let analysisInterval = null;
 let previousFrameData = null;
+let pipelineGeneration = 0;
 
 watch(
   () => props.modelValue,
@@ -429,6 +435,7 @@ onUnmounted(() => {
 // 核心全自动执行流水线
 async function startAutoPipeline() {
   stopPipeline();
+  const generation = pipelineGeneration;
   status.value = 'detecting';
   currentStep.value = 'look_straight';
   stepDone.look = false;
@@ -436,7 +443,8 @@ async function startAutoPipeline() {
   stepDone.mouth = false;
 
   // 1. 启动摄像头
-  await initCamera();
+  await initCamera(generation);
+  if (generation !== pipelineGeneration || !props.modelValue) return;
 
   // 2. 启动动作检测与真实画面帧分析引擎
   startFrameAnalysisEngine();
@@ -550,7 +558,7 @@ function startFrameAnalysisEngine() {
 }
 
 // 调起摄像头
-async function initCamera() {
+async function initCamera(generation) {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     cameraActive.value = false;
     // 诊断：navigator.mediaDevices 仅在安全上下文（HTTPS 或 localhost）暴露，
@@ -567,6 +575,10 @@ async function initCamera() {
       },
       audio: false
     });
+    if (generation !== pipelineGeneration || !props.modelValue) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
     mediaStream = stream;
     if (videoRef.value) {
       videoRef.value.srcObject = stream;
@@ -575,6 +587,7 @@ async function initCamera() {
     cameraActive.value = true;
     cameraUnavailableReason.value = '';
   } catch (err) {
+    if (generation !== pipelineGeneration || !props.modelValue) return;
     console.warn('摄像头未开启或无权限，已平滑启用高保真活体仿真视讯流', err);
     cameraUnavailableReason.value = (err && err.name === 'NotAllowedError') ? 'denied' : 'unavailable';
     cameraActive.value = false;
@@ -590,6 +603,7 @@ function stopCamera() {
 }
 
 function stopPipeline() {
+  pipelineGeneration++;
   clearStepTimer();
   if (analysisInterval) {
     clearInterval(analysisInterval);
@@ -617,7 +631,7 @@ function handleQuickBypassPass() {
   currentStep.value = 'finished';
   status.value = 'success';
   ElMessage.success(t('register.liveness.msgQuickPass'));
-  setTimeout(() => {
+  stepTimer = setTimeout(() => {
     handleCompleteAndConfirm();
   }, 400);
 }
@@ -642,6 +656,7 @@ function captureFrameFromVideo() {
 }
 
 function handleCompleteAndConfirm() {
+  if (!props.modelValue) return;
   // 关闭摄像头前抓取当前帧作为人脸截图
   capturedImage.value = captureFrameFromVideo();
   stopPipeline();
