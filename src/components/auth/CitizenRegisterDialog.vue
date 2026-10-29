@@ -10,12 +10,6 @@
       </el-form-item>
       <el-form-item :label="$t('registrationFlow.nationalId')" required><el-input v-model.trim="form.nationalId" class="bidi-ltr" /></el-form-item>
       <el-form-item :label="$t('registrationFlow.phone')" required><el-input v-model.trim="form.phone" class="bidi-ltr" /></el-form-item>
-      <el-form-item :label="$t('registrationFlow.mathLabel')" required>
-        <div class="flex items-center gap-2 w-full">
-          <span dir="ltr" class="font-mono shrink-0">{{ challenge.left }} {{ challenge.operator }} {{ challenge.right }} =</span>
-          <el-input v-model.trim="mathAnswer" class="bidi-ltr" inputmode="numeric" :aria-label="$t('registrationFlow.mathLabel')" :placeholder="$t('registrationFlow.mathPlaceholder')" />
-        </div>
-      </el-form-item>
       <el-form-item :label="$t('register.smsLabel')" required>
         <div class="flex gap-2 w-full"><el-input v-model.trim="form.smsCode" class="bidi-ltr" maxlength="6" /><el-button :loading="sending" :disabled="!isMock || cooldown > 0 || sending" @click="sendCode">{{ cooldown > 0 ? $t('registrationFlow.resendCountdown', { seconds: cooldown }) : $t('register.getSmsCode') }}</el-button></div>
       </el-form-item>
@@ -43,40 +37,23 @@ const form = reactive(blank());
 const exampleCode = ref('');
 const sending = ref(false);
 const registering = ref(false);
-const mathAnswer = ref('');
-const challenge = reactive({ left: 0, right: 0, operator: '+' });
 const cooldown = ref(0);
 const cooldownKey = 'rcm_registration_sms_retry_at';
 let cooldownTimer;
-function newChallenge() {
-  const left = 1 + Math.floor(Math.random() * 9);
-  const right = 1 + Math.floor(Math.random() * 9);
-  const subtract = Math.random() < 0.5;
-  challenge.left = subtract ? Math.max(left, right) : left;
-  challenge.right = subtract ? Math.min(left, right) : right;
-  challenge.operator = subtract ? '−' : '+';
-  mathAnswer.value = '';
-}
 function updateCooldown() {
   const retryAt = Number(sessionStorage.getItem(cooldownKey)) || 0;
   cooldown.value = Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
   if (!cooldown.value) sessionStorage.removeItem(cooldownKey);
 }
-onMounted(() => { newChallenge(); updateCooldown(); cooldownTimer = setInterval(updateCooldown, 1000); });
+onMounted(() => { updateCooldown(); cooldownTimer = setInterval(updateCooldown, 1000); });
 onUnmounted(() => clearInterval(cooldownTimer));
-watch(() => props.modelValue, value => { visible.value = value; if (value) { Object.assign(form, blank()); exampleCode.value = ''; newChallenge(); updateCooldown(); } });
+watch(() => props.modelValue, value => { visible.value = value; if (value) { Object.assign(form, blank()); exampleCode.value = ''; updateCooldown(); } });
 watch(() => form.phone, () => { form.smsCode = ''; exampleCode.value = ''; });
 function close() { visible.value = false; emit('update:modelValue', false); }
 function fillExample() { Object.assign(form, { province: 'baghdad', nationalId: '198004198271', phone: '07801234567' }); }
 async function sendCode() {
   if (!isMock || sending.value || cooldown.value > 0) return;
   if (!form.phone) { ElMessage.warning(t('register.msgPhoneRequired')); return; }
-  const expected = challenge.operator === '+' ? challenge.left + challenge.right : challenge.left - challenge.right;
-  if (!/^\d+$/.test(mathAnswer.value) || Number(mathAnswer.value) !== expected) {
-    ElMessage.warning(t('registrationFlow.mathIncorrect'));
-    newChallenge();
-    return;
-  }
   sending.value = true;
   const phone = form.phone;
   try {
@@ -84,7 +61,6 @@ async function sendCode() {
     sessionStorage.setItem(cooldownKey, String(Date.now() + 60000));
     updateCooldown();
     if (phone === form.phone) exampleCode.value = res.smsCode || '';
-    newChallenge();
   }
   catch { ElMessage.error(t('register.msgSmsFail')); }
   finally { sending.value = false; }
