@@ -1424,24 +1424,9 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
-  // 1.3 纸质卡升级换发与公民账号注册
+  // Registration is unavailable until identity verification and card issuance are integrated.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
-    const newCardNo = `RC-1002${Math.floor(2000 + Math.random() * 7000)}`;
-    const newUser = {
-      id: `usr-${Date.now().toString().slice(-4)}`,
-      username: newCardNo,
-      name: `${data.headName || '新注册持卡人'} (户主)`,
-      role: 'citizen',
-      department: `${data.province || '巴格达省'}${data.district || '卡尔赫区'}`,
-      cardNo: newCardNo,
-      token: `jwt-token-citizen-new-${Date.now()}`
-    };
-    MOCK_USERS.push(newUser);
-    return createResponse({
-      user: newUser,
-      token: newUser.token,
-      cardNo: newCardNo
-    }, 200, i18n.global.t('register.api.registerSuccessMsg', { cardNo: newCardNo }));
+    return createResponse({}, 503, i18n.global.t('registrationFlow.unavailable'));
   }
 
   // 1.4 活体人脸识别与统一国民卡双因子核验
