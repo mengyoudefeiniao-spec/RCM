@@ -15,6 +15,9 @@ import {
   ageFromBirthDate
 } from '../utils/businessRules.js';
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
+import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
+import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword } from '../utils/citizenAccounts.js';
+import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import { isHouseholdHead, matchesDeregistrationMember, deregistrationSuccessors } from '../utils/memberDeregistration.js';
@@ -1164,12 +1167,13 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/auth/login') && method === 'POST') {
     const { username } = data;
-    const registered = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]').find(
-      (entry) => entry.phone === username || entry.nationalId === username
-    );
+    const managedUsers = readCenter('system_users', systemSeed.users);
+    const managedUser = managedUsers.find((entry) => entry.username === username);
+    const presetUser = MOCK_USERS.find((user) => user.username === username || user.role === username || user.cardNo === username);
+    let registered = managedUser || presetUser ? null : await findCitizenAccount(username);
     if (registered) {
-      const expectedDigest = registered.passwordDigest || await passwordDigest('iq-pass-2026');
-      if (await passwordDigest(data.password || '') !== expectedDigest) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+      registered = await verifyCitizenAccountPassword(registered, data.password || '');
+      if (!registered) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
       if (registered.identityVerification?.status === 'passed' && registered.identityVerification?.simulated === true) {
         return createResponse(registeredCitizenSession(registered));
       }
@@ -1177,8 +1181,6 @@ export async function mockDispatch(config) {
       sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
       return createResponse(pending, 428, i18n.global.t('firstLoginVerification.instruction'));
     }
-    const managedUsers = readCenter('system_users', systemSeed.users);
-    const managedUser = managedUsers.find((entry) => entry.username === username);
     if (managedUser) {
       if (managedUser.status === 'disabled') {
         appendSystemAudit({ actor: managedUser.name || username, type: 'login', details: 'Disabled account login rejected', businessNo: username, after: { result: 'rejected' } });
@@ -1190,9 +1192,8 @@ export async function mockDispatch(config) {
       appendSystemAudit({ actor: profile.name, type: 'login', details: 'Web console login', businessNo: managedUser.username, after: { result: 'success', role: profile.role } });
       return createResponse({ token: `mock-token-${managedUser.id}`, user: profile });
     }
-    const user = MOCK_USERS.find(
-      (u) => u.username === username || u.role === username || (u.cardNo && u.cardNo === username)
-    ) || MOCK_USERS[0];
+    const user = presetUser;
+    if (!user) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
 
     if (user.role === 'citizen' || user.role === 'agent') {
       const changedDigest = localStorage.getItem(myStorageKey(user.role, 'password'));
@@ -1458,7 +1459,7 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
-  // Accounts and their verification results are local demonstrations, never production identities.
+  // Demonstration accounts and results use shared storage; these are not production identities.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
     if (typeof data.password !== 'string' || data.password.length < 8) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.passwordPlaceholder'));
@@ -1470,12 +1471,14 @@ export async function mockDispatch(config) {
     if (!data.province || !data.nationalId || !data.phone || !sms || sms.phone !== data.phone || sms.code !== data.smsCode || sms.expires < Date.now()) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.invalidCode'));
     }
-    const accounts = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]');
-    if (accounts.some(account => account.phone === data.phone || account.nationalId === data.nationalId)) {
+    const reservedNames = [...MOCK_USERS.map(user => user.username), ...readCenter('system_users', systemSeed.users).map(user => user.username)];
+    if ([data.phone, data.nationalId].some(identifier => reservedNames.includes(identifier))) {
       return createResponse({}, 400, i18n.global.t('registrationFlow.duplicateAccount'));
     }
-    accounts.push({ province: data.province, nationalId: data.nationalId, phone: data.phone, passwordDigest: await passwordDigest(data.password) });
-    sessionStorage.setItem('rcm_demo_registrations', JSON.stringify(accounts));
+    try { await createCitizenAccount(data); }
+    catch (error) {
+      return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500, i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'registrationFlow.duplicateAccount' : 'registrationFlow.sharedSaveFailed'));
+    }
     sessionStorage.removeItem('rcm_demo_registration_sms');
     return createResponse({ success: true, identityVerificationRequired: true });
   }
@@ -1494,11 +1497,9 @@ export async function mockDispatch(config) {
     if (!pending.readToken || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true) {
       return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
     }
-    const accounts = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]');
-    const account = accounts.find(entry => entry.nationalId === pending.nationalId);
+    let account = await findCitizenAccount(pending.nationalId);
     if (!account) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
-    account.identityVerification = { status: 'passed', simulated: true, verifiedAt: new Date().toISOString() };
-    sessionStorage.setItem('rcm_demo_registrations', JSON.stringify(accounts));
+    account = await updateCitizenAccount(pending.nationalId, { identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString() } });
     sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
     return createResponse({ ...registeredCitizenSession(account), passed: true, simulated: true });
   }
@@ -1514,12 +1515,43 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.biometricSuccessMsg'));
   }
 
+  // Member identity verification reuses the NFC/liveness demo without issuing a login session.
+  if (url === '/auth/member-verification/read-identity' && method === 'POST') {
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === data.cardNo);
+    const member = family?.members?.find(item => item.id === data.memberId && item.nationalId === data.nationalId);
+    if (!member || memberVerificationStatus(member) === 'passed') return createResponse({}, 400, i18n.global.t('memberVerification.onlineError'));
+    const reading = { cardNo: data.cardNo, memberId: member.id, nationalId: member.nationalId, readToken: demoVerificationToken(), expiresAt: Date.now() + 300000 };
+    sessionStorage.setItem('rcm_member_verification_read', JSON.stringify(reading));
+    return createResponse({ nationalId: member.nationalId, readToken: reading.readToken, simulated: true, chipPhotoAvailable: false });
+  }
+
+  if (url === '/auth/member-verification/verify' && method === 'POST') {
+    const reading = JSON.parse(sessionStorage.getItem('rcm_member_verification_read') || 'null');
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === data.cardNo);
+    const member = family?.members?.find(item => item.id === data.memberId && item.nationalId === data.nationalId);
+    if (!member || memberVerificationStatus(member) === 'passed' || !reading || reading.expiresAt <= Date.now()
+      || reading.cardNo !== data.cardNo || reading.memberId !== data.memberId || reading.nationalId !== data.nationalId
+      || reading.readToken !== data.readToken || data.livenessCompleted !== true || data.simulated !== true) {
+      return createResponse({}, 400, i18n.global.t('memberVerification.onlineError'));
+    }
+    const record = { memberId: member.id, method: 'online', status: 'passed', simulated: true, verifiedAt: new Date().toISOString() };
+    updateSharedFamily(data.cardNo, current => ({
+      ...current,
+      members: current.members.map(item => item.id === member.id && item.nationalId === member.nationalId
+        ? { ...item, verification: record, faceVerified: true, faceVerifiedAt: record.verifiedAt }
+        : item)
+    }), reqLang);
+    sessionStorage.removeItem('rcm_member_verification_read');
+    await flushPocketBaseWrites();
+    return createResponse({ passed: true, simulated: true, verification: record });
+  }
+
   // Local demo request only: no invitation or identity verification is performed.
   if (url.includes('/auth/verify-remote') && method === 'POST') {
     const { cardNo, memberId } = data || {};
     const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === cardNo);
     const member = family?.members?.find(item => item.id === memberId);
-    if (!member || member.verification?.status === 'passed' || (member.verification?.status === 'pending' && member.verification?.method === 'remote')) {
+    if (!member || memberVerificationStatus(member) === 'passed' || hasPendingRemoteVerification(member)) {
       return createResponse({}, 400, i18n.global.t('memberVerification.error'));
     }
     const record = { memberId, method: 'remote', status: 'pending', requestedAt: new Date().toISOString() };
@@ -1529,6 +1561,7 @@ export async function mockDispatch(config) {
         ? { ...item, verification: record }
         : item)
     }), reqLang);
+    await flushPocketBaseWrites();
     return createResponse(record);
   }
 

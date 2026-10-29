@@ -1,7 +1,27 @@
 <template>
   <div class="citizen-family-view space-y-6">
     <el-alert v-if="authStore.userProfile?.needsFamilySetup" :title="$t('firstLoginVerification.familyPending')" type="info" :closable="false" show-icon />
-    <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="citizenStore.currentFamily?.rationCardNo || ''" @requested="citizenStore.fetchFamilies()" />
+    <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="verificationCardNo" @requested="citizenStore.fetchFamilies()" />
+    <el-dialog v-model="verificationMethodVisible" :title="$t('memberVerification.chooseMethod')" :width="verificationDialogWidth" :class="['member-verification-methods', { 'rcm-compact-dialog': verificationCompact }]" align-center>
+      <template v-if="verificationMember">
+        <p class="font-bold mb-4">{{ verificationMember.name }}</p>
+        <el-alert v-if="hasPendingRemoteVerification(verificationMember)" :title="$t('memberVerification.remotePendingHint')" type="info" :closable="false" show-icon class="mb-4" />
+        <div class="grid gap-3" :class="verificationCompact ? 'grid-cols-1' : 'grid-cols-2'">
+          <button type="button" class="member-verification-choice" data-member-method="online" @click="chooseMemberVerification('online')">
+            <el-icon :size="26"><Camera /></el-icon>
+            <strong>{{ $t('memberVerification.online') }}</strong>
+            <span>{{ $t('memberVerification.onlineHint') }}</span>
+          </button>
+          <button type="button" class="member-verification-choice" data-member-method="remote" :disabled="hasPendingRemoteVerification(verificationMember)" @click="chooseMemberVerification('remote')">
+            <el-icon :size="26"><Location /></el-icon>
+            <strong>{{ $t('memberVerification.remoteOption') }}</strong>
+            <span>{{ $t('memberVerification.remoteHint') }}</span>
+          </button>
+        </div>
+      </template>
+      <template #footer><el-button @click="verificationMethodVisible = false">{{ $t('common.cancel') }}</el-button></template>
+    </el-dialog>
+    <IdentityVerifyDialog v-if="onlineMember" v-model="onlineVisible" :member="onlineMember" :card-no="verificationCardNo" @success="handleMemberVerified" @cancel="onlineMember = null" />
     <!-- ======================================================== -->
     <!-- 移动端 APP 视图 (针对 Google Pixel 9 412px 视口极致适配) -->
     <!-- ======================================================== -->
@@ -28,12 +48,11 @@
 
           <div class="py-3 flex items-center justify-between">
             <div class="space-y-1">
-              <span class="text-[10px] text-white/60 tracking-wider">{{ $t('citizenCard.rationCardNoLabel') }}</span>
               <div class="text-xl font-extrabold tracking-widest font-mono text-[#FBFDFB]">
                 {{ citizenStore.currentFamily.rationCardNo }}
               </div>
-              <div class="text-[11px] text-[#D3AF62] font-mono">
-                {{ $t('citizenCard.linkedPaperBook') }}：{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}
+              <div v-if="citizenStore.currentFamily.oldPaperCardNo" class="text-[11px] text-[#D3AF62] font-mono">
+                {{ citizenStore.currentFamily.oldPaperCardNo }}
               </div>
             </div>
 
@@ -42,26 +61,21 @@
               type="button"
               class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all shrink-0 ms-2 group"
               @click="openCardQrModal"
-              :title="$t('citizenCard.showCardQr') || '出示二维码'"
+              :aria-label="$t('citizenCard.showCardQr')"
             >
               <div class="w-8 h-8 rounded-lg bg-[#D3AF62] text-[#326445] flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
                 <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current" stroke="none">
                   <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm9 0h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v2h-2v-2zm3 3h2v2h-2v-2zm-2-2h2v2h-2v-2zm4-3h2v4h-2v-4z"/>
                 </svg>
               </div>
-              <span class="text-[10px] font-bold text-[#E5CEA1] tracking-tight whitespace-nowrap group-hover:text-white">
-                {{ $t('citizenCard.showCardQr') || '出示二维码' }}
-              </span>
             </button>
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
             <div>
-              <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.legalHeadName') }}</span>
               <span class="font-bold text-white text-sm">{{ citizenStore.currentFamily.headName }}</span>
             </div>
             <div class="text-end">
-              <span class="text-[10px] text-white/50 block">{{ $t('citizenCard.agentStore') }}</span>
               <span class="text-xs text-[#E5CEA1] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
             </div>
           </div>
@@ -75,7 +89,6 @@
             <span class="w-1.5 h-3.5 bg-[#D3AF62] rounded-full"></span>
             <span>{{ $t('citizenCard.fastTrackTitle') }}</span>
           </span>
-          <span class="text-[11px] text-[#8A9A8F]">{{ $t('citizenCard.fastTrackSubtitle') }}</span>
         </div>
 
         <div class="grid grid-cols-3 gap-x-2 gap-y-3 text-center">
@@ -118,24 +131,24 @@
           </el-button>
         </div>
 
-        <p class="text-xs text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
-
         <!-- 成员卡片项 -->
         <div class="space-y-2.5">
           <div
             v-for="member in (citizenStore.currentFamily?.members || [])"
             :key="member.id"
-            class="p-3.5 rounded-lg border border-[#E9F1EB] bg-[#F3F8F4] flex flex-wrap items-center justify-between gap-2 hover:border-[#D3AF62] transition-all"
+            :data-member-id="member.id"
+            class="member-card p-3.5 rounded-lg border border-[#E9F1EB] bg-[#F3F8F4] flex items-center justify-between gap-2 hover:border-[#D3AF62] transition-all"
           >
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
+                class="relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
                 :class="isHeadRelation(member.relation) ? 'bg-[#326445] text-[#D3AF62]' : 'bg-[#E2F4E4] text-[#326445]'"
               >
                 {{ member.name?.slice(0, 1) || '·' }}
+                <span v-if="verificationStatus(member) !== 'passed'" class="member-verification-warning" role="img" :aria-label="$t('memberVerification.needsVerification')" :title="$t('memberVerification.needsVerification')">!</span>
               </div>
-              <div class="space-y-0.5 text-xs">
-                <div class="flex items-center gap-1.5">
+              <div class="min-w-0 space-y-0.5 text-xs">
+                <div class="flex flex-wrap items-center gap-1.5 break-words">
                   <span class="font-bold text-[#1B3123]">{{ member.name }}</span>
                   <span
                     class="px-1.5 py-0.2 rounded text-[10px]"
@@ -144,7 +157,7 @@
                     {{ formatRelation(member.relation) }}
                   </span>
                 </div>
-                <div class="text-[11px] font-mono text-[#8A9A8F]">
+                <div class="text-[11px] font-mono text-[#8A9A8F] break-words">
                   UID: {{ member.nationalId }} · {{ formatGender(member.gender) }}
                 </div>
               </div>
@@ -164,9 +177,7 @@
               >
                 {{ formatFreezeReason(member.freezeReason) }}
               </span>
-              <span class="text-[11px] text-[#58685D]">{{ $t('memberVerification.status') }}: {{ $t('memberVerification.' + verificationStatus(member)) }}</span>
-              <span v-if="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" class="text-[11px] text-[#58685D]">{{ $t('memberVerification.requested') }}</span>
-              <el-button v-if="verificationStatus(member) !== 'passed'" size="small" :disabled="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" @click="openRemote(member)">{{ $t('memberVerification.remote') }}</el-button>
+              <el-button v-if="verificationStatus(member) !== 'passed'" size="small" type="primary" plain data-member-verify @click="openMemberVerification(member)">{{ $t('memberVerification.verify') }}</el-button>
               <button
                 type="button"
                 class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer"
@@ -284,8 +295,6 @@
           </el-button>
         </div>
 
-        <p class="text-xs text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
-
         <el-table
           :data="citizenStore.currentFamily?.members || []"
           v-loading="citizenStore.loading"
@@ -296,7 +305,10 @@
         >
           <el-table-column prop="name" :label="$t('citizen.headName')" min-width="140" fixed>
             <template #default="{ row }">
-              <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
+              <div class="flex items-center gap-2">
+                <span v-if="verificationStatus(row) !== 'passed'" class="text-[#C04442] font-bold" role="img" :aria-label="$t('memberVerification.needsVerification')" :title="$t('memberVerification.needsVerification')">!</span>
+                <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
+              </div>
             </template>
           </el-table-column>
 
@@ -350,13 +362,6 @@
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('memberVerification.status')" min-width="150">
-            <template #default="{ row }">
-              <div>{{ $t('memberVerification.' + verificationStatus(row)) }}</div>
-              <div v-if="row.verification?.method === 'remote' && verificationStatus(row) === 'pending'" class="text-[11px] text-[#58685D]">{{ $t('memberVerification.requested') }}</div>
-            </template>
-          </el-table-column>
-
           <el-table-column prop="phone" :label="$t('citizen.phone')" min-width="130">
             <template #default="{ row }">
               <span class="font-mono">{{ row.phone || '—' }}</span>
@@ -368,7 +373,7 @@
               <el-button size="small" type="primary" link @click="openEditModal(row)">
                 {{ $t('citizen.updateInfo') }}
               </el-button>
-              <el-button v-if="verificationStatus(row) !== 'passed'" size="small" type="primary" link :disabled="row.verification?.method === 'remote' && verificationStatus(row) === 'pending'" @click="openRemote(row)">{{ $t('memberVerification.remote') }}</el-button>
+              <el-button v-if="verificationStatus(row) !== 'passed'" size="small" type="primary" link data-member-verify @click="openMemberVerification(row)">{{ $t('memberVerification.verify') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -818,6 +823,9 @@ import { useAuthStore } from '../../stores/auth.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
+import IdentityVerifyDialog from '../../components/auth/IdentityVerifyDialog.vue';
+import { useCompactDialog } from '../../composables/useCompactDialog.js';
+import { memberVerificationStatus, hasPendingRemoteVerification } from '../../utils/memberVerification.js';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import {
   Share,
@@ -835,7 +843,9 @@ import {
   ArrowRight,
   Right,
   Check,
-  Loading
+  Loading,
+  Camera,
+  Location
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import QRCode from 'qrcode';
@@ -860,9 +870,44 @@ const citizenStore = useCitizenStore();
 const authStore = useAuthStore();
 const remoteVisible = ref(false);
 const remoteMember = ref(null);
-const verificationStatus = member => ['pending', 'passed', 'failed', 'manual'].includes(member.verification?.status) ? member.verification.status : 'pending';
-const incompleteMembers = computed(() => (citizenStore.currentFamily?.members || []).filter(member => verificationStatus(member) !== 'passed'));
-function openRemote(member) { remoteMember.value = member; remoteVisible.value = true; }
+const verificationStatus = memberVerificationStatus;
+const { isCompact: verificationCompact, dialogWidth: verificationDialogWidth } = useCompactDialog(520);
+const verificationMethodVisible = ref(false);
+const verificationCardNo = ref('');
+const verificationMemberId = ref('');
+const verificationMember = computed(() => citizenStore.currentFamily?.rationCardNo === verificationCardNo.value
+  ? citizenStore.currentFamily.members?.find(member => member.id === verificationMemberId.value)
+  : null);
+const onlineVisible = ref(false);
+const onlineMember = ref(null);
+function openMemberVerification(member) {
+  if (verificationStatus(member) === 'passed') return;
+  verificationCardNo.value = citizenStore.currentFamily.rationCardNo;
+  verificationMemberId.value = member.id;
+  verificationMethodVisible.value = true;
+}
+function chooseMemberVerification(method) {
+  const member = verificationMember.value;
+  if (!member || verificationStatus(member) === 'passed') return;
+  if (method === 'remote' && hasPendingRemoteVerification(member)) return;
+  verificationMethodVisible.value = false;
+  if (method === 'online') { onlineMember.value = member; onlineVisible.value = true; }
+  else { remoteMember.value = member; remoteVisible.value = true; }
+}
+async function handleMemberVerified() {
+  onlineVisible.value = false;
+  onlineMember.value = null;
+  ElMessage.success(t('memberVerification.onlineCompleted'));
+  await citizenStore.fetchFamilies();
+}
+watch(() => citizenStore.currentFamily?.rationCardNo, cardNo => {
+  if (cardNo !== verificationCardNo.value) {
+    verificationMethodVisible.value = false;
+    onlineVisible.value = false;
+    onlineMember.value = null;
+    remoteVisible.value = false;
+  }
+});
 const editModalVisible = ref(false);
 const saving = ref(false);
 
@@ -1183,6 +1228,40 @@ async function handleSubmitAddMember() {
 </script>
 
 <style scoped>
+.member-verification-warning {
+  position: absolute;
+  top: -3px;
+  inset-inline-end: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #c04442;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: bold;
+}
+.member-verification-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border: 1px solid #d9e5db;
+  border-radius: 12px;
+  color: #326445;
+  background: #f3f8f4;
+  text-align: center;
+  cursor: pointer;
+}
+.member-verification-choice span { font-size: 12px; line-height: 1.6; color: #58685d; }
+.member-verification-choice:disabled { opacity: .55; cursor: not-allowed; }
+.member-verification-choice:focus-visible { outline: 2px solid #326445; outline-offset: 2px; }
+.member-verification-choice:not(:disabled):hover { border-color: #326445; background: #eff5f1; }
 .member-registration-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

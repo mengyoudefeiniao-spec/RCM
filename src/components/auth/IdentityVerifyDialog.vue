@@ -1,14 +1,15 @@
 <template>
   <el-dialog
     :model-value="modelValue"
-    :title="$t('firstLoginVerification.title')"
+    :title="$t(isMember ? 'memberVerification.online' : 'firstLoginVerification.title')"
     :width="dialogWidth"
     align-center
-    :class="['first-login-verify', { 'rcm-compact-dialog': isCompact }]"
+    :class="['identity-verify-dialog', { 'first-login-verify': !isMember, 'rcm-compact-dialog': isCompact }]"
     :close-on-click-modal="false"
     :before-close="close"
   >
     <el-alert :title="$t(isMock ? 'firstLoginVerification.demoNotice' : 'firstLoginVerification.liveUnavailable')" type="warning" :closable="false" show-icon class="mb-4" />
+    <p v-if="isMember" class="font-bold mb-2">{{ member.name }}</p>
     <p class="text-sm text-[#43554B] mb-4">{{ $t('firstLoginVerification.instruction') }}</p>
     <el-steps :active="face ? 2 : identity ? 1 : 0" finish-status="success" simple class="mb-4">
       <el-step :title="$t('firstLoginVerification.chipTitle')" />
@@ -20,7 +21,7 @@
         <p class="text-xs text-[#58685D]">{{ $t('firstLoginVerification.chipHint') }}</p>
         <div class="rounded-lg bg-[#EFF5F1] p-4 text-center text-[#43554B] space-y-2">
           <el-icon :size="36"><CreditCard /></el-icon>
-          <div><span dir="ltr" class="font-mono text-xs">{{ verification.nationalId }}</span></div>
+          <div><span dir="ltr" class="font-mono text-xs">{{ nationalId }}</span></div>
           <p v-if="identity" class="text-xs">{{ $t('firstLoginVerification.chipPlaceholder') }}</p>
         </div>
         <el-button class="w-full" type="primary" plain :loading="reading" :disabled="!isMock || comparing" data-first-login="read-chip" @click="readChip">
@@ -43,14 +44,14 @@
     <template #footer>
       <div class="flex flex-wrap justify-end gap-2">
         <el-button :disabled="comparing" @click="close">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :disabled="!identity || !face || !isMock || reading" :loading="comparing" data-first-login="finish" @click="compareAndLogin">{{ $t('firstLoginVerification.compareButton') }}</el-button>
+        <el-button type="primary" :disabled="!identity || !face || !isMock || reading" :loading="comparing" data-first-login="finish" @click="completeVerification">{{ $t(isMember ? 'memberVerification.completeOnline' : 'firstLoginVerification.compareButton') }}</el-button>
       </div>
     </template>
   </el-dialog>
   <FaceLivenessVerifyDialog
     v-model="showFace"
-    :target-name="verification.nationalId"
-    :target-national-id="verification.nationalId"
+    :target-name="member?.name || nationalId"
+    :target-national-id="nationalId"
     :allow-quick-pass="false"
     :notice="$t('firstLoginVerification.demoNotice')"
     @success="onFaceCaptured"
@@ -58,19 +59,26 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Camera, CreditCard } from '@element-plus/icons-vue';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
-import { readFirstLoginIdentity, completeFirstLoginVerification } from '../../api/auth.js';
+import { readFirstLoginIdentity, completeFirstLoginVerification, readMemberIdentity, completeMemberVerification } from '../../api/auth.js';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
 
-const props = defineProps({ modelValue: Boolean, verification: { type: Object, required: true } });
+const props = defineProps({
+  modelValue: Boolean,
+  verification: { type: Object, default: null },
+  member: { type: Object, default: null },
+  cardNo: { type: String, default: '' }
+});
 const emit = defineEmits(['update:modelValue', 'success', 'cancel']);
 const { t } = useI18n();
 const { isCompact, dialogWidth } = useCompactDialog(680);
 const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
+const isMember = computed(() => Boolean(props.member?.id));
+const nationalId = computed(() => props.member?.nationalId || props.verification?.nationalId || '');
 const identity = ref(null);
 const face = ref(null);
 const reading = ref(false);
@@ -97,26 +105,30 @@ async function readChip() {
   face.value = null;
   reading.value = true;
   try {
-    const result = await readFirstLoginIdentity({ challenge: props.verification.challenge });
+    const result = isMember.value
+      ? await readMemberIdentity({ cardNo: props.cardNo, memberId: props.member.id, nationalId: nationalId.value })
+      : await readFirstLoginIdentity({ challenge: props.verification.challenge });
     if (request === generation && props.modelValue) identity.value = result;
   } catch { ElMessage.error(t('firstLoginVerification.readFailed')); }
   finally { reading.value = false; }
 }
 function onFaceCaptured(payload) {
-  if (props.modelValue && identity.value && payload?.nationalId === props.verification.nationalId) face.value = payload;
+  if (props.modelValue && identity.value && payload?.nationalId === nationalId.value) face.value = payload;
 }
-async function compareAndLogin() {
+async function completeVerification() {
   if (!isMock || !identity.value || !face.value || comparing.value || reading.value) return;
   comparing.value = true;
   try {
-    const result = await completeFirstLoginVerification({
-      challenge: props.verification.challenge,
-      nationalId: props.verification.nationalId,
+    const fields = {
+      nationalId: nationalId.value,
       readToken: identity.value.readToken,
       livenessCompleted: true,
       faceImage: face.value.image || '',
       simulated: true
-    });
+    };
+    const result = isMember.value
+      ? await completeMemberVerification({ ...fields, cardNo: props.cardNo, memberId: props.member.id })
+      : await completeFirstLoginVerification({ ...fields, challenge: props.verification.challenge });
     if (result.passed !== true) throw new Error('Verification did not pass');
     emit('success', result);
     emit('update:modelValue', false);

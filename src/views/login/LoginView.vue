@@ -30,7 +30,7 @@
 
     <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
     <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" @registered="handleRegistered" />
-    <FirstLoginVerifyDialog
+    <IdentityVerifyDialog
       v-if="authStore.pendingIdentityVerification"
       v-model="firstLoginVerifyVisible"
       :verification="authStore.pendingIdentityVerification"
@@ -97,7 +97,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
-import FirstLoginVerifyDialog from '../../components/auth/FirstLoginVerifyDialog.vue';
+import IdentityVerifyDialog from '../../components/auth/IdentityVerifyDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
@@ -226,17 +226,8 @@ async function handleLogin() {
         return;
       }
 
-      // New demo accounts must reach the first-login identity gate before the older device flow.
-      if (import.meta.env.VITE_APP_MOCK_MODE === 'true') {
-        const accounts = JSON.parse(sessionStorage.getItem('rcm_demo_registrations') || '[]');
-        if (accounts.some(account => account.phone === loginForm.username || account.nationalId === loginForm.username)) {
-          await executeDirectLogin();
-          return;
-        }
-      }
-
-      // The existing mock citizen account is ready for demonstration; newly registered accounts still require verification.
-      if (isDefaultDemoAccount.value) {
+      // Shared citizen accounts must authenticate before the first-login identity gate is selected.
+      if (isMockMode && !isAdminAccount(loginForm.username) && loginForm.username !== 'FA-00128') {
         await executeDirectLogin();
         return;
       }

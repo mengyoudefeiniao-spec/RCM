@@ -24,6 +24,11 @@ export function isPocketBaseSyncEnabled() {
   return enabled && !!baseUrl;
 }
 
+// Workflows that confirm persisted state can wait for the writes already queued.
+export async function flushPocketBaseWrites() {
+  await writeQueue;
+}
+
 function recordUrl(id = '') {
   return `${baseUrl}/api/collections/${encodeURIComponent(collection)}/records${id ? `/${encodeURIComponent(id)}` : ''}`;
 }

@@ -85,6 +85,14 @@ export function completeFirstLoginVerification(data) {
   return request({ url: '/auth/first-login/verify', method: 'POST', data });
 }
 
+export function readMemberIdentity(data) {
+  return request({ url: '/auth/member-verification/read-identity', method: 'POST', data });
+}
+
+export function completeMemberVerification(data) {
+  return request({ url: '/auth/member-verification/verify', method: 'POST', data });
+}
+
 /**
  * 记录指定家庭成员的远程核验申请 (POST)
  */
