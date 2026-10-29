@@ -29,37 +29,32 @@
       <!-- 1. 典雅电子配给卡 (Digital Ration Card) -->
       <div
         v-if="citizenStore.currentFamily"
-        class="citizen-ration-card relative overflow-hidden rounded-lg p-5 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
+        class="citizen-ration-card relative overflow-hidden rounded-lg p-4 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
       >
         <!-- 金色装饰弧线纹理 -->
         <div class="absolute -end-8 -top-8 w-36 h-36 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
         <div class="absolute -end-4 -bottom-4 w-28 h-28 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
 
         <div class="relative z-10">
-          <div class="flex items-center justify-between pb-3 border-b border-white/10">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#2F7A50] animate-pulse"></span>
-              <span class="text-xs font-semibold text-[#D3AF62] tracking-wider uppercase">{{ $t('citizenCard.cardTitle') }}</span>
+          <div class="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
+            <div class="min-w-0 flex items-center gap-1.5">
+              <span class="w-2 h-2 shrink-0 rounded-full bg-[#2F7A50] animate-pulse"></span>
+              <span class="text-xs font-semibold leading-relaxed text-[#D3AF62] tracking-wider uppercase break-words">{{ $t('citizenCard.cardTitle') }}</span>
             </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
+            <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
               {{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}
             </span>
           </div>
 
-          <div class="py-3 flex items-center justify-between">
-            <div class="space-y-1">
-              <div class="text-xl font-extrabold tracking-widest font-mono text-[#FBFDFB]">
-                {{ citizenStore.currentFamily.rationCardNo }}
-              </div>
-              <div v-if="citizenStore.currentFamily.oldPaperCardNo" class="text-[11px] text-[#D3AF62] font-mono">
-                {{ citizenStore.currentFamily.oldPaperCardNo }}
-              </div>
+          <div class="pt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div class="min-w-0 break-all text-start text-xl font-extrabold tracking-wider text-[#FBFDFB]">
+              <span dir="ltr" class="font-mono">{{ citizenStore.currentFamily.rationCardNo }}</span>
             </div>
 
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
             <button
               type="button"
-              class="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all shrink-0 ms-2 group"
+              class="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all group focus-visible:outline-2 focus-visible:outline-[#326445] focus-visible:outline-offset-2"
               @click="openCardQrModal"
               :aria-label="$t('citizenCard.showCardQr')"
             >
@@ -69,15 +64,6 @@
                 </svg>
               </div>
             </button>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
-            <div>
-              <span class="font-bold text-white text-sm">{{ citizenStore.currentFamily.headName }}</span>
-            </div>
-            <div class="text-end">
-              <span class="text-xs text-[#E5CEA1] font-medium truncate block">{{ citizenStore.currentFamily.agentName }}</span>
-            </div>
           </div>
         </div>
       </div>
