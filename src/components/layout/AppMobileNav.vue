@@ -2,7 +2,7 @@
   <!-- 移动端底部原生级操作模块导航栏 (永远稳固在 APP 视口的最下方) -->
   <nav
     v-if="!authStore.isMobileVerificationActive"
-    class="w-full z-50 bg-white border-t border-[#E5CEA1] px-2 py-1.5 items-center safe-area-bottom shadow-[0_-4px_20px_-2px_rgba(58,77,62,0.08)] transition-all duration-300 shrink-0"
+    class="app-mobile-nav w-full z-50 bg-white border-t border-[#E5CEA1] px-2 py-1.5 items-center safe-area-bottom shadow-[0_-4px_20px_-2px_rgba(58,77,62,0.08)] transition-all duration-300 shrink-0"
     :class="[
       authStore.currentRole === 'agent' ? 'grid grid-cols-5' : 'flex justify-around',
       isAppMode

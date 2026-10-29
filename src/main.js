@@ -13,6 +13,7 @@ import './styles/mobile-theme.scss';
 import './styles/dialog-responsive.css';
 import './assets/css/ht-theme.css';
 import './styles/rtl.css';
+import './styles/reference-theme.css';
 import { initializePocketBaseSync } from './services/pocketBaseSync.js';
 
 async function startApp() {

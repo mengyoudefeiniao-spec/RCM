@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7 space-y-5 text-[#1F3326]"
+  <div class="my-account-view mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-7 space-y-5 text-[#1F3326]"
     @touchstart.passive="startListSwipe" @touchend.passive="endListSwipe" @touchcancel.passive="cancelListSwipe" @click.capture="guardSwipeClick">
     <header v-if="isListPage" class="flex items-center gap-3" data-my-list-header>
       <el-button circle :aria-label="$t('common.back')" @click="closeList"><el-icon class="rtl-mirror-icon"><ArrowLeft /></el-icon></el-button>
@@ -86,7 +86,7 @@
       </div>
       <div v-if="applicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.noApplicationHistory') }}</div>
       <div v-else-if="isListPage && filteredApplicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.applicationNoMatches') }}</div>
-      <article v-for="record in displayedApplications" :key="record.id" class="rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
+      <article v-for="record in displayedApplications" :key="record.id" class="application-record rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="text-sm font-semibold text-[#1F3326]">{{ $t(`my.applicationTypes.${record.sourceCode}`) }}</h3>
           <div class="flex flex-wrap items-center gap-1.5">

@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-white text-[#1F3326] border-b border-[#E5CEA1] shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)] sticky top-0 z-40 w-full">
+  <header class="app-header bg-white text-[#1F3326] border-b border-[#E5CEA1] shadow-[0_3px_18px_-6px_rgba(58,77,62,0.12)] sticky top-0 z-40 w-full">
     <!-- 全宽顶栏：针对 Google Pixel 9 手机优化高度与右侧控件排列 -->
     <div class="w-full px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- 左侧区域：Logo 固定在左上角，模块导航紧随其后靠左对齐 -->

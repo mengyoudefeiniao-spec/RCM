@@ -8,7 +8,7 @@
       <!-- 1. 典雅电子配给卡 (Digital Ration Card) -->
       <div
         v-if="citizenStore.currentFamily"
-        class="relative overflow-hidden rounded-lg p-5 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
+        class="citizen-ration-card relative overflow-hidden rounded-lg p-5 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/30 select-none"
       >
         <!-- 金色装饰弧线纹理 -->
         <div class="absolute -end-8 -top-8 w-36 h-36 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>

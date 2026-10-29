@@ -1,0 +1,70 @@
+/* Shared visual language inspired by the Iraqi ration-card application. */
+:root {
+  --background: #f1f2f4;
+  --foreground: #202326;
+  --card: #fff;
+  --primary: #15975a;
+  --border: #e2e4e7;
+  --radius: 16px;
+  --el-color-primary: #15975a;
+  --el-color-primary-light-3: #42b67e;
+  --el-color-primary-light-5: #78cda4;
+  --el-color-primary-light-7: #b8e5cf;
+  --el-color-primary-light-8: #d4f0e2;
+  --el-color-primary-light-9: #eaf8f1;
+  --el-color-primary-dark-2: #0d7948;
+  --el-bg-color-page: #f1f2f4;
+  --el-border-color: #dfe2e5;
+  --el-border-color-light: #e9ebed;
+  --el-text-color-primary: #202326;
+  --el-text-color-regular: #67717e;
+  --el-text-color-secondary: #89929f;
+  --el-border-radius-base: 12px;
+  --el-card-border-radius: 18px;
+  --rcm-m-canvas: #f1f2f4;
+  --rcm-m-card-surface: #fff;
+  --rcm-m-card-border: #e5e7e9;
+  --rcm-shadow-card: 0 2px 10px rgba(31, 41, 55, .035);
+}
+body, .app-shell, .app-workspace { background-color: #f1f2f4 !important; }
+.app-header { border-color: #e8eaec !important; box-shadow: 0 1px 0 rgba(24, 35, 42, .04) !important; }
+.app-module-nav a { border-color: transparent !important; box-shadow: none !important; }
+.app-module-nav a.router-link-active { background: #eaf8f1 !important; color: #118653 !important; }
+.app-mobile-nav { border-color: #e5e7e9 !important; box-shadow: 0 -3px 16px rgba(24, 35, 42, .06) !important; }
+.app-mobile-nav a { border-color: transparent !important; background: transparent !important; color: #89929f; min-height: 48px; justify-content: center; }
+.app-mobile-nav a.router-link-active { color: #15975a !important; }
+.el-card, .rcm-card, .rcm-list-card, .rcm-summary-card { border-radius: 18px !important; border-color: #e7e9eb !important; box-shadow: var(--rcm-shadow-card) !important; }
+.el-button:not(.is-link):not(.is-text) { border-radius: 12px; min-height: 36px; }
+.el-button--primary:not(.is-link):not(.is-text) { background: #15975a !important; border-color: #15975a !important; color: white !important; }
+.el-button--primary:not(.is-link):not(.is-text):hover { background: #118653 !important; border-color: #118653 !important; }
+.el-button.is-disabled, .el-button.is-disabled:hover { opacity: .55; transform: none; box-shadow: none; }
+.el-tag { border-radius: 999px !important; padding-inline: 10px; }
+.el-tag--info.el-tag--light { background: #f1f2f4 !important; border-color: #e2e4e7 !important; color: #737d89 !important; }
+.el-tabs__active-bar { background-color: #15975a !important; }
+.el-tabs__item.is-active, .el-tabs__item:hover { color: #15975a !important; }
+.el-table { --el-table-header-bg-color: #f5f6f7; --el-table-row-hover-bg-color: #f6faf8; border-radius: 16px; }
+.el-table th.el-table__cell { background: #f5f6f7 !important; }
+.el-input__wrapper, .el-select__wrapper, .el-textarea__inner { border-radius: 12px !important; box-shadow: 0 0 0 1px #dfe2e5 inset !important; }
+.el-input__wrapper.is-focus, .el-select__wrapper.is-focused, .el-textarea__inner:focus { box-shadow: 0 0 0 1px #15975a inset !important; }
+.el-dialog, .el-message-box { border-radius: 20px !important; }
+.el-dropdown-menu, .el-select-dropdown { border-radius: 14px !important; }
+:where(button, a, input, textarea, select):focus-visible { outline: 2px solid #15975a; outline-offset: 2px; }
+
+/* The mobile ration card uses the same calm white surface as the reference. */
+.citizen-ration-card { background: #fff !important; color: #202326 !important; border: 1px solid #e4e6e8 !important; border-radius: 20px !important; box-shadow: 0 2px 10px rgba(31,41,55,.04) !important; }
+.citizen-ration-card > .absolute { display: none; }
+.citizen-ration-card .border-white\/10 { border-color: #eceef0 !important; }
+.citizen-ration-card .text-white, .citizen-ration-card .text-\[\#FBFDFB\] { color: #202326 !important; }
+.citizen-ration-card .text-white\/60, .citizen-ration-card .text-white\/50 { color: #89929f !important; }
+.citizen-ration-card .text-\[\#D3AF62\], .citizen-ration-card .text-\[\#E5CEA1\] { color: #15975a !important; }
+.citizen-ration-card button { background: #eaf8f1 !important; border-color: #cbe9d9 !important; }
+.citizen-ration-card button > div { background: #15975a !important; color: #fff !important; }
+.my-account-view .application-record { background: #fff; border: 1px solid #e3e5e8; border-radius: 16px; padding: 16px; }
+.my-account-view .application-record h3 { font-size: .95rem; color: #202326; }
+.my-account-view .application-record > div:nth-child(2) { background: #f3f4f5; border-radius: 10px; padding: 10px 12px; font-size: .75rem; color: #737d89; }
+@media (max-width: 640px) {
+  .app-mobile-nav { padding-block: 7px; }
+  .app-mobile-nav a { padding-inline: 4px; min-width: 0; flex: 1 1 0; }
+  .app-mobile-nav a span { text-align: center; line-height: 1.25; overflow-wrap: anywhere; }
+  .citizen-family-view > div:first-of-type > .bg-white { border-radius: 18px; }
+}
