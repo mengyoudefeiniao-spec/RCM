@@ -1,17 +1,5 @@
 <template>
   <div class="citizen-family-view space-y-6">
-    <section v-if="citizenStore.currentFamily" class="rounded-lg border border-[#DCE9DF] bg-white p-4 space-y-3">
-      <h2 class="font-bold text-[#1B3123]">{{ $t('memberVerification.title') }}</h2>
-      <p class="text-sm text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
-      <div v-for="member in citizenStore.currentFamily.members || []" :key="member.id" class="flex flex-wrap items-center justify-between gap-2 border-t border-[#E9F1EB] pt-2 text-sm">
-        <span class="font-semibold">{{ member.name }}</span>
-        <div class="flex flex-wrap items-center gap-2">
-          <span>{{ $t('memberVerification.status') }}: {{ $t('memberVerification.' + verificationStatus(member)) }}</span>
-          <span v-if="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" class="text-[#58685D]">{{ $t('memberVerification.requested') }}</span>
-          <el-button v-if="verificationStatus(member) !== 'passed'" size="small" :disabled="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" @click="openRemote(member)">{{ $t('memberVerification.remote') }}</el-button>
-        </div>
-      </div>
-    </section>
     <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="citizenStore.currentFamily?.rationCardNo || ''" @requested="citizenStore.fetchFamilies()" />
     <!-- ======================================================== -->
     <!-- 移动端 APP 视图 (针对 Google Pixel 9 412px 视口极致适配) -->
@@ -129,12 +117,14 @@
           </el-button>
         </div>
 
+        <p class="text-xs text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
+
         <!-- 成员卡片项 -->
         <div class="space-y-2.5">
           <div
             v-for="member in (citizenStore.currentFamily?.members || [])"
             :key="member.id"
-            class="p-3.5 rounded-lg border border-[#E9F1EB] bg-[#F3F8F4] flex items-center justify-between hover:border-[#D3AF62] transition-all"
+            class="p-3.5 rounded-lg border border-[#E9F1EB] bg-[#F3F8F4] flex flex-wrap items-center justify-between gap-2 hover:border-[#D3AF62] transition-all"
           >
             <div class="flex items-center gap-3">
               <div
@@ -173,6 +163,9 @@
               >
                 {{ formatFreezeReason(member.freezeReason) }}
               </span>
+              <span class="text-[11px] text-[#58685D]">{{ $t('memberVerification.status') }}: {{ $t('memberVerification.' + verificationStatus(member)) }}</span>
+              <span v-if="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" class="text-[11px] text-[#58685D]">{{ $t('memberVerification.requested') }}</span>
+              <el-button v-if="verificationStatus(member) !== 'passed'" size="small" :disabled="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" @click="openRemote(member)">{{ $t('memberVerification.remote') }}</el-button>
               <button
                 type="button"
                 class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer"
@@ -290,6 +283,8 @@
           </el-button>
         </div>
 
+        <p class="text-xs text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
+
         <el-table
           :data="citizenStore.currentFamily?.members || []"
           v-loading="citizenStore.loading"
@@ -354,17 +349,25 @@
             </template>
           </el-table-column>
 
+          <el-table-column :label="$t('memberVerification.status')" min-width="150">
+            <template #default="{ row }">
+              <div>{{ $t('memberVerification.' + verificationStatus(row)) }}</div>
+              <div v-if="row.verification?.method === 'remote' && verificationStatus(row) === 'pending'" class="text-[11px] text-[#58685D]">{{ $t('memberVerification.requested') }}</div>
+            </template>
+          </el-table-column>
+
           <el-table-column prop="phone" :label="$t('citizen.phone')" min-width="130">
             <template #default="{ row }">
               <span class="font-mono">{{ row.phone || '—' }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('common.action')" width="110" align="center" fixed="right">
+          <el-table-column :label="$t('common.action')" min-width="180" align="center" fixed="right">
             <template #default="{ row }">
               <el-button size="small" type="primary" link @click="openEditModal(row)">
                 {{ $t('citizen.updateInfo') }}
               </el-button>
+              <el-button v-if="verificationStatus(row) !== 'passed'" size="small" type="primary" link :disabled="row.verification?.method === 'remote' && verificationStatus(row) === 'pending'" @click="openRemote(row)">{{ $t('memberVerification.remote') }}</el-button>
             </template>
           </el-table-column>
         </el-table>
