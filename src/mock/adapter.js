@@ -1440,28 +1440,22 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.biometricSuccessMsg'));
   }
 
-  // 1.5 异地家庭成员 GPS 与邀请码远程核查
+  // Local demo request only: no invitation or identity verification is performed.
   if (url.includes('/auth/verify-remote') && method === 'POST') {
-    const { memberName, location, locationLabel } = data;
-    if (location === 'same' || location === '同一住址') {
-      return createResponse({
-        passed: false,
-        message: i18n.global.t('register.api.remoteSameMsg')
-      }, 400, i18n.global.t('register.api.remoteSameTitle'));
+    const { cardNo, memberId } = data || {};
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === cardNo);
+    const member = family?.members?.find(item => item.id === memberId);
+    if (!member || member.verification?.status === 'passed' || (member.verification?.status === 'pending' && member.verification?.method === 'remote')) {
+      return createResponse({}, 400, i18n.global.t('memberVerification.error'));
     }
-    if (!memberName || memberName.trim().length < 2) {
-      return createResponse({
-        passed: false,
-        message: i18n.global.t('register.api.remoteNameMsg')
-      }, 400, i18n.global.t('register.api.remoteNameTitle'));
-    }
-    return createResponse({
-      passed: true,
-      message: i18n.global.t('register.api.remoteSuccessMsg', {
-        name: memberName,
-        location: locationLabel || location || ''
-      })
-    }, 200, i18n.global.t('register.api.remoteSuccessTitle'));
+    const record = { memberId, method: 'remote', status: 'pending', requestedAt: new Date().toISOString() };
+    updateSharedFamily(cardNo, current => ({
+      ...current,
+      members: current.members.map(item => item.id === memberId
+        ? { ...item, verification: record }
+        : item)
+    }), reqLang);
+    return createResponse(record);
   }
 
   // ==========================================

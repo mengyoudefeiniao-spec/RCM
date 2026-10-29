@@ -78,7 +78,7 @@ export function verifyBiometricFace(data) {
 }
 
 /**
- * 异地家庭成员 GPS 与邀请码远程核查 (POST)
+ * 记录指定家庭成员的远程核验申请 (POST)
  */
 export function verifyRemoteMember(data) {
   return request({

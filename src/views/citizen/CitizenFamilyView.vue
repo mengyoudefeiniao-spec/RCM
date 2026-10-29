@@ -1,5 +1,18 @@
 <template>
   <div class="citizen-family-view space-y-6">
+    <section v-if="citizenStore.currentFamily" class="rounded-lg border border-[#DCE9DF] bg-white p-4 space-y-3">
+      <h2 class="font-bold text-[#1B3123]">{{ $t('memberVerification.title') }}</h2>
+      <p class="text-sm text-[#58685D]">{{ $t('memberVerification.incomplete') }}: {{ incompleteMembers.length ? incompleteMembers.map(member => member.name).join('، ') : $t('memberVerification.none') }}</p>
+      <div v-for="member in citizenStore.currentFamily.members || []" :key="member.id" class="flex flex-wrap items-center justify-between gap-2 border-t border-[#E9F1EB] pt-2 text-sm">
+        <span class="font-semibold">{{ member.name }}</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span>{{ $t('memberVerification.status') }}: {{ $t('memberVerification.' + verificationStatus(member)) }}</span>
+          <span v-if="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" class="text-[#58685D]">{{ $t('memberVerification.requested') }}</span>
+          <el-button v-if="verificationStatus(member) !== 'passed'" size="small" :disabled="member.verification?.method === 'remote' && verificationStatus(member) === 'pending'" @click="openRemote(member)">{{ $t('memberVerification.remote') }}</el-button>
+        </div>
+      </div>
+    </section>
+    <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="citizenStore.currentFamily?.rationCardNo || ''" @requested="citizenStore.fetchFamilies()" />
     <!-- ======================================================== -->
     <!-- 移动端 APP 视图 (针对 Google Pixel 9 412px 视口极致适配) -->
     <!-- ======================================================== -->
@@ -798,6 +811,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
+import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
 import {
@@ -838,6 +852,11 @@ const route = useRoute();
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const citizenStore = useCitizenStore();
+const remoteVisible = ref(false);
+const remoteMember = ref(null);
+const verificationStatus = member => ['pending', 'passed', 'failed', 'manual'].includes(member.verification?.status) ? member.verification.status : 'pending';
+const incompleteMembers = computed(() => (citizenStore.currentFamily?.members || []).filter(member => verificationStatus(member) !== 'passed'));
+function openRemote(member) { remoteMember.value = member; remoteVisible.value = true; }
 const editModalVisible = ref(false);
 const saving = ref(false);
 

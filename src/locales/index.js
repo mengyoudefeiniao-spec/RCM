@@ -33,9 +33,10 @@ import chatOrderMessages from './chatOrders.js';
 import complaintAnalyticsMessages from './complaintAnalytics.js';
 import memberDeregistrationMessages from './memberDeregistration.js';
 import registrationFlowMessages from './registrationFlow.js';
+import memberVerificationMessages from './memberVerification.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, registrationFlow: registrationFlowMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const merged = { ...messages, memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   const deregistration = memberDeregistrationMessages[lang];
   merged.memberDeregistration = deregistration;
   merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action } };

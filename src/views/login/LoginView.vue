@@ -260,12 +260,12 @@
             </div>
 
             <div
-              class="border rounded-lg p-3 text-center cursor-pointer hover:border-[#D3AF62] hover:bg-[#FDF3E0]/50 transition-all space-y-1"
-              @click="openRemoteVerify"
+              class="border rounded-lg p-3 text-center opacity-60 space-y-1"
+              aria-disabled="true"
             >
               <el-icon :size="24" class="text-[#C9A13B]"><Location /></el-icon>
               <div class="text-xs font-bold text-[#1F3326]">{{ $t('login.remoteFamilyVerify') }}</div>
-              <div class="text-[10px] text-[#8A9A8F]">{{ $t('login.remoteGpsCheck') }}</div>
+              <div class="text-[10px] text-[#8A9A8F]">{{ $t('memberVerification.unavailable') }}</div>
             </div>
           </div>
         </div>
@@ -280,13 +280,6 @@
       v-model="biometricVerifyDialogVisible"
       :user-name="currentAccountDisplayName"
       :user-card-no="loginForm.username"
-      @success="handleSecondaryVerifySuccess"
-    />
-
-    <!-- 弹窗 4: 异地成员远程核验弹窗 (新设备登录使用) -->
-    <RemoteVerifyDialog
-      v-model="remoteVerifyDialogVisible"
-      default-member-name="艾哈迈德·哈桑·萨利赫"
       @success="handleSecondaryVerifySuccess"
     />
 
@@ -325,7 +318,6 @@ import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
-import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
 import { isDemoActive, demoSubStep, setDemoStep, activateDemo, deactivateDemo } from '../../utils/demoState.js';
@@ -413,7 +405,6 @@ function toggleDeviceTrust() {
 const registerDialogVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
-const remoteVerifyDialogVisible = ref(false);
 const quickNfcDialogVisible = ref(false);
 const quickNfcLoading = ref(false);
 
@@ -547,11 +538,6 @@ async function executeDirectLogin() {
 function openBiometricVerify() {
   newDeviceVerifyDialogVisible.value = false;
   biometricVerifyDialogVisible.value = true;
-}
-
-function openRemoteVerify() {
-  newDeviceVerifyDialogVisible.value = false;
-  remoteVerifyDialogVisible.value = true;
 }
 
 // 新设备二次认证成功回调
