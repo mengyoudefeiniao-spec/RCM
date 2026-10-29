@@ -311,9 +311,16 @@ async function handleSecondaryVerifySuccess() {
   font-size: .7rem;
   line-height: 1.6;
 }
-.login-submit { width: 100%; font-weight: 700; }
+.login-content :deep(.el-form-item) { margin-bottom: 24px; }
+.login-content :deep(.el-form-item__error) {
+  position: static;
+  flex-basis: 100%;
+  padding-top: 6px;
+  line-height: 1.4;
+}
+.login-submit { width: 100%; margin-top: 8px; font-weight: 700; }
 .login-register {
-  margin-top: 24px;
+  margin-top: 32px;
   padding: 12px;
   border: 1px solid #e5cea1;
   border-radius: 8px;
@@ -364,13 +371,17 @@ async function handleSecondaryVerifySuccess() {
   scrollbar-width: thin;
   scrollbar-color: #32644533 transparent;
 }
+.login-app-mode .login-scroll-content::before,
+.login-app-mode .login-scroll-content::after {
+  content: '';
+}
+.login-app-mode .login-scroll-content::before { flex: 1 0 0; }
+.login-app-mode .login-scroll-content::after { flex: 2 0 0; }
 .login-app-mode .login-header {
   flex-shrink: 0;
-  margin-block-start: auto;
 }
 .login-app-mode .login-content {
   flex-shrink: 0;
-  margin-block-end: auto;
 }
 @media (max-width: 639px) {
   .login-scroll-content { padding: 24px 16px; }
