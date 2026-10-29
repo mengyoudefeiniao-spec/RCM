@@ -1,30 +1,30 @@
 <template>
-  <div class="login-page">
-    <div class="login-language"><LanguageSwitcher /></div>
-    <main class="login-card">
-      <header class="login-header">
-        <h1>{{ $t('loginPage.title') }}</h1>
-        <p>{{ $t('loginPage.ministry') }}</p>
-      </header>
-      <section class="login-content">
-        <h2>{{ $t('login.accountLogin') }}</h2>
-        <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
-          <el-form-item :label="$t('loginPage.username')" prop="username">
-            <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
-          </el-form-item>
-          <el-form-item :label="$t('login.passwordLabel')" prop="password">
-            <el-input v-model="loginForm.password" type="password" :placeholder="$t('login.passwordPlaceholder')" size="large" :prefix-icon="Lock" show-password />
-          </el-form-item>
-          <div class="login-options">
-            <el-button text type="primary" @click="quickNfcDialogVisible = true">{{ $t('login.nfcAuth') }}</el-button>
+  <div class="login-page" :class="{ 'login-app-mode': isAppMode }">
+    <div v-if="!isAppMode" class="login-language"><LanguageSwitcher /></div>
+    <main class="login-viewport">
+      <div v-if="isAppMode" class="login-app-toolbar"><LanguageSwitcher /></div>
+      <div class="login-scroll-content">
+        <header class="login-header">
+          <div class="flex justify-center"><AppLogo size="lg" theme="light" /></div>
+          <h1>{{ $t('loginPage.title') }}</h1>
+          <p>{{ $t('loginPage.ministry') }}</p>
+        </header>
+        <section class="login-content">
+          <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
+            <el-form-item :label="$t('loginPage.username')" prop="username">
+              <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
+            </el-form-item>
+            <el-form-item :label="$t('login.passwordLabel')" prop="password">
+              <el-input v-model="loginForm.password" type="password" :placeholder="$t('login.passwordPlaceholder')" size="large" :prefix-icon="Lock" show-password />
+            </el-form-item>
+            <el-button type="primary" size="large" class="login-submit" :loading="loading" native-type="submit">{{ $t('login.loginBtn') }}</el-button>
+          </el-form>
+          <div class="login-register">
+            <span>{{ $t('loginPage.noAccount') }}</span>
+            <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
           </div>
-          <el-button type="primary" size="large" class="login-submit" :loading="loading" native-type="submit">{{ $t('login.loginBtn') }}</el-button>
-        </el-form>
-        <div class="login-register">
-          <span>{{ $t('loginPage.noAccount') }}</span>
-          <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
 
     <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
@@ -34,7 +34,7 @@
     <el-dialog
       v-model="newDeviceVerifyDialogVisible"
       :title="$t('login.newDeviceTitle')"
-      width="480px"
+      width="min(480px, calc(100vw - 32px))"
       align-center
     >
       <div class="space-y-4">
@@ -79,29 +79,6 @@
       @success="handleSecondaryVerifySuccess"
     />
 
-    <!-- 弹窗 5: 快捷生物特征 / NFC 免密感应核验 -->
-    <el-dialog
-      v-model="quickNfcDialogVisible"
-      :title="$t('loginPage.nfcTitle')"
-      width="420px"
-      align-center
-    >
-      <div class="text-center py-6 space-y-4">
-        <div class="w-20 h-20 rounded-full bg-[#EFF5F1] text-[#326445] flex items-center justify-center mx-auto border-4 border-[#E1F4E4] animate-pulse">
-          <el-icon :size="36"><Iphone /></el-icon>
-        </div>
-        <div>
-          <div class="text-sm font-bold text-[#1F3326]">{{ $t('loginPage.nfcInstruction') }}</div>
-          <div class="text-xs text-[#8A9A8F] mt-1">{{ $t('loginPage.nfcDemoNotice') }}</div>
-        </div>
-      </div>
-      <template #footer>
-        <el-button @click="quickNfcDialogVisible = false">{{ $t('common.cancel') }}</el-button>
-        <el-button v-if="isMockMode" type="primary" :loading="quickNfcLoading" @click="simulateQuickNfcPass">
-          {{ $t('loginPage.nfcDemoButton') }}
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -114,11 +91,11 @@ import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
+import AppLogo from '../../components/common/AppLogo.vue';
 import { isDemoActive, setDemoStep, activateDemo } from '../../utils/demoState.js';
 import {
   User,
   Lock,
-  Iphone,
   Camera,
   Location
 } from '@element-plus/icons-vue';
@@ -175,9 +152,6 @@ const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true
 const registerDialogVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
-const quickNfcDialogVisible = ref(false);
-const quickNfcLoading = ref(false);
-const isMockMode = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 
 const loginForm = reactive({
   username: '',
@@ -295,37 +269,109 @@ async function handleSecondaryVerifySuccess() {
   executeDirectLogin();
 }
 
-async function simulateQuickNfcPass() {
-  quickNfcLoading.value = true;
-  setTimeout(async () => {
-    quickNfcLoading.value = false;
-    quickNfcDialogVisible.value = false;
-    const ok = await authStore.login('RC-10029381', 'iq-pass-2026');
-    if (!ok) return;
-    ElMessage.success(i18n.global.t('loginPage.nfcDemoSuccess'));
-    localStorage.setItem('rcm_trusted_device', 'true');
-    isTrustedDevice.value = true;
-    if (isAppMode.value) {
-      router.push('/citizen?role=citizen&layout=app');
-    } else {
-      const target = getDefaultPathByRole(authStore.currentRole);
-      router.push(target);
-    }
-  }, 600);
-}
 </script>
 
 <style scoped>
-.login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; background: radial-gradient(circle at 12% 12%, #526b4b 0, transparent 35%), linear-gradient(145deg, #12241a, #234b35); position: relative; }
-.login-language { position: absolute; top: 20px; inset-inline-end: 20px; z-index: 2; }
-.login-card { width: min(100%, 460px); overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 24px 64px #091b1180; }
-.login-header { padding: 36px 32px 30px; text-align: center; color: #fff; background: linear-gradient(140deg, #1b3928, #326445); }
-.login-header h1 { font-size: 1.55rem; line-height: 1.3; font-weight: 700; }
-.login-header p { margin-top: 10px; color: #e4d0a5; font-size: .75rem; line-height: 1.6; }
-.login-content { padding: 32px; }
-.login-content h2 { color: #1f3326; font-size: 1.05rem; font-weight: 700; margin-bottom: 24px; }
-.login-options { display: flex; justify-content: flex-end; margin: -5px 0 14px; }
+.login-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+  background: radial-gradient(circle at 15% 20%, #d3af6229, transparent 45%),
+    linear-gradient(135deg, #12241a, #326445 50%, #12241a);
+  position: relative;
+}
+.login-language {
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  z-index: 2;
+}
+.login-viewport {
+  width: min(100%, 448px);
+  min-height: 0;
+  border: 1px solid #d9e5db;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 20px 50px -10px #0f231d59;
+}
+.login-scroll-content { padding: 32px; }
+.login-header { margin-bottom: 28px; text-align: center; }
+.login-header h1 {
+  margin-top: 12px;
+  color: #1f3326;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-weight: 700;
+}
+.login-header p {
+  margin-top: 4px;
+  color: #8a9a8f;
+  font-size: .7rem;
+  line-height: 1.6;
+}
 .login-submit { width: 100%; font-weight: 700; }
-.login-register { margin-top: 28px; padding-top: 22px; border-top: 1px solid #e5ede7; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #58685d; font-size: .875rem; }
-@media (max-width: 480px) { .login-page { padding: 70px 16px 24px; } .login-header { padding: 30px 24px 26px; } .login-content { padding: 26px 24px; } }
+.login-register {
+  margin-top: 24px;
+  padding: 12px;
+  border: 1px solid #e5cea1;
+  border-radius: 8px;
+  background: #fdf3e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #58685d;
+  font-size: .75rem;
+}
+.login-app-mode {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px 0;
+  background: #1b31231a;
+}
+.login-app-mode .login-viewport {
+  display: flex;
+  flex-direction: column;
+  width: 412px;
+  max-width: 100%;
+  height: min(924px, calc(100dvh - 20px));
+  max-height: calc(100dvh - 20px);
+  border-radius: 28px;
+  overflow: hidden;
+}
+.login-app-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+  height: 48px;
+  padding-inline: 12px;
+  background: #326445;
+  border-bottom: 1px solid #2f5b44;
+}
+.login-app-mode .login-scroll-content {
+  flex: 1;
+  min-height: 0;
+  padding: 24px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #32644533 transparent;
+}
+@media (max-width: 639px) {
+  .login-scroll-content { padding: 24px 16px; }
+  .login-app-mode { padding-block: 4px; }
+  .login-app-mode .login-viewport {
+    width: 100%;
+    height: min(924px, calc(100dvh - 8px));
+    max-height: calc(100dvh - 8px);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
 </style>
