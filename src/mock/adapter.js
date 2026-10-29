@@ -691,7 +691,7 @@ export function getActiveLang(config) {
     if (l === 'ckb') return 'ku';
     if (['zh', 'en', 'ar', 'ku'].includes(l)) return l;
   }
-  return 'zh';
+  return 'ar';
 }
 
 /**
@@ -714,7 +714,7 @@ export function getAiServiceLang(config, data) {
       return storedLang;
     }
   }
-  return 'zh';
+  return 'ar';
 }
 
 

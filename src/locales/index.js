@@ -61,10 +61,10 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'ckb', name: 'کوردی', nativeName: 'سۆرانی (CKB)', flag: '☀️', dir: 'rtl' }
 ];
 
-const storedLang = localStorage.getItem('rcm_language') || 'zh';
+const storedLang = localStorage.getItem('rcm_language');
 // Previous versions used `ku` for the Sorani catalog. Migrate that saved choice.
 const migratedLang = storedLang === 'ku' ? 'ckb' : storedLang;
-const savedLang = SUPPORTED_LANGUAGES.some(({ code }) => code === migratedLang) ? migratedLang : 'zh';
+const savedLang = SUPPORTED_LANGUAGES.some(({ code }) => code === migratedLang) ? migratedLang : 'ar';
 if (storedLang !== savedLang) localStorage.setItem('rcm_language', savedLang);
 
 export const i18n = createI18n({

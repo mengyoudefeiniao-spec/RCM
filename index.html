@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" dir="ltr">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -143,7 +143,7 @@
           <div class="skeleton-progress-track">
             <div class="skeleton-progress-bar"></div>
           </div>
-          <div class="skeleton-status-text" id="skeleton-status-text">系统初始化中…</div>
+          <div class="skeleton-status-text" id="skeleton-status-text">جارٍ تهيئة النظام...</div>
         </div>
       </div>
     </div>
@@ -154,16 +154,18 @@
           zh: '系统初始化中…',
           en: 'System Initializing...',
           ar: 'جارٍ تهيئة النظام...',
-          ku: 'سیستەم ئامادە دەکات...'
+          ckb: 'سیستەم ئامادە دەکات...'
         };
-        var lang = 'zh';
+        var lang = 'ar';
         try {
           var saved = window.localStorage && window.localStorage.getItem('rcm_language');
+          if (saved === 'ku') saved = 'ckb';
           if (saved && langMap[saved]) lang = saved;
         } catch (e) { /* 隐私模式下 localStorage 不可用时保持默认 */ }
         var el = document.getElementById('skeleton-status-text');
         if (el) el.textContent = langMap[lang];
         document.documentElement.setAttribute('lang', lang);
+        document.documentElement.setAttribute('dir', lang === 'ar' || lang === 'ckb' ? 'rtl' : 'ltr');
       })();
     </script>
     <script type="module" src="/src/main.js"></script>

@@ -16,10 +16,10 @@ const STORAGE_KEY_FAMILIES = 'rcm_shared_families';
 
 function getActiveLanguage() {
   if (typeof localStorage !== 'undefined') {
-    const language = localStorage.getItem('rcm_language') || 'zh';
+    const language = localStorage.getItem('rcm_language') || 'ar';
     return language === 'ckb' ? 'ku' : language;
   }
-  return 'zh';
+  return 'ar';
 }
 
 function getArabicFamilies() {

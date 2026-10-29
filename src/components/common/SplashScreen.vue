@@ -61,7 +61,7 @@
         <!-- 极简系统初始化状态提示 -->
         <div class="flex items-center gap-2 text-[11px] text-[#AECBB8] tracking-wider font-mono">
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#3E8A5E] animate-ping"></span>
-          <span>System Initializing...</span>
+          <span>{{ $t('common.loading') }}</span>
         </div>
       </div>
     </div>

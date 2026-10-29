@@ -47,7 +47,7 @@ client.interceptors.request.use(
     }
 
     // 注入当前业务语言请求头 (国际化网关标准)
-    const lang = localStorage.getItem('rcm_language') || 'zh';
+    const lang = i18n.global.locale.value;
     config.headers['Accept-Language'] = lang;
 
     return config;
