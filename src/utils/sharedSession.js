@@ -552,6 +552,19 @@ export function getSharedFamilies(langOverride) {
         // 自动净化历史脏缓存：剔除已被废弃的冗余家庭 RC-10034592
         const cleaned = parsed.filter((f) => f && f.rationCardNo !== 'RC-10034592');
         let localizedFreezeStatusChanged = false;
+        let legacyVerificationChanged = false;
+        // Legacy demo members were marked verified without an actual verification record.
+        // Preserve any newer, explicitly recorded verification result.
+        cleaned.forEach((family) => {
+          if (family.rationCardNo !== 'RC-10029381') return;
+          (family.members || []).forEach((member) => {
+            const legacyDemoIds = { 'M-002': '198082910482', 'M-004': '200682910484' };
+            if (legacyDemoIds[member.id] === member.nationalId && member.faceVerified === true && !member.faceVerifiedAt && !member.verification) {
+              member.faceVerified = false;
+              legacyVerificationChanged = true;
+            }
+          });
+        });
         if (lang === 'ar' || lang === 'ku') {
           const localizedStatuses = lang === 'ar'
             ? { active: 'نشط', frozen: 'مجمد', legacyActive: 'ساري المفعول' }
@@ -570,7 +583,7 @@ export function getSharedFamilies(langOverride) {
           });
         }
         const localized = cleaned.map(family => localizeDemoFamilyNames(family, lang));
-        if (cleaned.length !== parsed.length || localizedFreezeStatusChanged || localized.some((family, index) => family !== cleaned[index])) {
+        if (cleaned.length !== parsed.length || localizedFreezeStatusChanged || legacyVerificationChanged || localized.some((family, index) => family !== cleaned[index])) {
           localStorage.setItem(storageKey, JSON.stringify(localized));
         }
         if (localized.length > 0) return localized;

@@ -163,14 +163,10 @@
               >
                 {{ formatFreezeReason(member.freezeReason) }}
               </span>
-              <el-button v-if="verificationStatus(member) !== 'passed'" size="small" type="primary" plain data-member-verify @click="openMemberVerification(member)">{{ $t('memberVerification.verify') }}</el-button>
-              <button
-                type="button"
-                class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer"
-                @click="openEditModal(member)"
-              >
-                {{ $t('citizenCard.actionUpdate') }}
-              </button>
+              <div class="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                <button v-if="verificationStatus(member) !== 'passed'" type="button" class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer" data-member-verify @click="openMemberVerification(member)">{{ $t(`memberVerification.${verificationStatus(member)}`) }}</button>
+                <button type="button" class="text-[11px] text-[#D3AF62] hover:text-[#326445] underline cursor-pointer" @click="openEditModal(member)">{{ $t('citizenCard.actionUpdate') }}</button>
+              </div>
             </div>
           </div>
         </div>
@@ -356,10 +352,10 @@
 
           <el-table-column :label="$t('common.action')" min-width="180" align="center" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" type="primary" link @click="openEditModal(row)">
-                {{ $t('citizen.updateInfo') }}
-              </el-button>
-              <el-button v-if="verificationStatus(row) !== 'passed'" size="small" type="primary" link data-member-verify @click="openMemberVerification(row)">{{ $t('memberVerification.verify') }}</el-button>
+              <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                <button v-if="verificationStatus(row) !== 'passed'" type="button" class="text-xs text-[#326445] hover:text-[#D3AF62] cursor-pointer" data-member-verify @click="openMemberVerification(row)">{{ $t(`memberVerification.${verificationStatus(row)}`) }}</button>
+                <button type="button" class="text-xs text-[#326445] hover:text-[#D3AF62] cursor-pointer" @click="openEditModal(row)">{{ $t('citizen.updateInfo') }}</button>
+              </div>
             </template>
           </el-table-column>
         </el-table>

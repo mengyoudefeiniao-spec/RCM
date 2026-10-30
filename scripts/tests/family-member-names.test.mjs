@@ -19,6 +19,23 @@ beforeEach(() => {
   writes.length = 0;
 });
 
+test('demo members start pending and legacy flags are repaired without changing recorded results', () => {
+  for (const lang of languages) {
+    const family = getInitialFamilies(lang)[0];
+    assert.equal(family.members[0].faceVerified, true);
+    assert.deepEqual(family.members.slice(1).map(member => member.faceVerified), [false, false, false]);
+    family.members[1].faceVerified = true;
+    family.members[3].faceVerified = true;
+    family.members[3].verification = { status: 'passed' };
+    localStorage.setItem('rcm_shared_families_' + lang, JSON.stringify([family]));
+    const result = getSharedFamilies(lang)[0];
+    assert.equal(result.members[1].faceVerified, false);
+    assert.equal(result.members[3].faceVerified, true);
+    assert.equal(result.members[3].verification.status, 'passed');
+    assert.equal(getSharedFamilies(lang)[0].members[1].faceVerified, false);
+  }
+});
+
 test('repairs known demo names overwritten by another locale while preserving business fields', () => {
   const source = getInitialFamilies('zh')[0];
   for (const lang of languages) {
