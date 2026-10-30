@@ -1,37 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { compareLiveFace } from '../../src/utils/liveFaceCompare.js';
-const projectId = '0123456789abcdef0123456789abcdef';
-const referenceImage = new Blob(['reference'], { type:'image/jpeg' });
-const video = new Blob(['video'], { type:'video/webm;codecs=vp8' });
-function mock(responses, requests) {
-  return async (url, options) => { requests.push({ url, options }); return { ok:true, json:async () => responses.shift() }; };
-}
-const success = () => [{ 'video-result':{ alive:true, actions:[{ action:3, confidence:0.9 }], picture:'YWJj' } }, { faces:[{}] }, { faces:[{}] }, { similarity:0.95 }];
-test('sends the recorded video, detects one face per image, then compares the returned frame', async () => {
-  const requests = [];
-  const result = await compareLiveFace({ token:'temporary', projectId, referenceImage, video, action:3, fetchImpl:mock(success(), requests) });
-  assert.equal(result.passed, true);
-  assert.equal(result.image, 'data:image/jpeg;base64,YWJj');
-  assert.deepEqual(requests.map(item => item.url.split('/').at(-1)), ['live-detect','face-detect','face-detect','face-compare']);
-  assert.equal(requests[0].options.body.get('actions'), '3');
-  assert.equal(requests[0].options.headers['X-Auth-Token'], 'temporary');
-  assert.ok(requests[3].options.body.get('image1_file') instanceof Blob);
+import { getActionSequence, compareLiveFace } from '../../src/utils/liveFaceCompare.js';
+globalThis.FileReader = class { readAsDataURL(blob) { blob.arrayBuffer().then(value => { this.result = `data:${blob.type};base64,${Buffer.from(value).toString('base64')}`; this.onload(); }).catch(() => this.onerror()); } };
+const credentials = { secretId:'id', secretKey:'key' };
+const referenceImage = new Blob(['photo'], {type:'image/jpeg'});
+const video = new Blob(['video'], {type:'video/mp4'});
+function mocked(responses, calls) { return async (_url, options) => { calls.push(JSON.parse(options.body)); return { ok:true, json:async () => responses.shift() }; }; }
+test('uses action sequence then checks both faces and returns verified screenshot', async () => {
+  const calls = [];
+  const seq = await getActionSequence({ credentials, fetchImpl:mocked([{ActionSequence:'2,1'}],calls) });
+  const result = await compareLiveFace({ credentials, referenceImage, video, sequence:seq, fetchImpl:mocked([{FaceInfos:[{}]}, {Result:'Success', Sim:85, BestFrameBase64:'YWJj'}, {FaceInfos:[{}]}],calls) });
+  assert.equal(result.passed,true); assert.equal(result.image,'data:image/jpeg;base64,YWJj');
+  assert.deepEqual(calls.map(x => x.action), ['GetActionSequence','DetectFace','LivenessCompare','DetectFace']);
+  assert.equal(calls[2].params.ValidateData,'2,1');
 });
-test('never compares on action failure, invalid result or multiple faces', async () => {
-  let requests = [];
-  const result = await compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock([{ 'video-result':{ alive:false } }], requests) });
-  assert.equal(result.passed, false); assert.equal(requests.length, 1);
-  requests = [];
-  await assert.rejects(compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock([{ 'video-result':{ alive:true, actions:[{action:4}], picture:'YWJj' } }], requests) }));
-  requests = [];
-  await assert.rejects(compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock([{ 'video-result':{ alive:true, actions:[{action:3}], picture:'YWJj' } }, { faces:[{},{}] }], requests) }), /face_count/);
-  assert.equal(requests.length, 2);
-});
-test('validates configuration and does not pass a low or invalid similarity', async () => {
-  await assert.rejects(compareLiveFace({ token:'x', projectId:'bad', referenceImage, video, action:3 }));
-  const data = success(); data[3] = { similarity:0.93 };
-  assert.equal((await compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock(data, []) })).passed, false);
-  const invalid = success(); invalid[3] = {};
-  await assert.rejects(compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock(invalid, []) }));
+test('stops on action failure or ambiguous face and rejects malformed responses', async () => {
+  const args = {credentials, referenceImage, video, sequence:'1,2'};
+  let calls = [];
+  const result = await compareLiveFace({ ...args, fetchImpl:mocked([{FaceInfos:[{}]}, {Result:'FailedOperation.ActionCloseEye'}],calls) });
+  assert.equal(result.passed,false); assert.equal(calls.length,2);
+  calls = [];
+  await assert.rejects(compareLiveFace({ ...args, fetchImpl:mocked([{FaceInfos:[{},{}]}],calls) }), /face_count/);
+  assert.equal(calls.length,1);
+  await assert.rejects(getActionSequence({credentials,fetchImpl:mocked([{ActionSequence:'1,3'}],[])}));
+  await assert.rejects(compareLiveFace({ ...args, fetchImpl:mocked([{FaceInfos:[{}]}, {Result:'Success',Sim:80}],[]) }));
 });
