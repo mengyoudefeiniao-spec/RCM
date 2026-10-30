@@ -50,3 +50,33 @@ test('keeps the simulated OCR number separate from the real family number', () =
   assert.equal(family.familyCode, '');
   for (const lang of languages) assert.equal(getRegisteredFamily(account, lang).simulatedFamilyNumber, 'SIM-A1B2C3D4');
 });
+
+test('first-login verification is reflected in the registered member and repaired in existing caches', () => {
+  const initial = getRegisteredFamily(account, 'zh');
+  const verified = { ...account, identityVerification: { status: 'passed', simulated: true, verifiedAt: '2026-10-30T08:00:00Z' } };
+  for (const lang of languages) {
+    const family = getRegisteredFamily(verified, lang);
+    assert.equal(family.rationCardNo, initial.rationCardNo);
+    assert.equal(family.members[0].verification.status, 'passed');
+    assert.equal(family.members[0].verification.simulated, true);
+    assert.equal(family.members[0].verification.method, 'online');
+    assert.equal(family.members[0].faceVerified, true);
+  }
+  const other = getRegisteredFamily({ ...verified, nationalId: 'NEW-PERSON' }, 'en');
+  assert.equal(other.members[0].verification.status, 'passed');
+});
+
+test('repairs missing name and phone without overwriting later edits or verification outcomes', () => {
+  const family = getRegisteredFamily({ ...account, name: '', phone: '' }, 'zh');
+  const repaired = getRegisteredFamily({ ...account, identityVerification: { status: 'passed', simulated: true } }, 'zh');
+  assert.equal(repaired.members[0].name, account.name);
+  assert.equal(repaired.members[0].phone, account.phone);
+  updateSharedFamily(family.rationCardNo, current => ({ ...current, members: current.members.map(member => ({ ...member, name: 'Corrected name', phone: 'changed', verification: { status: 'failed', method: 'online' }, faceVerified: false })) }), 'zh');
+  for (const lang of languages) {
+    const member = getRegisteredFamily({ ...account, identityVerification: { status: 'passed', simulated: true } }, lang).members[0];
+    assert.equal(member.name, 'Corrected name');
+    assert.equal(member.phone, 'changed');
+    assert.equal(member.verification.status, 'failed');
+    assert.equal(member.faceVerified, false);
+  }
+});

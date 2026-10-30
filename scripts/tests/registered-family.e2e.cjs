@@ -9,7 +9,7 @@ async (page) => {
     localStorage.clear(); sessionStorage.clear();
     localStorage.setItem('rcm_language', 'zh');
     localStorage.setItem('rcm_shared_citizen_accounts', JSON.stringify([
-      { nationalId: 'REG-1001', name: 'Test Citizen One', phone: '07000001001', province: 'baghdad' },
+      { nationalId: 'REG-1001', name: 'Test Citizen One', phone: '07000001001', province: 'baghdad', identityVerification: { status: 'passed', simulated: true, verifiedAt: '2026-10-30T08:00:00Z' } },
       { nationalId: 'REG-1002', name: 'Test Citizen Two', phone: '07000001002', province: 'basra' }
     ]));
     sessionStorage.setItem('rcm_auth_token', 'test-token');
@@ -19,6 +19,7 @@ async (page) => {
   await page.goto(origin + '/#/citizen?layout=app');
   const view = page.locator('.citizen-family-view');
   await view.locator('[data-member-id="registered-REG-1001"]').waitFor();
+  assert(await view.locator('[data-member-id="registered-REG-1001"] [data-member-verify]').count() === 0, 'Completed first-login verification is shown as pending');
   assert(await view.locator('.citizen-ration-card').innerText().then(text => text.includes('Test Citizen One') && text.includes('RC-TMP-')), 'First account card missing');
   assert(!(await view.innerText()).includes('演示电子核验已完成'), 'Obsolete banner remains');
   const firstCard = await view.locator('.citizen-ration-card').innerText();
