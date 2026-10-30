@@ -10,7 +10,6 @@
           <p>{{ $t('loginPage.ministry') }}</p>
         </header>
         <section class="login-content">
-          <p v-if="isDefaultDemoAccount" class="login-demo-notice">{{ $t('loginPage.demoAccountNotice') }}</p>
           <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
             <el-form-item :label="$t('loginPage.username')" prop="username">
               <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
@@ -168,7 +167,6 @@ const loginForm = reactive({
   username: isMockMode ? 'RC-10029381' : '',
   password: isMockMode ? 'iq-pass-2026' : ''
 });
-const isDefaultDemoAccount = computed(() => isMockMode && loginForm.username === 'RC-10029381');
 
 function handleRegistered(result) {
   loginForm.username = result.username;
@@ -343,7 +341,6 @@ async function handleSecondaryVerifySuccess() {
   line-height: 1.6;
 }
 .login-content :deep(.el-form-item) { margin-bottom: 24px; }
-.login-demo-notice { margin-bottom: 16px; color: #58685d; font-size: .75rem; line-height: 1.6; }
 .login-content :deep(.el-form-item__error) {
   position: static;
   flex-basis: 100%;

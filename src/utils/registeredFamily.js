@@ -21,19 +21,25 @@ function applyRegisteredAccount(member, account) {
   return Object.keys(changes).length ? { ...member, ...changes } : member;
 }
 
+export function isRegisteredFamilyOwner(family, account) {
+  return Boolean(account?.nationalId && (family?.ownerNationalId === account.nationalId ||
+    (family?.cardUnconfirmed && family.members?.some(member => member.id === `registered-${account.nationalId}` && member.nationalId === account.nationalId))));
+}
+
 // Locally generated cards remain unconfirmed until an authoritative registry is available.
 // Never attach an account to a family by card number alone.
 export function getRegisteredFamily(account, lang) {
   if (!account?.nationalId) return null;
+  const belongsToAccount = family => isRegisteredFamilyOwner(family, account);
   const families = getSharedFamilies(lang);
-  const existing = families.find(family => family.members?.some(member => member.nationalId === account.nationalId));
+  const existing = families.find(belongsToAccount);
   if (existing) {
     if (!existing.members.some(member => applyRegisteredAccount(member, account) !== member)) return existing;
     return updateSharedFamily(existing.rationCardNo, family => ({
       ...family, members: family.members.map(member => applyRegisteredAccount(member, account))
     }), lang) || existing;
   }
-  const otherLocale = languages.map(language => getSharedFamilies(language).find(family => family.members?.some(member => member.nationalId === account.nationalId))).find(Boolean);
+  const otherLocale = languages.map(language => getSharedFamilies(language).find(belongsToAccount)).find(Boolean);
   if (otherLocale) {
     addSharedFamily(structuredClone(otherLocale), lang);
     return getRegisteredFamily(account, lang);
@@ -47,6 +53,7 @@ export function getRegisteredFamily(account, lang) {
     if (pool.some(family => family.rationCardNo === rationCardNo)) continue;
     addSharedFamily({
       rationCardNo,
+      ownerNationalId: account.nationalId,
       cardUnconfirmed: true,
       simulatedFamilyNumber: account.simulatedFamilyNumber || null,
       headName: '', familyCode: '', oldPaperCardNo: account.paperCardNo || '',

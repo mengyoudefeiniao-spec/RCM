@@ -28,10 +28,13 @@ test('creates one separate pending card and member for each account across langu
   for (const lang of languages) assert.equal(getRegisteredFamily(account, lang).members[0].phone, 'updated');
 });
 
-test('uses identity rather than card number to find an existing household', () => {
+test('does not attach registered accounts to the default household even if identities or cards overlap', () => {
   const seeded = getInitialFamilies('en')[0];
   const owner = { ...account, nationalId: seeded.members[1].nationalId };
-  assert.equal(getRegisteredFamily(owner, 'en').rationCardNo, seeded.rationCardNo);
+  const owned = getRegisteredFamily(owner, 'en');
+  assert.notEqual(owned.rationCardNo, seeded.rationCardNo);
+  assert.equal(owned.members.length, 1);
+  assert.equal(owned.members[0].nationalId, owner.nationalId);
   const unrelated = getRegisteredFamily({ ...account, rationCardNo: seeded.rationCardNo }, 'en');
   assert.notEqual(unrelated.rationCardNo, seeded.rationCardNo);
   assert.equal(unrelated.members[0].nationalId, account.nationalId);

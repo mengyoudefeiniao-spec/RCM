@@ -17,7 +17,7 @@ import {
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword } from '../utils/citizenAccounts.js';
-import { getRegisteredFamily } from '../utils/registeredFamily.js';
+import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
 import { SIMULATED_IDENTITY_NAME } from '../utils/simulatedIdentity.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
@@ -79,6 +79,8 @@ import {
   addSharedOrder,
   updateSharedOrder,
   getSharedFamilies,
+  getInitialFamilies,
+  addSharedFamily,
   getSharedFamily,
   localizeDemoFamilyNames,
   updateSharedFamily
@@ -748,7 +750,7 @@ function registeredCitizenSession(account) {
     id: `registered-${account.nationalId}`, username: account.phone,
     name: account.name || account.nationalId, nationalId: account.nationalId, phone: account.phone,
     provinceCode: account.province, role: 'citizen', needsFamilySetup: true,
-    familyId: null, familyNumber: null, rationCardNo: null, cardNo: null, paperCardNo: null,
+    familyId: account.familyId || null, familyNumber: account.familyNumber || null, rationCardNo: account.rationCardNo || null, cardNo: account.rationCardNo || null, paperCardNo: account.paperCardNo || null,
     identityVerification: account.identityVerification
   };
   return { token: `mock-registered-${account.nationalId}`, user };
@@ -1173,10 +1175,19 @@ export async function mockDispatch(config) {
     const managedUser = managedUsers.find((entry) => entry.username === username);
     const presetUser = MOCK_USERS.find((user) => user.username === username || user.role === username || user.cardNo === username);
     let registered = managedUser || presetUser ? null : await findCitizenAccount(username);
+    if (!registered && !managedUser && !presetUser) {
+      const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === username && item.cardUnconfirmed);
+      const ownerId = family?.ownerNationalId || family?.members?.find(member => member.id === `registered-${member.nationalId}`)?.nationalId;
+      const candidate = ownerId ? await findCitizenAccount(ownerId) : null;
+      if (candidate && isRegisteredFamilyOwner(family, candidate)) registered = candidate;
+    }
     if (registered) {
       registered = await verifyCitizenAccountPassword(registered, data.password || '');
       if (!registered) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
       if (registered.identityVerification?.status === 'passed' && registered.identityVerification?.simulated === true) {
+        const family = getRegisteredFamily(registered, reqLang);
+        if (family && registered.rationCardNo !== family.rationCardNo) registered = await updateCitizenAccount(registered.nationalId, { rationCardNo: family.rationCardNo });
+        await flushPocketBaseWrites();
         return createResponse(registeredCitizenSession(registered));
       }
       const pending = { challenge: demoVerificationToken(), nationalId: registered.nationalId, expiresAt: Date.now() + 300000 };
@@ -1492,7 +1503,7 @@ export async function mockDispatch(config) {
     pending.simulatedName = SIMULATED_IDENTITY_NAME;
     sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
     const account = await findCitizenAccount(pending.nationalId);
-    const family = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
+    const family = getSharedFamilies(reqLang).find(item => isRegisteredFamilyOwner(item, account));
     return createResponse({ name: pending.simulatedName, nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false, simulatedFamilyNumber: family?.simulatedFamilyNumber || account?.simulatedFamilyNumber || null });
   }
 
@@ -1504,7 +1515,7 @@ export async function mockDispatch(config) {
     }
     let account = await findCitizenAccount(pending.nationalId);
     if (!account) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
-    const existingFamily = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
+    const existingFamily = getSharedFamilies(reqLang).find(item => isRegisteredFamilyOwner(item, account));
     if (existingFamily?.simulatedFamilyNumber && existingFamily.simulatedFamilyNumber !== data.simulatedFamilyNumber) return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
     account = await updateCitizenAccount(pending.nationalId, { name: pending.simulatedName, simulatedFamilyNumber: data.simulatedFamilyNumber, identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString(), simulatedName: pending.simulatedName, simulatedFamilyNumber: data.simulatedFamilyNumber } });
     if (existingFamily) {
@@ -1514,6 +1525,9 @@ export async function mockDispatch(config) {
       }, reqLang);
       await flushPocketBaseWrites();
     }
+    const registeredFamily = getRegisteredFamily(account, reqLang);
+    if (registeredFamily && account.rationCardNo !== registeredFamily.rationCardNo) account = await updateCitizenAccount(account.nationalId, { rationCardNo: registeredFamily.rationCardNo });
+    await flushPocketBaseWrites();
     sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
     return createResponse({ ...registeredCitizenSession(account), passed: true, simulated: true });
   }
@@ -1587,12 +1601,29 @@ export async function mockDispatch(config) {
   if (url.includes('/citizen/families') && method === 'GET') {
     const current = JSON.parse(sessionStorage.getItem('rcm_user_profile') || 'null');
     if (current?.needsFamilySetup) {
-      const account = await findCitizenAccount(current.nationalId);
+      let account = await findCitizenAccount(current.nationalId);
       const family = getRegisteredFamily(account, reqLang);
+      if (family && account.rationCardNo !== family.rationCardNo) account = await updateCitizenAccount(account.nationalId, { rationCardNo: family.rationCardNo });
       await flushPocketBaseWrites();
       return createResponse(family ? [family] : []);
     }
     const sharedFams = getSharedFamilies(reqLang);
+    if (current?.role === 'citizen' && ['usr-002', 'usr-cit-01'].includes(current.id)) {
+      let family = sharedFams.find(item => item.rationCardNo === 'RC-10029381');
+      if (!family) {
+        family = getInitialFamilies(reqLang).find(item => item.rationCardNo === 'RC-10029381');
+        if (family) addSharedFamily(family, reqLang);
+      }
+      if (family && (!Array.isArray(family.members) || family.members.length === 0)) {
+        family = updateSharedFamily(family.rationCardNo, (current, language) => {
+          if (Array.isArray(current.members) && current.members.length) return current;
+          const seed = getInitialFamilies(language).find(item => item.rationCardNo === current.rationCardNo);
+          return seed ? { ...current, members: seed.members, memberCount: seed.members.length } : current;
+        }, reqLang) || family;
+        await flushPocketBaseWrites();
+      }
+      return createResponse(localizeFamilyAgentNames(family ? [family] : []));
+    }
     const familyList = sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore;
     return createResponse(localizeFamilyAgentNames(familyList));
   }

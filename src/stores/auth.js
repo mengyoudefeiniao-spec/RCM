@@ -86,7 +86,8 @@ export function createProfileByRole(role) {
     case 'citizen':
       return {
         id: 'usr-cit-01',
-        username: 'citizen_ahmed',
+        username: 'RC-10029381',
+        cardNo: 'RC-10029381',
         name: '艾哈迈德·哈桑·萨利赫 (户主)',
         displayNameKey: 'mail.senderCitizenName',
         role: 'citizen',

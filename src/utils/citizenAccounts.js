@@ -8,7 +8,7 @@ function localAccounts(storage, key) {
   try { const value = JSON.parse(storage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; }
   catch { return []; }
 }
-function matches(account, identifier) { return account.phone === identifier || account.nationalId === identifier; }
+function matches(account, identifier) { return account.phone === identifier || account.nationalId === identifier || (account.rationCardNo && account.rationCardNo === identifier); }
 export async function getCitizenAccounts() {
   if (isPocketBaseSyncEnabled()) {
     const value = await readPocketBaseValue(CITIZEN_ACCOUNTS_KEY);
