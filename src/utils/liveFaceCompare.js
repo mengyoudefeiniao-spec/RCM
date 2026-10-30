@@ -9,7 +9,14 @@ function base64Of(blob) {
 export async function callLocalTencent({ credentials, action, params, signal, fetchImpl = fetch }) {
   if (!credentials?.secretId?.trim() || !credentials?.secretKey?.trim()) throw new Error('invalid_credentials');
   const response = await fetchImpl('/__tencent_face/', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ...credentials, action, params }), signal });
-  if (!response.ok) throw new Error('request_failed');
+  if (!response.ok) {
+    let data;
+    try { data = await response.json(); } catch { data = null; }
+    const code = typeof data?.error === 'string' && /^[A-Za-z][A-Za-z0-9._]{0,79}$/.test(data.error) ? data.error : 'request_failed';
+    const error = new Error(code);
+    if (typeof data?.requestId === 'string' && /^[a-f0-9-]{1,64}$/i.test(data.requestId)) error.requestId = data.requestId;
+    throw error;
+  }
   return response.json();
 }
 export async function getActionSequence({ credentials, signal, fetchImpl }) {

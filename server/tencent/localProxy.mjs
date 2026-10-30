@@ -2,6 +2,12 @@ import { createHash, createHmac } from 'node:crypto';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const hmac = (key, value) => createHmac('sha256', key).update(value).digest();
 const services = Object.freeze({ GetActionSequence:'faceid', LivenessCompare:'faceid', DetectFace:'iai' });
+const safeCode = value => typeof value === 'string' && /^[A-Za-z][A-Za-z0-9._]{0,79}$/.test(value) ? value : null;
+const safeRequestId = value => typeof value === 'string' && /^[a-f0-9-]{1,64}$/i.test(value) ? value : null;
+export class TencentRequestError extends Error {
+  constructor(code, requestId = null) { super('Tencent request failed'); this.code = safeCode(code) || 'request_failed'; this.requestId = safeRequestId(requestId); }
+}
+
 export function signTencentRequest({ secretId, secretKey, action, payload, timestamp }) {
   const service = services[action];
   if (!service || !secretId || !secretKey || !Number.isInteger(timestamp)) throw new Error('invalid_request');
@@ -17,13 +23,15 @@ export async function callTencent({ secretId, secretKey, sessionToken, action, p
   if (!services[action] || typeof secretId !== 'string' || !secretId.trim() || typeof secretKey !== 'string' || !secretKey.trim() || !params || typeof params !== 'object') throw new Error('invalid_request');
   const payload = JSON.stringify(params);
   const signed = signTencentRequest({ secretId:secretId.trim(), secretKey:secretKey.trim(), action, payload, timestamp });
-  const response = await fetchImpl(`https://${signed.host}/`, {
+  let response;
+  try { response = await fetchImpl(`https://${signed.host}/`, {
     method:'POST', redirect:'error', signal:AbortSignal.timeout(60000),
     headers:{ 'Content-Type':signed.contentType, Authorization:signed.authorization, 'X-TC-Action':action, 'X-TC-Version':action === 'DetectFace' ? '2020-03-03' : '2018-03-01', 'X-TC-Timestamp':String(timestamp), ...(action === 'DetectFace' ? { 'X-TC-Region':'ap-guangzhou' } : {}), ...(sessionToken ? { 'X-TC-Token':sessionToken } : {}) }, body:payload
-  });
-  if (!response.ok) throw new Error('upstream_error');
-  const data = (await response.json())?.Response;
-  if (!data || data.Error) throw new Error('upstream_error');
+  }); } catch (error) { throw new TencentRequestError(error?.name === 'TimeoutError' ? 'network_timeout' : 'network_error'); }
+  let data;
+  try { data = (await response.json())?.Response; } catch { throw new TencentRequestError('upstream_http_error'); }
+  if (data?.Error) throw new TencentRequestError(data.Error.Code, data.RequestId);
+  if (!response.ok || !data) throw new TencentRequestError('upstream_http_error');
   return data;
 }
 export function localTencentPlugin() {
@@ -40,7 +48,12 @@ export function localTencentPlugin() {
         const { secretId, secretKey, sessionToken, action, params } = JSON.parse(Buffer.concat(chunks).toString('utf8'));
         const data = await callTencent({ secretId, secretKey, sessionToken, action, params });
         res.setHeader('Content-Type','application/json'); res.setHeader('Cache-Control','no-store'); res.end(JSON.stringify(data));
-      } catch { res.statusCode=502; res.setHeader('Content-Type','application/json'); res.end('{"error":"request_failed"}'); }
+      } catch (error) {
+        const code = error instanceof TencentRequestError ? error.code : 'request_failed';
+        const requestId = error instanceof TencentRequestError ? error.requestId : null;
+        res.statusCode=502; res.setHeader('Content-Type','application/json'); res.setHeader('Cache-Control','no-store');
+        res.end(JSON.stringify({ error:code, ...(requestId ? { requestId } : {}) }));
+      }
     });
   } };
 }

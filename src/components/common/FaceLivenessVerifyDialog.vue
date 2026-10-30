@@ -56,6 +56,18 @@ watch([secretId, secretKey, sessionToken], () => { videoBlob.value = null; seque
 onBeforeUnmount(reset);
 function onVisibilityChange(value) { if (!value) cancel(); }
 function cancel() { reset(); emit('update:modelValue', false); emit('cancel'); }
+function errorMessage(error, fallback) {
+  const code = error?.message || '';
+  let key = fallback;
+  if (code === 'network_error' || code === 'network_timeout' || code === 'upstream_http_error') key = 'faceCompareDemo.errorNetwork';
+  else if (/^AuthFailure\.(SecretIdNotFound|SignatureFailure|InvalidSecretId|TokenFailure)/.test(code)) key = 'faceCompareDemo.errorCredentials';
+  else if (code === 'UnauthorizedOperation.Nonactivated') key = 'faceCompareDemo.errorNotActivated';
+  else if (code.startsWith('UnauthorizedOperation') || code.startsWith('AuthFailure.UnauthorizedOperation')) key = 'faceCompareDemo.errorPermission';
+  else if (code.includes('RequestExpired') || code.includes('RequestTimeTooSkewed')) key = 'faceCompareDemo.errorClock';
+  const safeCode = /^[A-Za-z][A-Za-z0-9._]{0,79}$/.test(code) && code !== 'request_failed' ? code : '';
+  const safeId = typeof error?.requestId === 'string' && /^[a-f0-9-]{1,64}$/i.test(error.requestId) ? error.requestId : '';
+  return [t(key), safeCode, safeId ? `RequestId: ${safeId}` : ''].filter(Boolean).join(' · ');
+}
 function credentials() { return { secretId:secretId.value, secretKey:secretKey.value, ...(sessionToken.value ? { sessionToken:sessionToken.value } : {}) }; }
 function selectReference(event) {
   const file = event.target.files?.[0]; referenceFile.value = null; result.value = null;
@@ -94,7 +106,7 @@ async function recordVideo() {
     };
     recorder.start(); recording.value = true;
     timer = setTimeout(() => { if (recorder?.state === 'recording') recorder.stop(); }, 8000);
-  } catch { if (current === generation) { recording.value = false; ElMessage.error(t('faceCompareDemo.recordError')); } }
+  } catch (error) { if (current === generation && props.modelValue) { recording.value = false; ElMessage.error({ message:errorMessage(error, 'faceCompareDemo.recordError'), duration:10000, showClose:true }); } }
   finally { if (current === generation) { authenticating.value = false; authController = null; } }
 }
 async function compare() {
@@ -103,7 +115,7 @@ async function compare() {
   try {
     const response = await compareLiveFace({ credentials:credentials(), referenceImage:referenceFile.value, video:videoBlob.value, sequence:sequence.value, signal:controller.signal });
     if (current === generation && props.modelValue) result.value = response;
-  } catch (error) { if (current === generation && props.modelValue) ElMessage.error(t(error.message === 'face_count' ? 'faceCompareDemo.faceCount' : 'faceCompareDemo.unavailable')); }
+  } catch (error) { if (current === generation && props.modelValue) ElMessage.error({ message:errorMessage(error, error.message === 'face_count' ? 'faceCompareDemo.faceCount' : 'faceCompareDemo.unavailable'), duration:10000, showClose:true }); }
   finally { if (current === generation) { busy.value = false; controller = null; } }
 }
 function confirm() {
