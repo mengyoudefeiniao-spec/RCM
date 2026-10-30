@@ -1,4 +1,17 @@
 // Vite's local development proxy is restricted to a single Huawei FRS endpoint.
+export async function checkReferenceImage({ token, projectId, referenceImage, fetchImpl = fetch, signal }) {
+  if (!token?.trim() || !/^[a-f0-9]{32}$/i.test(projectId || '')) throw new Error('invalid_config');
+  if (!(referenceImage instanceof Blob) || !['image/jpeg', 'image/png'].includes(referenceImage.type) || !referenceImage.size || referenceImage.size >= 8 * 1024 * 1024) throw new Error('invalid_image');
+  const form = new FormData();
+  form.append('image_file', referenceImage, referenceImage.type === 'image/png' ? 'reference.png' : 'reference.jpg');
+  const response = await fetchImpl(`/__huawei_frs/v2/${projectId}/face-detect`, { method:'POST', headers:{ 'X-Auth-Token':token.trim() }, body:form, signal });
+  if (!response.ok) throw new Error('reference_upload_failed');
+  const data = await response.json();
+  if (!Array.isArray(data.faces)) throw new Error('invalid_response');
+  if (data.faces.length !== 1) throw new Error('face_count');
+  return true;
+}
+
 export async function compareLiveFace({ token, projectId, referenceImage, video, action, fetchImpl = fetch, signal }) {
   if (!token?.trim() || !/^[a-f0-9]{32}$/i.test(projectId || '')) throw new Error('invalid_config');
   if (!(referenceImage instanceof Blob) || !['image/jpeg','image/png','image/bmp'].includes(referenceImage.type) || referenceImage.size > 8 * 1024 * 1024) throw new Error('invalid_image');

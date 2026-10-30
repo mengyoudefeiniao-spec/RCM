@@ -58,3 +58,14 @@ test('supports each Huawei action code and rejects unsupported actions', async (
   }
   await assert.rejects(compareLiveFace({ token:'temporary', projectId, referenceImage, video, action:6 }));
 });
+
+test('uploads the selected reference photo and requires exactly one face', async () => {
+  const { checkReferenceImage } = await import('../../src/utils/liveFaceCompare.js');
+  let request;
+  const args = { token:'temporary', projectId, referenceImage };
+  assert.equal(await checkReferenceImage({ ...args, fetchImpl:async (url,options) => { request={url,options}; return {ok:true,json:async () => ({faces:[{}]})}; } }), true);
+  assert.match(request.url, /\/face-detect$/);
+  assert.equal(request.options.body.get('image_file').name,'reference.jpg');
+  await assert.rejects(checkReferenceImage({ ...args, fetchImpl:async () => ({ok:true,json:async () => ({faces:[{},{}]})}) }), /face_count/);
+  await assert.rejects(checkReferenceImage({ ...args, fetchImpl:async () => ({ok:false}) }), /reference_upload_failed/);
+});

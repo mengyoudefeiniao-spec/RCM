@@ -24,7 +24,11 @@
           <div><span dir="ltr" class="font-mono text-xs">{{ nationalId }}</span></div>
           <p v-if="identity" class="text-xs">{{ $t('firstLoginVerification.chipPlaceholder') }}</p>
         </div>
-        <el-button class="w-full" type="primary" plain :loading="reading" :disabled="!isMock || comparing" data-first-login="read-chip" @click="readChip">
+        <input v-if="isMember" ref="referenceInput" type="file" accept="image/jpeg,image/png" class="sr-only" @change="selectReference" />
+        <p v-if="isMember && referenceFile" class="text-xs break-all">{{ referenceFile.name }}</p>
+        <p v-if="isMember && referenceChecking" class="text-xs" role="status">{{ $t('firstLoginVerification.referenceUploading') }}</p>
+        <p v-else-if="isMember && referenceReady" class="text-xs text-[#326445]">{{ $t('firstLoginVerification.referenceReady') }}</p>
+        <el-button class="w-full" type="primary" plain :loading="reading || referenceChecking" :disabled="!isMock || comparing" data-first-login="read-chip" @click="readChip">
           {{ $t(identity ? 'firstLoginVerification.chipRead' : 'firstLoginVerification.chipButton') }}
         </el-button>
       </section>
@@ -36,7 +40,7 @@
           <el-icon v-else :size="36"><Camera /></el-icon>
           <p v-if="face" class="text-xs mt-2">{{ $t('firstLoginVerification.faceCaptured') }}</p>
         </div>
-        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing" data-first-login="start-face" @click="showFace = true">
+        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing || (isMember && !referenceReady)" data-first-login="start-face" @click="showFace = true">
           {{ $t('firstLoginVerification.faceButton') }}
         </el-button>
       </section>
@@ -53,19 +57,23 @@
     :target-name="member?.name || nationalId"
     :target-national-id="nationalId"
     :allow-quick-pass="false"
-    :notice="$t('firstLoginVerification.demoNotice')"
+    :prepared-reference="isMember ? referenceFile : null"
+    :prepared-token="isMember ? cloudToken : null"
+    :auto-start="isMember"
     @success="onFaceCaptured"
   />
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Camera, CreditCard } from '@element-plus/icons-vue';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { readFirstLoginIdentity, completeFirstLoginVerification, readMemberIdentity, completeMemberVerification } from '../../api/auth.js';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
+import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
+import { checkReferenceImage } from '../../utils/liveFaceCompare.js';
 
 const props = defineProps({
   modelValue: Boolean,
@@ -80,6 +88,9 @@ const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 const isMember = computed(() => Boolean(props.member?.id));
 const nationalId = computed(() => props.member?.nationalId || props.verification?.nationalId || '');
 const identity = ref(null);
+const referenceInput = ref(null), referenceFile = ref(null), cloudToken = ref(null);
+const referenceChecking = ref(false), referenceReady = ref(false);
+let referenceGeneration = 0, referenceController = null, tokenController = null;
 const face = ref(null);
 const reading = ref(false);
 const comparing = ref(false);
@@ -87,30 +98,58 @@ const showFace = ref(false);
 let generation = 0;
 watch(() => props.modelValue, () => {
   generation++;
+  clearPrepared();
   identity.value = null;
   face.value = null;
   showFace.value = false;
 });
+function clearPrepared() {
+  referenceGeneration++; referenceController?.abort(); tokenController?.abort();
+  referenceController = null; tokenController = null; referenceFile.value = null; cloudToken.value = null;
+  referenceChecking.value = false; referenceReady.value = false; reading.value = false;
+}
+onBeforeUnmount(() => { generation++; clearPrepared(); });
 function close() {
   if (comparing.value) return;
   generation++;
+  clearPrepared();
   showFace.value = false;
   emit('update:modelValue', false);
   emit('cancel');
 }
 async function readChip() {
-  if (!isMock || reading.value || comparing.value) return;
+  if (!isMock || reading.value || comparing.value || referenceChecking.value) return;
   const request = generation;
-  identity.value = null;
-  face.value = null;
+  clearPrepared(); identity.value = null; face.value = null;
+  if (isMember.value) { if (referenceInput.value) referenceInput.value.value = ''; referenceInput.value?.click(); }
   reading.value = true;
+  const activeTokenController = new AbortController(); tokenController = activeTokenController;
   try {
-    const result = isMember.value
-      ? await readMemberIdentity({ cardNo: props.cardNo, memberId: props.member.id, nationalId: nationalId.value })
-      : await readFirstLoginIdentity({ challenge: props.verification.challenge });
-    if (request === generation && props.modelValue) identity.value = result;
-  } catch { ElMessage.error(t('firstLoginVerification.readFailed')); }
-  finally { reading.value = false; }
+    const identityRequest = isMember.value
+      ? readMemberIdentity({ cardNo:props.cardNo, memberId:props.member.id, nationalId:nationalId.value })
+      : readFirstLoginIdentity({ challenge:props.verification.challenge });
+    const [result, token] = await Promise.all([identityRequest, isMember.value ? getDefaultHuaweiIamToken({ signal:activeTokenController.signal }) : Promise.resolve(null)]);
+    if (request === generation && props.modelValue) { identity.value = result; cloudToken.value = token; void prepareReference(); }
+  } catch (error) { activeTokenController.abort(); if (request === generation && props.modelValue) ElMessage.error(t(error?.message?.startsWith('iam_') ? 'faceCompareDemo.autoTokenFailed' : 'firstLoginVerification.readFailed')); }
+  finally { if (request === generation) { reading.value = false; if (tokenController === activeTokenController) tokenController = null; } }
+}
+function selectReference(event) {
+  const file = event.target.files?.[0]; event.target.value = '';
+  referenceGeneration++; referenceController?.abort(); referenceFile.value = null; referenceReady.value = false; face.value = null;
+  if (!file) return;
+  if (!['image/jpeg','image/png'].includes(file.type) || !file.size || file.size >= 8 * 1024 * 1024) { ElMessage.error(t('faceCompareDemo.imageError')); return; }
+  referenceFile.value = file; void prepareReference();
+}
+async function prepareReference() {
+  if (!isMember.value || !identity.value || !cloudToken.value || !referenceFile.value) return;
+  referenceController?.abort(); const request = ++referenceGeneration; const dialog = generation;
+  referenceController = new AbortController(); referenceChecking.value = true; referenceReady.value = false;
+  try {
+    await checkReferenceImage({ ...cloudToken.value, referenceImage:referenceFile.value, signal:referenceController.signal });
+    if (request === referenceGeneration && dialog === generation && props.modelValue) referenceReady.value = true;
+  } catch (error) {
+    if (request === referenceGeneration && dialog === generation && props.modelValue) ElMessage.error(t(error.message === 'face_count' ? 'faceCompareDemo.faceCount' : 'firstLoginVerification.referenceFailed'));
+  } finally { if (request === referenceGeneration && dialog === generation) { referenceChecking.value = false; referenceController = null; } }
 }
 function onFaceCaptured(payload) {
   if (props.modelValue && identity.value && payload?.nationalId === nationalId.value) face.value = payload;
