@@ -11,6 +11,13 @@ export default defineConfig({
     },
   },
   server: {
+    proxy: {
+      '/__huawei_frs': {
+        target: 'https://face.cn-north-4.myhuaweicloud.com',
+        changeOrigin: true,
+        rewrite: (url) => url.replace(/^\/__huawei_frs/, ''),
+      },
+    },
     port: 3000,
     host: '0.0.0.0',
   },
