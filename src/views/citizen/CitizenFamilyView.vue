@@ -1,6 +1,5 @@
 <template>
   <div class="citizen-family-view space-y-6">
-    <el-alert v-if="authStore.userProfile?.needsFamilySetup" :title="$t('firstLoginVerification.familyPending')" type="info" :closable="false" show-icon />
     <RemoteVerifyDialog v-model="remoteVisible" :member="remoteMember" :card-no="verificationCardNo" @requested="citizenStore.fetchFamilies()" />
     <el-dialog v-model="verificationMethodVisible" :title="$t('memberVerification.chooseMethod')" :width="verificationDialogWidth" :class="['member-verification-methods', { 'rcm-compact-dialog': verificationCompact }]" align-center>
       <template v-if="verificationMember">
@@ -42,17 +41,19 @@
               <span class="text-xs font-semibold leading-relaxed text-[#D3AF62] tracking-wider uppercase break-words">{{ $t('citizenCard.cardTitle') }}</span>
             </div>
             <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
-              {{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}
+              {{ citizenStore.currentFamily.cardUnconfirmed ? $t('registrationFlow.cardUnconfirmed') : (citizenStore.currentFamily.status || $t('citizenCard.statusActive')) }}
             </span>
           </div>
 
           <div class="pt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            <div class="min-w-0 break-all text-start text-xl font-extrabold tracking-wider text-[#FBFDFB]">
-              <span dir="ltr" class="font-mono">{{ citizenStore.currentFamily.rationCardNo }}</span>
+            <div class="min-w-0 text-start text-[#FBFDFB]">
+              <div class="break-all text-xl font-extrabold tracking-wider"><span dir="ltr" class="font-mono">{{ citizenStore.currentFamily.rationCardNo }}</span></div>
+              <div v-if="citizenStore.currentFamily.cardUnconfirmed" class="mt-1 break-words text-xs font-medium">{{ citizenStore.currentFamily.members?.[0]?.name }}</div>
             </div>
 
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
             <button
+              v-if="!citizenStore.currentFamily.cardUnconfirmed"
               type="button"
               class="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all group focus-visible:outline-2 focus-visible:outline-[#326445] focus-visible:outline-offset-2"
               @click="openCardQrModal"
@@ -136,7 +137,7 @@
               <div class="min-w-0 space-y-0.5 text-xs">
                 <div class="flex flex-wrap items-center gap-1.5 break-words">
                   <span class="font-bold text-[#1B3123]">{{ member.name }}</span>
-                  <span
+                  <span v-if="member.relation"
                     class="px-1.5 py-0.2 rounded text-[10px]"
                     :class="isHeadRelation(member.relation) ? 'bg-[#FDF3E0] text-[#7A5F21] font-bold' : 'bg-[#E9F1EB] text-[#58685D]'"
                   >
@@ -186,8 +187,8 @@
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-base font-bold text-[#1B3123]">{{ citizenStore.currentFamily.headName }} ({{ $t('citizen.head') }})</span>
-                <el-tag size="small" type="success" effect="light">{{ citizenStore.currentFamily.status }}</el-tag>
+                <span class="text-base font-bold text-[#1B3123]">{{ citizenStore.currentFamily.headName || citizenStore.currentFamily.members?.[0]?.name }}<template v-if="citizenStore.currentFamily.headName"> ({{ $t('citizen.head') }})</template></span>
+                <el-tag size="small" :type="citizenStore.currentFamily.cardUnconfirmed ? 'warning' : 'success'" effect="light">{{ citizenStore.currentFamily.cardUnconfirmed ? $t('registrationFlow.cardUnconfirmed') : citizenStore.currentFamily.status }}</el-tag>
                 <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('citizen.rationCard') }}</el-tag>
               </div>
               <!-- 电子配给卡与关联纸质卡编号 -->
@@ -196,7 +197,7 @@
                   {{ $t('citizen.rationCardNo') }}：<strong class="text-[#326445] font-bold">{{ citizenStore.currentFamily.rationCardNo }}</strong>
                 </span>
                 <span>
-                  {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-[#7A5F21] font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || 'IQ-P-1994-082194' }}</strong>
+                  {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-[#7A5F21] font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || '—' }}</strong>
                 </span>
                 <span class="text-[#8A9A8F]">{{ $t('citizen.familyCode') }}：{{ citizenStore.currentFamily.familyCode }}</span>
               </div>
@@ -205,7 +206,7 @@
 
           <!-- 业务快捷操作按钮 -->
           <div class="flex items-center gap-2 flex-wrap">
-            <el-button type="warning" plain class="shadow-xs font-bold" @click="openCardQrModal">
+            <el-button v-if="!citizenStore.currentFamily.cardUnconfirmed" type="warning" plain class="shadow-xs font-bold" @click="openCardQrModal">
               <el-icon class="me-1"><Tickets /></el-icon>
               {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
             </el-button>
@@ -240,7 +241,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div>
             <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.province') }}：</span>
-            <span class="font-medium text-[#1F3326]">{{ citizenStore.currentFamily.province }}</span>
+            <span class="font-medium text-[#1F3326]">{{ citizenStore.currentFamily.provinceCode ? $t(`registrationFlow.provinces.${citizenStore.currentFamily.provinceCode}`) : (citizenStore.currentFamily.province || '—') }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.district') }}：</span>
@@ -262,7 +263,7 @@
         <div class="flex items-center justify-between">
           <ModuleDescTip
             :title="$t('citizen.memberList')"
-            :content="`伊拉克内政部统一国民身份认证联网，当前家庭在册共 ${citizenStore.currentFamily?.members?.length || 0} 位直系亲属及受抚养成员。`"
+            :content="$t('registrationFlow.memberCountHint', { count: citizenStore.currentFamily?.members?.length || 0 })"
             :badge="`${citizenStore.currentFamily?.members?.length || 0} ${$t('common.person')}`"
             badge-type="primary"
             title-class="text-sm font-bold text-[#1B3123]"
@@ -303,7 +304,7 @@
                 </div>
                 <div class="text-[11px] text-[#6B5321] font-mono flex items-center gap-1">
                   <span>{{ $t('citizen.oldPaperCardNo') }}:</span>
-                  <span class="font-semibold">{{ citizenStore.currentFamily?.oldPaperCardNo || 'IQ-P-1994-082194' }}</span>
+                  <span class="font-semibold">{{ citizenStore.currentFamily?.oldPaperCardNo || '—' }}</span>
                 </div>
               </div>
             </template>
@@ -801,7 +802,6 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useCitizenStore } from '../../stores/citizen.js';
-import { useAuthStore } from '../../stores/auth.js';
 import DocumentUploader from '../../components/common/DocumentUploader.vue';
 import RemoteVerifyDialog from '../../components/auth/RemoteVerifyDialog.vue';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
@@ -849,7 +849,6 @@ const route = useRoute();
 const router = useRouter();
 const isEn = computed(() => locale.value === 'en');
 const citizenStore = useCitizenStore();
-const authStore = useAuthStore();
 const remoteVisible = ref(false);
 const remoteMember = ref(null);
 const verificationStatus = memberVerificationStatus;

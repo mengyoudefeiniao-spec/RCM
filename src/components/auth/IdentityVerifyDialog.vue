@@ -8,7 +8,7 @@
     :close-on-click-modal="false"
     :before-close="close"
   >
-    <el-alert :title="$t(isMock ? 'firstLoginVerification.demoNotice' : 'firstLoginVerification.liveUnavailable')" type="warning" :closable="false" show-icon class="mb-4" />
+    <el-alert :title="$t(isMock ? 'firstLoginVerification.dataNotice' : 'firstLoginVerification.liveUnavailable')" type="info" :closable="false" show-icon class="mb-4" />
     <p v-if="isMember" class="font-bold mb-2">{{ member.name }}</p>
     <p class="text-sm text-[#43554B] mb-4">{{ $t('firstLoginVerification.instruction') }}</p>
     <el-steps :active="face ? 2 : identity ? 1 : 0" finish-status="success" simple class="mb-4">

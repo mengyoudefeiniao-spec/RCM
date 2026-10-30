@@ -9,6 +9,7 @@
         </el-select>
       </el-form-item>
       <el-form-item :label="$t('registrationFlow.nationalId')" required><el-input v-model.trim="form.nationalId" class="bidi-ltr" /></el-form-item>
+      <el-form-item :label="$t('registrationFlow.memberName')" required><el-input v-model.trim="form.name" /></el-form-item>
       <el-form-item :label="$t('registrationFlow.phone')" required><el-input v-model.trim="form.phone" class="bidi-ltr" /></el-form-item>
       <el-form-item :label="$t('register.pwdLabel')" required>
         <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('registrationFlow.passwordPlaceholder')" />
@@ -38,7 +39,7 @@ const { isCompact, dialogWidth } = useCompactDialog(680);
 const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 const visible = ref(props.modelValue);
 const provinces = ['baghdad','nineveh','basra','diyala','kirkuk','anbar','erbil','sulaymaniyah','duhok','babylon','karbala','najaf','wasit','salahuddin','qadisiyyah','muthanna','dhiqar','maysan','halabja'];
-const blank = () => ({ province: '', nationalId: '', phone: '', password: '', confirmPassword: '', smsCode: '' });
+const blank = () => ({ province: '', nationalId: '', name: '', phone: '', password: '', confirmPassword: '', smsCode: '' });
 const form = reactive(blank());
 const exampleCode = ref('');
 const sending = ref(false);
@@ -56,7 +57,7 @@ onUnmounted(() => clearInterval(cooldownTimer));
 watch(() => props.modelValue, value => { visible.value = value; if (value) { Object.assign(form, blank()); exampleCode.value = ''; updateCooldown(); } });
 watch(() => form.phone, () => { form.smsCode = ''; exampleCode.value = ''; });
 function close() { visible.value = false; emit('update:modelValue', false); }
-function fillExample() { Object.assign(form, { province: 'baghdad', nationalId: '198004198271', phone: '07801234567', password: 'iq-pass-2026', confirmPassword: 'iq-pass-2026' }); }
+function fillExample() { Object.assign(form, { province: 'baghdad', nationalId: '198004198271', name: 'Fatima Ahmed', phone: '07801234567', password: 'iq-pass-2026', confirmPassword: 'iq-pass-2026' }); }
 async function sendCode() {
   if (!isMock || sending.value || cooldown.value > 0) return;
   if (!form.phone) { ElMessage.warning(t('register.msgPhoneRequired')); return; }
@@ -73,7 +74,7 @@ async function sendCode() {
 }
 async function submit() {
   if (registering.value) return;
-  if (!form.province || !form.nationalId || !form.phone || !form.password || !form.confirmPassword || !form.smsCode) { ElMessage.warning(t('registrationFlow.required')); return; }
+  if (!form.province || !form.nationalId || !form.name || !form.phone || !form.password || !form.confirmPassword || !form.smsCode) { ElMessage.warning(t('registrationFlow.required')); return; }
   if (form.password.length < 8) { ElMessage.warning(t('registrationFlow.passwordPlaceholder')); return; }
   if (form.password !== form.confirmPassword) { ElMessage.warning(t('register.msgPwdMismatch')); return; }
   registering.value = true;

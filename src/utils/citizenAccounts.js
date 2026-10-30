@@ -28,7 +28,7 @@ export async function findCitizenAccount(identifier) {
 function sharedAccount(fields, passwordCredential) {
   return {
     id: `registered-${fields.nationalId}`, province: fields.province,
-    phone: fields.phone, nationalId: fields.nationalId,
+    phone: fields.phone, nationalId: fields.nationalId, name: fields.name || '',
     passwordCredential, registeredAt: fields.registeredAt || new Date().toISOString(),
     identityVerification: fields.identityVerification || null,
     familyId: fields.familyId || null, familyNumber: fields.familyNumber || null,

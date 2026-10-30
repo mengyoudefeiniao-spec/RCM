@@ -17,6 +17,7 @@ import {
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword } from '../utils/citizenAccounts.js';
+import { getRegisteredFamily } from '../utils/registeredFamily.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
@@ -744,7 +745,7 @@ function pendingFirstLogin(challenge) {
 function registeredCitizenSession(account) {
   const user = {
     id: `registered-${account.nationalId}`, username: account.phone,
-    name: account.nationalId, nationalId: account.nationalId, phone: account.phone,
+    name: account.name || account.nationalId, nationalId: account.nationalId, phone: account.phone,
     provinceCode: account.province, role: 'citizen', needsFamilySetup: true,
     familyId: null, familyNumber: null, rationCardNo: null, cardNo: null, paperCardNo: null,
     identityVerification: account.identityVerification
@@ -1570,7 +1571,12 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/citizen/families') && method === 'GET') {
     const current = JSON.parse(sessionStorage.getItem('rcm_user_profile') || 'null');
-    if (current?.needsFamilySetup) return createResponse([]);
+    if (current?.needsFamilySetup) {
+      const account = await findCitizenAccount(current.nationalId);
+      const family = getRegisteredFamily(account, reqLang);
+      await flushPocketBaseWrites();
+      return createResponse(family ? [family] : []);
+    }
     const sharedFams = getSharedFamilies(reqLang);
     const familyList = sharedFams && sharedFams.length > 0 ? sharedFams : familiesStore;
     return createResponse(localizeFamilyAgentNames(familyList));
