@@ -5,7 +5,14 @@ export async function compareLiveFace({ token, projectId, referenceImage, video,
   if (!(video instanceof Blob) || !video.size || video.size > 8 * 1024 * 1024 || ![3,4].includes(action)) throw new Error('invalid_video');
   async function post(version, operation, body) {
     const response = await fetchImpl(`/__huawei_frs/${version}/${projectId}/${operation}`, { method:'POST', headers:{ 'X-Auth-Token': token.trim() }, body, signal });
-    if (!response.ok) throw new Error(`http_${response.status}`);
+    if (!response.ok) {
+      let data;
+      try { data = await response.json(); } catch { data = null; }
+      const error = new Error('huawei_request_failed');
+      error.step = operation;
+      if (typeof data?.error_code === 'string' && /^FRS\.\d{4}$/.test(data.error_code)) error.code = data.error_code;
+      throw error;
+    }
     return response.json();
   }
   const videoForm = new FormData();
@@ -18,13 +25,13 @@ export async function compareLiveFace({ token, projectId, referenceImage, video,
   const image = `data:image/jpeg;base64,${live.picture}`;
   const liveBlob = await (await fetch(image)).blob();
   for (const blob of [referenceImage, liveBlob]) {
-    const form = new FormData(); form.append('image_file', blob, blob.type === 'image/png' ? 'reference.png' : 'face.jpg');
+    const form = new FormData(); form.append('image_file', blob, blob.type === 'image/png' ? 'reference.png' : blob.type === 'image/bmp' ? 'reference.bmp' : 'face.jpg');
     const detected = await post('v2', 'face-detect', form);
     if (!Array.isArray(detected.faces)) throw new Error('invalid_response');
     if (detected.faces.length !== 1) throw new Error('face_count');
   }
   const form = new FormData();
-  form.append('image1_file', referenceImage, 'reference'); form.append('image2_file', liveBlob, 'capture.jpg');
+  form.append('image1_file', referenceImage, referenceImage.type === 'image/png' ? 'reference.png' : referenceImage.type === 'image/bmp' ? 'reference.bmp' : 'reference.jpg'); form.append('image2_file', liveBlob, 'capture.jpg');
   const compared = await post('v2', 'face-compare', form);
   if (typeof compared.similarity !== 'number' || !Number.isFinite(compared.similarity) || compared.similarity < 0 || compared.similarity > 1) throw new Error('invalid_response');
   return { passed:compared.similarity > 0.93, livenessPassed:true, score:compared.similarity, image };

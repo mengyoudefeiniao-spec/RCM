@@ -117,7 +117,14 @@ async function compare() {
   try {
     const response = await compareLiveFace({ token:token.value, projectId:projectId.value, referenceImage:referenceFile.value, video:videoBlob.value, action:action.value, signal:controller.signal });
     if (current === generation && props.modelValue) result.value = response;
-  } catch (error) { if (current === generation && props.modelValue) ElMessage.error(t(error.message === 'face_count' ? 'faceCompareDemo.faceCount' : 'faceCompareDemo.unavailable')); }
+  } catch (error) {
+    if (current === generation && props.modelValue) {
+      const steps = { 'live-detect':'faceCompareDemo.stepLive', 'face-detect':'faceCompareDemo.stepDetect', 'face-compare':'faceCompareDemo.stepCompare' };
+      const message = error.message === 'face_count' ? t('faceCompareDemo.faceCount') : t('faceCompareDemo.unavailable');
+      const detail = steps[error.step] ? [t(steps[error.step]), error.code].filter(Boolean).join(' · ') : '';
+      ElMessage.error({ message:[message, detail].filter(Boolean).join(' · '), duration:10000, showClose:true });
+    }
+  }
   finally { if (current === generation) { busy.value = false; controller = null; } }
 }
 function confirm() {

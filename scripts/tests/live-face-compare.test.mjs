@@ -35,3 +35,15 @@ test('validates configuration and does not pass a low or invalid similarity', as
   const invalid = success(); invalid[3] = {};
   await assert.rejects(compareLiveFace({ token:'x', projectId, referenceImage, video, action:3, fetchImpl:mock(invalid, []) }));
 });
+
+test('uploads reference photos with a matching filename for comparison', async () => {
+  for (const [type, filename] of [['image/jpeg','reference.jpg'], ['image/png','reference.png'], ['image/bmp','reference.bmp']]) {
+    const requests = [];
+    await compareLiveFace({ token:'temporary', projectId, referenceImage:new Blob(['photo'], { type }), video, action:3, fetchImpl:mock(success(), requests) });
+    assert.equal(requests[3].options.body.get('image1_file').name, filename);
+  }
+});
+test('reports the failing API step and a sanitized Huawei error code', async () => {
+  const fetchImpl = async () => ({ok:false, json:async () => ({error_code:'FRS.0016', error_msg:'private text'})});
+  await assert.rejects(compareLiveFace({ token:'temporary', projectId, referenceImage, video, action:3, fetchImpl }), error => error.message === 'huawei_request_failed' && error.step === 'live-detect' && error.code === 'FRS.0016' && !error.message.includes('private text'));
+});
