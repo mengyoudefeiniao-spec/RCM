@@ -231,7 +231,8 @@ router.beforeEach((to, from, next) => {
   let currentRole = userProfile.role || 'citizen';
 
   // 0. 自动识别 URL 查询参数中的目标角色身份并无缝同步至当前标签页专属 sessionStorage (Portal 新开标签页直达)
-  if (to.query.role && to.path !== '/login') {
+  const registeredCitizen = userProfile.role === 'citizen' && userProfile.needsFamilySetup && userProfile.nationalId;
+  if (to.query.role && to.path !== '/login' && (!registeredCitizen || to.query.demo === 'true')) {
     const targetRole = String(to.query.role);
     const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
     if (validRoles.includes(targetRole)) {

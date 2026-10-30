@@ -28,10 +28,24 @@ async (page) => {
     await view.locator('[data-member-id="registered-REG-1001"]').waitFor();
     assert(await view.locator('.citizen-ration-card').innerText().then(text => text.includes('Test Citizen One') && text.match(/RC-TMP-[A-F0-9]+/)?.[0] === firstCard.match(/RC-TMP-[A-F0-9]+/)?.[0]), 'Card changed on language switch');
   }
+  await page.goto(origin + '/#/citizen?role=citizen&layout=app');
+  await view.locator('[data-member-id="registered-REG-1001"]').waitFor();
+  assert(await page.evaluate(() => JSON.parse(sessionStorage.getItem('rcm_user_profile')).nationalId) === 'REG-1001', 'Role link replaced the logged-in identity');
+  await page.reload();
+  await view.locator('[data-member-id="registered-REG-1001"]').waitFor();
+  assert((await view.innerText()).includes('Test Citizen One'), 'Reload replaced the logged-in identity');
   await page.evaluate(() => sessionStorage.setItem('rcm_user_profile', JSON.stringify({ id: 'registered-REG-1002', nationalId: 'REG-1002', name: 'Test Citizen Two', role: 'citizen', needsFamilySetup: true })));
   await page.reload();
   await view.locator('[data-member-id="registered-REG-1002"]').waitFor();
   assert(await view.locator('.citizen-ration-card').innerText().then(text => text.includes('Test Citizen Two') && !firstCard.includes(text.match(/RC-TMP-[A-F0-9]+/)?.[0])), 'Accounts share a card');
   assert(await view.locator('[data-member-id="registered-REG-1001"]').count() === 0, 'Other account is visible');
+  await page.evaluate(async () => {
+    const { useAuthStore } = await import('/src/stores/auth.js');
+    useAuthStore().completeIdentityLogin({ token: 'test-token', user: { id: 'registered-REG-1002', nationalId: 'REG-1002', name: 'Test Citizen Two', role: 'citizen', needsFamilySetup: true } });
+    sessionStorage.clear();
+  });
+  await page.reload();
+  await view.locator('[data-member-id="registered-REG-1002"]').waitFor();
+  assert((await view.innerText()).includes('Test Citizen Two'), 'Saved login did not restore the correct identity');
   return 'Registered family UI verified in four languages';
 }

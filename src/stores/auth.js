@@ -122,10 +122,14 @@ export function createProfileByRole(role) {
  */
 function getInitialProfile() {
   if (typeof window !== 'undefined') {
+    let existingProfile = null;
+    try { existingProfile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || 'null'); } catch (_) { /* ignore invalid cache */ }
     // 1. 优先提取当前 URL hash 中的 role 参数 (如 #/citizen?role=citizen)
     const hash = window.location.hash || '';
     const match = hash.match(/[\?&]role=([^&]+)/);
-    if (match && match[1]) {
+    const demoRequested = /[\?&]demo=true(?:&|$)/.test(hash);
+    const registeredCitizen = existingProfile?.role === 'citizen' && existingProfile?.needsFamilySetup && existingProfile?.nationalId;
+    if (match && match[1] && (!registeredCitizen || demoRequested)) {
       const urlRole = decodeURIComponent(match[1]);
       const profile = createProfileByRole(urlRole);
       sessionStorage.setItem('rcm_user_profile', JSON.stringify(profile));
@@ -234,6 +238,7 @@ export const useAuthStore = defineStore('auth', () => {
     sessionStorage.setItem('rcm_auth_token', result.token);
     sessionStorage.setItem('rcm_user_profile', JSON.stringify(result.user));
     localStorage.setItem('rcm_auth_token', result.token);
+    localStorage.setItem('rcm_user_profile', JSON.stringify(result.user));
     pendingIdentityVerification.value = null;
   }
 
