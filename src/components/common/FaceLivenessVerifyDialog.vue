@@ -22,7 +22,7 @@
         <el-button :disabled="!cameraActive || busy || recording || authenticating" @click="recordVideo">{{ $t('faceCompareDemo.record') }}</el-button>
       </div>
       <video ref="videoRef" autoplay playsinline muted class="w-full max-h-56 bg-[#12241A] rounded-lg" v-show="cameraActive"></video>
-      <p v-if="recording" role="status" class="font-bold">{{ $t('faceCompareDemo.recording') }}: {{ $t(action === 3 ? 'faceCompareDemo.nod' : 'faceCompareDemo.mouth') }}</p>
+      <p v-if="recording" role="status" class="font-bold">{{ $t('faceCompareDemo.recording') }}: {{ $t(actionLabels[action]) }}</p>
       <p v-else-if="videoBlob" class="text-sm">{{ $t('faceCompareDemo.ready') }}</p>
       <img v-if="result?.image" :src="result.image" :alt="$t('faceCompareDemo.download')" class="h-32 max-w-full object-contain" />
       <a v-if="result?.image" :href="result.image" download="face-capture.jpg" class="block text-sm text-[#326445] underline">{{ $t('faceCompareDemo.download') }}</a>
@@ -52,6 +52,7 @@ const account = ref(''), username = ref(''), password = ref('');
 const token = ref(''), projectId = ref(''), referenceFile = ref(null), videoBlob = ref(null), videoRef = ref(null), result = ref(null);
 const authenticating = ref(false);
 const busy = ref(false), recording = ref(false), cameraActive = ref(false), action = ref(3);
+const actionLabels = { 1:'faceCompareDemo.turnLeft', 2:'faceCompareDemo.turnRight', 3:'faceCompareDemo.nod', 4:'faceCompareDemo.mouth', 5:'faceCompareDemo.blink' };
 let stream = null, recorder = null, timer = null, controller = null, authController = null, generation = 0;
 function stopCamera() { stream?.getTracks().forEach(track => track.stop()); stream = null; cameraActive.value = false; }
 function reset() { generation++; authController?.abort(); authController = null; account.value = ''; username.value = ''; password.value = ''; authenticating.value = false; controller?.abort(); controller = null; clearTimeout(timer); if (recorder?.state === 'recording') recorder.stop(); recorder = null; stopCamera(); token.value = ''; projectId.value = ''; referenceFile.value = null; videoBlob.value = null; result.value = null; busy.value = false; recording.value = false; }
@@ -95,7 +96,10 @@ function recordVideo() {
   const mime = ['video/webm;codecs=vp8','video/mp4;codecs=avc1.42E01E'].find(type => globalThis.MediaRecorder?.isTypeSupported(type));
   if (!mime) { ElMessage.error(t('faceCompareDemo.recordError')); return; }
   const current = generation, chunks = [];
-  action.value = crypto.getRandomValues(new Uint8Array(1))[0] % 2 ? 3 : 4;
+  const random = new Uint32Array(1);
+  // Rejection sampling keeps all five actions equally likely.
+  do { crypto.getRandomValues(random); } while (random[0] >= 4294967295);
+  action.value = (random[0] % 5) + 1;
   try {
     recorder = new MediaRecorder(stream, { mimeType:mime, videoBitsPerSecond:700000 });
     recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };

@@ -47,3 +47,14 @@ test('reports the failing API step and a sanitized Huawei error code', async () 
   const fetchImpl = async () => ({ok:false, json:async () => ({error_code:'FRS.0016', error_msg:'private text'})});
   await assert.rejects(compareLiveFace({ token:'temporary', projectId, referenceImage, video, action:3, fetchImpl }), error => error.message === 'huawei_request_failed' && error.step === 'live-detect' && error.code === 'FRS.0016' && !error.message.includes('private text'));
 });
+
+test('supports each Huawei action code and rejects unsupported actions', async () => {
+  for (const action of [1, 2, 3, 4, 5]) {
+    const requests = [];
+    const responses = [{ 'video-result':{ alive:true, actions:[{ action }], picture:'YWJj' } }, { faces:[{}] }, { faces:[{}] }, { similarity:0.95 }];
+    const result = await compareLiveFace({ token:'temporary', projectId, referenceImage, video, action, fetchImpl:mock(responses, requests) });
+    assert.equal(result.passed, true);
+    assert.equal(requests[0].options.body.get('actions'), String(action));
+  }
+  await assert.rejects(compareLiveFace({ token:'temporary', projectId, referenceImage, video, action:6 }));
+});

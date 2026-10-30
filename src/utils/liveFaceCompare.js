@@ -2,7 +2,7 @@
 export async function compareLiveFace({ token, projectId, referenceImage, video, action, fetchImpl = fetch, signal }) {
   if (!token?.trim() || !/^[a-f0-9]{32}$/i.test(projectId || '')) throw new Error('invalid_config');
   if (!(referenceImage instanceof Blob) || !['image/jpeg','image/png','image/bmp'].includes(referenceImage.type) || referenceImage.size > 8 * 1024 * 1024) throw new Error('invalid_image');
-  if (!(video instanceof Blob) || !video.size || video.size > 8 * 1024 * 1024 || ![3,4].includes(action)) throw new Error('invalid_video');
+  if (!(video instanceof Blob) || !video.size || video.size > 8 * 1024 * 1024 || ![1,2,3,4,5].includes(action)) throw new Error('invalid_video');
   async function post(version, operation, body) {
     const response = await fetchImpl(`/__huawei_frs/${version}/${projectId}/${operation}`, { method:'POST', headers:{ 'X-Auth-Token': token.trim() }, body, signal });
     if (!response.ok) {
