@@ -1,9 +1,13 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { createDefaultIamHandler } from './server/huawei/localIam.mjs';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const defaultIam = createDefaultIamHandler({ account:env.HUAWEI_IAM_ACCOUNT, username:env.HUAWEI_IAM_USERNAME, password:env.HUAWEI_IAM_PASSWORD });
+  return {
   plugins: [vue(), tailwindcss(), {
     name: 'local-iam-only',
     configureServer(server) {
@@ -13,9 +17,14 @@ export default defineConfig({
         const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote);
         const localHost = /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(host);
         const sameOrigin = !req.headers.origin || req.headers.origin === `http://${host}` || req.headers.origin === `https://${host}`;
-        if (!local || !localHost || !sameOrigin || req.method !== 'POST' || req.url !== '/v3/auth/tokens?nocatalog=true') {
+        if (!local || !localHost || !sameOrigin || req.method !== 'POST') {
           res.statusCode = 403; res.end(); return;
         }
+        if (req.url === '/default-token' && req.headers['x-huawei-demo'] === '1') {
+          void defaultIam(req, res);
+          return;
+        }
+        if (req.url !== '/v3/auth/tokens?nocatalog=true') { res.statusCode = 403; res.end(); return; }
         next();
       });
     },
@@ -41,4 +50,5 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
   },
+  };
 });

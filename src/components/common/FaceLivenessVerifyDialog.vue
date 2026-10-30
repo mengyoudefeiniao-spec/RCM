@@ -16,7 +16,15 @@
       <el-button :loading="authenticating" :disabled="busy || recording || !account || !username || !password" @click="authenticate">{{ $t('faceCompareDemo.getToken') }}</el-button>
       <p v-if="token" class="text-xs text-[#326445]" role="status">{{ $t('faceCompareDemo.tokenReady') }}</p>
       <label class="block text-sm">{{ $t('faceCompareDemo.reference') }}</label>
-      <input type="file" accept="image/jpeg,image/png" :disabled="busy || recording" class="block w-full text-sm" @change="selectReference" />
+      <div class="flex flex-wrap items-center gap-2">
+        <label :class="{ 'opacity-50 cursor-not-allowed': busy || recording || authenticating }" class="inline-flex items-center rounded-lg bg-[#326445] px-4 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-[#244c34] focus-within:ring-2 focus-within:ring-[#D3AF62]">
+          {{ $t('faceCompareDemo.chooseReference') }}
+          <input type="file" accept="image/jpeg,image/png" :disabled="busy || recording || authenticating" class="sr-only" @change="selectReference" />
+        </label>
+        <span v-if="referenceFile" class="min-w-0 break-all text-sm text-[#58685D]">{{ referenceFile.name }}</span>
+        <span v-else class="text-sm text-[#58685D]">{{ $t('faceCompareDemo.noReference') }}</span>
+      </div>
+      <p v-if="authenticating" class="text-xs text-[#58685D]" role="status">{{ $t('faceCompareDemo.autoTokenLoading') }}</p>
       <div class="flex flex-wrap gap-2">
         <el-button :disabled="busy || recording || authenticating" @click="startCamera">{{ $t('faceCompareDemo.camera') }}</el-button>
         <el-button :disabled="!cameraActive || busy || recording || authenticating" @click="recordVideo">{{ $t('faceCompareDemo.record') }}</el-button>
@@ -42,7 +50,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { compareLiveFace } from '../../utils/liveFaceCompare.js';
-import { getHuaweiIamToken } from '../../utils/huaweiIam.js';
+import { getHuaweiIamToken, getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
 const props = defineProps({ modelValue:Boolean, title:{ type:String, default:'' }, targetName:{ type:String, default:'' }, targetNationalId:{ type:String, default:'' }, allowQuickPass:Boolean, notice:{ type:String, default:'' } });
 const emit = defineEmits(['update:modelValue', 'success', 'cancel']);
 const { t } = useI18n();
@@ -75,11 +83,20 @@ async function authenticate() {
   } catch { if (current === generation && props.modelValue) ElMessage.error(t('faceCompareDemo.authFailed')); }
   finally { clearTimeout(timeout); if (current === generation) { authenticating.value = false; authController = null; } }
 }
-function selectReference(event) {
-  const file = event.target.files?.[0]; referenceFile.value = null; result.value = null;
+async function selectReference(event) {
+  const file = event.target.files?.[0]; event.target.value = ''; referenceFile.value = null; result.value = null;
   if (!file) return;
   if (!['image/jpeg','image/png'].includes(file.type) || file.size >= 8 * 1024 * 1024) { ElMessage.error(t('faceCompareDemo.imageError')); event.target.value = ''; return; }
   referenceFile.value = file;
+  const current = generation; authenticating.value = true; token.value = ''; projectId.value = '';
+  authController = new AbortController();
+  const activeController = authController;
+  const timeout = setTimeout(() => activeController.abort(), 30000);
+  try {
+    const response = await getDefaultHuaweiIamToken({ signal:activeController.signal });
+    if (current === generation && props.modelValue) { token.value = response.token; projectId.value = response.projectId; }
+  } catch { if (current === generation && props.modelValue) ElMessage.error(t('faceCompareDemo.autoTokenFailed')); }
+  finally { clearTimeout(timeout); if (current === generation) { authenticating.value = false; authController = null; } }
 }
 async function startCamera() {
   const current = ++generation; stopCamera(); videoBlob.value = null; result.value = null;

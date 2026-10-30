@@ -7,6 +7,15 @@ export async function getHuaweiIamToken({ account, username, password, fetchImpl
     body: JSON.stringify({ auth: { identity: { methods: ['password'], password: { user: { domain: { name: account.trim() }, name: username.trim(), password } } }, scope: { project: { name: 'cn-north-4' } } } }),
     signal
   });
+  return parseTokenResponse(response);
+}
+
+export async function getDefaultHuaweiIamToken({ fetchImpl = fetch, signal } = {}) {
+  const response = await fetchImpl('/__huawei_iam/default-token', { method:'POST', headers:{ 'X-Huawei-Demo':'1' }, signal });
+  return parseTokenResponse(response);
+}
+
+async function parseTokenResponse(response) {
   if (!response.ok) throw new Error('iam_request_failed');
   const token = response.headers.get('X-Subject-Token');
   const data = await response.json();
