@@ -1,11 +1,15 @@
 import { addSharedFamily, getSharedFamilies, updateSharedFamily } from './sharedSession.js';
+import { SIMULATED_IDENTITY_NAME } from './simulatedIdentity.js';
 
 const languages = ['zh', 'en', 'ar', 'ku'];
 
 function applyRegisteredAccount(member, account) {
   if (member.nationalId !== account.nationalId) return member;
   const changes = {};
-  if (account.name && (!member.name || member.name === member.nationalId)) changes.name = account.name;
+  const verifiedDemoName = account.identityVerification?.status === 'passed' && account.identityVerification?.simulated === true
+    ? account.identityVerification.simulatedName || SIMULATED_IDENTITY_NAME : '';
+  const accountName = account.name || verifiedDemoName;
+  if (accountName && (!member.name || member.name === member.nationalId)) changes.name = accountName;
   if (account.phone && !member.phone) changes.phone = account.phone;
   const result = account.identityVerification;
   const emptyPending = member.verification?.status === 'pending' && !member.verification.method && !member.verification.verifiedAt;

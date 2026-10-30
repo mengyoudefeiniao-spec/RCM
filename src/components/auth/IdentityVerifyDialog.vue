@@ -22,6 +22,7 @@
         <p class="text-xs text-[#58685D]">{{ $t('firstLoginVerification.chipHint') }}</p>
         <div class="rounded-lg bg-[#EFF5F1] p-4 text-center text-[#43554B] space-y-2">
           <el-icon :size="36"><CreditCard /></el-icon>
+          <div v-if="identity?.name" class="text-sm font-semibold" data-first-login="identity-name">{{ identity.name }}</div>
           <div><span dir="ltr" class="font-mono text-xs">{{ nationalId }}</span></div>
           <p v-if="identity" class="text-xs">{{ $t('firstLoginVerification.chipPlaceholder') }}</p>
         </div>
@@ -63,7 +64,7 @@
   </el-dialog>
   <FaceLivenessVerifyDialog
     v-model="showFace"
-    :target-name="member?.name || nationalId"
+    :target-name="member?.name || identity?.name || nationalId"
     :target-national-id="nationalId"
     :allow-quick-pass="false"
     :prepared-reference="referenceFile"

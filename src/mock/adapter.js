@@ -18,6 +18,7 @@ import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword } from '../utils/citizenAccounts.js';
 import { getRegisteredFamily } from '../utils/registeredFamily.js';
+import { SIMULATED_IDENTITY_NAME } from '../utils/simulatedIdentity.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
@@ -1488,25 +1489,29 @@ export async function mockDispatch(config) {
     const pending = pendingFirstLogin(data.challenge);
     if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
     pending.readToken = demoVerificationToken();
+    pending.simulatedName = SIMULATED_IDENTITY_NAME;
     sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
     const account = await findCitizenAccount(pending.nationalId);
     const family = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
-    return createResponse({ nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false, simulatedFamilyNumber: family?.simulatedFamilyNumber || account?.simulatedFamilyNumber || null });
+    return createResponse({ name: pending.simulatedName, nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false, simulatedFamilyNumber: family?.simulatedFamilyNumber || account?.simulatedFamilyNumber || null });
   }
 
   if (url === '/auth/first-login/verify' && method === 'POST') {
     const pending = pendingFirstLogin(data.challenge);
     if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
-    if (!pending.readToken || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true || !/^SIM-[A-F0-9]{8}$/.test(data.simulatedFamilyNumber || '')) {
+    if (!pending.readToken || !pending.simulatedName || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true || !/^SIM-[A-F0-9]{8}$/.test(data.simulatedFamilyNumber || '')) {
       return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
     }
     let account = await findCitizenAccount(pending.nationalId);
     if (!account) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
     const existingFamily = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
     if (existingFamily?.simulatedFamilyNumber && existingFamily.simulatedFamilyNumber !== data.simulatedFamilyNumber) return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
-    account = await updateCitizenAccount(pending.nationalId, { simulatedFamilyNumber: data.simulatedFamilyNumber, identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString(), simulatedFamilyNumber: data.simulatedFamilyNumber } });
+    account = await updateCitizenAccount(pending.nationalId, { name: pending.simulatedName, simulatedFamilyNumber: data.simulatedFamilyNumber, identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString(), simulatedName: pending.simulatedName, simulatedFamilyNumber: data.simulatedFamilyNumber } });
     if (existingFamily) {
-      updateSharedFamily(existingFamily.rationCardNo, current => ({ ...current, simulatedFamilyNumber: data.simulatedFamilyNumber, members: current.members.map(member => member.nationalId === pending.nationalId ? { ...member, simulatedFamilyNumber: data.simulatedFamilyNumber } : member) }), reqLang);
+      updateSharedFamily(existingFamily.rationCardNo, current => {
+        const member = current.members.find(item => item.nationalId === pending.nationalId);
+        return { ...current, headName: member && current.headName === member.name ? pending.simulatedName : current.headName, simulatedFamilyNumber: data.simulatedFamilyNumber, members: current.members.map(item => item.nationalId === pending.nationalId ? { ...item, name: pending.simulatedName, simulatedFamilyNumber: data.simulatedFamilyNumber } : item) };
+      }, reqLang);
       await flushPocketBaseWrites();
     }
     sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);

@@ -12,7 +12,8 @@ async (page) => {
   await page.evaluate(async () => {
     localStorage.clear(); sessionStorage.clear(); localStorage.setItem('rcm_language', 'zh');
     const { createCitizenAccount } = await import('/src/utils/citizenAccounts.js');
-    await createCitizenAccount({ nationalId: 'OCR-TEST-1', name: 'OCR Test', phone: '07000001001', province: 'baghdad', password: 'test-password' });
+    const account = await createCitizenAccount({ nationalId: 'OCR-TEST-1', name: 'OCR Test', phone: '07000001001', province: 'baghdad', password: 'test-password' });
+    (await import('/src/utils/registeredFamily.js')).getRegisteredFamily(account, 'zh');
   });
   await page.route('**/__huawei_iam/default-token', route => route.fulfill({ status: 200, headers: { 'X-Subject-Token': 'test-token' }, json: { token: { project: { name: 'cn-north-4', id: '0123456789abcdef0123456789abcdef' }, expires_at: '2099-01-01T00:00:00Z' } } }));
   await page.route('**/__huawei_frs/**/face-detect', route => route.fulfill({ status: 200, json: { faces: [{}] } }));
@@ -37,6 +38,7 @@ async (page) => {
   await dialog.locator('[data-first-login="read-chip"]').click();
   await dialog.locator('input[accept="image/jpeg,image/png"]').setInputFiles({ name: 'reference.png', mimeType: 'image/png', buffer: Buffer.from('reference') });
   await dialog.locator('[data-first-login="ocr"]:not([disabled])').waitFor();
+  assert(await dialog.locator('[data-first-login="identity-name"]').innerText() === 'Ahmed Hassan', 'Simulated NFC name missing');
   assert(await dialog.locator('[data-first-login="start-face"]').isDisabled(), 'Face capture must wait for OCR');
   await dialog.locator('[data-first-login="ocr-image"]').setInputFiles({ name: 'back.gif', mimeType: 'image/gif', buffer: Buffer.from('arbitrary') });
   await dialog.locator('[data-first-login="start-face"]:not([disabled])').waitFor();
@@ -48,14 +50,16 @@ async (page) => {
     const fields = { challenge: pending.challenge, readToken: pending.readToken, nationalId: pending.nationalId, livenessCompleted: true, simulated: true };
     const missing = await mockDispatch({ url: '/auth/first-login/verify', method: 'POST', data: fields });
     const passed = await mockDispatch({ url: '/auth/first-login/verify', method: 'POST', data: { ...fields, simulatedFamilyNumber: number } });
+    (await import('/src/stores/auth.js')).useAuthStore().completeIdentityLogin(passed.data);
     const { findCitizenAccount } = await import('/src/utils/citizenAccounts.js');
     const account = await findCitizenAccount('OCR-TEST-1');
     const { getRegisteredFamily } = await import('/src/utils/registeredFamily.js');
     const family = getRegisteredFamily(account, 'zh');
-    return { missing: missing.code, passed: passed.code, accountNumber: account.simulatedFamilyNumber, realNumber: account.familyNumber, familyNumber: family.simulatedFamilyNumber, memberNumber: family.members[0].simulatedFamilyNumber };
+    return { missing: missing.code, passed: passed.code, accountName: account.name, nationalId: family.members[0].nationalId, memberName: family.members[0].name, accountNumber: account.simulatedFamilyNumber, realNumber: account.familyNumber, familyNumber: family.simulatedFamilyNumber, memberNumber: family.members[0].simulatedFamilyNumber };
   }, number);
   assert(outcome.missing === 400 && outcome.passed === 200, 'First-login OCR was not enforced');
   assert(outcome.accountNumber === number && outcome.familyNumber === number && outcome.memberNumber === number && !outcome.realNumber, 'First-login number not stored separately');
+  assert(outcome.accountName === 'Ahmed Hassan' && outcome.memberName === 'Ahmed Hassan' && outcome.nationalId === 'OCR-TEST-1', 'Simulated NFC identity not reflected in member');
   const memberOutcome = await page.evaluate(async () => {
     const { mockDispatch } = await import('/src/mock/adapter.js');
     const { getSharedFamilies } = await import('/src/utils/sharedSession.js');
@@ -70,5 +74,10 @@ async (page) => {
     return { missing: missing.code, passed: passed.code, family: saved.simulatedFamilyNumber, member: saved.members.find(item => item.id === member.id).verification?.simulatedFamilyNumber, untouched: saved.members.find(item => item.id === 'M-003').simulatedFamilyNumber };
   });
   assert(memberOutcome.missing === 400 && memberOutcome.passed === 200 && memberOutcome.family === 'SIM-12345678' && memberOutcome.member === 'SIM-12345678' && !memberOutcome.untouched, 'Member OCR association failed');
+  await page.goto(origin + '/#/citizen?layout=app');
+  const member = page.locator('[data-member-id="registered-OCR-TEST-1"]');
+  await member.waitFor();
+  const text = await member.innerText();
+  assert(text.includes('Ahmed Hassan') && text.includes('OCR-TEST-1'), 'Member list does not show NFC identity');
   return 'First-login OCR UI and both verification records passed';
 }
