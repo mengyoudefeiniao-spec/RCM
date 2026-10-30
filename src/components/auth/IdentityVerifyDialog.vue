@@ -24,10 +24,10 @@
           <div><span dir="ltr" class="font-mono text-xs">{{ nationalId }}</span></div>
           <p v-if="identity" class="text-xs">{{ $t('firstLoginVerification.chipPlaceholder') }}</p>
         </div>
-        <input v-if="isMember" ref="referenceInput" type="file" accept="image/jpeg,image/png" class="sr-only" @change="selectReference" />
-        <p v-if="isMember && referenceFile" class="text-xs break-all">{{ referenceFile.name }}</p>
-        <p v-if="isMember && referenceChecking" class="text-xs" role="status">{{ $t('firstLoginVerification.referenceUploading') }}</p>
-        <p v-else-if="isMember && referenceReady" class="text-xs text-[#326445]">{{ $t('firstLoginVerification.referenceReady') }}</p>
+        <input ref="referenceInput" type="file" accept="image/jpeg,image/png" class="sr-only" @change="selectReference" />
+        <p v-if="referenceFile" class="text-xs break-all">{{ referenceFile.name }}</p>
+        <p v-if="referenceChecking" class="text-xs" role="status">{{ $t('firstLoginVerification.referenceUploading') }}</p>
+        <p v-else-if="referenceReady" class="text-xs text-[#326445]">{{ $t('firstLoginVerification.referenceReady') }}</p>
         <el-button class="w-full" type="primary" plain :loading="reading || referenceChecking" :disabled="!isMock || comparing" data-first-login="read-chip" @click="readChip">
           {{ $t(identity ? 'firstLoginVerification.chipRead' : 'firstLoginVerification.chipButton') }}
         </el-button>
@@ -40,7 +40,7 @@
           <el-icon v-else :size="36"><Camera /></el-icon>
           <p v-if="face" class="text-xs mt-2">{{ $t('firstLoginVerification.faceCaptured') }}</p>
         </div>
-        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing || (isMember && !referenceReady)" data-first-login="start-face" @click="showFace = true">
+        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing || !referenceReady" data-first-login="start-face" @click="showFace = true">
           {{ $t('firstLoginVerification.faceButton') }}
         </el-button>
       </section>
@@ -57,9 +57,9 @@
     :target-name="member?.name || nationalId"
     :target-national-id="nationalId"
     :allow-quick-pass="false"
-    :prepared-reference="isMember ? referenceFile : null"
-    :prepared-token="isMember ? cloudToken : null"
-    :auto-start="isMember"
+    :prepared-reference="referenceFile"
+    :prepared-token="cloudToken"
+    auto-start
     @success="onFaceCaptured"
   />
 </template>
@@ -121,14 +121,15 @@ async function readChip() {
   if (!isMock || reading.value || comparing.value || referenceChecking.value) return;
   const request = generation;
   clearPrepared(); identity.value = null; face.value = null;
-  if (isMember.value) { if (referenceInput.value) referenceInput.value.value = ''; referenceInput.value?.click(); }
+  if (referenceInput.value) referenceInput.value.value = '';
+  referenceInput.value?.click();
   reading.value = true;
   const activeTokenController = new AbortController(); tokenController = activeTokenController;
   try {
     const identityRequest = isMember.value
       ? readMemberIdentity({ cardNo:props.cardNo, memberId:props.member.id, nationalId:nationalId.value })
       : readFirstLoginIdentity({ challenge:props.verification.challenge });
-    const [result, token] = await Promise.all([identityRequest, isMember.value ? getDefaultHuaweiIamToken({ signal:activeTokenController.signal }) : Promise.resolve(null)]);
+    const [result, token] = await Promise.all([identityRequest, getDefaultHuaweiIamToken({ signal:activeTokenController.signal })]);
     if (request === generation && props.modelValue) { identity.value = result; cloudToken.value = token; void prepareReference(); }
   } catch (error) { activeTokenController.abort(); if (request === generation && props.modelValue) ElMessage.error(t(error?.message?.startsWith('iam_') ? 'faceCompareDemo.autoTokenFailed' : 'firstLoginVerification.readFailed')); }
   finally { if (request === generation) { reading.value = false; if (tokenController === activeTokenController) tokenController = null; } }
@@ -141,7 +142,7 @@ function selectReference(event) {
   referenceFile.value = file; void prepareReference();
 }
 async function prepareReference() {
-  if (!isMember.value || !identity.value || !cloudToken.value || !referenceFile.value) return;
+  if (!identity.value || !cloudToken.value || !referenceFile.value) return;
   referenceController?.abort(); const request = ++referenceGeneration; const dialog = generation;
   referenceController = new AbortController(); referenceChecking.value = true; referenceReady.value = false;
   try {
