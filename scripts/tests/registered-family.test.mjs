@@ -42,3 +42,11 @@ test('previous accounts without a name still have their own member record', () =
   assert.equal(family.members[0].name, account.nationalId);
   assert.ok(getSharedFamilies('ar').some(item => item.rationCardNo === family.rationCardNo));
 });
+
+test('keeps the simulated OCR number separate from the real family number', () => {
+  const family = getRegisteredFamily({ ...account, familyNumber: 'REAL-EXISTING', simulatedFamilyNumber: 'SIM-A1B2C3D4' }, 'zh');
+  assert.equal(family.simulatedFamilyNumber, 'SIM-A1B2C3D4');
+  assert.equal(family.members[0].simulatedFamilyNumber, 'SIM-A1B2C3D4');
+  assert.equal(family.familyCode, '');
+  for (const lang of languages) assert.equal(getRegisteredFamily(account, lang).simulatedFamilyNumber, 'SIM-A1B2C3D4');
+});

@@ -11,8 +11,9 @@
     <el-alert :title="$t(isMock ? 'firstLoginVerification.dataNotice' : 'firstLoginVerification.liveUnavailable')" type="info" :closable="false" show-icon class="mb-4" />
     <p v-if="isMember" class="font-bold mb-2">{{ member.name }}</p>
     <p class="text-sm text-[#43554B] mb-4">{{ $t('firstLoginVerification.instruction') }}</p>
-    <el-steps :active="face ? 2 : identity ? 1 : 0" finish-status="success" simple class="mb-4">
+    <el-steps :active="face ? 3 : ocrFamilyNumber ? 2 : identity ? 1 : 0" finish-status="success" simple class="mb-4">
       <el-step :title="$t('firstLoginVerification.chipTitle')" />
+      <el-step :title="$t('firstLoginVerification.ocrTitle')" />
       <el-step :title="$t('firstLoginVerification.faceTitle')" />
     </el-steps>
     <div :class="isCompact ? 'space-y-4' : 'grid grid-cols-2 gap-4'">
@@ -33,6 +34,14 @@
         </el-button>
       </section>
       <section class="rounded-lg border border-[#D9E5DB] p-4 space-y-3">
+        <h3 class="font-bold text-[#1F3326]">{{ $t('firstLoginVerification.ocrTitle') }}</h3>
+        <p class="text-xs text-[#58685D]">{{ $t('firstLoginVerification.ocrHint') }}</p>
+        <input ref="ocrInput" type="file" accept="image/*" class="sr-only" data-first-login="ocr-image" @change="selectOcrImage" />
+        <p v-if="ocrFileName" class="text-xs break-all">{{ ocrFileName }}</p>
+        <p v-if="ocrFamilyNumber" class="text-sm break-words" role="status">{{ $t('firstLoginVerification.ocrResult') }}: <span dir="ltr" class="font-mono">{{ ocrFamilyNumber }}</span></p>
+        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing" data-first-login="ocr" @click="openOcr">{{ $t('firstLoginVerification.ocrButton') }}</el-button>
+      </section>
+      <section class="rounded-lg border border-[#D9E5DB] p-4 space-y-3">
         <h3 class="font-bold text-[#1F3326]">{{ $t('firstLoginVerification.faceTitle') }}</h3>
         <p class="text-xs text-[#58685D]">{{ $t('firstLoginVerification.faceHint') }}</p>
         <div class="rounded-lg bg-[#EFF5F1] p-4 text-center text-[#43554B]">
@@ -40,7 +49,7 @@
           <el-icon v-else :size="36"><Camera /></el-icon>
           <p v-if="face" class="text-xs mt-2">{{ $t('firstLoginVerification.faceCaptured') }}</p>
         </div>
-        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading || comparing || !referenceReady" data-first-login="start-face" @click="showFace = true">
+        <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || !ocrFamilyNumber || reading || comparing || !referenceReady" data-first-login="start-face" @click="showFace = true">
           {{ $t('firstLoginVerification.faceButton') }}
         </el-button>
       </section>
@@ -48,7 +57,7 @@
     <template #footer>
       <div class="flex flex-wrap justify-end gap-2">
         <el-button :disabled="comparing" @click="close">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :disabled="!identity || !face || !isMock || reading" :loading="comparing" data-first-login="finish" @click="completeVerification">{{ $t(isMember ? 'memberVerification.completeOnline' : 'firstLoginVerification.compareButton') }}</el-button>
+        <el-button type="primary" :disabled="!identity || !ocrFamilyNumber || !face || !isMock || reading" :loading="comparing" data-first-login="finish" @click="completeVerification">{{ $t(isMember ? 'memberVerification.completeOnline' : 'firstLoginVerification.compareButton') }}</el-button>
       </div>
     </template>
   </el-dialog>
@@ -88,6 +97,7 @@ const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 const isMember = computed(() => Boolean(props.member?.id));
 const nationalId = computed(() => props.member?.nationalId || props.verification?.nationalId || '');
 const identity = ref(null);
+const ocrInput = ref(null), ocrFileName = ref(''), ocrFamilyNumber = ref('');
 const referenceInput = ref(null), referenceFile = ref(null), cloudToken = ref(null);
 const referenceChecking = ref(false), referenceReady = ref(false);
 let referenceGeneration = 0, referenceController = null, tokenController = null;
@@ -107,6 +117,7 @@ function clearPrepared() {
   referenceGeneration++; referenceController?.abort(); tokenController?.abort();
   referenceController = null; tokenController = null; referenceFile.value = null; cloudToken.value = null;
   referenceChecking.value = false; referenceReady.value = false; reading.value = false;
+  ocrFileName.value = ''; ocrFamilyNumber.value = '';
 }
 onBeforeUnmount(() => { generation++; clearPrepared(); });
 function close() {
@@ -141,6 +152,20 @@ function selectReference(event) {
   if (!['image/jpeg','image/png'].includes(file.type) || !file.size || file.size >= 8 * 1024 * 1024) { ElMessage.error(t('faceCompareDemo.imageError')); return; }
   referenceFile.value = file; void prepareReference();
 }
+function openOcr() {
+  if (!isMock || !identity.value || reading.value || comparing.value) return;
+  if (ocrInput.value) ocrInput.value.value = '';
+  ocrInput.value?.click();
+}
+function selectOcrImage(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file || !props.modelValue || !identity.value || !isMock) return;
+  if (!file.type.startsWith('image/') || !file.size) { ElMessage.error(t('firstLoginVerification.ocrImageError')); return; }
+  ocrFileName.value = file.name;
+  ocrFamilyNumber.value = identity.value?.simulatedFamilyNumber || ocrFamilyNumber.value || `SIM-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  face.value = null;
+}
 async function prepareReference() {
   if (!identity.value || !cloudToken.value || !referenceFile.value) return;
   referenceController?.abort(); const request = ++referenceGeneration; const dialog = generation;
@@ -156,7 +181,7 @@ function onFaceCaptured(payload) {
   if (props.modelValue && identity.value && payload?.nationalId === nationalId.value) face.value = payload;
 }
 async function completeVerification() {
-  if (!isMock || !identity.value || !face.value || comparing.value || reading.value) return;
+  if (!isMock || !identity.value || !ocrFamilyNumber.value || !face.value || comparing.value || reading.value) return;
   comparing.value = true;
   try {
     const fields = {
@@ -164,6 +189,7 @@ async function completeVerification() {
       readToken: identity.value.readToken,
       livenessCompleted: true,
       faceImage: face.value.image || '',
+      simulatedFamilyNumber: ocrFamilyNumber.value,
       simulated: true
     };
     const result = isMember.value

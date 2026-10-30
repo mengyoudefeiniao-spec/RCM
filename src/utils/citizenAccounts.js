@@ -30,7 +30,7 @@ function sharedAccount(fields, passwordCredential) {
     id: `registered-${fields.nationalId}`, province: fields.province,
     phone: fields.phone, nationalId: fields.nationalId, name: fields.name || '',
     passwordCredential, registeredAt: fields.registeredAt || new Date().toISOString(),
-    identityVerification: fields.identityVerification || null,
+    identityVerification: fields.identityVerification || null, simulatedFamilyNumber: fields.simulatedFamilyNumber || null,
     familyId: fields.familyId || null, familyNumber: fields.familyNumber || null,
     rationCardNo: fields.rationCardNo || null, paperCardNo: fields.paperCardNo || null
   };

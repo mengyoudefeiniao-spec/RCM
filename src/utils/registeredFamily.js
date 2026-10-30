@@ -24,12 +24,14 @@ export function getRegisteredFamily(account, lang) {
     addSharedFamily({
       rationCardNo,
       cardUnconfirmed: true,
+      simulatedFamilyNumber: account.simulatedFamilyNumber || null,
       headName: '', familyCode: '', oldPaperCardNo: account.paperCardNo || '',
       provinceCode: account.province || '', district: '', agentName: '', address: '',
       status: '', memberCount: 1,
       members: [{
         id: `registered-${account.nationalId}`, name: account.name || account.nationalId, nationalId: account.nationalId,
         relation: '', gender: '', status: 'Active', phone: account.phone || '',
+        simulatedFamilyNumber: account.simulatedFamilyNumber || null,
         verification: { status: 'pending' }, faceVerified: false
       }]
     }, language);

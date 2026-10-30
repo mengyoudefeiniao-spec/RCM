@@ -49,6 +49,7 @@
             <div class="min-w-0 text-start text-[#FBFDFB]">
               <div class="break-all text-xl font-extrabold tracking-wider"><span dir="ltr" class="font-mono">{{ citizenStore.currentFamily.rationCardNo }}</span></div>
               <div v-if="citizenStore.currentFamily.cardUnconfirmed" class="mt-1 break-words text-xs font-medium">{{ citizenStore.currentFamily.members?.[0]?.name }}</div>
+              <div v-if="citizenStore.currentFamily.simulatedFamilyNumber" class="mt-1 break-words text-xs">{{ $t('firstLoginVerification.ocrResult') }}: <span dir="ltr">{{ citizenStore.currentFamily.simulatedFamilyNumber }}</span></div>
             </div>
 
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
@@ -200,6 +201,7 @@
                   {{ $t('citizen.oldPaperCardNo') }}：<strong class="text-[#7A5F21] font-bold">{{ citizenStore.currentFamily.oldPaperCardNo || '—' }}</strong>
                 </span>
                 <span class="text-[#8A9A8F]">{{ $t('citizen.familyCode') }}：{{ citizenStore.currentFamily.familyCode }}</span>
+                <span v-if="citizenStore.currentFamily.simulatedFamilyNumber" class="text-[#8A9A8F]">{{ $t('firstLoginVerification.ocrResult') }}: <span dir="ltr">{{ citizenStore.currentFamily.simulatedFamilyNumber }}</span></span>
               </div>
             </div>
           </div>

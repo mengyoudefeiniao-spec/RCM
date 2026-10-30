@@ -1489,18 +1489,26 @@ export async function mockDispatch(config) {
     if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
     pending.readToken = demoVerificationToken();
     sessionStorage.setItem(FIRST_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
-    return createResponse({ nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false });
+    const account = await findCitizenAccount(pending.nationalId);
+    const family = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
+    return createResponse({ nationalId: pending.nationalId, readToken: pending.readToken, simulated: true, chipPhotoAvailable: false, simulatedFamilyNumber: family?.simulatedFamilyNumber || account?.simulatedFamilyNumber || null });
   }
 
   if (url === '/auth/first-login/verify' && method === 'POST') {
     const pending = pendingFirstLogin(data.challenge);
     if (!pending) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
-    if (!pending.readToken || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true) {
+    if (!pending.readToken || data.readToken !== pending.readToken || data.nationalId !== pending.nationalId || data.livenessCompleted !== true || data.simulated !== true || !/^SIM-[A-F0-9]{8}$/.test(data.simulatedFamilyNumber || '')) {
       return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
     }
     let account = await findCitizenAccount(pending.nationalId);
     if (!account) return createResponse({}, 400, i18n.global.t('firstLoginVerification.expired'));
-    account = await updateCitizenAccount(pending.nationalId, { identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString() } });
+    const existingFamily = getSharedFamilies(reqLang).find(item => item.members?.some(member => member.nationalId === pending.nationalId));
+    if (existingFamily?.simulatedFamilyNumber && existingFamily.simulatedFamilyNumber !== data.simulatedFamilyNumber) return createResponse({}, 400, i18n.global.t('firstLoginVerification.stepsRequired'));
+    account = await updateCitizenAccount(pending.nationalId, { simulatedFamilyNumber: data.simulatedFamilyNumber, identityVerification: { status: 'passed', simulated: true, verifiedAt: new Date().toISOString(), simulatedFamilyNumber: data.simulatedFamilyNumber } });
+    if (existingFamily) {
+      updateSharedFamily(existingFamily.rationCardNo, current => ({ ...current, simulatedFamilyNumber: data.simulatedFamilyNumber, members: current.members.map(member => member.nationalId === pending.nationalId ? { ...member, simulatedFamilyNumber: data.simulatedFamilyNumber } : member) }), reqLang);
+      await flushPocketBaseWrites();
+    }
     sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
     return createResponse({ ...registeredCitizenSession(account), passed: true, simulated: true });
   }
@@ -1523,7 +1531,7 @@ export async function mockDispatch(config) {
     if (!member || memberVerificationStatus(member) === 'passed') return createResponse({}, 400, i18n.global.t('memberVerification.onlineError'));
     const reading = { cardNo: data.cardNo, memberId: member.id, nationalId: member.nationalId, readToken: demoVerificationToken(), expiresAt: Date.now() + 300000 };
     sessionStorage.setItem('rcm_member_verification_read', JSON.stringify(reading));
-    return createResponse({ nationalId: member.nationalId, readToken: reading.readToken, simulated: true, chipPhotoAvailable: false });
+    return createResponse({ nationalId: member.nationalId, readToken: reading.readToken, simulated: true, chipPhotoAvailable: false, simulatedFamilyNumber: family.simulatedFamilyNumber || null });
   }
 
   if (url === '/auth/member-verification/verify' && method === 'POST') {
@@ -1532,14 +1540,16 @@ export async function mockDispatch(config) {
     const member = family?.members?.find(item => item.id === data.memberId && item.nationalId === data.nationalId);
     if (!member || memberVerificationStatus(member) === 'passed' || !reading || reading.expiresAt <= Date.now()
       || reading.cardNo !== data.cardNo || reading.memberId !== data.memberId || reading.nationalId !== data.nationalId
-      || reading.readToken !== data.readToken || data.livenessCompleted !== true || data.simulated !== true) {
+      || reading.readToken !== data.readToken || data.livenessCompleted !== true || data.simulated !== true || !/^SIM-[A-F0-9]{8}$/.test(data.simulatedFamilyNumber || '')
+      || (family.simulatedFamilyNumber && family.simulatedFamilyNumber !== data.simulatedFamilyNumber)) {
       return createResponse({}, 400, i18n.global.t('memberVerification.onlineError'));
     }
-    const record = { memberId: member.id, method: 'online', status: 'passed', simulated: true, verifiedAt: new Date().toISOString() };
+    const record = { memberId: member.id, method: 'online', status: 'passed', simulated: true, simulatedFamilyNumber: data.simulatedFamilyNumber, verifiedAt: new Date().toISOString() };
     updateSharedFamily(data.cardNo, current => ({
       ...current,
+      simulatedFamilyNumber: data.simulatedFamilyNumber,
       members: current.members.map(item => item.id === member.id && item.nationalId === member.nationalId
-        ? { ...item, verification: record, faceVerified: true, faceVerifiedAt: record.verifiedAt }
+        ? { ...item, simulatedFamilyNumber: data.simulatedFamilyNumber, verification: record, faceVerified: true, faceVerifiedAt: record.verifiedAt }
         : item)
     }), reqLang);
     sessionStorage.removeItem('rcm_member_verification_read');
