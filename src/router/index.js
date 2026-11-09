@@ -24,6 +24,14 @@ const routes = [
     meta: { title: '国家物资配给综合调度门户', public: true }
   },
   {
+    // Field verification runs outside the business shell so testers can work
+    // without a business account and without the app navigation.
+    path: '/verify',
+    name: 'FieldVerification',
+    component: () => import('../views/verify/VerificationView.vue'),
+    meta: { titleKey: 'verification.title', public: true }
+  },
+  {
     path: '/',
     component: AppLayout,
     children: [

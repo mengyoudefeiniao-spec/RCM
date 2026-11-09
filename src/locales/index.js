@@ -37,9 +37,10 @@ import loginPageMessages from './loginPage.js';
 import firstLoginVerificationMessages from './firstLoginVerification.js';
 import memberVerificationMessages from './memberVerification.js';
 import faceCompareDemoMessages from './faceCompareDemo.js';
+import verificationModuleMessages from './verificationModule.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const merged = { ...messages, verification: verificationModuleMessages[lang].verification, faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   const deregistration = memberDeregistrationMessages[lang];
   merged.memberDeregistration = deregistration;
   merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action } };

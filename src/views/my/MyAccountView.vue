@@ -26,6 +26,23 @@
       </span>
     </section>
 
+    <!-- 技术验证模块入口：现场验证与样本采集，仅需本机数据 -->
+    <button
+      type="button"
+      data-my-list="verification"
+      class="flex w-full items-center gap-3 rounded-xl border border-[#E5CEA1] bg-[#FDF3E0] p-4 text-start transition-shadow hover:shadow-sm"
+      @click="openVerification"
+    >
+      <div class="size-10 shrink-0 rounded-lg bg-white text-[#7A5F21] flex items-center justify-center border border-[#E5CEA1]">
+        <el-icon :size="20"><Monitor /></el-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-sm font-bold text-[#1F3326]">{{ $t('verification.entryTitle') }}</div>
+        <div class="mt-0.5 text-xs text-[#5A4718]">{{ $t('verification.entryDesc') }}</div>
+      </div>
+      <el-icon class="shrink-0 text-[#7A5F21] rtl-mirror-icon"><ArrowRight /></el-icon>
+    </button>
+
     <template v-if="isCitizen">
       <section class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-3">
@@ -316,6 +333,8 @@ const PAGE_SIZE = 5;
 let previewScroll = 0;
 let openedFromPreview = false;
 const isAppMode = computed(() => route.query.layout === 'app' || sessionStorage.getItem('rcm_layout_mode') === 'app');
+// 技术验证模块：独立公开路由，不带业务导航与登录态要求。
+const openVerification = () => router.push('/verify');
 const profile = ref({ email: '', phone: '', address: '' });
 const agentProfile = ref(null);
 const outlets = ref([]);
