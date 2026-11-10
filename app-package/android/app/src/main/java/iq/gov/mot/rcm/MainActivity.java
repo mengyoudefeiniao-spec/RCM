@@ -37,7 +37,6 @@ public class MainActivity extends Activity {
     private static final int CAMERA_PERMISSION_REQUEST = 1002;
     private WebView webView;
     private AppSupportBridge appSupportBridge;
-    private VerificationBridge verificationBridge;
     private ValueCallback<Uri[]> fileChooserCallback;
     private PermissionRequest pendingWebPermission;
     private Uri pendingCameraUri;
@@ -100,7 +99,6 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         appSupportBridge = new AppSupportBridge(this, webView);
-        verificationBridge = new VerificationBridge(this, webView);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -284,7 +282,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         if (appSupportBridge != null) appSupportBridge.pauseSpeech();
-        if (verificationBridge != null) verificationBridge.onPause();
         super.onPause();
     }
 
@@ -305,7 +302,6 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         completeFileChooser(null);
         if (appSupportBridge != null) appSupportBridge.destroy();
-        if (verificationBridge != null) verificationBridge.destroy();
         if (webView != null) webView.destroy();
         super.onDestroy();
     }

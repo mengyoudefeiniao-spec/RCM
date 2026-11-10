@@ -1,6 +1,6 @@
 <template>
   <div
-    class="app-shell flex flex-col font-sans text-[#1F3326]"
+    class="bg-[#F8FBF8] flex flex-col font-sans text-[#1F3326]"
     :class="[
       isAppMode
         ? 'h-screen max-h-screen overflow-hidden bg-[#1B3123]/10 py-1 sm:py-2.5 justify-center items-center android-native-app-layout'
@@ -22,7 +22,7 @@
 
       <!-- 2. 主工作区：仅在 app 内下滑，完全不滚动外层浏览器 -->
       <main
-        class="app-workspace flex-1 w-full mx-auto min-h-0 custom-pixel-scrollbar"
+        class="flex-1 w-full mx-auto min-h-0 custom-pixel-scrollbar"
         :class="[
           isAppMode ? 'overflow-y-auto overflow-x-hidden px-0 py-0 pb-16' : '',
           !isAppMode

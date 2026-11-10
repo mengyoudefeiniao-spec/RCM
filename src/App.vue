@@ -37,7 +37,6 @@ function handleSplashFinish() {
 }
 
 const isAssistantPage = computed(() => {
-  // 现场技术验证页为独立采集界面，不叠加业务助手入口
-  return route.path !== '/portal' && route.path !== '/login' && route.path !== '/verify';
+  return route.path !== '/portal' && route.path !== '/login';
 });
 </script>

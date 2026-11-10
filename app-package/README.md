@@ -12,15 +12,6 @@ Run `node --test scripts/tests/android-map-network.test.mjs` from the repository
 
 The customer service complaint form uses Android's installed speech recognition service for voice input. Microphone permission is requested when the user starts recording; supported languages depend on the device's speech service. Complaint completion notices use native Android notifications after permission is granted, and tapping a notice opens the related complaint progress. These services are exposed only to the bundled app's top-level asset origin. Business data still synchronizes while the WebView is running; delivery after the app has fully closed requires a separately deployed background push service.
 
-## Field verification module (技术验证模块)
-
-Both flavors ship the on-site verification module used when the APK is handed to the customer for field verification. It reads `5-技术验证清单.md` and only covers items that can be exercised on the phone itself.
-
-- Entry: the link on the login screen, the card on the citizen/agent "My" page, or the public route `#/verify` (no business account needed).
-- Coverage: device and runtime probe (model, memory, storage, camera, WebView, Play integrity, signing fingerprint, root/emulator signs); NFC eMRTD probe (tag discovery, ISO-DEP, SELECT AID, EF.COM status words, latency); card-back, face and presentation-attack sample capture; 60-second dynamic QR generation plus scanning with clock-skew and replay checks; manual checks for biometrics, device binding, RTL and offline bundle budget.
-- Evidence: records and photos stay in the APK IndexedDB. "导出验证报告" writes `report.md`, `report.json`, per-case CSV and every photo into a zip and opens the Android share sheet (WhatsApp, mail, Drive…).
-- NFC uses `android.permission.NFC` with the hardware feature marked optional. The probe only selects the eMRTD AID; it does not run BAC/PACE, so `6982` on EF.COM is an expected, recorded observation.
-
 ## Build PocketBase APKs (default)
 
 With Node.js dependencies installed in the repository root and JDK 17 at `C:\Program Files\Java\jdk-17.0.8`, run:

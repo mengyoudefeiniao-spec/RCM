@@ -23,13 +23,6 @@
             <span>{{ $t('loginPage.noAccount') }}</span>
             <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
           </div>
-          <!-- 技术验证模块入口（无需登录，供甲方现场自证） -->
-          <div class="mt-3 text-center">
-            <el-button text type="primary" size="small" @click="openVerification">
-              <el-icon class="me-1"><Monitor /></el-icon>{{ $t('verification.entryTitle') }}
-            </el-button>
-            <p class="mt-0.5 text-[10px] text-[#8A9A8F]">{{ $t('verification.entryDesc') }}</p>
-          </div>
         </section>
       </div>
     </main>
@@ -112,8 +105,7 @@ import {
   User,
   Lock,
   Camera,
-  Location,
-  Monitor
+  Location
 } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -130,11 +122,6 @@ const isAppMode = computed(() => {
 
 const formRef = ref(null);
 const loading = ref(false);
-
-// 技术验证模块：公开路由，现场验证无需业务账号
-function openVerification() {
-  router.push('/verify');
-}
 
 function handleStartRegister() {
   if (isDemoActive.value) {
