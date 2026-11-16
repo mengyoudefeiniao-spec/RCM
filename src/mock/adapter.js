@@ -1406,12 +1406,14 @@ export async function mockDispatch(config) {
       };
       if (method === 'GET') return createResponse(readMyData(role, 'profile', base));
       if (method === 'PUT') {
+        const current = readMyData(role, 'profile', base);
         const next = {
-          email: String(data.email || '').trim(),
+          // Email is no longer shown in the citizen app; keep the stored value when omitted.
+          email: data.email === undefined ? current.email : String(data.email || '').trim(),
           phone: String(data.phone || '').trim(),
           address: String(data.address || '').trim()
         };
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email) || !/^\+?[\d\s-]{7,20}$/.test(next.phone) || !next.address) {
+        if ((next.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email)) || !/^\+?[\d\s-]{7,20}$/.test(next.phone) || !next.address) {
           return createResponse({}, 400, i18n.global.t('my.invalidProfile'));
         }
         if (role === 'citizen' && next.phone !== readMyData(role, 'profile', base).phone) {
@@ -1888,6 +1890,9 @@ export async function mockDispatch(config) {
     catch (error) {
       return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500, i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'registerWizard.duplicate' : 'registerWizard.saveFailed'));
     }
+    // The identity check already passed, so the household electronic ration card is
+    // issued together with the account instead of waiting for a pending-issue step.
+    getRegisteredFamily(account, reqLang);
     // Registration materials belong to the shared archive; a failed archive write must not lose the account.
     const cardPhoto = typeof data.cardPhoto === 'string' && data.cardPhoto.length < 3_000_000 ? data.cardPhoto : '';
     try {

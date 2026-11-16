@@ -41,20 +41,18 @@
               <span class="text-xs font-semibold leading-relaxed text-[#D3AF62] tracking-wider uppercase break-words">{{ $t('citizenCard.cardTitle') }}</span>
             </div>
             <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
-              {{ citizenStore.currentFamily.cardUnconfirmed ? $t('registrationFlow.cardUnconfirmed') : (citizenStore.currentFamily.status || $t('citizenCard.statusActive')) }}
+              {{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}
             </span>
           </div>
 
           <div class="pt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div class="min-w-0 text-start text-[#FBFDFB]">
               <div class="break-all text-xl font-extrabold tracking-wider"><span dir="ltr" class="font-mono">{{ citizenStore.currentFamily.rationCardNo }}</span></div>
-              <div v-if="citizenStore.currentFamily.cardUnconfirmed" class="mt-1 break-words text-xs font-medium">{{ citizenStore.currentFamily.members?.[0]?.name }}</div>
               <div v-if="citizenStore.currentFamily.simulatedFamilyNumber" class="mt-1 break-words text-xs">{{ $t('firstLoginVerification.ocrResult') }}: <span dir="ltr">{{ citizenStore.currentFamily.simulatedFamilyNumber }}</span></div>
             </div>
 
             <!-- 电子配给卡右侧二维码按钮 (点击弹出二级页面展示配给卡完整信息与防伪二维码) -->
             <button
-              v-if="!citizenStore.currentFamily.cardUnconfirmed"
               type="button"
               class="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 border border-[#D3AF62]/40 shadow-xs cursor-pointer transition-all group focus-visible:outline-2 focus-visible:outline-[#326445] focus-visible:outline-offset-2"
               @click="openCardQrModal"
@@ -204,7 +202,7 @@
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-base font-bold text-[#1B3123]">{{ citizenStore.currentFamily.headName || citizenStore.currentFamily.members?.[0]?.name }}<template v-if="citizenStore.currentFamily.headName"> ({{ $t('citizen.head') }})</template></span>
-                <el-tag size="small" :type="citizenStore.currentFamily.cardUnconfirmed ? 'warning' : 'success'" effect="light">{{ citizenStore.currentFamily.cardUnconfirmed ? $t('registrationFlow.cardUnconfirmed') : citizenStore.currentFamily.status }}</el-tag>
+                <el-tag size="small" type="success" effect="light">{{ citizenStore.currentFamily.status || $t('citizenCard.statusActive') }}</el-tag>
                 <el-tag size="small" type="primary" effect="plain" class="font-mono">{{ $t('citizen.rationCard') }}</el-tag>
               </div>
               <!-- 电子配给卡与关联纸质卡编号 -->
@@ -223,7 +221,7 @@
 
           <!-- 业务快捷操作按钮 -->
           <div class="flex items-center gap-2 flex-wrap">
-            <el-button v-if="!citizenStore.currentFamily.cardUnconfirmed" type="warning" plain class="shadow-xs font-bold" @click="openCardQrModal">
+            <el-button type="warning" plain class="shadow-xs font-bold" @click="openCardQrModal">
               <el-icon class="me-1"><Tickets /></el-icon>
               {{ $t('warehouse.showMyCard') || '出示我的配给卡' }}
             </el-button>
@@ -767,139 +765,30 @@
     />
 
     <!-- ======================================================== -->
-    <!-- 电子配给卡凭证与现场核验动态二维码弹窗 (二级页面/弹窗) -->
+    <!-- 电子配给卡二维码 (精简版：卡号 + 二维码 + 出示提示) -->
     <!-- ======================================================== -->
     <el-dialog
       v-model="cardModalVisible"
       :title="null"
-      :width="isAppMode ? 'min(92vw, 386px)' : '420px'"
+      :width="isAppMode ? 'min(86vw, 320px)' : '340px'"
       align-center
       class="citizen-card-verify-dialog"
       :show-close="true"
-      @closed="handleCardModalClosed"
     >
-      <div class="space-y-4 p-1">
-        <!-- 弹窗顶栏 -->
-        <div class="flex items-center justify-between pb-2 border-b border-[#D9E5DB]">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-[#326445] text-[#D3AF62] flex items-center justify-center text-xs">
-              <el-icon><Tickets /></el-icon>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-[#1F3326]">{{ $t('citizenCard.voucherTitle') || '法定电子配给卡档案凭证' }}</div>
-              <div class="text-[10px] text-[#8A9A8F]">{{ $t('citizenCard.voucherSubtitle') || '供代销网点专员现场终端扫描核验' }}</div>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E1F4E4] text-[#2F7A50] border border-[#C7E0CE] flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#2F7A50] animate-pulse"></span>
-            <span>{{ $t('citizenCard.recordActive') || '档案在册' }}</span>
+      <div class="card-qr-simple">
+        <div class="card-qr-head">
+          <span class="text-xs font-bold text-[#1F3326]">{{ $t('citizenCard.cardTitle') }}</span>
+          <span class="inline-flex items-center gap-1 rounded-full border border-[#C7E0CE] bg-[#E1F4E4] px-2 py-0.5 text-[10px] font-bold text-[#2F7A50]">
+            <span class="h-1.5 w-1.5 rounded-full bg-[#2F7A50]"></span>
+            {{ citizenStore.currentFamily?.status || $t('citizenCard.statusActive') }}
           </span>
         </div>
-
-        <!-- 1. 典雅电子配给卡主体 -->
-        <div
-          class="relative overflow-hidden rounded-lg p-4 text-white bg-gradient-to-br from-[#326445] via-[#2F5B44] to-[#1F3326] shadow-md border border-[#D3AF62]/35 select-none"
-        >
-          <!-- 金色装饰弧线纹理 -->
-          <div class="absolute -end-8 -top-8 w-32 h-32 rounded-full border border-[#D3AF62]/20 pointer-events-none"></div>
-          <div class="absolute -end-4 -bottom-4 w-24 h-24 rounded-full border border-[#D3AF62]/15 pointer-events-none"></div>
-
-          <div class="relative z-10 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-white/10">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#2F7A50] animate-pulse"></span>
-                <span class="text-[11px] font-semibold text-[#D3AF62] tracking-wider uppercase">
-                  {{ $t('citizenCard.cardTitle') || '伊拉克共和国贸易部 · 电子配给卡' }}
-                </span>
-              </div>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D3AF62]/20 text-[#D3AF62] border border-[#D3AF62]/40">
-                {{ citizenStore.currentFamily?.status || $t('citizenCard.statusActive') || '正常在册' }}
-              </span>
-            </div>
-
-            <div class="space-y-0.5">
-              <span class="text-[9px] text-white/60 tracking-wider uppercase">
-                {{ $t('citizenCard.rationCardNoLabel') || '国家统一电子配给卡编码' }}
-              </span>
-              <div class="text-lg font-extrabold tracking-widest font-mono text-[#FBFDFB]">
-                {{ citizenStore.currentFamily?.rationCardNo || 'RC-10029381' }}
-              </div>
-              <div class="text-[10px] text-[#D3AF62] font-mono">
-                {{ $t('citizenCard.linkedPaperBook') || '关联纸质配给卡本号' }}：{{ citizenStore.currentFamily?.oldPaperCardNo || 'IQ-P-1994-082194' }}
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
-              <div>
-                <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.legalHeadName') || '法定户主姓名' }}</span>
-                <span class="font-bold text-white text-xs">{{ citizenStore.currentFamily?.headName || '艾哈迈德·哈桑' }}</span>
-                <span class="text-[10px] text-[#A7D9BC] font-mono block">{{ $t('citizenCard.totalMembersRegistered', { count: citizenStore.currentFamily?.members?.length || 0 }) || `（全户在册 ${citizenStore.currentFamily?.members?.length || 0} 人）` }}</span>
-              </div>
-              <div class="text-end">
-                <span class="text-[9px] text-white/50 block">{{ $t('citizenCard.agentStore') || '签约保供代销网点' }}</span>
-                <span class="text-[11px] text-[#E5CEA1] font-medium truncate block" :title="citizenStore.currentFamily?.agentName">
-                  {{ citizenStore.currentFamily?.agentName || '巴格达卡尔赫第一代销站' }}
-                </span>
-                <span class="text-[10px] text-white/50 font-mono">{{ $t('citizenCard.agentCodePrefix') || '代码: ' }}{{ citizenStore.currentFamily?.agentId || 'FA-00128' }}</span>
-              </div>
-            </div>
-          </div>
+        <div class="card-qr-number" dir="ltr">{{ citizenStore.currentFamily?.rationCardNo || '—' }}</div>
+        <div class="card-qr-frame">
+          <img v-if="cardQrDataUrl" :src="cardQrDataUrl" :alt="$t('citizenCard.qrVerifyTitle')" />
+          <el-icon v-else class="text-2xl text-[#8A9A8F] is-loading"><Loading /></el-icon>
         </div>
-
-        <!-- 2. 可扫描验证配给卡的防伪动态二维码 -->
-        <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] text-center space-y-2.5">
-          <div class="flex items-center justify-between text-[11px] text-[#58685D] px-1">
-            <span class="font-bold text-[#326445] flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#D3AF62]"></span>
-              <span>{{ $t('citizenCard.qrVerifyTitle') || '现场扫码验证凭证' }}</span>
-            </span>
-            <span class="font-mono text-[10px] text-[#D3AF62] bg-[#FDF3E0] px-2 py-0.5 rounded-full border border-[#E5CEA1]">
-              {{ $t('citizenCard.antiCounterfeitActive') || '动态防伪中' }}
-            </span>
-          </div>
-
-          <!-- 高保真防伪二维码容器 -->
-          <div class="w-48 h-48 mx-auto p-2.5 rounded-lg bg-white border-2 border-[#326445] shadow-md flex items-center justify-center">
-            <img
-              v-if="cardQrDataUrl"
-              :src="cardQrDataUrl"
-              :alt="$t('citizenCard.qrVerifyTitle')"
-              class="w-full h-full object-contain [image-rendering:pixelated]"
-            />
-            <el-icon v-else class="text-2xl text-[#8A9A8F] is-loading"><Loading /></el-icon>
-          </div>
-          <div class="text-[9px] text-[#58685D] font-mono">{{ liveCardClock }}</div>
-
-          <!-- 动态验证密文与刷新控制 -->
-          <div class="flex items-center justify-between text-xs bg-white px-3 py-1.5 rounded-lg border border-[#D9E5DB]">
-            <div class="text-start font-mono">
-              <span class="text-[10px] text-[#8A9A8F] block">{{ $t('citizenCard.securityCipherLabel') || '防伪安全校验密文：' }}</span>
-              <span class="font-bold text-[#326445] text-[11px]">{{ dynamicCardCode }}</span>
-            </div>
-            <button
-              type="button"
-              class="text-[11px] text-[#D3AF62] hover:text-[#326445] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-              @click="refreshDynamicCode"
-            >
-              <el-icon><Refresh /></el-icon>
-              <span>{{ $t('citizenCard.refreshCipher') || '刷新密文' }}</span>
-            </button>
-          </div>
-
-          <div class="text-[10px] text-[#8A9A8F] leading-tight">
-            {{ $t('citizenCard.qrScanNotice') || '请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放' }}
-          </div>
-        </div>
-
-        <!-- 底部完成按钮 -->
-        <el-button
-          type="primary"
-          class="w-full font-bold shadow-xs !rounded-lg"
-          style="background: #326445; border-color: #326445; color: #FFFFFF;"
-          @click="cardModalVisible = false"
-        >
-          {{ $t('citizenCard.closeVoucher') || '完成出示 / 关闭' }}
-        </el-button>
+        <p class="card-qr-hint">{{ $t('citizenCard.qrShowHint') }}</p>
       </div>
     </el-dialog>
   </div>
@@ -928,7 +817,6 @@ import {
   Plus,
   CircleCheckFilled,
   Tickets,
-  Refresh,
   ArrowLeft,
   ArrowRight,
   Right,
@@ -1014,10 +902,8 @@ const isAppMode = computed(() => {
   return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('rcm_layout_mode') === 'app';
 });
 
-// 公民电子配给卡弹窗与动态防伪凭证
+// 公民电子配给卡弹窗与二维码
 const cardModalVisible = ref(false);
-const liveCardClock = ref('');
-let cardClockTimer = null;
 const dynamicCardCode = ref('');
 const cardQrDataUrl = ref('');
 let cardQrGeneration = 0;
@@ -1044,30 +930,12 @@ watch([cardModalVisible, dynamicCardCode, () => citizenStore.currentFamily], asy
 function openCardQrModal() {
   refreshDynamicCode();
   cardModalVisible.value = true;
-  startCardClock();
-}
-
-function handleCardModalClosed() {
-  if (cardClockTimer) {
-    clearInterval(cardClockTimer);
-    cardClockTimer = null;
-  }
 }
 
 function refreshDynamicCode() {
   const stamp = Date.now().toString().slice(-4);
   const cardPart = (citizenStore.currentFamily?.rationCardNo || 'RC-10029381').replace('RC-', '');
   dynamicCardCode.value = `VERIFY-${cardPart}-${stamp}`;
-}
-
-function startCardClock() {
-  if (cardClockTimer) clearInterval(cardClockTimer);
-  const updateTime = () => {
-    const now = new Date();
-    liveCardClock.value = now.toTimeString().split(' ')[0] + '.' + Math.floor(now.getMilliseconds() / 100);
-  };
-  updateTime();
-  cardClockTimer = setInterval(updateTime, 100);
 }
 
 function isHeadRelation(relation) {
@@ -1316,10 +1184,6 @@ onBeforeUnmount(() => {
   if (offFamilyUpdated) {
     offFamilyUpdated();
     offFamilyUpdated = null;
-  }
-  if (cardClockTimer) {
-    clearInterval(cardClockTimer);
-    cardClockTimer = null;
   }
   if (smsCountdownTimer) {
     clearInterval(smsCountdownTimer);
@@ -1644,6 +1508,55 @@ async function handleSubmitAddMember() {
   padding: 12px 14px 16px !important;
   max-height: 86vh;
   overflow-y: auto;
+}
+
+/* 精简的电子配给卡二维码：只保留卡号、二维码与出示提示 */
+.card-qr-simple {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.card-qr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+.card-qr-number {
+  width: 100%;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: #1F3326;
+  overflow-wrap: anywhere;
+}
+.card-qr-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 210px;
+  height: 210px;
+  max-width: 100%;
+  padding: 10px;
+  border: 2px solid #326445;
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+.card-qr-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.card-qr-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #58685D;
 }
 
 :deep(.member-edit-dialog .el-dialog__body) {

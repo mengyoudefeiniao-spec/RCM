@@ -6,12 +6,12 @@
       <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t('my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
     </header>
     <template v-if="!isListPage">
-    <header class="space-y-1">
-      <h1 class="text-xl font-bold">{{ isCitizen ? $t('my.citizenTitle') : $t('my.agentTitle') }}</h1>
-      <p class="text-sm text-[#58685D]">{{ isCitizen ? $t('my.citizenSubtitle') : $t('my.agentSubtitle') }}</p>
+    <header v-if="!isCitizen" class="space-y-1">
+      <h1 class="text-xl font-bold">{{ $t('my.agentTitle') }}</h1>
+      <p class="text-sm text-[#58685D]">{{ $t('my.agentSubtitle') }}</p>
     </header>
 
-    <section class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm flex items-center gap-4">
+    <section v-if="!isCitizen" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm flex items-center gap-4">
       <div class="size-14 shrink-0 rounded-xl bg-[#FDF3E0] text-[#7A5F21] flex items-center justify-center">
         <el-icon :size="28"><User /></el-icon>
       </div>
@@ -33,7 +33,6 @@
           <el-button size="small" @click="openContactDialog"><el-icon class="me-1"><Edit /></el-icon>{{ $t('my.editContact') }}</el-button>
         </div>
         <div class="space-y-3 text-sm">
-          <div class="flex items-start gap-3"><el-icon class="mt-0.5 text-[#326445]"><Message /></el-icon><div class="min-w-0"><div class="text-xs text-[#8A9A8F]">{{ $t('my.email') }}</div><bdi dir="ltr" class="block break-all">{{ profile.email }}</bdi></div></div>
           <div class="flex items-start gap-3"><el-icon class="mt-0.5 text-[#326445]"><Iphone /></el-icon><div><div class="text-xs text-[#8A9A8F]">{{ $t('my.phone') }}</div><bdi dir="ltr">{{ profile.phone }}</bdi></div></div>
           <div class="flex items-start gap-3"><el-icon class="mt-0.5 text-[#326445]"><Location /></el-icon><div><div class="text-xs text-[#8A9A8F]">{{ $t('my.address') }}</div><span>{{ profile.address }}</span></div></div>
         </div>
@@ -124,7 +123,6 @@
     </template>
     <el-dialog v-model="contactDialogOpen" :title="$t('my.editContact')" width="min(92vw, 440px)" append-to-body>
       <el-form label-position="top" @submit.prevent="saveContact">
-        <el-form-item :label="$t('my.email')"><el-input v-model.trim="contactForm.email" type="email" dir="ltr" /></el-form-item>
         <el-form-item :label="$t('my.phone')"><el-input v-model.trim="contactForm.phone" type="tel" dir="ltr" /></el-form-item>
         <el-form-item :label="$t('my.address')"><el-input v-model.trim="contactForm.address" type="textarea" :rows="2" /></el-form-item>
       </el-form>
@@ -243,7 +241,7 @@ import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } 
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, Camera, Monitor } from '@element-plus/icons-vue';
+import { User, Edit, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, Camera, Monitor } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
@@ -267,7 +265,7 @@ const PAGE_SIZE = 5;
 let previewScroll = 0;
 let openedFromPreview = false;
 const isAppMode = computed(() => route.query.layout === 'app' || sessionStorage.getItem('rcm_layout_mode') === 'app');
-const profile = ref({ email: '', phone: '', address: '' });
+const profile = ref({ phone: '', address: '' });
 const agentProfile = ref(null);
 const outlets = ref([]);
 const couriers = ref([]);
@@ -289,7 +287,7 @@ const smsCountdown = ref(0);
 const demoSmsCode = ref('');
 let smsTimer;
 const saving = ref(false);
-const contactForm = reactive({ email: '', phone: '', address: '' });
+const contactForm = reactive({ phone: '', address: '' });
 const courierForm = reactive({ id: '', name: '', phone: '', vehicleNo: '', active: true });
 const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '', smsCode: '' });
 
@@ -410,13 +408,14 @@ function formatDate(value) {
 }
 
 function openContactDialog() {
-  Object.assign(contactForm, profile.value);
+  contactForm.phone = profile.value.phone || '';
+  contactForm.address = profile.value.address || '';
   faceToken.value = '';
   contactDialogOpen.value = true;
 }
 
 async function saveContact() {
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactForm.email) || !/^\+?[\d\s-]{7,20}$/.test(contactForm.phone) || !contactForm.address.trim()) {
+  if (!/^\+?[\d\s-]{7,20}$/.test(contactForm.phone) || !contactForm.address.trim()) {
     ElMessage.warning(t('my.invalidProfile'));
     return;
   }
@@ -427,7 +426,7 @@ async function saveContact() {
   }
   saving.value = true;
   try {
-    profile.value = await updateMyProfile({ ...contactForm, faceToken: faceToken.value });
+    profile.value = await updateMyProfile({ phone: contactForm.phone, address: contactForm.address, faceToken: faceToken.value });
     faceToken.value = '';
     contactDialogOpen.value = false;
     ElMessage.success(t('my.contactSaved'));

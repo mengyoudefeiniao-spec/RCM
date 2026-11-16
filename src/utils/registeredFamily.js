@@ -26,7 +26,9 @@ export function isRegisteredFamilyOwner(family, account) {
     (family?.cardUnconfirmed && family.members?.some(member => member.id === `registered-${account.nationalId}` && member.nationalId === account.nationalId))));
 }
 
-// Locally generated cards remain unconfirmed until an authoritative registry is available.
+// Registration completes the identity check, so the household electronic ration
+// card is issued immediately (no pending-issue state). Legacy pending cards are
+// upgraded the next time the verified owner signs in.
 // Never attach an account to a family by card number alone.
 export function getRegisteredFamily(account, lang) {
   if (!account?.nationalId) return null;
@@ -34,9 +36,13 @@ export function getRegisteredFamily(account, lang) {
   const families = getSharedFamilies(lang);
   const existing = families.find(belongsToAccount);
   if (existing) {
-    if (!existing.members.some(member => applyRegisteredAccount(member, account) !== member)) return existing;
+    const pendingCard = existing.cardUnconfirmed === true && account.identityVerification?.status === 'passed';
+    const changedMember = existing.members.some(member => applyRegisteredAccount(member, account) !== member);
+    if (!pendingCard && !changedMember) return existing;
     return updateSharedFamily(existing.rationCardNo, family => ({
-      ...family, members: family.members.map(member => applyRegisteredAccount(member, account))
+      ...family,
+      ...(pendingCard ? { cardUnconfirmed: false } : {}),
+      members: family.members.map(member => applyRegisteredAccount(member, account))
     }), lang) || existing;
   }
   const otherLocale = languages.map(language => getSharedFamilies(language).find(belongsToAccount)).find(Boolean);
@@ -56,7 +62,6 @@ export function getRegisteredFamily(account, lang) {
     addSharedFamily({
       rationCardNo,
       ownerNationalId: account.nationalId,
-      cardUnconfirmed: true,
       simulatedFamilyNumber: account.simulatedFamilyNumber || null,
       headName: '', familyCode: '', oldPaperCardNo: account.paperCardNo || '',
       provinceCode: account.province || '', district: account.centerName || '',

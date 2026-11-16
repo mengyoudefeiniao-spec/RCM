@@ -1,5 +1,5 @@
 <template>
-  <div class="ration-share-tab" :class="isAppMode ? 'space-y-2.5' : 'space-y-3'">
+  <div class="ration-share-tab" :class="[isAppMode ? 'space-y-2.5' : 'space-y-3', isAppMode && !recordsVisible ? 'ration-share-intro' : '']">
     <div class="grid" :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'gap-3 lg:grid-cols-5'">
       <!-- 家庭代理签约网点 -->
       <section
@@ -73,8 +73,14 @@
       </section>
     </div>
 
+    <!-- APP 默认只显示签约网点与本批配额；下滑（或点击）后再展开申领记录 -->
+    <button v-if="isAppMode && !recordsVisible" type="button" class="records-reveal !mt-auto" @click="revealRecords">
+      <el-icon><ArrowDown /></el-icon>
+      <span>{{ $t('rationShare.scrollHint') }}</span>
+    </button>
+
     <!-- 申领记录：按历史批次查询 -->
-    <section class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" aria-labelledby="ration-share-records-title">
+    <section v-show="!isAppMode || recordsVisible" class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" aria-labelledby="ration-share-records-title">
       <header class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E9F1EB] p-3">
         <h2 id="ration-share-records-title" class="flex min-w-0 items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
           <el-icon class="shrink-0 text-[#326445]"><Tickets /></el-icon>
@@ -172,10 +178,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Shop, Tickets, Refresh, CircleCheckFilled, GoodsFilled } from '@element-plus/icons-vue';
+import { Shop, Tickets, Refresh, CircleCheckFilled, GoodsFilled, ArrowDown } from '@element-plus/icons-vue';
 import { useCitizenStore } from '../../../stores/citizen.js';
 import { getCitizenQuotaBalance } from '../../../api/citizen.js';
 import { getCitizenClaimRecords } from '../../../api/warehouse.js';
@@ -189,6 +195,7 @@ const isAppMode = useAppMode();
 const citizenStore = useCitizenStore();
 
 const loading = ref(false);
+const recordsLoaded = ref(false);
 const records = ref([]);
 const selectedBatch = ref('');
 const detailVisible = ref(false);
@@ -300,6 +307,7 @@ async function loadRecords() {
     ElMessage.error(t('rationShare.loadFailed'));
   } finally {
     loading.value = false;
+    recordsLoaded.value = true;
   }
 }
 
@@ -319,9 +327,45 @@ async function loadQuota() {
   }
 }
 
+// APP 视图先只呈现签约网点与本批配额，下滑动作或点击提示后再加载并展开申领记录。
+const recordsVisible = ref(!isAppMode.value);
+let revealTouchY = 0;
+
+function revealRecords() {
+  if (!isAppMode.value || recordsVisible.value) return;
+  recordsVisible.value = true;
+  if (!recordsLoaded.value) void loadRecords();
+}
+
+function handleRevealWheel(event) {
+  if (event.deltaY > 4) revealRecords();
+}
+
+function handleRevealTouchStart(event) {
+  revealTouchY = event.touches?.[0]?.clientY || 0;
+}
+
+function handleRevealTouchMove(event) {
+  const currentY = event.touches?.[0]?.clientY;
+  if (typeof currentY === 'number' && revealTouchY - currentY > 16) revealRecords();
+}
+
 onMounted(async () => {
   await ensureFamily();
-  await Promise.all([loadQuota(), loadRecords()]);
+  await loadQuota();
+  if (isAppMode.value) {
+    window.addEventListener('wheel', handleRevealWheel, { passive: true });
+    window.addEventListener('touchstart', handleRevealTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleRevealTouchMove, { passive: true });
+  } else {
+    await loadRecords();
+  }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('wheel', handleRevealWheel);
+  window.removeEventListener('touchstart', handleRevealTouchStart);
+  window.removeEventListener('touchmove', handleRevealTouchMove);
 });
 </script>
 
@@ -358,5 +402,38 @@ onMounted(async () => {
   color: #43554B;
   font-size: 10px;
   white-space: nowrap;
+}
+
+/* APP 首屏只保留签约网点与本批配额，把申领记录留到下滑后再展开 */
+.ration-share-intro {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 210px);
+}
+.records-reveal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+  padding: 10px;
+  border: 1px dashed #C7DED0;
+  border-radius: 10px;
+  background: #F8FBF9;
+  color: #326445;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.ration-share-intro > .records-reveal {
+  margin-top: auto;
+}
+.records-reveal:hover,
+.records-reveal:focus-visible {
+  border-color: #D3AF62;
+  background: #F3F8F4;
+  outline: none;
 }
 </style>

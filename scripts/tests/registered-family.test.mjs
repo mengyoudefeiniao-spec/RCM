@@ -11,10 +11,11 @@ beforeEach(() => {
   globalThis.sessionStorage = { getItem: () => null };
 });
 
-test('creates one separate pending card and member for each account across languages', () => {
+test('creates one separate issued card and member for each account across languages', () => {
   const first = getRegisteredFamily(account, 'zh');
   assert.match(first.rationCardNo, /^RC-TMP-/);
-  assert.equal(first.cardUnconfirmed, true);
+  assert.ok(!first.cardUnconfirmed);
+  assert.equal(first.status || '', '');
   assert.equal(first.members[0].name, account.name);
   assert.equal(first.members[0].nationalId, account.nationalId);
   assert.equal(first.members[0].verification.status, 'pending');
@@ -38,6 +39,15 @@ test('does not attach registered accounts to the default household even if ident
   const unrelated = getRegisteredFamily({ ...account, rationCardNo: seeded.rationCardNo }, 'en');
   assert.notEqual(unrelated.rationCardNo, seeded.rationCardNo);
   assert.equal(unrelated.members[0].nationalId, account.nationalId);
+});
+
+test('legacy pending cards are issued once their verified owner signs in', () => {
+  const pending = getRegisteredFamily(account, 'zh');
+  updateSharedFamily(pending.rationCardNo, family => ({ ...family, cardUnconfirmed: true }), 'zh');
+  const verified = { ...account, identityVerification: { status: 'passed', simulated: true, verifiedAt: '2026-11-16T00:00:00Z' } };
+  for (const lang of languages) {
+    assert.equal(getRegisteredFamily(verified, lang).cardUnconfirmed, false);
+  }
 });
 
 test('previous accounts without a name still have their own member record', () => {

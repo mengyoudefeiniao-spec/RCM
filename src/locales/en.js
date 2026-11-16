@@ -2557,6 +2557,7 @@ export default {
     "securityCipherLabel": "Security Verification Cipher:",
     "refreshCipher": "Refresh Cipher",
     "qrScanNotice": "Please keep screen bright · Agents scan this to verify quota and complete distribution",
+    "qrShowHint": "Show this QR code to the agent outlet; the agent scans it to verify and hand over this batch.",
     "closeVoucher": "Done / Close",
     "rationCardNoLabel": "CARD NO.",
     "cardNoLabel": "CARD NO.",

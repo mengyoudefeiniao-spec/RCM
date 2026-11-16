@@ -2559,6 +2559,7 @@ export default {
     "securityCipherLabel": "防伪安全校验密文：",
     "refreshCipher": "刷新密文",
     "qrScanNotice": "请保持手机屏幕常亮并调高亮度 · 网点专员扫码即可核查配额与办理核销发放",
+    "qrShowHint": "请向代理网点出示此二维码，由代理扫码核验并发放本批配给。",
     "closeVoucher": "完成出示 / 关闭",
     "rationCardNoLabel": "配给卡号 (RATION CARD NO.)",
     "cardNoLabel": "配给卡号 (RATION CARD NO.)",
