@@ -2722,6 +2722,7 @@ export default {
     "flour": "Flour",
     "rice": "Rice",
     "oil": "Oil",
+    "sugar": "Sugar",
     "assignedDate": "Assigned",
     "lastVerified": "Last verified",
     "pendingReview": "Compliance review",

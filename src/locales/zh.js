@@ -2724,6 +2724,7 @@ export default {
     "flour": "面粉",
     "rice": "大米",
     "oil": "食油",
+    "sugar": "白糖",
     "assignedDate": "登记日期",
     "lastVerified": "最近核验",
     "pendingReview": "合规待复核",

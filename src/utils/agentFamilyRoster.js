@@ -386,14 +386,19 @@ function clone(value) {
 }
 
 /**
- * Adds the current batch claim state to records created before this field
- * existed. Existing values are kept so outlet updates are never overwritten.
+ * Adds the current batch claim state and sugar quota to records created before
+ * these fields existed. Existing values are kept so outlet updates are never
+ * overwritten. Sugar follows the monthly 1 kg per registered member standard.
  */
-export function normalizeRosterClaims(records) {
+export function normalizeRosterRecords(records) {
   return (Array.isArray(records) ? records : []).map((record) => ({
     ...record,
     currentBatch: record.currentBatch || AGENT_FAMILY_CURRENT_BATCH,
-    claimStatus: record.claimStatus || CLAIM_STATUS_BY_CARD[record.cardNo] || 'PENDING'
+    claimStatus: record.claimStatus || CLAIM_STATUS_BY_CARD[record.cardNo] || 'PENDING',
+    quota: {
+      ...record.quota,
+      sugarKg: Number(record.quota?.sugarKg) || (Number(record.memberCount) || 0)
+    }
   }));
 }
 
@@ -438,13 +443,15 @@ async function writeShared(key, value) {
 export async function loadAgentFamilyRoster() {
   const stored = await readShared(AGENT_FAMILY_ROSTER_KEY);
   if (isValidRoster(stored)) {
-    const normalized = normalizeRosterClaims(stored);
+    const normalized = normalizeRosterRecords(stored);
     const changed = normalized.some((record, index) =>
-      record.currentBatch !== stored[index]?.currentBatch || record.claimStatus !== stored[index]?.claimStatus);
+      record.currentBatch !== stored[index]?.currentBatch
+      || record.claimStatus !== stored[index]?.claimStatus
+      || record.quota?.sugarKg !== stored[index]?.quota?.sugarKg);
     if (changed) await writeShared(AGENT_FAMILY_ROSTER_KEY, normalized);
     return normalized;
   }
-  const seeded = normalizeRosterClaims(clone(ROSTER_SEED));
+  const seeded = normalizeRosterRecords(clone(ROSTER_SEED));
   await writeShared(AGENT_FAMILY_ROSTER_KEY, seeded);
   return seeded;
 }

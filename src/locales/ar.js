@@ -2576,6 +2576,7 @@ export default {
     "flour": "طحين",
     "rice": "أرز",
     "oil": "زيت",
+    "sugar": "سكر",
     "assignedDate": "تاريخ الإسناد",
     "lastVerified": "آخر تحقق",
     "pendingReview": "مراجعة الالتزام",

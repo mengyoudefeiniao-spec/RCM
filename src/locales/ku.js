@@ -2576,6 +2576,7 @@ export default {
     "flour": "ئارد",
     "rice": "برنج",
     "oil": "زەیت",
+    "sugar": "شەکر",
     "assignedDate": "ڕێکەوتی سپاردن",
     "lastVerified": "دوایین پشتڕاستکردنەوە",
     "pendingReview": "پێداچوونەوەی پابەندی",

@@ -22,7 +22,7 @@
 
       <div class="mt-2.5 border-t border-[#eef0f2] pt-2">
         <div class="text-[10px] font-semibold text-[#89929f]">{{ $t('agentFamilies.monthlyQuota') }}</div>
-        <div class="mt-1 grid grid-cols-3 text-center">
+        <div class="mt-1 grid grid-cols-4 text-center">
           <div class="pe-1">
             <div class="text-sm font-bold font-mono text-[#15975a]">{{ formatNumber(totals.flourKg) }}<span class="text-[9px] font-normal text-[#89929f] ms-0.5">kg</span></div>
             <div class="mt-0.5 text-[10px] text-[#89929f]">{{ $t('agentFamilies.flour') }}</div>
@@ -31,9 +31,13 @@
             <div class="text-sm font-bold font-mono text-[#15975a]">{{ formatNumber(totals.riceKg) }}<span class="text-[9px] font-normal text-[#89929f] ms-0.5">kg</span></div>
             <div class="mt-0.5 text-[10px] text-[#89929f]">{{ $t('agentFamilies.rice') }}</div>
           </div>
-          <div class="ps-1">
+          <div class="border-s border-e border-[#eef0f2] px-1">
             <div class="text-sm font-bold font-mono text-[#15975a]">{{ formatNumber(totals.oilL) }}<span class="text-[9px] font-normal text-[#89929f] ms-0.5">L</span></div>
             <div class="mt-0.5 text-[10px] text-[#89929f]">{{ $t('agentFamilies.oil') }}</div>
+          </div>
+          <div class="ps-1">
+            <div class="text-sm font-bold font-mono text-[#15975a]">{{ formatNumber(totals.sugarKg) }}<span class="text-[9px] font-normal text-[#89929f] ms-0.5">kg</span></div>
+            <div class="mt-0.5 text-[10px] text-[#89929f]">{{ $t('agentFamilies.sugar') }}</div>
           </div>
         </div>
       </div>
@@ -143,6 +147,7 @@
             <span>{{ $t('agentFamilies.flour') }} <b class="font-mono font-bold text-[#202326]">{{ formatNumber(family.quota?.flourKg) }}</b> kg</span>
             <span>{{ $t('agentFamilies.rice') }} <b class="font-mono font-bold text-[#202326]">{{ formatNumber(family.quota?.riceKg) }}</b> kg</span>
             <span>{{ $t('agentFamilies.oil') }} <b class="font-mono font-bold text-[#202326]">{{ formatNumber(family.quota?.oilL) }}</b> L</span>
+            <span>{{ $t('agentFamilies.sugar') }} <b class="font-mono font-bold text-[#202326]">{{ formatNumber(family.quota?.sugarKg) }}</b> kg</span>
           </div>
 
           <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-[#89929f]">
@@ -272,7 +277,8 @@ const totals = computed(() => ({
   members: rows.value.reduce((sum, family) => sum + (Number(family.memberCount) || 0), 0),
   flourKg: rows.value.reduce((sum, family) => sum + (Number(family.quota?.flourKg) || 0), 0),
   riceKg: rows.value.reduce((sum, family) => sum + (Number(family.quota?.riceKg) || 0), 0),
-  oilL: rows.value.reduce((sum, family) => sum + (Number(family.quota?.oilL) || 0), 0)
+  oilL: rows.value.reduce((sum, family) => sum + (Number(family.quota?.oilL) || 0), 0),
+  sugarKg: rows.value.reduce((sum, family) => sum + (Number(family.quota?.sugarKg) || 0), 0)
 }));
 
 async function loadRoster() {
