@@ -3,7 +3,7 @@
     <div class="grid" :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'gap-3 lg:grid-cols-5'">
       <!-- 家庭代理签约网点 -->
       <section
-        class="rounded-lg border border-[#C7DED0] bg-white p-3 shadow-xs"
+        class="rounded-lg border border-[#C7DED0] bg-white p-3 shadow-xs ration-share-station"
         :class="isAppMode ? '' : 'lg:col-span-2'"
         aria-labelledby="ration-share-station-title"
       >
@@ -36,7 +36,7 @@
 
       <!-- 本批配额 -->
       <section
-        class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3 shadow-xs"
+        class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3 shadow-xs ration-share-quota"
         :class="isAppMode ? '' : 'lg:col-span-3'"
         aria-labelledby="ration-share-quota-title"
       >
@@ -56,10 +56,10 @@
           </el-button>
         </div>
 
-        <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2" :class="isAppMode ? '' : 'sm:grid-cols-4'">
+        <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 quota-grid" :class="isAppMode ? '' : 'sm:grid-cols-4'">
           <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-md border border-[#E1F4E4] bg-[#F8FBF9]" />
         </div>
-        <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2" :class="isAppMode ? '' : 'sm:grid-cols-4'">
+        <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 quota-grid" :class="isAppMode ? '' : 'sm:grid-cols-4'">
           <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-[#F8FBF9] px-2 py-1.5">
             <div class="truncate text-[11px] font-semibold text-[#43554B]">{{ formatRationItem(item) }}</div>
             <div class="mt-0.5 flex items-baseline gap-1 text-xs">
@@ -69,14 +69,16 @@
             <div class="text-[10px] text-[#8A9A8F]">{{ $t('rationShare.quotaRemaining') }}</div>
           </div>
         </div>
-        <p v-else class="py-4 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.quotaEmpty') }}</p>
+        <p v-else class="quota-empty py-4 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.quotaEmpty') }}</p>
       </section>
     </div>
 
-    <!-- APP 默认只显示签约网点与本批配额；下滑（或点击）后再展开申领记录 -->
-    <button v-if="isAppMode && !recordsVisible" type="button" class="records-reveal !mt-auto" @click="revealRecords">
-      <el-icon><ArrowDown /></el-icon>
-      <span>{{ $t('rationShare.scrollHint') }}</span>
+    <!-- APP 默认只显示签约网点与本批配额；半透明双箭头提示下滑后再展开申领记录 -->
+    <button v-if="isAppMode && !recordsVisible" type="button" class="records-reveal !mt-auto" :aria-label="$t('rationShare.recordsTitle')" @click="revealRecords">
+      <span class="records-chevron" aria-hidden="true">
+        <el-icon><ArrowDown /></el-icon>
+        <el-icon><ArrowDown /></el-icon>
+      </span>
     </button>
 
     <!-- 申领记录：按历史批次查询 -->
@@ -404,36 +406,83 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* APP 首屏只保留签约网点与本批配额，把申领记录留到下滑后再展开 */
+/* APP 首屏由签约网点与本批配额撑满，申领记录留到下滑后再展开 */
 .ration-share-intro {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 210px);
+  /* Fill the APP viewport (also capped for the desktop phone-frame preview). */
+  min-height: calc(min(100dvh, 924px) - 170px);
+}
+.ration-share-intro > .grid {
+  flex: 1 1 auto;
+  grid-template-rows: minmax(0, 0.85fr) minmax(0, 1.15fr);
+}
+.ration-share-intro .ration-share-station,
+.ration-share-intro .ration-share-quota {
+  display: flex;
+  flex-direction: column;
+}
+.ration-share-intro .ration-share-station > div {
+  flex: 1 1 auto;
+  align-items: center;
+}
+.ration-share-intro .quota-grid {
+  flex: 1 1 auto;
+  grid-auto-rows: 1fr;
+}
+.ration-share-intro .quota-grid > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.ration-share-intro .quota-empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .records-reveal {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   width: 100%;
-  margin-top: auto;
-  padding: 10px;
-  border: 1px dashed #C7DED0;
-  border-radius: 10px;
-  background: #F8FBF9;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
   color: #326445;
-  font-size: 12px;
-  font-weight: 700;
   cursor: pointer;
-  transition: border-color .15s ease, background-color .15s ease;
 }
 .ration-share-intro > .records-reveal {
-  margin-top: auto;
+  margin-top: auto !important;
 }
-.records-reveal:hover,
+/* 半透明双箭头暗示可下滑，不用文字提示 */
+.records-chevron {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0;
+  opacity: .45;
+  animation: records-chevron-bounce 1.8s ease-in-out infinite;
+}
+.records-chevron .el-icon {
+  font-size: 20px;
+}
+.records-chevron .el-icon + .el-icon {
+  margin-top: -8px;
+  opacity: .6;
+}
+.records-reveal:hover .records-chevron,
+.records-reveal:focus-visible .records-chevron {
+  opacity: .75;
+}
 .records-reveal:focus-visible {
-  border-color: #D3AF62;
-  background: #F3F8F4;
   outline: none;
+}
+@keyframes records-chevron-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .records-chevron { animation: none; }
 }
 </style>
