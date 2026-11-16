@@ -91,6 +91,17 @@ export function verifyMemberPhoneFace(data) {
 }
 
 /**
+ * 公民注册：读取国民身份证芯片（演示环境为模拟读取，返回芯片照片与身份信息） (POST)
+ */
+export function readRegistrationIdentity(data) {
+  return request({
+    url: '/auth/registration/read-identity',
+    method: 'POST',
+    data
+  });
+}
+
+/**
  * 纸质卡升级换发与公民账号注册 (POST)
  */
 export function registerCitizen(data) {

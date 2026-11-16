@@ -109,6 +109,16 @@ export function addFamilyMember(cardNo, data) {
 }
 
 /**
+ * 公民注册向导：可选省份、代理机构与配给中心（多语言名称随数据返回） (GET)
+ */
+export function getRegistrationOptions() {
+  return request({
+    url: '/citizen/registration/options',
+    method: 'GET'
+  });
+}
+
+/**
  * 获取代理转移候选省份、分部、中心及代理网点元数据 (GET)
  */
 export function getTransferOptions() {

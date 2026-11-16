@@ -28,6 +28,10 @@ export async function findCitizenAccount(identifier) {
 function sharedAccount(fields, passwordCredential) {
   return {
     id: `registered-${fields.nationalId}`, province: fields.province,
+    provinceCode: fields.provinceCode || fields.province || null,
+    provinceNames: fields.provinceNames || null,
+    agencyCode: fields.agencyCode || null,
+    agencyNames: fields.agencyNames || null,
     phone: fields.phone, nationalId: fields.nationalId, name: fields.name || '',
     passwordCredential, passwordUpdatedAt: fields.passwordUpdatedAt || null,
     registeredAt: fields.registeredAt || new Date().toISOString(),

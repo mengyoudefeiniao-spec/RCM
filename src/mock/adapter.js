@@ -21,6 +21,8 @@ import { findAgentAccount, createAgentAccount, updateAgentAccount, verifyAgentAc
 import { findAgentDirectoryEntry, claimAgentDirectoryEntry, getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../utils/agentDirectory.js';
 import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
 import { saveRegistrationArchive } from '../utils/memberRegistration.js';
+import { loadRegistrationCatalog, findRegistrationProvince, findRegistrationAgency, localizeCatalogNames } from '../utils/registrationCatalog.js';
+import { isIdentityImage, chipMatchPassed } from '../utils/registrationIdentity.js';
 import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
 import { SIMULATED_IDENTITY_NAME } from '../utils/simulatedIdentity.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
@@ -751,6 +753,8 @@ const AGENT_LOGIN_CHALLENGE_KEY = 'rcm_agent_login_challenge';
 const AGENT_COMPANY_PROOF_KEY = 'rcm_agent_company_proof';
 const AGENT_READ_IDENTITY_KEY = 'rcm_agent_read_identity';
 const AGENT_REGISTRATION_SMS_KEY = 'rcm_demo_agent_registration_sms';
+const REGISTRATION_IDENTITY_PROOF_KEY = 'rcm_registration_identity_proof';
+const REGISTRATION_CHIP_READ_KEY = 'rcm_registration_chip_read';
 const demoVerificationToken = () => Array.from(crypto.getRandomValues(new Uint8Array(24)), byte => byte.toString(16).padStart(2, '0')).join('');
 function pendingFirstLogin(challenge) {
   const pending = JSON.parse(sessionStorage.getItem(FIRST_LOGIN_CHALLENGE_KEY) || 'null');
@@ -764,7 +768,8 @@ function registeredCitizenSession(account) {
   const user = {
     id: `registered-${account.nationalId}`, username: account.phone,
     name: account.name || account.nationalId, nationalId: account.nationalId, phone: account.phone,
-    provinceCode: account.province, role: 'citizen', needsFamilySetup: true, registeredAccount: true,
+    provinceCode: account.province, agencyCode: account.agencyCode || null,
+    role: 'citizen', needsFamilySetup: true, registeredAccount: true,
     familyId: account.familyId || null, familyNumber: account.familyNumber || null, rationCardNo: account.rationCardNo || null, cardNo: account.rationCardNo || null, paperCardNo: account.paperCardNo || null,
     identityVerification: account.identityVerification
   };
@@ -1580,6 +1585,18 @@ export async function mockDispatch(config) {
         : isAgentRegistration ? 'agentAuth.codeVerified'
           : 'registerWizard.codeVerified';
     if (!valid) return createResponse({}, 400, i18n.global.t(invalidKey));
+    // Citizen registration continues with the NFC chip read and the identity
+    // documents, so the verified phone + national ID pair gets a short-lived proof.
+    if (!isReset && !isMemberPhone && !isAgentRegistration) {
+      const verificationToken = demoVerificationToken();
+      sessionStorage.setItem(REGISTRATION_IDENTITY_PROOF_KEY, JSON.stringify({
+        token: verificationToken,
+        phone: subject,
+        nationalId: String(data.nationalId || '').trim(),
+        expiresAt: Date.now() + 600000
+      }));
+      return createResponse({ verified: true, expiresAt: sms.expires, verificationToken }, 200, i18n.global.t(verifiedKey));
+    }
     return createResponse({ verified: true, expiresAt: sms.expires }, 200, i18n.global.t(verifiedKey));
   }
 
@@ -1619,6 +1636,32 @@ export async function mockDispatch(config) {
     return createResponse({ success: true, nationalId: account.nationalId }, 200, i18n.global.t('forgotPassword.success'));
   }
 
+  // Citizen registration: NFC chip read of the national ID before the final submit.
+  if (url === '/auth/registration/read-identity' && method === 'POST') {
+    const proof = JSON.parse(sessionStorage.getItem(REGISTRATION_IDENTITY_PROOF_KEY) || 'null');
+    const normalizeRegistrationPhone = value => String(value || '').replace(/[\s-]/g, '').trim();
+    const nationalId = String(data.nationalId || '').trim();
+    if (!proof || proof.expiresAt < Date.now() || proof.token !== data.verificationToken
+      || proof.nationalId !== nationalId || proof.phone !== normalizeRegistrationPhone(data.phone)) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.verifyRequired'));
+    }
+    if (!isValidNationalId(nationalId)) return createResponse({}, 400, i18n.global.t('registerWizard.invalidNationalId'));
+    const readToken = demoVerificationToken();
+    sessionStorage.setItem(REGISTRATION_CHIP_READ_KEY, JSON.stringify({
+      token: readToken, nationalId, name: String(data.name || '').trim(), expiresAt: Date.now() + 600000
+    }));
+    // Demo readers cannot extract the chip portrait; a real NFC reader returns it here.
+    // The default demo name stays in English so switching languages never rewrites a stored identity.
+    return createResponse({
+      name: String(data.name || '').trim() || SIMULATED_IDENTITY_NAME,
+      nationalId,
+      readToken,
+      chipPhotoAvailable: false,
+      chipPhoto: '',
+      simulated: true
+    });
+  }
+
   // Demonstration accounts and results use shared storage; these are not production identities.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
     if (typeof data.password !== 'string' || data.password.length < 8) {
@@ -1635,18 +1678,42 @@ export async function mockDispatch(config) {
     }
     const cardType = normalizeCardType(data.cardType);
     const center = TRANSFER_BRANCH_OPTIONS
-      .flatMap((province, provinceIndex) => province.branches.flatMap(branch => branch.centers.map(entry => ({ ...entry, provinceCode: provinceCodeAt(provinceIndex) }))))
+      .flatMap((province, provinceIndex) => province.branches.flatMap(branch => branch.centers.map(entry => ({ ...entry, provinceCode: provinceCodeAt(provinceIndex), agencyCode: branch.code || '' }))))
       .find(entry => entry.centerId === String(data.centerId || ''));
-    const foodAgent = center?.foodAgents.find(agent => agent.id === data.foodAgentId);
+    const provinceCode = String(data.provinceCode || '').trim();
+    const agencyCode = String(data.agencyCode || '').trim();
+    if (!center || center.provinceCode !== provinceCode || center.agencyCode !== agencyCode) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.provinceRequired'));
+    }
+    const needsCardDetails = cardTypeNeedsScan(cardType);
+    // Card holders keep their food agent. Cardless applicants receive a provisional
+    // number from the center, so the card and agent numbers are not collected.
+    const foodAgent = needsCardDetails ? center.foodAgents.find(agent => agent.id === data.foodAgentId) : null;
     // The flour agent is optional at registration; the center can assign it later.
-    const flourAgent = center?.flourAgents.find(agent => agent.id === data.flourAgentId) || null;
-    if (!center || !foodAgent) {
+    const flourAgent = needsCardDetails ? (center.flourAgents.find(agent => agent.id === data.flourAgentId) || null) : null;
+    if (needsCardDetails && !foodAgent) {
       return createResponse({}, 400, i18n.global.t('registerWizard.selectCardRequired'));
     }
     const normalizePhone = value => String(value || '').replace(/[\s-]/g, '').trim();
     const sms = JSON.parse(sessionStorage.getItem('rcm_demo_registration_sms') || 'null');
     if (!sms || normalizePhone(sms.phone) !== normalizePhone(data.phone) || sms.code !== data.smsCode || sms.expires < Date.now()) {
       return createResponse({}, 400, i18n.global.t('registerWizard.invalidCode'));
+    }
+    // Identity documents + NFC chip read + live face capture gathered after the password step.
+    const nationalId = String(data.nationalId).trim();
+    const chipRead = JSON.parse(sessionStorage.getItem(REGISTRATION_CHIP_READ_KEY) || 'null');
+    const identityFrontImage = isIdentityImage(data.identityFrontImage) ? data.identityFrontImage : '';
+    const identityBackImage = isIdentityImage(data.identityBackImage) ? data.identityBackImage : '';
+    const faceImage = isIdentityImage(data.faceImage) ? data.faceImage : '';
+    const chipMatchScore = Number(data.chipMatchScore);
+    if (!chipRead || chipRead.expiresAt < Date.now() || chipRead.nationalId !== nationalId || chipRead.token !== data.readToken) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.chipReadRequired'));
+    }
+    if (!identityFrontImage || !identityBackImage) {
+      return createResponse({}, 400, i18n.global.t(identityFrontImage ? 'registerWizard.identityBackRequired' : 'registerWizard.identityFrontRequired'));
+    }
+    if (!faceImage || data.livenessCompleted !== true || data.simulated !== true || !chipMatchPassed(chipMatchScore)) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.livenessRequired'));
     }
     const scannedCardNo = normalizeRationCardNo(data.ocrCardNo);
     let rationCardNo = normalizeRationCardNo(data.rationCardNo);
@@ -1664,20 +1731,42 @@ export async function mockDispatch(config) {
     if ([data.phone, data.nationalId].some(identifier => reservedNames.includes(identifier))) {
       return createResponse({}, 400, i18n.global.t('registerWizard.duplicate'));
     }
+    const catalog = await loadRegistrationCatalog();
+    const provinceEntry = findRegistrationProvince(catalog, provinceCode);
+    const agencyEntry = findRegistrationAgency(catalog, provinceCode, agencyCode);
+    // Names travel with the record in all four languages; the code is the stable key.
+    const provinceNames = provinceEntry?.names || {};
+    const agencyNames = agencyEntry?.names || {};
+    const registeredAt = new Date().toISOString();
+    const identityVerification = {
+      status: 'passed',
+      method: 'nfc-face',
+      simulated: true,
+      verifiedAt: registeredAt,
+      simulatedName: chipRead.name || String(data.chipName || '').trim() || SIMULATED_IDENTITY_NAME,
+      chipMatchScore
+    };
     const registrationFields = {
       ...data,
       cardType,
-      province: center.provinceCode,
+      province: provinceCode,
+      provinceCode,
+      provinceName: localizeCatalogNames(provinceNames, reqLang),
+      provinceNames,
+      agencyCode,
+      agencyName: localizeCatalogNames(agencyNames, reqLang),
+      agencyNames,
       rationCardNo,
       paperCardNo: cardType === CARD_TYPES.PAPER ? (scannedCardNo || rationCardNo) : '',
       ocrCardNo: scannedCardNo,
       centerId: center.centerId,
       centerName: center.centerName,
-      foodAgentId: foodAgent.id,
-      foodAgentName: foodAgent.name,
+      foodAgentId: foodAgent?.id || '',
+      foodAgentName: foodAgent?.name || '',
       flourAgentId: flourAgent?.id || '',
       flourAgentName: flourAgent?.name || '',
-      registeredAt: new Date().toISOString()
+      identityVerification,
+      registeredAt
     };
     let account;
     try { account = await createCitizenAccount(registrationFields); }
@@ -1701,18 +1790,32 @@ export async function mockDispatch(config) {
         paperCardImage: cardPhoto,
         centerId: center.centerId,
         centerName: center.centerName,
-        foodAgentId: foodAgent.id,
-        foodAgentName: foodAgent.name,
+        foodAgentId: foodAgent?.id || '',
+        foodAgentName: foodAgent?.name || '',
         flourAgentId: flourAgent?.id || '',
         flourAgentName: flourAgent?.name || '',
-        registeredAt: registrationFields.registeredAt
+        provinceCode,
+        provinceNames,
+        agencyCode,
+        agencyNames,
+        identityFrontImage,
+        identityBackImage,
+        faceImage,
+        biometricVerified: true,
+        verifiedAt: registeredAt,
+        chipMatchScore,
+        chipPhotoAvailable: Boolean(data.chipPhotoAvailable),
+        identityVerification,
+        registeredAt
       });
     } catch (error) {
       console.warn('[Registration] Archive write failed; the account and card assignment are still saved.', error);
     }
     sessionStorage.removeItem('rcm_demo_registration_sms');
+    sessionStorage.removeItem(REGISTRATION_IDENTITY_PROOF_KEY);
+    sessionStorage.removeItem(REGISTRATION_CHIP_READ_KEY);
     await flushPocketBaseWrites();
-    return createResponse({ success: true, identityVerificationRequired: true });
+    return createResponse({ success: true, identityVerificationRequired: false, nationalId }, 200, i18n.global.t('registerWizard.registered'));
   }
 
   // Agent registration: simulated NFC read. The branch + agent number pair is
@@ -2441,6 +2544,17 @@ export async function mockDispatch(config) {
     addSharedTicket(newTicket);
 
     return createResponse({ ticketId }, 200, isEn ? `Electronic review submitted successfully! Ticket No. [${ticketId}], pending manual review by branch staff` : `已成功提交电子审核！工单号【${ticketId}】，等待分部门人员手动审核`);
+  }
+
+  // 公民注册向导：省份、代理机构（多语言名称随 PocketBase 共享目录返回）与配给中心 (GET)
+  if (url === '/citizen/registration/options' && method === 'GET') {
+    const catalog = await loadRegistrationCatalog();
+    const centers = TRANSFER_BRANCH_OPTIONS.flatMap((province, provinceIndex) => province.branches.flatMap(branch => branch.centers.map(center => ({
+      ...center,
+      provinceCode: provinceCodeAt(provinceIndex),
+      agencyCode: branch.code || ''
+    }))));
+    return createResponse({ provinces: catalog.provinces, centers });
   }
 
   // 代理转移候选分部、中心及代理元数据 (GET)

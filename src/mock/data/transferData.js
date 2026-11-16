@@ -7,7 +7,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: false,
     branches: [
       {
-        branchName: '卡尔赫第一粮食供应分部',
+        code: 'BAG-KARKH-01',
+    branchName: '卡尔赫第一粮食供应分部',
         centers: [
           {
             centerId: '101',
@@ -36,7 +37,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
         ]
       },
       {
-        branchName: '鲁萨法第二粮食供应分部',
+        code: 'BAG-RUSAFA-02',
+    branchName: '鲁萨法第二粮食供应分部',
         centers: [
           {
             centerId: '108',
@@ -59,7 +61,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true, // 含有第140号决议中心
     branches: [
       {
-        branchName: '迪亚拉东部分部',
+        code: 'DIY-EAST-01',
+    branchName: '迪亚拉东部分部',
         centers: [
           {
             centerId: '496',
@@ -103,7 +106,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true,
     branches: [
       {
-        branchName: '尼尼微西部与山区配给分部',
+        code: 'NIN-WEST-01',
+    branchName: '尼尼微西部与山区配给分部',
         centers: [
           {
             centerId: '320',
@@ -136,7 +140,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true, // 基尔库克全境全部中心受第140号决议覆盖
     branches: [
       {
-        branchName: '基尔库克中央粮食配给分部',
+        code: 'KIR-CENTER-01',
+    branchName: '基尔库克中央粮食配给分部',
         centers: [
           {
             centerId: '511',
@@ -158,7 +163,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: false,
     branches: [
       {
-        branchName: '巴士拉港口配给保障分部',
+        code: 'BAS-PORT-01',
+    branchName: '巴士拉港口配给保障分部',
         centers: [
           {
             centerId: '201',

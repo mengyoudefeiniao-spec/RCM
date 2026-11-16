@@ -55,7 +55,7 @@
       </template>
     </div>
 
-    <!-- 第三步：配给中心、卡号与代理编号 -->
+    <!-- 第三步：省份、代理机构、配给中心与卡号/代理编号 -->
     <div v-else-if="step === 'cardSelect'" class="space-y-3">
       <div v-if="optionsError" class="p-3 rounded-lg border border-[#F2E3C6] bg-[#FDF3E0] text-[11px] text-[#5A4718] flex items-center justify-between gap-2 flex-wrap">
         <span>{{ $t('registerWizard.optionsFailed') }}</span>
@@ -63,83 +63,123 @@
       </div>
 
       <el-form label-position="top">
+        <div class="grid gap-3" :class="isCompact ? 'grid-cols-1' : 'grid-cols-2'">
+          <el-form-item :label="$t('registerWizard.province')" required class="!mb-3 min-w-0">
+            <el-select
+              v-model="form.provinceCode"
+              class="w-full"
+              filterable
+              :loading="optionsLoading"
+              :placeholder="$t('registerWizard.provincePlaceholder')"
+              @change="handleProvinceChange"
+            >
+              <el-option
+                v-for="province in provinceOptions"
+                :key="province.code"
+                :value="province.code"
+                :label="catalogLabel(province.names)"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item :label="$t('registerWizard.agency')" required class="!mb-3 min-w-0">
+            <el-select
+              v-model="form.agencyCode"
+              class="w-full"
+              filterable
+              :disabled="!form.provinceCode"
+              :placeholder="$t('registerWizard.agencyPlaceholder')"
+              @change="handleAgencyChange"
+            >
+              <el-option
+                v-for="agency in agencyOptions"
+                :key="agency.code"
+                :value="agency.code"
+                :label="catalogLabel(agency.names)"
+              />
+            </el-select>
+          </el-form-item>
+        </div>
+
         <el-form-item :label="$t('registerWizard.center')" required class="!mb-3">
           <el-select
             v-model="form.centerId"
             class="w-full"
             filterable
+            :disabled="!form.agencyCode"
             :loading="optionsLoading"
             :placeholder="$t('registerWizard.centerPlaceholder')"
             @change="handleCenterChange"
           >
-            <el-option-group v-for="group in centerGroups" :key="group.key" :label="group.label">
-              <el-option
-                v-for="center in group.centers"
-                :key="center.centerId"
-                :value="center.centerId"
-                :label="`${center.centerName} (#${center.centerId})`"
-              />
-            </el-option-group>
+            <el-option
+              v-for="center in centerOptions"
+              :key="center.centerId"
+              :value="center.centerId"
+              :label="`${center.centerName} (#${center.centerId})`"
+            />
           </el-select>
         </el-form-item>
 
-        <el-form-item :label="$t('registerWizard.rationCardNo')" :required="form.cardType !== 'none'" class="!mb-3">
-          <el-input v-model.trim="form.cardNo" class="bidi-ltr" :placeholder="$t('registerWizard.rationCardNoPlaceholder')" />
-        </el-form-item>
-
-        <div class="grid gap-3" :class="isCompact ? 'grid-cols-1' : 'grid-cols-2'">
-          <el-form-item :label="$t('registerWizard.foodAgent')" required class="!mb-3 min-w-0">
-            <el-select v-model="form.foodAgentId" class="w-full" :disabled="!selectedCenter" :placeholder="$t('registerWizard.foodAgentPlaceholder')">
-              <el-option
-                v-for="agent in selectedCenter?.foodAgents || []"
-                :key="agent.id"
-                :value="agent.id"
-                :label="`${agent.id} · ${agent.name}`"
-                :disabled="isAgentFull(agent)"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <span class="truncate">{{ agent.name }}</span>
-                  <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
-                    {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
-                  </span>
-                </div>
-              </el-option>
-            </el-select>
+        <template v-if="needsCardDetails">
+          <el-form-item :label="$t('registerWizard.rationCardNo')" required class="!mb-3">
+            <el-input v-model.trim="form.cardNo" class="bidi-ltr" :placeholder="$t('registerWizard.rationCardNoPlaceholder')" />
           </el-form-item>
 
-          <el-form-item class="!mb-3 min-w-0">
-            <template #label>
-              <span>{{ $t('registerWizard.flourAgent') }}<span class="text-[10px] text-[#8A9A8F] font-normal ms-1">{{ $t('registerWizard.optional') }}</span></span>
-            </template>
-            <el-select
-              v-model="form.flourAgentId"
-              class="w-full"
-              clearable
-              :disabled="!selectedCenter"
-              :placeholder="$t('registerWizard.flourAgentPlaceholder')"
-            >
-              <el-option
-                v-for="agent in selectedCenter?.flourAgents || []"
-                :key="agent.id"
-                :value="agent.id"
-                :label="`${agent.id} · ${agent.name}`"
-                :disabled="isAgentFull(agent)"
+          <div class="grid gap-3" :class="isCompact ? 'grid-cols-1' : 'grid-cols-2'">
+            <el-form-item :label="$t('registerWizard.foodAgent')" required class="!mb-3 min-w-0">
+              <el-select v-model="form.foodAgentId" class="w-full" :disabled="!selectedCenter" :placeholder="$t('registerWizard.foodAgentPlaceholder')">
+                <el-option
+                  v-for="agent in selectedCenter?.foodAgents || []"
+                  :key="agent.id"
+                  :value="agent.id"
+                  :label="`${agent.id} · ${agent.name}`"
+                  :disabled="isAgentFull(agent)"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="truncate">{{ agent.name }}</span>
+                    <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
+                      {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+
+            <el-form-item class="!mb-3 min-w-0">
+              <template #label>
+                <span>{{ $t('registerWizard.flourAgent') }}<span class="text-[10px] text-[#8A9A8F] font-normal ms-1">{{ $t('registerWizard.optional') }}</span></span>
+              </template>
+              <el-select
+                v-model="form.flourAgentId"
+                class="w-full"
+                clearable
+                :disabled="!selectedCenter"
+                :placeholder="$t('registerWizard.flourAgentPlaceholder')"
               >
-                <div class="flex items-center justify-between gap-3">
-                  <span class="truncate">{{ agent.name }}</span>
-                  <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
-                    {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
-                  </span>
-                </div>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </div>
+                <el-option
+                  v-for="agent in selectedCenter?.flourAgents || []"
+                  :key="agent.id"
+                  :value="agent.id"
+                  :label="`${agent.id} · ${agent.name}`"
+                  :disabled="isAgentFull(agent)"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="truncate">{{ agent.name }}</span>
+                    <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
+                      {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
+                    </span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </div>
+        </template>
+        <el-alert v-else :title="$t('registerWizard.noCardNotice')" type="info" :closable="false" show-icon class="mt-1" />
       </el-form>
     </div>
 
-    <!-- 第四步：身份验证（短信验证通过后设置登录密码） -->
-    <div v-else class="space-y-3">
+    <!-- 第四步：身份证与短信验证 -->
+    <div v-else-if="step === 'account'" class="space-y-3">
       <el-button v-if="isMock && !smsVerified" size="small" plain @click="fillExample">{{ $t('registerWizard.fillExample') }}</el-button>
       <el-form label-position="top">
         <el-form-item :label="$t('registerWizard.nationalId')" required class="!mb-3">
@@ -178,17 +218,103 @@
       </template>
     </div>
 
+    <!-- 第五步：身份证正面、背面、NFC 芯片读取与人脸活体核验 -->
+    <div v-else class="identity-step">
+      <p class="identity-intro">{{ $t('registerWizard.identityStepHint') }}</p>
+      <div class="identity-list">
+        <section class="identity-card" :class="{ 'is-done': Boolean(frontImage) }">
+          <div class="identity-body">
+            <h3 class="identity-title">{{ $t('registerWizard.identityFront') }}</h3>
+            <p class="identity-hint">{{ $t('registerWizard.identityFrontHint') }}</p>
+            <input ref="frontInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'front')" />
+            <el-button size="small" type="primary" plain :disabled="registering" @click="pickIdentityImage('front')">
+              {{ frontImage ? $t('registerWizard.identityReplace') : $t('registerWizard.identityUpload') }}
+            </el-button>
+            <p v-if="frontImage" class="identity-status is-ok">{{ $t('registerWizard.identityImageReady') }}</p>
+          </div>
+          <div class="identity-thumb">
+            <img v-if="frontImage" :src="frontImage" :alt="$t('registerWizard.identityFront')" />
+            <el-icon v-else :size="26"><Postcard /></el-icon>
+          </div>
+        </section>
+
+        <section class="identity-card" :class="{ 'is-done': Boolean(backImage) }">
+          <div class="identity-body">
+            <h3 class="identity-title">{{ $t('registerWizard.identityBack') }}</h3>
+            <p class="identity-hint">{{ $t('registerWizard.identityBackHint') }}</p>
+            <input ref="backInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'back')" />
+            <el-button size="small" type="primary" plain :disabled="registering" @click="pickIdentityImage('back')">
+              {{ backImage ? $t('registerWizard.identityReplace') : $t('registerWizard.identityUpload') }}
+            </el-button>
+            <p v-if="backImage" class="identity-status is-ok">{{ $t('registerWizard.identityImageReady') }}</p>
+          </div>
+          <div class="identity-thumb">
+            <img v-if="backImage" :src="backImage" :alt="$t('registerWizard.identityBack')" />
+            <el-icon v-else :size="26"><Postcard /></el-icon>
+          </div>
+        </section>
+
+        <section class="identity-card" :class="{ 'is-done': Boolean(chipIdentity) }">
+          <div class="identity-body">
+            <h3 class="identity-title">{{ $t('registerWizard.nfcTitle') }}</h3>
+            <p class="identity-hint">{{ $t('registerWizard.nfcHint') }}</p>
+            <el-button size="small" type="primary" plain :loading="chipReading" :disabled="!isMock || !smsVerified || registering" @click="readChip">
+              {{ chipIdentity ? $t('registerWizard.nfcReread') : $t('registerWizard.nfcRead') }}
+            </el-button>
+            <p v-if="chipReading" class="identity-status" role="status">{{ $t('registerWizard.nfcReading') }}</p>
+            <template v-else-if="chipIdentity">
+              <p class="identity-status is-ok">{{ $t('registerWizard.nfcDone') }}</p>
+              <p class="identity-meta">{{ $t('registerWizard.chipName') }}: {{ chipIdentity.name }} · <span dir="ltr">{{ chipIdentity.nationalId }}</span></p>
+              <p class="identity-hint">{{ $t(chipPhotoFallback ? 'registerWizard.nfcChipPhotoFallback' : 'registerWizard.nfcChipPhotoReady') }}</p>
+            </template>
+          </div>
+          <div class="identity-thumb">
+            <img v-if="chipPhoto" :src="chipPhoto" :alt="$t('registerWizard.nfcChipPhoto')" />
+            <el-icon v-else :size="26"><Cpu /></el-icon>
+          </div>
+        </section>
+
+        <section class="identity-card" :class="{ 'is-done': Boolean(faceCapture) }">
+          <div class="identity-body">
+            <h3 class="identity-title">{{ $t('registerWizard.livenessTitle') }}</h3>
+            <p class="identity-hint">{{ $t('registerWizard.livenessHint') }}</p>
+            <el-button size="small" type="primary" plain :disabled="!isMock || !chipIdentity || !frontImage || registering || chipReading" @click="startLiveness">
+              {{ faceCapture ? $t('registerWizard.livenessRedo') : $t('registerWizard.livenessStart') }}
+            </el-button>
+            <p v-if="faceCapture" class="identity-status is-ok">{{ $t('registerWizard.livenessDone') }}</p>
+            <p v-if="faceScoreText" class="identity-meta">{{ $t('registerWizard.livenessMatch', { score: faceScoreText }) }}</p>
+          </div>
+          <div class="identity-thumb">
+            <img v-if="faceCapture?.image" :src="faceCapture.image" :alt="$t('registerWizard.livenessTitle')" />
+            <el-icon v-else :size="26"><Camera /></el-icon>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <template #footer>
       <div class="flex items-center justify-between gap-2 w-full">
-        <el-button :disabled="step === 'cardType'" @click="back">{{ $t('registerWizard.back') }}</el-button>
+        <el-button :disabled="step === 'cardType' || registering" @click="back">{{ $t('registerWizard.back') }}</el-button>
         <el-button
-          v-if="step !== 'account'"
+          v-if="step === 'cardType'"
           type="primary"
           :disabled="!isMock || optionsLoading"
           @click="next"
-        >{{ step === 'scan' ? $t('registerWizard.confirmCardNo') : $t('registerWizard.next') }}</el-button>
+        >{{ $t('registerWizard.next') }}</el-button>
         <el-button
-          v-else-if="!smsVerified"
+          v-else-if="step === 'scan'"
+          type="primary"
+          :disabled="!isMock || optionsLoading"
+          @click="next"
+        >{{ $t('registerWizard.confirmCardNo') }}</el-button>
+        <el-button
+          v-else-if="step === 'cardSelect'"
+          type="primary"
+          :disabled="!isMock || optionsLoading"
+          @click="next"
+        >{{ $t('registerWizard.next') }}</el-button>
+        <el-button
+          v-else-if="step === 'account' && !smsVerified"
           type="primary"
           data-demo-target="btn-verify-sms"
           :disabled="!isMock"
@@ -196,30 +322,51 @@
           @click="verifyCode"
         >{{ $t('registerWizard.verifyCode') }}</el-button>
         <el-button
+          v-else-if="step === 'account'"
+          type="primary"
+          :disabled="!isMock"
+          @click="next"
+        >{{ $t('registerWizard.next') }}</el-button>
+        <el-button
           v-else
           type="primary"
           data-demo-target="btn-finish-reg"
-          :disabled="!isMock"
+          :disabled="!isMock || !identityReady"
           :loading="registering"
           @click="submit"
         >{{ $t('registerWizard.submit') }}</el-button>
       </div>
     </template>
   </el-dialog>
+
+  <FaceLivenessVerifyDialog
+    v-model="showFace"
+    :target-name="chipIdentity?.name || form.nationalId"
+    :target-national-id="form.nationalId.trim()"
+    :allow-quick-pass="isMock"
+    :prepared-reference="referenceFile"
+    :prepared-token="cloudToken"
+    auto-start
+    @success="onFaceCaptured"
+  />
 </template>
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Camera, Loading, CircleCheck } from '@element-plus/icons-vue';
+import { Camera, Loading, CircleCheck, Postcard, Cpu } from '@element-plus/icons-vue';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
-import { sendSmsCode, verifySmsCode, registerCitizen, ocrScanPaperCard } from '../../api/auth.js';
-import { getTransferOptions } from '../../api/citizen.js';
+import { sendSmsCode, verifySmsCode, registerCitizen, ocrScanPaperCard, readRegistrationIdentity } from '../../api/auth.js';
+import { getRegistrationOptions } from '../../api/citizen.js';
 import { CARD_TYPES, cardTypeNeedsScan, normalizeRationCardNo, isValidNationalId, isValidPhone } from '../../utils/registrationCard.js';
+import { localizeCatalogNames } from '../../utils/registrationCatalog.js';
+import { identityStepCompletion, chipMatchPassed } from '../../utils/registrationIdentity.js';
+import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
+import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
 
 const props = defineProps({ modelValue: Boolean, demoMode: Boolean });
 const emit = defineEmits(['update:modelValue', 'registered']);
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { isCompact, dialogWidth } = useCompactDialog(680);
 const isMock = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 const visible = ref(props.modelValue);
@@ -232,6 +379,8 @@ const cardTypeOptions = [
 
 const blank = () => ({
   cardType: '',
+  provinceCode: '',
+  agencyCode: '',
   cardNo: '',
   centerId: '',
   foodAgentId: '',
@@ -249,7 +398,7 @@ const photo = ref('');
 const ocr = ref(null);
 const scanning = ref(false);
 const scanFailed = ref(false);
-const options = ref([]);
+const registrationOptions = ref({ provinces: [], centers: [] });
 const optionsLoading = ref(false);
 const optionsError = ref(false);
 const exampleCode = ref('');
@@ -261,15 +410,53 @@ const cooldown = ref(0);
 const cooldownKey = 'rcm_registration_sms_retry_at';
 let cooldownTimer;
 
-const centerGroups = computed(() => options.value.flatMap((province, provinceIndex) => province.branches.map((branch, branchIndex) => ({
-  key: `${provinceIndex}-${branchIndex}`,
-  label: `${province.province} · ${branch.branchName}`,
-  centers: branch.centers
-}))));
-const selectedCenter = computed(() => centerGroups.value.flatMap(group => group.centers).find(center => center.centerId === form.centerId) || null);
+// Identity verification state: documents, NFC chip reading and the live face capture.
+const identityProof = ref('');
+const frontInputRef = ref(null);
+const backInputRef = ref(null);
+const frontImage = ref('');
+const backImage = ref('');
+const frontFile = ref(null);
+const backFile = ref(null);
+const chipIdentity = ref(null);
+const chipReading = ref(false);
+const chipPhoto = ref('');
+const chipPhotoFile = ref(null);
+const chipPhotoFallback = ref(false);
+const cloudToken = ref(null);
+const faceCapture = ref(null);
+const showFace = ref(false);
+
+const provinceOptions = computed(() => registrationOptions.value.provinces || []);
+const agencyOptions = computed(() => provinceOptions.value.find(province => province.code === form.provinceCode)?.agencies || []);
+const centerOptions = computed(() => (registrationOptions.value.centers || []).filter(center =>
+  center.provinceCode === form.provinceCode && center.agencyCode === form.agencyCode));
+const selectedCenter = computed(() => centerOptions.value.find(center => center.centerId === form.centerId) || null);
+const needsCardDetails = computed(() => form.cardType !== CARD_TYPES.NONE);
+const referenceFile = computed(() => chipPhotoFile.value || frontFile.value);
+const identityState = computed(() => identityStepCompletion({
+  frontImage: frontImage.value,
+  backImage: backImage.value,
+  chipRead: chipIdentity.value,
+  liveness: faceCapture.value,
+  nationalId: form.nationalId.trim()
+}));
+const identityReady = computed(() => Object.values(identityState.value).every(Boolean) && chipMatchPassed(faceCapture.value?.similarity));
+const faceScoreText = computed(() => {
+  const score = Number(faceCapture.value?.similarity);
+  return Number.isFinite(score) ? (score * 100).toFixed(1) : '';
+});
+
+function catalogLabel(names) {
+  return localizeCatalogNames(names, locale.value);
+}
 
 function isAgentFull(agent) {
   return Number(agent.currentHouseholds) >= Number(agent.maxCapacity);
+}
+
+function normalizePhone(value) {
+  return String(value || '').replace(/[\s-]/g, '').trim();
 }
 
 function updateCooldown() {
@@ -284,7 +471,7 @@ watch(() => props.modelValue, value => {
   visible.value = value;
   if (value) {
     resetWizard();
-    if (!options.value.length) loadOptions();
+    if (!registrationOptions.value.provinces.length) loadOptions();
   }
 });
 watch(() => form.phone, () => {
@@ -292,11 +479,34 @@ watch(() => form.phone, () => {
   exampleCode.value = '';
   resetVerification();
 });
+// Center and agent labels come back per request language; reload them in place
+// when the UI language changes while the wizard is open. Selected codes survive.
+watch(locale, () => {
+  if (visible.value && registrationOptions.value.provinces.length) loadOptions();
+});
 
 function resetVerification() {
   smsVerified.value = false;
   form.password = '';
   form.confirmPassword = '';
+  identityProof.value = '';
+}
+
+function resetIdentity() {
+  frontImage.value = '';
+  backImage.value = '';
+  frontFile.value = null;
+  backFile.value = null;
+  chipIdentity.value = null;
+  chipReading.value = false;
+  chipPhoto.value = '';
+  chipPhotoFile.value = null;
+  chipPhotoFallback.value = false;
+  cloudToken.value = null;
+  faceCapture.value = null;
+  showFace.value = false;
+  if (frontInputRef.value) frontInputRef.value.value = '';
+  if (backInputRef.value) backInputRef.value.value = '';
 }
 
 function resetWizard() {
@@ -308,6 +518,7 @@ function resetWizard() {
   scanning.value = false;
   exampleCode.value = '';
   resetVerification();
+  resetIdentity();
   updateCooldown();
 }
 
@@ -321,14 +532,27 @@ async function loadOptions() {
   optionsLoading.value = true;
   optionsError.value = false;
   try {
-    const result = await getTransferOptions();
-    options.value = Array.isArray(result) ? result : [];
+    const result = await getRegistrationOptions();
+    registrationOptions.value = {
+      provinces: Array.isArray(result?.provinces) ? result.provinces : [],
+      centers: Array.isArray(result?.centers) ? result.centers : []
+    };
   } catch {
-    options.value = [];
+    registrationOptions.value = { provinces: [], centers: [] };
     optionsError.value = true;
   } finally {
     optionsLoading.value = false;
   }
+}
+
+function handleProvinceChange() {
+  form.agencyCode = '';
+  handleAgencyChange();
+}
+
+function handleAgencyChange() {
+  form.centerId = '';
+  handleCenterChange();
 }
 
 function handleCenterChange() {
@@ -369,6 +593,11 @@ function compressPhoto(dataUrl, maxSize = 1600, quality = 0.82) {
   });
 }
 
+async function dataUrlToFile(dataUrl, name) {
+  const blob = await (await fetch(dataUrl)).blob();
+  return new File([blob], name, { type: blob.type || 'image/jpeg' });
+}
+
 async function handlePhotoSelected(event) {
   const file = event.target.files?.[0];
   event.target.value = '';
@@ -403,6 +632,92 @@ async function runOcr() {
   }
 }
 
+function pickIdentityImage(side) {
+  const input = side === 'front' ? frontInputRef.value : backInputRef.value;
+  if (input) input.value = '';
+  input?.click();
+}
+
+async function handleIdentityImage(event, side) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning(t('registerWizard.identityImageError'));
+    return;
+  }
+  try {
+    const dataUrl = await compressPhoto(await readPhoto(file), 1400, 0.78);
+    const stored = await dataUrlToFile(dataUrl, side === 'front' ? 'identity-front.jpg' : 'identity-back.jpg');
+    if (side === 'front') {
+      frontImage.value = dataUrl;
+      frontFile.value = stored;
+    } else {
+      backImage.value = dataUrl;
+      backFile.value = stored;
+    }
+    // The chip portrait is the authoritative reference; the front photo only
+    // substitutes for it while the demo reader returns no portrait.
+    if (!chipPhoto.value && chipPhotoFallback.value) faceCapture.value = null;
+  } catch {
+    ElMessage.error(t('registerWizard.identityImageError'));
+  }
+}
+
+async function readChip() {
+  if (chipReading.value) return;
+  if (!smsVerified.value) {
+    ElMessage.warning(t('registerWizard.verifyRequired'));
+    return;
+  }
+  const nationalId = form.nationalId.trim();
+  if (!isValidNationalId(nationalId)) {
+    ElMessage.warning(t('registerWizard.invalidNationalId'));
+    return;
+  }
+  chipReading.value = true;
+  chipIdentity.value = null;
+  chipPhoto.value = '';
+  chipPhotoFile.value = null;
+  chipPhotoFallback.value = false;
+  faceCapture.value = null;
+  try {
+    const result = await readRegistrationIdentity({
+      nationalId,
+      phone: normalizePhone(form.phone),
+      name: ocr.value?.headName || '',
+      verificationToken: identityProof.value
+    });
+    chipIdentity.value = result;
+    if (result?.chipPhoto) {
+      chipPhoto.value = result.chipPhoto;
+      chipPhotoFile.value = await dataUrlToFile(result.chipPhoto, 'chip-portrait.jpg');
+    } else {
+      chipPhotoFallback.value = Boolean(frontFile.value);
+    }
+    try {
+      cloudToken.value = await getDefaultHuaweiIamToken();
+    } catch {
+      cloudToken.value = null;
+    }
+  } catch {
+    ElMessage.error(t('registerWizard.nfcFailed'));
+  } finally {
+    chipReading.value = false;
+  }
+}
+
+function startLiveness() {
+  if (!chipIdentity.value) return ElMessage.warning(t('registerWizard.chipReadRequired'));
+  if (!referenceFile.value) return ElMessage.warning(t('registerWizard.identityFrontRequired'));
+  showFace.value = true;
+}
+
+function onFaceCaptured(payload) {
+  if (!payload) return;
+  faceCapture.value = { ...payload, nationalId: payload.nationalId || form.nationalId.trim() };
+}
+
 function next() {
   if (step.value === 'cardType') {
     if (!form.cardType) return ElMessage.warning(t('registerWizard.required'));
@@ -416,13 +731,27 @@ function next() {
     return;
   }
   if (step.value === 'cardSelect') {
-    if (!form.centerId || !form.foodAgentId) return ElMessage.warning(t('registerWizard.selectCardRequired'));
-    if (form.cardType !== CARD_TYPES.NONE && !form.cardNo) return ElMessage.warning(t('registerWizard.cardNoRequired'));
+    if (!form.provinceCode || !form.agencyCode || !form.centerId) {
+      return ElMessage.warning(t('registerWizard.provinceRequired'));
+    }
+    if (needsCardDetails.value) {
+      if (!form.foodAgentId) return ElMessage.warning(t('registerWizard.selectCardRequired'));
+      if (!form.cardNo) return ElMessage.warning(t('registerWizard.cardNoRequired'));
+    }
     step.value = 'account';
+    return;
+  }
+  if (step.value === 'account') {
+    if (!smsVerified.value) return ElMessage.warning(t('registerWizard.verifyRequired'));
+    if (!form.password || !form.confirmPassword) return ElMessage.warning(t('registerWizard.passwordRequired'));
+    if (form.password.length < 8) return ElMessage.warning(t('registerWizard.passwordTooShort'));
+    if (form.password !== form.confirmPassword) return ElMessage.warning(t('registerWizard.passwordMismatch'));
+    step.value = 'identity';
   }
 }
 
 function back() {
+  if (step.value === 'identity') { step.value = 'account'; return; }
   if (step.value === 'account') { resetVerification(); step.value = 'cardSelect'; return; }
   if (step.value === 'cardSelect') { step.value = cardTypeNeedsScan(form.cardType) ? 'scan' : 'cardType'; return; }
   if (step.value === 'scan') step.value = 'cardType';
@@ -457,13 +786,14 @@ async function sendCode() {
 async function verifyCode() {
   if (verifying.value || smsVerified.value) return;
   const nationalId = form.nationalId.trim();
-  const phone = form.phone.replace(/[\s-]/g, '');
+  const phone = normalizePhone(form.phone);
   if (!nationalId || !phone || !form.smsCode) return ElMessage.warning(t('registerWizard.verifyRequired'));
   if (!isValidNationalId(nationalId)) return ElMessage.warning(t('registerWizard.invalidNationalId'));
   if (!isValidPhone(phone)) return ElMessage.warning(t('registerWizard.invalidPhone'));
   verifying.value = true;
   try {
-    await verifySmsCode({ nationalId, phone, smsCode: form.smsCode, purpose: 'citizen-registration' });
+    const result = await verifySmsCode({ nationalId, phone, smsCode: form.smsCode, purpose: 'citizen-registration' });
+    identityProof.value = result?.verificationToken || '';
     smsVerified.value = true;
     ElMessage.success(t('registerWizard.codeVerified'));
   } catch {
@@ -476,15 +806,23 @@ async function verifyCode() {
 async function submit() {
   if (registering.value) return;
   const nationalId = form.nationalId.trim();
-  const phone = form.phone.replace(/[\s-]/g, '');
+  const phone = normalizePhone(form.phone);
   if (!smsVerified.value) { ElMessage.warning(t('registerWizard.verifyRequired')); return; }
   if (!form.password || !form.confirmPassword) { ElMessage.warning(t('registerWizard.passwordRequired')); return; }
   if (form.password.length < 8) { ElMessage.warning(t('registerWizard.passwordTooShort')); return; }
   if (form.password !== form.confirmPassword) { ElMessage.warning(t('registerWizard.passwordMismatch')); return; }
+  if (!identityState.value.front) { ElMessage.warning(t('registerWizard.identityFrontRequired')); return; }
+  if (!identityState.value.back) { ElMessage.warning(t('registerWizard.identityBackRequired')); return; }
+  if (!identityState.value.chip) { ElMessage.warning(t('registerWizard.chipReadRequired')); return; }
+  if (!identityState.value.liveness || !chipMatchPassed(faceCapture.value?.similarity)) {
+    ElMessage.warning(t('registerWizard.livenessRequired')); return;
+  }
   registering.value = true;
   try {
     const result = await registerCitizen({
       cardType: form.cardType,
+      provinceCode: form.provinceCode,
+      agencyCode: form.agencyCode,
       ocrCardNo: normalizeRationCardNo(ocr.value?.cardNo || (cardTypeNeedsScan(form.cardType) ? form.cardNo : '')),
       rationCardNo: normalizeRationCardNo(form.cardNo),
       centerId: form.centerId,
@@ -492,11 +830,20 @@ async function submit() {
       flourAgentId: form.flourAgentId,
       nationalId,
       phone,
-      name: ocr.value?.headName || '',
+      name: ocr.value?.headName || chipIdentity.value?.name || '',
       password: form.password,
       confirmPassword: form.confirmPassword,
       smsCode: form.smsCode,
-      cardPhoto: photo.value
+      cardPhoto: photo.value,
+      identityFrontImage: frontImage.value,
+      identityBackImage: backImage.value,
+      faceImage: faceCapture.value?.image || '',
+      readToken: chipIdentity.value?.readToken || '',
+      chipName: chipIdentity.value?.name || '',
+      chipMatchScore: Number(faceCapture.value?.similarity) || 0,
+      chipPhotoAvailable: Boolean(chipPhoto.value),
+      livenessCompleted: true,
+      simulated: true
     });
     emit('registered', { ...result, username: phone });
     close();
@@ -579,5 +926,98 @@ async function submit() {
   line-height: 1.45;
   color: #1F3326;
   overflow-wrap: anywhere;
+}
+
+/* 身份核验：与手机截图一致的四张纵向卡片，随弹窗上下滚动 */
+.identity-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.identity-intro {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #58685D;
+}
+.identity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.identity-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #D9E5DB;
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+.identity-card.is-done {
+  border-color: #C7E0CE;
+  background: #F8FBF9;
+}
+.identity-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.identity-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #1F3326;
+  overflow-wrap: anywhere;
+}
+.identity-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #58685D;
+  overflow-wrap: anywhere;
+}
+.identity-status {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #8A9A8F;
+}
+.identity-status.is-ok {
+  color: #326445;
+  font-weight: 700;
+}
+.identity-meta {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #43554B;
+  overflow-wrap: anywhere;
+}
+.identity-thumb {
+  width: 96px;
+  height: 64px;
+  border: 1px solid #D9E5DB;
+  border-radius: 8px;
+  background: #F3F8F4;
+  color: #8A9A8F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.identity-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 420px) {
+  .identity-card { grid-template-columns: minmax(0, 1fr) 84px; }
+  .identity-thumb { width: 84px; height: 58px; }
 }
 </style>

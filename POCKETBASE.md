@@ -122,14 +122,16 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 
 ## 公民注册向导与找回密码
 
-公民 APP 登录页的注册向导按“配给卡情况 → 拍照 OCR 确认卡号 → 配给中心与代理编号 → 身份证与短信验证 → 设置登录密码”收集数据，沿用现有集合，无需新建：
+公民 APP 登录页的注册向导按“配给卡情况 →（纸质/旧版电子卡）拍照 OCR 确认卡号 → 省份与代理机构、配给中心（未持卡者跳过卡号与代理编号）→ 身份证与短信验证 → 设置登录密码 → 身份证正面、背面、NFC 芯片读取与人脸活体核验”收集数据，沿用现有集合，无需新建：
 
-- `rcm_shared_citizen_accounts`：在原有 `phone`、`nationalId`、`rationCardNo`、`paperCardNo` 之外新增 `cardType`（`paper`/`electronic`/`none`）、`ocrCardNo`、`centerId`、`centerName`、`foodAgentId`、`foodAgentName`、`flourAgentId`、`flourAgentName`、`passwordUpdatedAt`。四种语言的界面读取同一条账号记录。
-- `rcm_registration_<身份证号>`：注册档案，包含卡类型、OCR 卡号、配给中心与代理编号及卡片照片（Data URL）。卡片照片仅在小于 3 MB 时写入，避免超出 JSON 字段容量。
+- `rcm_shared_registration_catalog`：省份与代理机构共享目录。`provinces[].names` 与 `agencies[].names` 均为 `{ zh, en, ar, ckb }` 多语言对象，代理机构保存稳定 `code` 与所属 `centerIds`；首次读取注册选项时写入 PocketBase，四种语言和所有设备共用同一份记录，界面切换语言时按当前语言渲染同一代理机构。
+- `rcm_shared_citizen_accounts`：在原有 `phone`、`nationalId`、`rationCardNo`、`paperCardNo` 之外新增 `cardType`（`paper`/`electronic`/`none`）、`ocrCardNo`、`centerId`、`centerName`、`foodAgentId`、`foodAgentName`、`flourAgentId`、`flourAgentName`、`provinceCode`、`provinceNames`、`agencyCode`、`agencyNames`、`passwordUpdatedAt` 与 `identityVerification`。四种语言的界面读取同一条账号记录。
+- `rcm_registration_<身份证号>`：注册档案，包含省份与代理机构的多语言名称、卡类型、OCR 卡号、配给中心与代理编号、卡片照片，以及 `identityFrontImage`、`identityBackImage`、`faceImage`、`biometricVerified`、`verifiedAt`、`chipMatchScore` 与 `identityVerification`。图片以 Data URL 保存，前端压缩到 1400px 以内，避免超出 JSON 字段容量。
 - 配给中心与代理网点名称按请求 `Accept-Language` 返回；账号和家庭记录保存与语言无关的 `centerId`、`agentId`（`FD-…`/`FA-…`），切换中文、英文、阿拉伯语或库尔德语时按当前语言显示同一网点的名称。
-- 食品代理编号必填，面粉代理编号选填；未选择时 `flourAgentId`、`flourAgentName` 为空字符串，由配给中心在核发环节补充。
-- 未持有配给卡的用户由配给中心核发临时卡号 `RC-<中心编号>-<6 位随机数>`，可在后续核发环节更新；已存在的配给卡号不允许重复注册。
-- 短信验证码先经 `/auth/verify-sms` 校验通过，界面才展示登录密码输入框，因此密码输入错误不需要重新接收短信验证码；注册仍由 `/auth/register-citizen` 复核验证码后写入账号。
+- “我没有配给卡”不再要求配给卡号、食品代理编号与面粉代理编号，`/auth/register-citizen` 只校验省份、代理机构与配给中心，并由配给中心核发临时卡号 `RC-<中心编号>-<6 位随机数>`；纸质或旧版电子配给卡仍需填写卡号与食品代理编号，面粉代理编号保持选填，未选择时 `flourAgentId`、`flourAgentName` 为空字符串。
+- 短信验证码先经 `/auth/verify-sms` 校验通过，界面才展示登录密码输入框，因此密码输入错误不需要重新接收短信验证码；`/auth/verify-sms` 同时签发短时 `verificationToken`，`POST /auth/registration/read-identity` 校验手机号、身份证号与令牌后返回芯片信息与 `readToken`。
+- 身份核验四项（身份证正面、身份证背面、NFC 芯片读取、人脸活体并与芯片照片比对）全部完成后才允许提交。`/auth/register-citizen` 复核 `readToken`、两张证件照片、活体照片与 `chipMatchScore ≥ 0.8`，通过后把 `identityVerification` 标记为 `passed` 写入账号与档案，注册完成即可直接登录，不再触发首次登录核验。真实 NFC 读取返回芯片照片；演示环境未返回芯片照片时以身份证正面照片模拟比对，界面明确标注该替代关系。
+- 已存在的配给卡号不允许重复注册。
 - 找回密码通过 `/auth/send-sms`（`purpose: citizen-password-reset`）、`/auth/verify-sms` 与 `/auth/reset-password` 更新同一账号记录的密码摘要和 `passwordUpdatedAt`，旧密码随即失效。上述凭据沿用现有账号记录同步，不新增集合。
 
 ## 代理注册与登录身份核验

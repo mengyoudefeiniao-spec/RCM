@@ -4,7 +4,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: false,
     branches: [
       {
-        branchName: 'Karkh 1st Food Supply Branch',
+        code: 'BAG-KARKH-01',
+    branchName: 'Karkh 1st Food Supply Branch',
         centers: [
           {
             centerId: '101',
@@ -33,7 +34,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
         ]
       },
       {
-        branchName: 'Rusafa 2nd Food Supply Branch',
+        code: 'BAG-RUSAFA-02',
+    branchName: 'Rusafa 2nd Food Supply Branch',
         centers: [
           {
             centerId: '108',
@@ -56,7 +58,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true,
     branches: [
       {
-        branchName: 'Diyala Eastern Branch',
+        code: 'DIY-EAST-01',
+    branchName: 'Diyala Eastern Branch',
         centers: [
           {
             centerId: '496',
@@ -100,7 +103,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true,
     branches: [
       {
-        branchName: 'Nineveh West & Mountain Ration Branch',
+        code: 'NIN-WEST-01',
+    branchName: 'Nineveh West & Mountain Ration Branch',
         centers: [
           {
             centerId: '320',
@@ -133,7 +137,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: true,
     branches: [
       {
-        branchName: 'Kirkuk Central Food Supply Branch',
+        code: 'KIR-CENTER-01',
+    branchName: 'Kirkuk Central Food Supply Branch',
         centers: [
           {
             centerId: '511',
@@ -155,7 +160,8 @@ export const TRANSFER_BRANCH_OPTIONS = [
     isArticle140: false,
     branches: [
       {
-        branchName: 'Basra Port Ration Support Branch',
+        code: 'BAS-PORT-01',
+    branchName: 'Basra Port Ration Support Branch',
         centers: [
           {
             centerId: '201',
