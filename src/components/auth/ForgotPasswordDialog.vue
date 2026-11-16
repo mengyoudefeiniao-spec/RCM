@@ -1,6 +1,5 @@
 <template>
   <el-dialog v-model="visible" :title="$t('forgotPassword.title')" :width="dialogWidth" align-center :class="{ 'rcm-compact-dialog': isCompact }" :before-close="close">
-    <el-alert :title="$t(isMock ? 'forgotPassword.demoNotice' : 'forgotPassword.liveNotice')" type="warning" :closable="false" show-icon class="mb-3" />
     <el-form label-position="top">
       <el-form-item :label="$t('forgotPassword.identifier')" required>
         <el-input v-model.trim="form.identifier" class="bidi-ltr" :disabled="verified" :placeholder="$t('forgotPassword.identifierPlaceholder')" />

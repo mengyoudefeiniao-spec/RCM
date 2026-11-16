@@ -18,7 +18,7 @@ import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword } from '../utils/citizenAccounts.js';
 import { findAgentAccount, createAgentAccount, updateAgentAccount, verifyAgentAccountPassword } from '../utils/agentAccounts.js';
-import { findAgentDirectoryEntry, claimAgentDirectoryEntry, getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../utils/agentDirectory.js';
+import { findAgentDirectoryEntry, claimAgentDirectoryEntry, getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo } from '../utils/agentDirectory.js';
 import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
 import { saveRegistrationArchive } from '../utils/memberRegistration.js';
 import { loadRegistrationCatalog, findRegistrationProvince, findRegistrationAgency, localizeCatalogNames } from '../utils/registrationCatalog.js';
@@ -1903,8 +1903,7 @@ export async function mockDispatch(config) {
   if (url === '/auth/agent/read-identity' && method === 'POST') {
     const agentNo = normalizeAgentNo(data.agentNo);
     const companyBranchCode = String(data.companyBranchCode || '').trim();
-    if (!isValidAgentNo(agentNo)) return createResponse({}, 400, i18n.global.t('agentAuth.agentNoInvalid'));
-    if (!companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
+    if (!agentNo || !companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
     if (!isValidNationalId(data.nationalId)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidNationalId'));
     const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
     if (entry?.claimed || await findAgentAccount(agentNo)) {
@@ -1933,8 +1932,10 @@ export async function mockDispatch(config) {
       ownerName: localizeAgentNames(entry?.ownerNames, reqLang),
       centerId: entry?.centerId || branch?.centerId || null,
       directoryMatched: Boolean(entry),
-      simulated: true,
-      chipPhotoAvailable: false
+      // Demo readers return no chip portrait; real NFC reading provides it here.
+      chipPhoto: '',
+      chipPhotoAvailable: false,
+      simulated: true
     });
   }
 
@@ -1942,7 +1943,7 @@ export async function mockDispatch(config) {
   if (url.includes('/auth/register-agent') && method === 'POST') {
     const agentNo = normalizeAgentNo(data.agentNo);
     const companyBranchCode = String(data.companyBranchCode || '').trim();
-    if (!isValidAgentNo(agentNo)) return createResponse({}, 400, i18n.global.t('agentAuth.agentNoInvalid'));
+    if (!agentNo || !companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
     if (typeof data.password !== 'string' || data.password.length < 8) {
       return createResponse({}, 400, i18n.global.t('agentAuth.passwordTooShort'));
     }
@@ -1957,10 +1958,15 @@ export async function mockDispatch(config) {
       return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
     }
     const reading = JSON.parse(sessionStorage.getItem(AGENT_READ_IDENTITY_KEY) || 'null');
+    // Identity-document photos, the NFC reading and the face capture are all required.
+    const identityFrontImage = isIdentityImage(data.identityFrontImage) ? data.identityFrontImage : '';
+    const identityBackImage = isIdentityImage(data.identityBackImage) ? data.identityBackImage : '';
+    const faceImage = isIdentityImage(data.faceImage) ? data.faceImage : '';
+    const chipMatchScore = Number(data.chipMatchScore);
     if (!reading || reading.expiresAt < Date.now() || reading.agentNo !== agentNo
       || reading.nationalId !== String(data.nationalId).trim() || reading.token !== data.readToken
       || data.livenessCompleted !== true || data.simulated !== true
-      || typeof data.faceImage !== 'string' || !data.faceImage.startsWith('data:image/')) {
+      || !identityFrontImage || !identityBackImage || !faceImage || !chipMatchPassed(chipMatchScore)) {
       return createResponse({}, 400, i18n.global.t('agentAuth.identityRequired'));
     }
     const normalizeAgentPhone = value => String(value || '').replace(/[\s-]/g, '').trim();
@@ -1992,7 +1998,7 @@ export async function mockDispatch(config) {
       // sign-in still runs the NFC chip + live face gate, mirroring the citizen app.
       identityVerification: {
         status: 'registered', method: 'nfc-face', simulated: true, verifiedAt: registeredAt,
-        directoryMatched: Boolean(entry)
+        directoryMatched: Boolean(entry), chipMatchScore
       }
     };
     let account;
@@ -2003,8 +2009,9 @@ export async function mockDispatch(config) {
         i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'agentAuth.duplicate' : 'agentAuth.saveFailed'));
     }
     if (entry) await claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone });
-    // Registration archive mirrors the citizen flow but stores no biometric image data.
-    localStorage.setItem(`rcm_registration_agent_${agentNo}`, JSON.stringify({
+    // Registration archive mirrors the citizen flow, including the identity photos
+    // that the shared archive and the company branch review rely on.
+    const registrationArchive = {
       agentNo,
       companyBranchCode,
       companyBranchNames: branchNames,
@@ -2014,9 +2021,23 @@ export async function mockDispatch(config) {
       nationalId: account.nationalId,
       phone: account.phone,
       directoryMatched: Boolean(entry),
+      identityFrontImage,
+      identityBackImage,
+      faceImage,
+      biometricVerified: true,
+      chipMatchScore,
+      chipPhotoAvailable: Boolean(data.chipPhotoAvailable),
       registeredAt,
       identityVerification: account.identityVerification
-    }));
+    };
+    const archiveKey = `rcm_registration_agent_${agentNo}`;
+    try {
+      localStorage.setItem(archiveKey, JSON.stringify(registrationArchive));
+    } catch {
+      // Photos can exceed the local cache quota; keep the record without the images.
+      const { identityFrontImage: _front, identityBackImage: _back, faceImage: _face, ...rest } = registrationArchive;
+      try { localStorage.setItem(archiveKey, JSON.stringify(rest)); } catch { /* archive stays in the account record */ }
+    }
     sessionStorage.removeItem(AGENT_COMPANY_PROOF_KEY);
     sessionStorage.removeItem(AGENT_READ_IDENTITY_KEY);
     sessionStorage.removeItem(AGENT_REGISTRATION_SMS_KEY);

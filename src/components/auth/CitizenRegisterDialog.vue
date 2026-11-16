@@ -183,6 +183,12 @@
         <el-form-item :label="$t('registerWizard.phone')" required class="!mb-3">
           <el-input v-model.trim="form.phone" class="bidi-ltr" inputmode="tel" :disabled="smsVerified" :placeholder="$t('registerWizard.phonePlaceholder')" />
         </el-form-item>
+        <el-form-item :label="$t('registerWizard.password')" required class="!mb-3">
+          <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('registerWizard.passwordPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('registerWizard.confirmPassword')" required class="!mb-3">
+          <el-input v-model="form.confirmPassword" type="password" show-password autocomplete="new-password" :placeholder="$t('registerWizard.confirmPasswordPlaceholder')" />
+        </el-form-item>
         <el-form-item :label="$t('registerWizard.smsCode')" required :class="smsVerified ? '!mb-2' : ''">
           <div class="flex gap-2 w-full">
             <el-input v-model.trim="form.smsCode" class="bidi-ltr" maxlength="6" inputmode="numeric" :disabled="smsVerified" :placeholder="$t('registerWizard.smsPlaceholder')" />
@@ -197,20 +203,10 @@
         <el-button text type="primary" data-demo-target="btn-fill-sms" @click="form.smsCode = exampleCode">{{ $t('registerWizard.fillIn') }}</el-button>
       </div>
 
-      <template v-if="smsVerified">
-        <div class="flex items-center gap-1.5 text-[11px] text-[#326445]">
-          <el-icon><CircleCheck /></el-icon>
-          <span>{{ $t('registerWizard.codeVerified') }}</span>
-        </div>
-        <el-form label-position="top">
-          <el-form-item :label="$t('registerWizard.password')" required class="!mb-3">
-            <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('registerWizard.passwordPlaceholder')" />
-          </el-form-item>
-          <el-form-item :label="$t('registerWizard.confirmPassword')" required class="!mb-0">
-            <el-input v-model="form.confirmPassword" type="password" show-password autocomplete="new-password" :placeholder="$t('registerWizard.confirmPasswordPlaceholder')" />
-          </el-form-item>
-        </el-form>
-      </template>
+      <div v-if="smsVerified" class="flex items-center gap-1.5 text-[11px] text-[#326445]">
+        <el-icon><CircleCheck /></el-icon>
+        <span>{{ $t('registerWizard.codeVerified') }}</span>
+      </div>
     </div>
 
     <!-- 第四步：身份证正面、背面、NFC 芯片读取与人脸活体核验（整卡点击触发） -->
@@ -377,7 +373,7 @@ import { sendSmsCode, verifySmsCode, registerCitizen, ocrScanPaperCard, readRegi
 import { getRegistrationOptions } from '../../api/citizen.js';
 import { CARD_TYPES, cardTypeNeedsScan, normalizeRationCardNo, isValidNationalId, isValidPhone } from '../../utils/registrationCard.js';
 import { localizeCatalogNames } from '../../utils/registrationCatalog.js';
-import { identityStepCompletion, chipMatchPassed } from '../../utils/registrationIdentity.js';
+import { identityStepCompletion, chipMatchPassed, readPhoto, compressPhoto, dataUrlToFile } from '../../utils/registrationIdentity.js';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
 import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
 
@@ -449,7 +445,9 @@ const agencyOptions = computed(() => provinceOptions.value.find(province => prov
 const centerOptions = computed(() => (registrationOptions.value.centers || []).filter(center =>
   center.provinceCode === form.provinceCode && center.agencyCode === form.agencyCode));
 const selectedCenter = computed(() => centerOptions.value.find(center => center.centerId === form.centerId) || null);
-const needsCardDetails = computed(() => form.cardType !== CARD_TYPES.NONE);
+// The photo module appears only after a paper / previous-version electronic card is
+// selected, never on first opening the wizard.
+const needsCardDetails = computed(() => cardTypeNeedsScan(form.cardType));
 const referenceFile = computed(() => chipPhotoFile.value || frontFile.value);
 const identityState = computed(() => identityStepCompletion({
   frontImage: frontImage.value,
@@ -504,8 +502,6 @@ watch(locale, () => {
 
 function resetVerification() {
   smsVerified.value = false;
-  form.password = '';
-  form.confirmPassword = '';
   identityProof.value = '';
 }
 
@@ -606,40 +602,6 @@ function handleCenterChange() {
 
 function triggerPhotoSelect() {
   photoInputRef.value?.click();
-}
-
-function readPhoto(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
-// Card photos are downscaled before upload so the PocketBase archive record stays small.
-function compressPhoto(dataUrl, maxSize = 1600, quality = 0.82) {
-  return new Promise(resolve => {
-    const image = new Image();
-    image.onload = () => {
-      const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(image.width * scale);
-      canvas.height = Math.round(image.height * scale);
-      const context = canvas.getContext('2d');
-      if (!context) return resolve(dataUrl);
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      try { resolve(canvas.toDataURL('image/jpeg', quality)); }
-      catch { resolve(dataUrl); }
-    };
-    image.onerror = () => resolve(dataUrl);
-    image.src = dataUrl;
-  });
-}
-
-async function dataUrlToFile(dataUrl, name) {
-  const blob = await (await fetch(dataUrl)).blob();
-  return new File([blob], name, { type: blob.type || 'image/jpeg' });
 }
 
 async function handlePhotoSelected(event) {
@@ -887,7 +849,7 @@ async function submit() {
     });
     emit('registered', { ...result, username: phone });
     close();
-    ElMessageBox.alert(t('registerWizard.registered'), t('registerWizard.title')).catch(() => {});
+    ElMessageBox.alert(t(result?.resetExistingData ? 'registerWizard.registeredReset' : 'registerWizard.registered'), t('registerWizard.title')).catch(() => {});
   } catch {
     /* handled by the request layer */
   } finally {

@@ -9,7 +9,7 @@ export default {
     resendCountdown: '{seconds} 秒后重发',
     smsCode: '短信验证码',
     smsPlaceholder: '6 位验证码',
-    demoCode: '演示验证码：{code}',
+    demoCode: '验证码：{code}',
     fillIn: '一键填入',
     newPassword: '新登录密码',
     newPasswordPlaceholder: '请输入至少 8 位新密码',
@@ -30,7 +30,6 @@ export default {
     smsFail: '验证码发送失败',
     success: '密码已重置，请使用新密码登录。',
     failed: '密码重置失败，请稍后重试。',
-    demoNotice: '演示模式：验证码为模拟生成，不会真实发送短信。',
     liveNotice: '短信服务尚未接入，暂无法重置密码。'
   },
   en: {
@@ -43,7 +42,7 @@ export default {
     resendCountdown: 'Retry in {seconds}s',
     smsCode: 'SMS verification code',
     smsPlaceholder: '6-digit code',
-    demoCode: 'Demo code: {code}',
+    demoCode: 'Code: {code}',
     fillIn: 'Fill in',
     newPassword: 'New login password',
     newPasswordPlaceholder: 'Enter a new password of at least 8 characters',
@@ -64,7 +63,6 @@ export default {
     smsFail: 'The verification code could not be sent',
     success: 'Your password has been reset. Sign in with the new password.',
     failed: 'The password could not be reset. Please retry later.',
-    demoNotice: 'Demo mode: the verification code is simulated; no SMS is sent.',
     liveNotice: 'The SMS service is not connected yet, so the password cannot be reset.'
   },
   ar: {
@@ -77,7 +75,7 @@ export default {
     resendCountdown: 'إعادة الإرسال بعد {seconds} ثانية',
     smsCode: 'رمز التحقق في الرسالة',
     smsPlaceholder: 'رمز من 6 أرقام',
-    demoCode: 'رمز تجريبي: {code}',
+    demoCode: 'الرمز: {code}',
     fillIn: 'تعبئة',
     newPassword: 'كلمة المرور الجديدة',
     newPasswordPlaceholder: 'أدخل كلمة مرور جديدة من 8 أحرف على الأقل',
@@ -98,7 +96,6 @@ export default {
     smsFail: 'تعذر إرسال رمز التحقق',
     success: 'تم إعادة تعيين كلمة المرور. ادخل بكلمة المرور الجديدة.',
     failed: 'تعذر إعادة تعيين كلمة المرور. يرجى المحاولة لاحقاً.',
-    demoNotice: 'وضع تجريبي: رمز التحقق للمحاكاة ولا تُرسل رسالة نصية.',
     liveNotice: 'خدمة الرسائل النصية غير متصلة بعد، لذا لا يمكن إعادة تعيين كلمة المرور.'
   },
   ckb: {
@@ -111,7 +108,7 @@ export default {
     resendCountdown: 'ناردنەوە دوای {seconds} چرکە',
     smsCode: 'کۆدی پشتڕاستکردنەوەی نامە',
     smsPlaceholder: 'کۆدی 6 ژمارەیی',
-    demoCode: 'کۆدی نموونە: {code}',
+    demoCode: 'کۆد: {code}',
     fillIn: 'پڕکردنەوە',
     newPassword: 'وشەی نهێنی نوێ',
     newPasswordPlaceholder: 'وشەی نهێنی نوێ بە لانیکەم 8 پیت بنووسە',
@@ -132,7 +129,6 @@ export default {
     smsFail: 'ناردنی کۆدی پشتڕاستکردنەوە سەرکەوتوو نەبوو',
     success: 'وشەی نهێنی نوێکرایەوە. بە وشەی نهێنی نوێ بچۆ ژوورەوە.',
     failed: 'نوێکردنەوەی وشەی نهێنی سەرکەوتوو نەبوو. دواتر هەوڵ بدەرەوە.',
-    demoNotice: 'دۆخی تاقیکردنەوە: کۆدی پشتڕاستکردنەوە نموونەیە و هیچ نامەیەک نانێردرێت.',
     liveNotice: 'خزمەتگوزاری نامە هێشتا پەیوەست نەکراوە، بۆیە وشەی نهێنی ناگۆڕدرێت.'
   }
 };

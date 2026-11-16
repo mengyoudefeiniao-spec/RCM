@@ -7,14 +7,7 @@
     :class="['agent-register-dialog', 'rcm-compact-dialog']"
     :before-close="close"
   >
-    <el-alert :title="$t(isMock ? 'agentAuth.demoNotice' : 'agentAuth.liveNotice')" type="warning" :closable="false" show-icon class="mb-3" />
-
-    <el-steps :active="stepIndex" finish-status="success" simple class="mb-4">
-      <el-step :title="$t('agentAuth.identityStep')" />
-      <el-step :title="$t('agentAuth.accountStep')" />
-    </el-steps>
-
-    <!-- 第一步：公司分部与代理编号、NFC 芯片读取与人脸活体核验（归属自动核验，不设独立验证步骤） -->
+    <!-- 第一步：代理归属与身份证核验；四张卡片分别引导拍照、NFC 读卡与人脸活体 -->
     <div v-if="step === 'identity'" class="agent-step">
       <el-form label-position="top">
         <el-form-item :label="$t('agentAuth.companyBranch')" required class="!mb-3">
@@ -24,7 +17,7 @@
             filterable
             :loading="directoryLoading"
             :placeholder="$t('agentAuth.companyBranchPlaceholder')"
-            @change="resetIdentity"
+            @change="resetChip"
           >
             <el-option
               v-for="branch in branches"
@@ -34,87 +27,126 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('agentAuth.agentNo')" required class="!mb-0">
+        <el-form-item :label="$t('agentAuth.agentNo')" required class="!mb-3">
           <el-input
             v-model.trim="form.agentNo"
             class="bidi-ltr"
             :placeholder="$t('agentAuth.agentNoPlaceholder')"
-            @input="resetIdentity"
+            @input="resetChip"
+          />
+        </el-form-item>
+        <el-form-item :label="$t('agentAuth.nationalId')" required class="!mb-0">
+          <el-input
+            v-model.trim="form.nationalId"
+            class="bidi-ltr"
+            inputmode="numeric"
+            :placeholder="$t('agentAuth.nationalIdPlaceholder')"
+            @input="resetChip"
           />
         </el-form-item>
       </el-form>
-      <div :class="isCompact ? 'space-y-4' : 'grid grid-cols-2 gap-4'">
-        <section class="minimal-card">
-          <h3 class="minimal-card-title">{{ $t('agentAuth.chipTitle') }}</h3>
-          <p class="minimal-card-hint">{{ $t('agentAuth.chipHint') }}</p>
-          <el-form label-position="top">
-            <el-form-item :label="$t('agentAuth.nationalId')" required class="!mb-0">
-              <el-input
-                v-model.trim="form.nationalId"
-                class="bidi-ltr"
-                :disabled="Boolean(identity)"
-                :placeholder="$t('agentAuth.nationalIdPlaceholder')"
-                @input="resetIdentity"
-              />
-            </el-form-item>
-          </el-form>
-          <div class="minimal-readout">
-            <el-icon :size="32"><CreditCard /></el-icon>
-            <div v-if="identity?.name" class="text-sm font-semibold">{{ identity.name }}</div>
-            <div><span dir="ltr" class="font-mono text-xs">{{ identity?.nationalId || form.nationalId }}</span></div>
-            <p v-if="identity" class="text-xs">{{ $t('agentAuth.chipDone') }}</p>
-          </div>
-          <input ref="referenceInput" type="file" accept="image/jpeg,image/png" class="sr-only" @change="selectReference" />
-          <div class="flex flex-wrap items-center gap-2">
-            <el-button size="small" plain @click="chooseReference">{{ $t('agentAuth.referenceChoose') }}</el-button>
-            <span v-if="referenceFile" class="minimal-file-name">{{ referenceFile.name }}</span>
-          </div>
-          <p v-if="referenceChecking" class="minimal-status" role="status">{{ $t('agentAuth.referenceChecking') }}</p>
-          <p v-else-if="referenceReady" class="minimal-status is-ok">{{ $t('agentAuth.referenceReady') }}</p>
-          <el-button class="w-full" type="primary" plain :loading="reading || referenceChecking" :disabled="!isMock" @click="readChip">
-            {{ $t(identity ? 'agentAuth.chipRead' : 'agentAuth.chipButton') }}
-          </el-button>
-          <div v-if="identity" class="space-y-1">
-            <span v-if="identity.directoryMatched" class="agent-verified">
-              <el-icon><CircleCheck /></el-icon>
-              {{ $t('agentAuth.companyVerified') }}
-            </span>
-            <p v-else class="minimal-status">{{ $t('agentAuth.directoryPending') }}</p>
-            <dl v-if="identity.branchName || identity.shopName || identity.ownerName" class="agent-summary">
-              <div v-if="identity.branchName">
-                <dt>{{ $t('agentAuth.companyBranch') }}</dt>
-                <dd>{{ identity.branchName }}</dd>
-              </div>
-              <div v-if="identity.shopName">
-                <dt>{{ $t('agentAuth.shopName') }}</dt>
-                <dd>{{ identity.shopName }}</dd>
-              </div>
-              <div v-if="identity.ownerName">
-                <dt>{{ $t('agentAuth.ownerName') }}</dt>
-                <dd>{{ identity.ownerName }}</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
 
-        <section class="minimal-card">
-          <h3 class="minimal-card-title">{{ $t('agentAuth.faceTitle') }}</h3>
-          <p class="minimal-card-hint">{{ $t('agentAuth.faceHint') }}</p>
-          <div class="minimal-readout">
-            <img v-if="face?.image" :src="face.image" :alt="$t('agentAuth.faceTitle')" class="h-28 w-full object-contain rounded-lg" />
-            <el-icon v-else :size="32"><Camera /></el-icon>
-            <p v-if="face" class="text-xs">{{ $t('agentAuth.faceCaptured') }}</p>
-          </div>
-          <el-button class="w-full" type="primary" plain :disabled="!isMock || !identity || reading" @click="showFace = true">
-            {{ $t('agentAuth.faceButton') }}
-          </el-button>
-        </section>
+      <div class="identity-list">
+        <input ref="frontInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'front')" />
+        <input ref="backInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'back')" />
+
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(frontImage) }"
+          :disabled="registering"
+          :aria-label="$t('agentAuth.idFront')"
+          @click="pickIdentityImage('front')"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('agentAuth.idFront') }}</span>
+            <span class="identity-hint">{{ $t('agentAuth.idFrontHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(frontImage) }">
+              {{ frontImage ? $t('agentAuth.cardDone') : $t('agentAuth.cardPending') }}
+            </span>
+          </span>
+          <span class="identity-thumb">
+            <img v-if="frontImage" :src="frontImage" :alt="$t('agentAuth.idFront')" />
+            <el-icon v-else :size="26"><Postcard /></el-icon>
+            <span v-if="frontImage" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(backImage) }"
+          :disabled="registering"
+          :aria-label="$t('agentAuth.idBack')"
+          @click="pickIdentityImage('back')"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('agentAuth.idBack') }}</span>
+            <span class="identity-hint">{{ $t('agentAuth.idBackHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(backImage) }">
+              {{ backImage ? $t('agentAuth.cardDone') : $t('agentAuth.cardPending') }}
+            </span>
+          </span>
+          <span class="identity-thumb">
+            <img v-if="backImage" :src="backImage" :alt="$t('agentAuth.idBack')" />
+            <el-icon v-else :size="26"><Postcard /></el-icon>
+            <span v-if="backImage" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(identity), 'is-busy': reading }"
+          :disabled="!isMock || reading || registering"
+          :aria-label="$t('agentAuth.chipTitle')"
+          @click="readChip"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('agentAuth.chipTitle') }}</span>
+            <span class="identity-hint">{{ $t('agentAuth.chipHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(identity) && !reading }">
+              {{ reading ? $t('agentAuth.cardReading') : identity ? $t('agentAuth.cardDone') : $t('agentAuth.cardPending') }}
+            </span>
+            <template v-if="identity && !reading">
+              <span v-if="identity.shopName" class="identity-meta">{{ $t('agentAuth.shopName') }}: {{ identity.shopName }}</span>
+              <span v-if="identity.branchName" class="identity-meta">{{ $t('agentAuth.companyBranch') }}: {{ identity.branchName }}</span>
+              <span v-if="!identity.directoryMatched" class="identity-hint">{{ $t('agentAuth.directoryPending') }}</span>
+            </template>
+          </span>
+          <span class="identity-thumb">
+            <img v-if="chipPhoto" :src="chipPhoto" :alt="$t('agentAuth.chipTitle')" />
+            <el-icon v-else :size="26"><Cpu /></el-icon>
+            <span v-if="identity" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(face) }"
+          :disabled="!isMock || !identity || !frontImage || reading || registering"
+          :aria-label="$t('agentAuth.faceTitle')"
+          @click="startLiveness"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('agentAuth.faceTitle') }}</span>
+            <span class="identity-hint">{{ $t('agentAuth.faceHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(face) }">
+              {{ face ? $t('agentAuth.cardDone') : $t('agentAuth.cardPending') }}
+            </span>
+          </span>
+          <span class="identity-thumb">
+            <img v-if="face?.image" :src="face.image" :alt="$t('agentAuth.faceTitle')" />
+            <el-icon v-else :size="26"><Camera /></el-icon>
+            <span v-if="face" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
       </div>
     </div>
 
     <!-- 第二步：手机号、短信验证与登录密码 -->
     <div v-else class="agent-step">
-      <el-button v-if="isMock && !smsVerified" size="small" plain class="mb-2" @click="fillExample">{{ $t('agentAuth.fillExample') }}</el-button>
       <el-form label-position="top">
         <el-form-item :label="$t('agentAuth.phone')" required class="!mb-3">
           <el-input v-model.trim="form.phone" class="bidi-ltr" inputmode="tel" :disabled="smsVerified" :placeholder="$t('agentAuth.phonePlaceholder')" />
@@ -134,7 +166,7 @@
       </div>
 
       <template v-if="smsVerified">
-        <div class="flex items-center gap-1.5 text-[11px] text-[#326445] mb-2">
+        <div class="flex items-center gap-1.5 text-[11px] text-[#326445]">
           <el-icon><CircleCheck /></el-icon>
           <span>{{ $t('agentAuth.codeVerified') }}</span>
         </div>
@@ -151,7 +183,7 @@
 
     <template #footer>
       <div class="flex items-center justify-between gap-2 w-full">
-        <el-button :disabled="step === 'identity'" @click="back">{{ $t('agentAuth.back') }}</el-button>
+        <el-button :disabled="step === 'identity' || registering" @click="back">{{ $t('agentAuth.back') }}</el-button>
         <el-button
           v-if="step === 'identity'"
           type="primary"
@@ -167,7 +199,7 @@
         <el-button
           v-else
           type="primary"
-          :disabled="!isMock"
+          :disabled="!isMock || !identityReady"
           :loading="registering"
           @click="submit"
         >{{ $t('agentAuth.submit') }}</el-button>
@@ -178,9 +210,10 @@
   <FaceLivenessVerifyDialog
     v-model="showFace"
     :target-name="identity?.name || form.nationalId"
-    :target-national-id="form.nationalId"
+    :target-national-id="form.nationalId.trim()"
     :allow-quick-pass="isMock"
-    :prepared-reference="referenceFile"
+    :show-demo-hints="false"
+    :prepared-reference="frontFile"
     :prepared-token="cloudToken"
     auto-start
     @success="onFaceCaptured"
@@ -191,14 +224,14 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Camera, CircleCheck, CreditCard } from '@element-plus/icons-vue';
+import { Camera, CircleCheck, Cpu, Postcard } from '@element-plus/icons-vue';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { readAgentRegistrationIdentity, registerAgent, sendSmsCode, verifySmsCode } from '../../api/auth.js';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
 import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
-import { checkReferenceImage } from '../../utils/liveFaceCompare.js';
-import { getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../../utils/agentDirectory.js';
+import { getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo } from '../../utils/agentDirectory.js';
 import { isValidNationalId, isValidPhone } from '../../utils/registrationCard.js';
+import { identityStepCompletion, chipMatchPassed, readPhoto, compressPhoto, dataUrlToFile } from '../../utils/registrationIdentity.js';
 
 const props = defineProps({ modelValue: Boolean });
 const emit = defineEmits(['update:modelValue', 'registered']);
@@ -217,18 +250,20 @@ const form = reactive({
   smsCode: ''
 });
 const step = ref('identity');
-const stepIndex = computed(() => (step.value === 'account' ? 1 : 0));
 
 const branches = ref([]);
 const directoryLoading = ref(false);
 const identity = ref(null);
-const face = ref(null);
 const reading = ref(false);
+const chipPhoto = ref('');
+const frontImage = ref('');
+const backImage = ref('');
+const frontFile = ref(null);
+const backFile = ref(null);
+const frontInputRef = ref(null);
+const backInputRef = ref(null);
+const face = ref(null);
 const showFace = ref(false);
-const referenceInput = ref(null);
-const referenceFile = ref(null);
-const referenceChecking = ref(false);
-const referenceReady = ref(false);
 const cloudToken = ref(null);
 const sending = ref(false);
 const verifying = ref(false);
@@ -238,9 +273,15 @@ const exampleCode = ref('');
 const cooldown = ref(0);
 const cooldownKey = 'rcm_agent_registration_sms_retry_at';
 let cooldownTimer = null;
-let referenceGeneration = 0;
-let referenceController = null;
-let tokenController = null;
+
+const identityState = computed(() => identityStepCompletion({
+  frontImage: frontImage.value,
+  backImage: backImage.value,
+  chipRead: identity.value,
+  liveness: face.value,
+  nationalId: form.nationalId.trim()
+}));
+const identityReady = computed(() => Object.values(identityState.value).every(Boolean) && chipMatchPassed(face.value?.similarity));
 
 function branchName(branch) {
   return localizeAgentNames(branch?.names, locale.value) || branch?.code || '';
@@ -279,18 +320,33 @@ async function loadBranches() {
   }
 }
 
+function resetChip() {
+  identity.value = null;
+  chipPhoto.value = '';
+  face.value = null;
+  cloudToken.value = null;
+  showFace.value = false;
+}
+
+function resetIdentity() {
+  resetChip();
+  frontImage.value = '';
+  backImage.value = '';
+  frontFile.value = null;
+  backFile.value = null;
+  if (frontInputRef.value) frontInputRef.value.value = '';
+  if (backInputRef.value) backInputRef.value.value = '';
+}
+
 function resetWizard() {
   Object.assign(form, {
     companyBranchCode: '', agentNo: '', nationalId: '',
     phone: '', password: '', confirmPassword: '', smsCode: ''
   });
   step.value = 'identity';
-  identity.value = null;
-  face.value = null;
-  showFace.value = false;
   exampleCode.value = '';
   smsVerified.value = false;
-  clearPrepared();
+  resetIdentity();
   updateCooldown();
 }
 
@@ -299,55 +355,41 @@ function close() {
   emit('update:modelValue', false);
 }
 
-function clearPrepared() {
-  referenceGeneration++;
-  referenceController?.abort();
-  tokenController?.abort();
-  referenceController = null;
-  tokenController = null;
-  referenceFile.value = null;
-  cloudToken.value = null;
-  referenceChecking.value = false;
-  referenceReady.value = false;
-  reading.value = false;
+function pickIdentityImage(side) {
+  const input = side === 'front' ? frontInputRef.value : backInputRef.value;
+  if (input) input.value = '';
+  input?.click();
 }
 
-function resetIdentity() {
-  identity.value = null;
-  face.value = null;
-  clearPrepared();
-}
-
-function chooseReference() {
-  if (referenceInput.value) referenceInput.value.value = '';
-  referenceInput.value?.click();
-}
-
-function selectReference(event) {
+async function handleIdentityImage(event, side) {
   const file = event.target.files?.[0];
   event.target.value = '';
-  referenceGeneration++;
-  referenceController?.abort();
-  referenceFile.value = null;
-  referenceReady.value = false;
-  face.value = null;
   if (!file) return;
-  if (!['image/jpeg', 'image/png'].includes(file.type) || !file.size || file.size >= 8 * 1024 * 1024) {
-    ElMessage.error(t('agentAuth.imageError'));
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning(t('agentAuth.imageError'));
     return;
   }
-  referenceFile.value = file;
-  void prepareReference();
+  try {
+    const dataUrl = await compressPhoto(await readPhoto(file), 1400, 0.78);
+    const stored = await dataUrlToFile(dataUrl, side === 'front' ? 'agent-identity-front.jpg' : 'agent-identity-back.jpg');
+    if (side === 'front') {
+      frontImage.value = dataUrl;
+      frontFile.value = stored;
+      // The front photo is the liveness reference, so a new capture invalidates it.
+      face.value = null;
+    } else {
+      backImage.value = dataUrl;
+      backFile.value = stored;
+    }
+  } catch {
+    ElMessage.error(t('agentAuth.imageError'));
+  }
 }
 
 async function readChip() {
-  if (reading.value || referenceChecking.value) return;
+  if (reading.value) return;
   if (!form.companyBranchCode || !form.agentNo.trim()) {
     ElMessage.warning(t('agentAuth.companyRequired'));
-    return;
-  }
-  if (!isValidAgentNo(form.agentNo)) {
-    ElMessage.warning(t('agentAuth.agentNoInvalid'));
     return;
   }
   const nationalId = form.nationalId.trim();
@@ -355,66 +397,38 @@ async function readChip() {
     ElMessage.warning(t('agentAuth.invalidNationalId'));
     return;
   }
-  clearPrepared();
-  identity.value = null;
-  face.value = null;
-  chooseReference();
+  resetChip();
   reading.value = true;
-  const activeTokenController = new AbortController();
-  tokenController = activeTokenController;
   try {
-    // The registry lookup runs inside the chip read, so the wizard needs no
-    // separate company branch / agent number verification step.
-    identity.value = await readAgentRegistrationIdentity({
+    const result = await readAgentRegistrationIdentity({
       agentNo: normalizeAgentNo(form.agentNo),
       companyBranchCode: form.companyBranchCode,
       nationalId
     });
-    // The cloud token is only needed for real face comparison; the demo quick
-    // pass stays available when the local environment has no IAM credentials.
+    identity.value = result;
+    chipPhoto.value = result?.chipPhoto || '';
     try {
-      cloudToken.value = await getDefaultHuaweiIamToken({ signal: activeTokenController.signal });
-      void prepareReference();
+      cloudToken.value = await getDefaultHuaweiIamToken();
     } catch {
       cloudToken.value = null;
     }
   } catch {
-    activeTokenController.abort();
+    identity.value = null;
     ElMessage.error(t('agentAuth.chipReadFailed'));
   } finally {
     reading.value = false;
-    if (tokenController === activeTokenController) tokenController = null;
   }
 }
 
-async function prepareReference() {
-  if (!identity.value || !cloudToken.value || !referenceFile.value) return;
-  referenceController?.abort();
-  const request = ++referenceGeneration;
-  referenceController = new AbortController();
-  referenceChecking.value = true;
-  referenceReady.value = false;
-  try {
-    await checkReferenceImage({ ...cloudToken.value, referenceImage: referenceFile.value, signal: referenceController.signal });
-    if (request === referenceGeneration) referenceReady.value = true;
-  } catch (error) {
-    if (request === referenceGeneration) {
-      ElMessage.error(t(error.message === 'face_count' ? 'faceCompareDemo.faceCount' : 'agentAuth.referenceFailed'));
-    }
-  } finally {
-    if (request === referenceGeneration) {
-      referenceChecking.value = false;
-      referenceController = null;
-    }
-  }
+function startLiveness() {
+  if (!identity.value) return ElMessage.warning(t('agentAuth.identityRequired'));
+  if (!frontFile.value) return ElMessage.warning(t('agentAuth.identityRequired'));
+  showFace.value = true;
 }
 
 function onFaceCaptured(payload) {
   if (!payload) return;
-  face.value = {
-    ...payload,
-    nationalId: payload.nationalId || form.nationalId.trim()
-  };
+  face.value = { ...payload, nationalId: payload.nationalId || form.nationalId.trim() };
 }
 
 function next() {
@@ -422,21 +436,16 @@ function next() {
   if (!form.companyBranchCode || !form.agentNo.trim()) {
     return ElMessage.warning(t('agentAuth.companyRequired'));
   }
-  if (!isValidAgentNo(form.agentNo)) {
-    return ElMessage.warning(t('agentAuth.agentNoInvalid'));
+  const nationalId = form.nationalId.trim();
+  if (!isValidNationalId(nationalId)) {
+    return ElMessage.warning(t('agentAuth.invalidNationalId'));
   }
-  if (!identity.value || !face.value) {
-    return ElMessage.warning(t('agentAuth.identityRequired'));
-  }
+  if (!identityReady.value) return ElMessage.warning(t('agentAuth.identityRequired'));
   step.value = 'account';
 }
 
 function back() {
   if (step.value === 'account') step.value = 'identity';
-}
-
-function fillExample() {
-  Object.assign(form, { nationalId: '198004198271', phone: '07801234567' });
 }
 
 async function sendCode() {
@@ -480,7 +489,7 @@ async function verifyCode() {
 async function submit() {
   if (registering.value) return;
   if (!smsVerified.value) return ElMessage.warning(t('agentAuth.verifyRequired'));
-  if (!identity.value || !face.value) return ElMessage.warning(t('agentAuth.identityRequired'));
+  if (!identityReady.value) return ElMessage.warning(t('agentAuth.identityRequired'));
   if (!form.password || !form.confirmPassword) return ElMessage.warning(t('agentAuth.accountRequired'));
   if (form.password.length < 8) return ElMessage.warning(t('agentAuth.passwordTooShort'));
   if (form.password !== form.confirmPassword) return ElMessage.warning(t('agentAuth.passwordMismatch'));
@@ -496,8 +505,13 @@ async function submit() {
       confirmPassword: form.confirmPassword,
       smsCode: form.smsCode,
       readToken: identity.value.readToken,
+      chipName: identity.value.name || '',
+      chipMatchScore: Number(face.value?.similarity) || 0,
+      faceImage: face.value?.image || '',
+      identityFrontImage: frontImage.value,
+      identityBackImage: backImage.value,
+      chipPhotoAvailable: Boolean(chipPhoto.value),
       livenessCompleted: true,
-      faceImage: face.value.image || '',
       simulated: true
     });
     emit('registered', { ...result, username: normalizeAgentNo(form.agentNo) });
@@ -527,85 +541,116 @@ async function submit() {
   gap: 12px;
   min-width: 0;
 }
-.agent-verified {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #326445;
-}
-.agent-summary {
-  margin: 0;
-  padding: 12px;
-  border: 1px solid #e5cea1;
-  border-radius: 8px;
-  background: #fdf3e0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.agent-summary > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-.agent-summary dt {
-  flex: 0 0 auto;
-  font-size: 11px;
-  color: #8a7a4e;
-}
-.agent-summary dd {
-  margin: 0;
-  min-width: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #5a4718;
-  text-align: end;
-  overflow-wrap: anywhere;
-}
-.minimal-card {
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid #d9e5db;
-  border-radius: 10px;
-  background: #fff;
+
+/* 身份核验：四张纵向卡片，点击整卡触发，随弹窗上下滚动 */
+.identity-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
-.minimal-card-title {
+.identity-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #d9e5db;
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.identity-card:hover:not(:disabled) {
+  border-color: #c9dbce;
+  background: #f8fbf9;
+}
+.identity-card:focus-visible {
+  outline: none;
+  border-color: #d3af62;
+  box-shadow: 0 0 0 2px rgba(211, 175, 98, .25);
+}
+.identity-card.is-done {
+  border-color: #c7e0ce;
+  background: #f8fbf9;
+}
+.identity-card:disabled {
+  cursor: not-allowed;
+  opacity: .62;
+}
+.identity-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+.identity-title {
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.4;
   color: #1f3326;
+  overflow-wrap: anywhere;
 }
-.minimal-card-hint {
+.identity-hint {
   font-size: 11px;
   line-height: 1.6;
   color: #58685d;
-}
-.minimal-readout {
-  min-height: 88px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #eff5f1;
-  color: #43554b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-align: center;
-}
-.minimal-file-name {
-  font-size: 11px;
-  color: #58685d;
   overflow-wrap: anywhere;
 }
-.minimal-status {
+.identity-status {
   font-size: 11px;
+  line-height: 1.5;
   color: #8a9a8f;
 }
-.minimal-status.is-ok { color: #326445; }
+.identity-status.is-ok {
+  color: #326445;
+  font-weight: 700;
+}
+.identity-meta {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #43554b;
+  overflow-wrap: anywhere;
+}
+.identity-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 64px;
+  border: 1px solid #d9e5db;
+  border-radius: 8px;
+  background: #f3f8f4;
+  color: #8a9a8f;
+  overflow: hidden;
+}
+.identity-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.identity-badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #326445;
+  color: #ffffff;
+}
+@media (max-width: 420px) {
+  .identity-card { grid-template-columns: minmax(0, 1fr) 84px; }
+  .identity-thumb { width: 84px; height: 58px; }
+}
 </style>
