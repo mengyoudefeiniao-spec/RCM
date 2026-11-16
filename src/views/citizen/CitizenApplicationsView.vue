@@ -194,13 +194,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { ArrowRight, DocumentChecked, Refresh } from '@element-plus/icons-vue';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { useAppMode } from '../../composables/useCompactDialog.js';
 import { updateSharedTicket } from '../../utils/sharedSession.js';
+import { onTabMessage } from '../../utils/crossTabBus.js';
 import { saveMockMaterial } from '../../utils/mockMaterialFiles.js';
 import {
   APPLICATION_SOURCE_CODES,
@@ -378,11 +379,30 @@ function loadRecords() {
   currentPage.value = 1;
 }
 
+// 其他页面提交申请后立即刷新列表，无需手动点刷新
+function handleTicketAdded(event) {
+  const addedCardNo = event?.detail?.cardNo;
+  if (addedCardNo && cardNo.value && addedCardNo !== cardNo.value) return;
+  loadRecords();
+}
+
+let offTicketSubmitted = null;
+let offTicketUpdated = null;
+
 onMounted(async () => {
   if (!citizenStore.families.length) {
     try { await citizenStore.fetchFamilies(); } catch { /* the record list falls back to the demo card */ }
   }
   loadRecords();
+  window.addEventListener('rcm-ticket-added', handleTicketAdded);
+  offTicketSubmitted = onTabMessage('TICKET_SUBMITTED', handleTicketAdded);
+  offTicketUpdated = onTabMessage('TICKET_UPDATED', handleTicketAdded);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('rcm-ticket-added', handleTicketAdded);
+  if (offTicketSubmitted) offTicketSubmitted();
+  if (offTicketUpdated) offTicketUpdated();
 });
 </script>
 

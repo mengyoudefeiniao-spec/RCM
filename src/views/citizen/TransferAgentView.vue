@@ -352,9 +352,6 @@
                   <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">4</span>
                   <span>{{ $t('transfer.step4Title') }}</span>
                 </label>
-                <el-tag :type="isSameProvince ? 'success' : 'warning'" effect="dark" class="max-w-full !h-auto !whitespace-normal !py-1 text-start leading-snug">
-                  {{ isSameProvince ? $t('transfer.intraProvinceAuto') : $t('transfer.interProvinceReview') }}
-                </el-tag>
               </div>
 
               <!-- 申请明细摘要核对卡 -->
@@ -635,13 +632,6 @@ onBeforeUnmount(() => {
 // 当前家庭原省份
 const currentFromProvince = computed(() => {
   return citizenStore.currentFamily?.province || (isEn.value ? 'Baghdad Governorate' : '巴格达省 (Baghdad)');
-});
-
-// 是否为省内转移
-const isSameProvince = computed(() => {
-  const fromP = transferProvinceKey(currentFromProvince.value);
-  const toP = transferProvinceKey(targetProvince.value);
-  return fromP === toP;
 });
 
 // 当前选中的省份对象

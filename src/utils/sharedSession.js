@@ -309,6 +309,12 @@ export function addSharedTicket(ticketPayload, langOverride) {
 
   // 跨标签页广播：新工单已提交！
   safeBroadcast('TICKET_SUBMITTED', newTicket);
+  // 同一页面内的申请记录列表也要即时刷新（BroadcastChannel 不会回传给发送方）。
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('rcm-ticket-added', {
+      detail: { id: newTicket.id, sourceCode: newTicket.sourceCode, cardNo: newTicket.cardNo }
+    }));
+  }
   return newTicket;
 }
 
