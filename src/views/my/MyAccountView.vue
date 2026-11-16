@@ -3,7 +3,7 @@
     @touchstart.passive="startListSwipe" @touchend.passive="endListSwipe" @touchcancel.passive="cancelListSwipe" @click.capture="guardSwipeClick">
     <header v-if="isListPage" class="flex items-center gap-3" data-my-list-header>
       <el-button circle :aria-label="$t('common.back')" @click="closeList"><el-icon class="rtl-mirror-icon"><ArrowLeft /></el-icon></el-button>
-      <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t(expandedList === 'applications' ? 'my.applicationHistory' : 'my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
+      <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t('my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
     </header>
     <template v-if="!isListPage">
     <header class="space-y-1">
@@ -53,55 +53,6 @@
     </template>
 
     </template>
-    <section v-if="isCitizen && (!isListPage || expandedList === 'applications')" data-my-list="applications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-2 min-w-0">
-          <el-icon class="shrink-0 text-[#326445]"><DocumentChecked /></el-icon>
-          <div class="min-w-0">
-            <h2 class="font-bold">{{ $t('my.applicationHistory') }}</h2>
-            <p class="mt-0.5 text-xs text-[#8A9A8F]">{{ $t('my.applicationHistorySubtitle') }}</p>
-          </div>
-        </div>
-        <el-button v-if="!isListPage" size="small" text type="primary" class="shrink-0" @click="openList('applications')">{{ $t('my.viewAll') }}<el-icon class="ms-1 rtl-mirror-icon"><ArrowRight /></el-icon></el-button>
-        <el-button v-else size="small" text :aria-expanded="showApplicationFilters" @click="showApplicationFilters = !showApplicationFilters">
-          <el-icon class="me-1"><Filter /></el-icon>{{ $t('my.applicationFilterToggle') }}
-        </el-button>
-      </div>
-      <div v-if="isListPage && showApplicationFilters" class="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg bg-[#F8FAF8] p-3">
-        <el-select v-model="applicationTypeFilter" :placeholder="$t('my.applicationFilterType')" clearable>
-          <el-option :label="$t('my.applicationAnyType')" value="" />
-          <el-option v-for="code in applicationSourceCodes" :key="code" :label="$t(`my.applicationTypes.${code}`)" :value="code" />
-        </el-select>
-        <el-select v-model="applicationStatusFilter" :placeholder="$t('my.applicationFilterStatus')" clearable>
-          <el-option :label="$t('my.applicationAnyStatus')" value="" />
-          <el-option v-for="status in ['pending', 'approved', 'rejected']" :key="status" :label="$t(`my.applicationStatuses.${status}`)" :value="status" />
-        </el-select>
-        <el-select v-model="applicationReviewFilter" :placeholder="$t('my.applicationFilterMode')" clearable>
-          <el-option :label="$t('my.applicationAnyMode')" value="" />
-          <el-option :label="$t('my.automaticReview')" value="automatic" />
-          <el-option :label="$t('my.manualReview')" value="manual" />
-        </el-select>
-        <el-input v-model.trim="applicationSearch" :placeholder="$t('my.applicationSearchNumber')" clearable />
-        <div class="sm:col-span-2 flex justify-end"><el-button size="small" text @click="clearApplicationFilters">{{ $t('my.applicationClearFilters') }}</el-button></div>
-      </div>
-      <div v-if="applicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.noApplicationHistory') }}</div>
-      <div v-else-if="isListPage && filteredApplicationRecords.length === 0" class="rounded-lg bg-[#F8FAF8] py-6 text-center text-sm text-[#8A9A8F]">{{ $t('my.applicationNoMatches') }}</div>
-      <article v-for="record in displayedApplications" :key="record.id" class="application-record rounded-lg border border-[#E9F1EB] bg-[#FCFDFC] p-3 space-y-2">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h3 class="text-sm font-semibold text-[#1F3326]">{{ $t(`my.applicationTypes.${record.sourceCode}`) }}</h3>
-          <div class="flex flex-wrap items-center gap-1.5">
-            <el-tag size="small" effect="plain">{{ $t(`my.${applicationReviewMode(record)}Review`) }}</el-tag>
-            <el-tag size="small" :type="applicationStatusType(record)">{{ $t(`my.applicationStatuses.${applicationStatusKey(record)}`) }}</el-tag>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8A9A8F]">
-          <span>{{ $t('my.applicationNumber') }} <bdi dir="ltr" class="font-mono">{{ record.id }}</bdi></span>
-          <span dir="ltr">{{ formatDate(record.submittedAt) }}</span>
-        </div>
-        <p class="text-xs leading-relaxed text-[#58685D] break-words" :class="{ 'line-clamp-2': !isListPage }">{{ applicationResult(record) }}</p>
-      </article>
-      <p v-if="!isListPage && applicationRecords.length" class="text-xs text-[#8A9A8F]">{{ $t('my.previewCount', { shown: displayedApplications.length, total: applicationRecords.length }) }}</p>
-    </section>
 
     <section v-if="expandedList === 'notifications' || (!isListPage && (isCitizen || currentTab === 'notifications'))" data-my-list="notifications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -292,13 +243,12 @@ import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } 
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Message, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, DocumentChecked, Filter, Camera, Monitor } from '@element-plus/icons-vue';
+import { User, Edit, Message, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, Camera, Monitor } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
 import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl, notificationTitle, notificationBody } from '../../stores/myNotifications.js';
-import { APPLICATION_SOURCE_CODES, applicationReviewMode, applicationStatusKey, listCitizenApplications } from '../../utils/citizenApplications.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 
 const { t, locale } = useI18n();
@@ -309,7 +259,7 @@ const citizenStore = useCitizenStore();
 const notificationStore = useMyNotificationsStore();
 const role = computed(() => authStore.currentRole);
 const isCitizen = computed(() => role.value === 'citizen');
-const expandedList = computed(() => route.query.list === 'notifications' ? 'notifications' : isCitizen.value && route.query.list === 'applications' ? 'applications' : '');
+const expandedList = computed(() => route.query.list === 'notifications' ? 'notifications' : '');
 const isListPage = computed(() => Boolean(expandedList.value));
 const PREVIEW_SIZE = 3;
 const PAGE_SIZE = 5;
@@ -322,12 +272,6 @@ const outlets = ref([]);
 const couriers = ref([]);
 const notifications = computed(() => [...notificationStore.items].sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0)));
 const unreadCount = computed(() => notificationStore.unreadCount);
-const applicationRecords = ref([]);
-const showApplicationFilters = ref(false);
-const applicationTypeFilter = ref('');
-const applicationStatusFilter = ref('');
-const applicationReviewFilter = ref('');
-const applicationSearch = ref('');
 const currentTab = ref(['notifications', 'outlets', 'couriers'].includes(route.query.tab) ? route.query.tab : 'notifications');
 const agentTabs = [
   { key: 'notifications', icon: Bell },
@@ -366,7 +310,6 @@ async function loadData() {
   try {
     const [account] = await Promise.all([getMyProfile(), notificationStore.refresh(), isCitizen.value ? citizenStore.fetchFamilies() : Promise.resolve()]);
     profile.value = account;
-    if (isCitizen.value) refreshApplicationHistory();
     if (!isCitizen.value) {
       const [agent, sites, people] = await Promise.all([getAgentProfile(), getMyAgentCenters(), getMyCouriers()]);
       agentProfile.value = agent;
@@ -378,15 +321,7 @@ async function loadData() {
   }
 }
 
-const applicationSourceCodes = new Set(APPLICATION_SOURCE_CODES);
-const filteredApplicationRecords = computed(() => applicationRecords.value.filter((record) => {
-  const mode = applicationReviewMode(record);
-  return (!applicationTypeFilter.value || record.sourceCode === applicationTypeFilter.value)
-    && (!applicationStatusFilter.value || applicationStatusKey(record) === applicationStatusFilter.value)
-    && (!applicationReviewFilter.value || mode === applicationReviewFilter.value)
-    && (!applicationSearch.value || String(record.id || '').toLowerCase().includes(applicationSearch.value.toLowerCase()));
-}));
-const listTotal = computed(() => expandedList.value === 'applications' ? filteredApplicationRecords.value.length : notifications.value.length);
+const listTotal = computed(() => notifications.value.length);
 const pageCount = computed(() => Math.max(1, Math.ceil(listTotal.value / PAGE_SIZE)));
 const listPage = computed(() => {
   const requested = Number(route.query.page);
@@ -439,9 +374,6 @@ async function handlePaginationKey(event) {
   await nextTick();
   pagination.querySelector('[aria-current="page"]')?.focus({ preventScroll: true });
 }
-const displayedApplications = computed(() => isListPage.value
-  ? filteredApplicationRecords.value.slice((listPage.value - 1) * PAGE_SIZE, listPage.value * PAGE_SIZE)
-  : applicationRecords.value.slice(0, PREVIEW_SIZE));
 const displayedNotifications = computed(() => isListPage.value
   ? notifications.value.slice((listPage.value - 1) * PAGE_SIZE, listPage.value * PAGE_SIZE)
   : notifications.value.slice(0, PREVIEW_SIZE));
@@ -449,7 +381,6 @@ const displayedNotifications = computed(() => isListPage.value
 function openList(list) {
   previewScroll = document.querySelector('main')?.scrollTop || window.scrollY;
   openedFromPreview = true;
-  if (list === 'applications') { clearApplicationFilters(); showApplicationFilters.value = true; }
   router.push({ query: { ...route.query, list, page: undefined } });
 }
 
@@ -471,32 +402,6 @@ watch([expandedList, listPage], async ([list], [previousList]) => {
   window.scrollTo({ top: isAppMode.value ? 0 : top, behavior: 'instant' });
   if (!list) openedFromPreview = false;
 });
-watch([applicationTypeFilter, applicationStatusFilter, applicationReviewFilter, applicationSearch], () => {
-  if (expandedList.value === 'applications' && route.query.page) changeListPage(1);
-});
-
-function refreshApplicationHistory() {
-  const cardNo = citizenStore.currentFamily?.rationCardNo || authStore.userProfile?.cardNo || 'RC-10029381';
-  applicationRecords.value = listCitizenApplications(cardNo);
-}
-
-function applicationStatusType(record) {
-  return { approved: 'success', pending: 'warning', rejected: 'danger' }[applicationStatusKey(record)];
-}
-
-function clearApplicationFilters() {
-  applicationTypeFilter.value = '';
-  applicationStatusFilter.value = '';
-  applicationReviewFilter.value = '';
-  applicationSearch.value = '';
-}
-
-function applicationResult(record) {
-  const status = applicationStatusKey(record);
-  if (locale.value === 'ar' || locale.value === 'ckb') return t(`my.applicationStatuses.${status}`);
-  return record.managerNotes || record.auditNotes || record.managerOpinion || record.staffOpinion || t(`my.applicationStatuses.${status}`);
-}
-
 function formatDate(value) {
   if (!value) return '';
   const language = { zh: 'zh-CN', en: 'en-US', ar: 'ar-IQ', ckb: 'ckb-IQ' }[locale.value] || 'en-US';
@@ -733,7 +638,6 @@ async function handleLogout() {
 
 onMounted(async () => {
   await loadData();
-  window.addEventListener('storage', refreshApplicationHistory);
   if (route.query.tab === 'outlets' || route.query.tab === 'couriers') await selectTab(route.query.tab);
 });
 watch(role, loadData);
@@ -741,7 +645,6 @@ watch(() => route.query.tab, (tab) => { if (agentTabs.some(item => item.key === 
 onBeforeUnmount(() => {
   clearInterval(smsTimer);
   clearInterval(deviceSmsTimer);
-  window.removeEventListener('storage', refreshApplicationHistory);
 });
 </script>
 

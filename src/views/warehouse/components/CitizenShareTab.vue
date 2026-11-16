@@ -1,71 +1,80 @@
 <template>
   <div class="ration-share-tab space-y-3">
-    <!-- 家庭代理签约网点 -->
-    <section class="rounded-lg border border-[#C7DED0] bg-white p-3.5 shadow-xs" aria-labelledby="ration-share-station-title">
-      <div class="flex items-start gap-2.5">
-        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#C7DED0] bg-[#EFF5F1] text-[#326445]">
-          <el-icon :size="18"><Shop /></el-icon>
-        </div>
-        <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-center gap-1.5">
-            <h2 id="ration-share-station-title" class="text-[13px] font-bold leading-snug text-[#1B3123] break-words">{{ station.agentName }}</h2>
-            <el-tag size="small" type="success" effect="dark" class="shrink-0 font-bold">{{ $t('rationShare.contractedStation') }}</el-tag>
+    <div class="grid gap-3 lg:grid-cols-5">
+      <!-- 家庭代理签约网点 -->
+      <section class="rounded-lg border border-[#C7DED0] bg-white p-3 shadow-xs lg:col-span-2" aria-labelledby="ration-share-station-title">
+        <div class="flex items-start gap-2.5">
+          <div class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#C7DED0] bg-[#EFF5F1] text-[#326445]">
+            <el-icon :size="16"><Shop /></el-icon>
           </div>
-          <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-[#58685D]">
-            <span>{{ $t('rationShare.agentCode') }}: <bdi dir="ltr" class="font-mono font-semibold text-[#1F3326]">{{ station.agentId }}</bdi></span>
-            <span>{{ $t('rationShare.center') }}: {{ station.district }}</span>
-            <span>{{ $t('rationShare.province') }}: {{ station.province }}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <h2 id="ration-share-station-title" class="text-[13px] font-bold leading-snug text-[#1B3123] break-words">{{ station.agentName }}</h2>
+              <el-tag size="small" type="success" effect="dark" class="shrink-0 font-bold">{{ $t('rationShare.contractedStation') }}</el-tag>
+            </div>
+            <div class="mt-1.5 space-y-1 text-[11px] text-[#58685D]">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <span>{{ $t('rationShare.agentCode') }}</span>
+                <bdi dir="ltr" class="font-mono font-semibold text-[#1F3326]">{{ station.agentId }}</bdi>
+              </div>
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <span>{{ $t('rationShare.center') }}</span>
+                <span class="min-w-0 truncate text-end font-medium text-[#1F3326]">{{ station.district }}</span>
+              </div>
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <span>{{ $t('rationShare.province') }}</span>
+                <span class="min-w-0 truncate text-end font-medium text-[#1F3326]">{{ station.province }}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 当前生效批次配额 -->
-    <section class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3.5 shadow-xs" aria-labelledby="ration-share-quota-title">
-      <div class="flex items-center justify-between gap-2">
-        <h2 id="ration-share-quota-title" class="flex min-w-0 items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
-          <el-icon class="shrink-0 text-[#326445]"><GoodsFilled /></el-icon>
-          <span class="truncate">{{ $t('rationShare.quotaTitle') }}</span>
-          <span v-if="displayQuotaPeriod" class="shrink-0 rounded-full border border-[#C7DED0] bg-[#EFF5F1] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#2A5440]">
-            {{ displayQuotaPeriod }}
-          </span>
-        </h2>
-        <el-button text circle size="small" :loading="quotaLoading" :aria-label="$t('rationShare.refresh')" @click="loadQuota">
-          <el-icon><Refresh /></el-icon>
-        </el-button>
-      </div>
-
-      <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-md border border-[#E1F4E4] bg-[#F8FBF9]" />
-      </div>
-      <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-[#F8FBF9] px-2.5 py-2">
-          <div class="truncate text-[11px] font-semibold text-[#43554B]">{{ formatRationItem(item) }}</div>
-          <div class="mt-1 flex items-baseline gap-1 text-xs">
-            <span class="font-mono font-bold text-[#2F7A50]">{{ item.remainingQuota }}</span>
-            <span class="text-[#8A9A8F]">/ {{ item.totalHouseholdQuota }} {{ item.unit }}</span>
+      <!-- 本批配额 -->
+      <section class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3 shadow-xs lg:col-span-3" aria-labelledby="ration-share-quota-title">
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <h2 id="ration-share-quota-title" class="flex items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
+              <el-icon class="shrink-0 text-[#326445]"><GoodsFilled /></el-icon>
+              <span class="truncate">{{ $t('rationShare.quotaTitle') }}</span>
+            </h2>
+            <p v-if="batchWindowLabel" class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[10px] text-[#8A9A8F]">
+              <span>{{ $t('rationShare.batchWindow') }}</span>
+              <bdi dir="ltr" class="font-mono text-[#58685D]">{{ batchWindowLabel }}</bdi>
+            </p>
           </div>
-          <div class="text-[10px] text-[#8A9A8F]">{{ $t('rationShare.quotaRemaining') }}</div>
+          <el-button text circle size="small" :loading="quotaLoading" :aria-label="$t('rationShare.refresh')" @click="loadQuota">
+            <el-icon><Refresh /></el-icon>
+          </el-button>
         </div>
-      </div>
-      <p v-else class="py-4 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.quotaEmpty') }}</p>
-    </section>
+
+        <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-md border border-[#E1F4E4] bg-[#F8FBF9]" />
+        </div>
+        <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-[#F8FBF9] px-2 py-1.5">
+            <div class="truncate text-[11px] font-semibold text-[#43554B]">{{ formatRationItem(item) }}</div>
+            <div class="mt-0.5 flex items-baseline gap-1 text-xs">
+              <span class="font-mono font-bold text-[#2F7A50]">{{ item.remainingQuota }}</span>
+              <span class="text-[10px] text-[#8A9A8F]">/ {{ item.totalHouseholdQuota }} {{ item.unit }}</span>
+            </div>
+            <div class="text-[10px] text-[#8A9A8F]">{{ $t('rationShare.quotaRemaining') }}</div>
+          </div>
+        </div>
+        <p v-else class="py-4 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.quotaEmpty') }}</p>
+      </section>
+    </div>
 
     <!-- 申领记录：按历史批次查询 -->
     <section class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" aria-labelledby="ration-share-records-title">
-      <header class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E9F1EB] p-3.5">
+      <header class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E9F1EB] p-3">
         <h2 id="ration-share-records-title" class="flex min-w-0 items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
           <el-icon class="shrink-0 text-[#326445]"><Tickets /></el-icon>
           <span class="truncate">{{ $t('rationShare.recordsTitle') }}</span>
           <span class="shrink-0 font-mono text-[11px] font-semibold text-[#8A9A8F]">{{ filteredRecords.length }}</span>
         </h2>
         <div class="flex items-center gap-1.5">
-          <el-select
-            v-model="selectedBatch"
-            size="small"
-            class="w-32 sm:w-40"
-            :aria-label="$t('rationShare.allBatches')"
-          >
+          <el-select v-model="selectedBatch" size="small" class="w-32 sm:w-40" :aria-label="$t('rationShare.allBatches')">
             <el-option :label="$t('rationShare.allBatches')" value="" />
             <el-option v-for="batch in batchOptions" :key="batch.key" :label="batch.label" :value="batch.key" />
           </el-select>
@@ -75,11 +84,11 @@
         </div>
       </header>
 
-      <div v-if="loading" class="space-y-2 p-3.5">
+      <div v-if="loading" class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
         <div v-for="i in 2" :key="i" class="h-20 animate-pulse rounded-lg border border-[#E9F1EB] bg-[#F3F8F4]" />
       </div>
-      <p v-else-if="!filteredRecords.length" class="px-3.5 py-10 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.empty') }}</p>
-      <div v-else class="space-y-2 p-3.5">
+      <p v-else-if="!filteredRecords.length" class="px-3 py-10 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.empty') }}</p>
+      <div v-else class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
         <button
           v-for="record in filteredRecords"
           :key="record.id || record.claimVoucherNo"
@@ -97,8 +106,8 @@
             </span>
           </div>
           <div class="flex items-center justify-between gap-2 pt-1.5 text-[10px] text-[#8A9A8F]">
+            <bdi dir="ltr" class="min-w-0 truncate font-mono">{{ record.claimVoucherNo }}</bdi>
             <bdi dir="ltr" class="shrink-0 font-mono">{{ record.claimTime }}</bdi>
-            <span class="min-w-0 truncate text-end">{{ record.agentName }}</span>
           </div>
         </button>
       </div>
@@ -126,8 +135,10 @@
           <dd><bdi dir="ltr" class="font-mono text-[#43554B]">{{ detailRecord.claimTime || '—' }}</bdi></dd>
           <dt class="text-[#8A9A8F]">{{ $t('rationShare.station') }}</dt>
           <dd class="break-words text-[#1F3326]">
-            {{ detailRecord.agentName || '—' }}
-            <bdi dir="ltr" class="ms-1 font-mono text-[11px] text-[#8A9A8F]">{{ detailRecord.agentCenterId }}</bdi>
+            {{ stripAgentCode(detailRecord.agentName) || '—' }}
+            <bdi v-if="stationCode(detailRecord.agentName, detailRecord.agentCenterId)" dir="ltr" class="ms-1 font-mono text-[11px] text-[#8A9A8F]">
+              {{ stationCode(detailRecord.agentName, detailRecord.agentCenterId) }}
+            </bdi>
           </dd>
           <dt class="text-[#8A9A8F]">{{ $t('rationShare.eligibleMembers') }}</dt>
           <dd class="text-[#1F3326]">{{ detailRecord.eligibleMembers != null ? $t('rationShare.unitSuffix', { count: detailRecord.eligibleMembers }) : '—' }}</dd>
@@ -163,7 +174,7 @@ import { getCitizenClaimRecords } from '../../../api/warehouse.js';
 import { useRationI18n } from '../../../utils/rationI18n.js';
 import { useCompactDialog } from '../../../composables/useCompactDialog.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { formatRationItem, formatQuotaPeriod } = useRationI18n();
 const { isCompact, dialogWidth } = useCompactDialog(480);
 const citizenStore = useCitizenStore();
@@ -180,19 +191,48 @@ const quotaLoading = ref(false);
 const family = computed(() => citizenStore.currentFamily || citizenStore.families[0] || null);
 const cardNo = computed(() => family.value?.rationCardNo || 'RC-10029381');
 const station = computed(() => ({
-  agentName: family.value?.agentName || '—',
+  agentName: stripAgentCode(family.value?.agentName) || '—',
   agentId: family.value?.agentId || '—',
   district: family.value?.district || '—',
   province: family.value?.province || '—'
 }));
 const displayQuotaPeriod = computed(() => formatQuotaPeriod(String(quota.value?.quotaPeriod || '')));
 
-// Batch key is language independent (YYYY-MM); labels are rendered with the active locale.
+// Station codes may already be embedded in the agent name; show them once only.
+const AGENT_CODE_SUFFIX = /\s*[（(]\s*(?:F[AD]-[0-9A-Za-z-]+)\s*[)）]\s*$/;
+const AGENT_CODE_ANYWHERE = /(?:F[AD]-[0-9A-Za-z-]+)/;
+
+function stripAgentCode(name) {
+  return String(name || '').replace(AGENT_CODE_SUFFIX, '').trim();
+}
+
+function stationCode(name, fallbackCode) {
+  const embedded = AGENT_CODE_ANYWHERE.exec(String(name || ''));
+  return embedded ? '' : String(fallbackCode || '');
+}
+
+function formatBatchDate(value) {
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return String(value || '');
+  const language = { zh: 'zh-CN', en: 'en-GB', ar: 'ar-IQ', ckb: 'ckb-IQ' }[locale.value] || 'en-GB';
+  return new Intl.DateTimeFormat(language, {
+    year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'UTC', calendar: 'gregory'
+  }).format(date);
+}
+
+// Each batch runs on its own window (not a 30-day calendar month).
+const batchWindowLabel = computed(() => {
+  const start = quota.value?.batchStartDate;
+  const end = quota.value?.batchEndDate;
+  if (start && end) return `${formatBatchDate(start)} — ${formatBatchDate(end)}`;
+  return displayQuotaPeriod.value;
+});
+
+// The quota period identifies the batch a claim belongs to; the claim time is only a fallback.
 function batchKeyOf(record) {
-  const match = /^(\d{4})[-/](\d{1,2})/.exec(String(record?.claimTime || ''));
-  if (match) return `${match[1]}-${String(match[2]).padStart(2, '0')}`;
   const periodMatch = /(\d{4})\D{0,3}(\d{1,2})/.exec(String(record?.claimPeriod || ''));
-  return periodMatch ? `${periodMatch[1]}-${String(periodMatch[2]).padStart(2, '0')}` : '';
+  const match = periodMatch || /^(\d{4})[-/](\d{1,2})/.exec(String(record?.claimTime || ''));
+  return match ? `${match[1]}-${String(match[2]).padStart(2, '0')}` : '';
 }
 
 function batchLabelText(key) {

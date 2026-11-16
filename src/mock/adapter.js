@@ -2639,6 +2639,10 @@ export async function mockDispatch(config) {
       province: family?.province || (isEn ? 'Baghdad' : '巴格达省'),
       district: family?.district || (isEn ? 'Karkh' : '卡尔赫区'),
       defaultAddress: family?.address || (isEn ? 'Bldg 3, Apt 201, Haifa St 88, Karkh, Baghdad' : '巴格达省卡尔赫区海法街88号 3号楼201'),
+      // Each quota batch runs on its own window (the 5th to the 4th of the next month), not a calendar month.
+      batchNo: 'BATCH-2026-10-SHARE',
+      batchStartDate: '2026-10-05',
+      batchEndDate: '2026-11-04',
       phone: family?.phone || '+964 780 123 4567',
       quotaPeriod: isEn ? '2026-10' : '2026年10月',
       quotas: quotaList
