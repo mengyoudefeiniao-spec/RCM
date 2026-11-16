@@ -298,7 +298,7 @@ import { useCitizenStore } from '../../stores/citizen.js';
 import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
 import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl, notificationTitle, notificationBody } from '../../stores/myNotifications.js';
-import { getSharedTickets } from '../../utils/sharedSession.js';
+import { APPLICATION_SOURCE_CODES, applicationReviewMode, applicationStatusKey, listCitizenApplications } from '../../utils/citizenApplications.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 
 const { t, locale } = useI18n();
@@ -378,7 +378,7 @@ async function loadData() {
   }
 }
 
-const applicationSourceCodes = new Set(['TRF', 'TRM', 'SPL', 'HED', 'UNF', 'DRG']);
+const applicationSourceCodes = new Set(APPLICATION_SOURCE_CODES);
 const filteredApplicationRecords = computed(() => applicationRecords.value.filter((record) => {
   const mode = applicationReviewMode(record);
   return (!applicationTypeFilter.value || record.sourceCode === applicationTypeFilter.value)
@@ -475,40 +475,13 @@ watch([applicationTypeFilter, applicationStatusFilter, applicationReviewFilter, 
   if (expandedList.value === 'applications' && route.query.page) changeListPage(1);
 });
 
-function getApplicationSourceCode(ticket) {
-  if (applicationSourceCodes.has(ticket.sourceCode)) return ticket.sourceCode;
-  const source = `${ticket.source || ''} ${ticket.categoryType || ''} ${ticket.appType || ''}`.toLowerCase();
-  if (/成员.*转移|member transfer|member entry/.test(source)) return 'TRM';
-  if (/代理.*转移|agent transfer|transfer agent/.test(source)) return 'TRF';
-  if (/分户|split household/.test(source)) return 'SPL';
-  if (/变更户主|change head/.test(source)) return 'HED';
-  if (/解冻|unfreeze/.test(source)) return 'UNF';
-  return '';
-}
-
 function refreshApplicationHistory() {
   const cardNo = citizenStore.currentFamily?.rationCardNo || authStore.userProfile?.cardNo || 'RC-10029381';
-  applicationRecords.value = getSharedTickets()
-    .map((ticket) => ({ ...ticket, sourceCode: getApplicationSourceCode(ticket) }))
-    .filter((ticket) => ticket.sourceCode && ticket.cardNo === cardNo)
-    .sort((a, b) => new Date(String(b.submittedAt || '').replace(' ', 'T')) - new Date(String(a.submittedAt || '').replace(' ', 'T')));
-}
-
-function applicationStatusKey(record) {
-  const value = `${record.status || ''} ${record.managerDecision || ''}`.toLowerCase();
-  if (/reject|denied|驳回|未通过|不予|مرفوض|رفض|پەسەند نەکرا/.test(value)) return 'rejected';
-  if (/approv|passed|通过|核准|生效|办结|批准|تمت الموافقة|مقبول|پەسەندکرا/.test(value)) return 'approved';
-  if (/pending|待|review|审核中|قيد|انتظار|پشکنین/.test(value)) return 'pending';
-  return 'pending';
+  applicationRecords.value = listCitizenApplications(cardNo);
 }
 
 function applicationStatusType(record) {
   return { approved: 'success', pending: 'warning', rejected: 'danger' }[applicationStatusKey(record)];
-}
-
-function applicationReviewMode(record) {
-  if (record.reviewMode === 'automatic' || record.reviewMode === 'manual') return record.reviewMode;
-  return applicationStatusKey(record) === 'pending' ? 'manual' : 'automatic';
 }
 
 function clearApplicationFilters() {

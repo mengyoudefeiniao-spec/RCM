@@ -20,6 +20,37 @@
       </div>
     </section>
 
+    <!-- 当前生效批次配额 -->
+    <section class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3.5 shadow-xs" aria-labelledby="ration-share-quota-title">
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="ration-share-quota-title" class="flex min-w-0 items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
+          <el-icon class="shrink-0 text-[#326445]"><GoodsFilled /></el-icon>
+          <span class="truncate">{{ $t('rationShare.quotaTitle') }}</span>
+          <span v-if="displayQuotaPeriod" class="shrink-0 rounded-full border border-[#C7DED0] bg-[#EFF5F1] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#2A5440]">
+            {{ displayQuotaPeriod }}
+          </span>
+        </h2>
+        <el-button text circle size="small" :loading="quotaLoading" :aria-label="$t('rationShare.refresh')" @click="loadQuota">
+          <el-icon><Refresh /></el-icon>
+        </el-button>
+      </div>
+
+      <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-md border border-[#E1F4E4] bg-[#F8FBF9]" />
+      </div>
+      <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-[#F8FBF9] px-2.5 py-2">
+          <div class="truncate text-[11px] font-semibold text-[#43554B]">{{ formatRationItem(item) }}</div>
+          <div class="mt-1 flex items-baseline gap-1 text-xs">
+            <span class="font-mono font-bold text-[#2F7A50]">{{ item.remainingQuota }}</span>
+            <span class="text-[#8A9A8F]">/ {{ item.totalHouseholdQuota }} {{ item.unit }}</span>
+          </div>
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('rationShare.quotaRemaining') }}</div>
+        </div>
+      </div>
+      <p v-else class="py-4 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.quotaEmpty') }}</p>
+    </section>
+
     <!-- 申领记录：按历史批次查询 -->
     <section class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" aria-labelledby="ration-share-records-title">
       <header class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E9F1EB] p-3.5">
@@ -125,8 +156,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Shop, Tickets, Refresh, CircleCheckFilled } from '@element-plus/icons-vue';
+import { Shop, Tickets, Refresh, CircleCheckFilled, GoodsFilled } from '@element-plus/icons-vue';
 import { useCitizenStore } from '../../../stores/citizen.js';
+import { getCitizenQuotaBalance } from '../../../api/citizen.js';
 import { getCitizenClaimRecords } from '../../../api/warehouse.js';
 import { useRationI18n } from '../../../utils/rationI18n.js';
 import { useCompactDialog } from '../../../composables/useCompactDialog.js';
@@ -141,6 +173,9 @@ const records = ref([]);
 const selectedBatch = ref('');
 const detailVisible = ref(false);
 const detailRecord = ref(null);
+const quota = ref({});
+const quotaItems = ref([]);
+const quotaLoading = ref(false);
 
 const family = computed(() => citizenStore.currentFamily || citizenStore.families[0] || null);
 const cardNo = computed(() => family.value?.rationCardNo || 'RC-10029381');
@@ -150,6 +185,7 @@ const station = computed(() => ({
   district: family.value?.district || '—',
   province: family.value?.province || '—'
 }));
+const displayQuotaPeriod = computed(() => formatQuotaPeriod(String(quota.value?.quotaPeriod || '')));
 
 // Batch key is language independent (YYYY-MM); labels are rendered with the active locale.
 function batchKeyOf(record) {
@@ -218,9 +254,25 @@ async function loadRecords() {
   }
 }
 
+// The quota balance endpoint returns the currently effective batch and its per-household allocation.
+async function loadQuota() {
+  if (quotaLoading.value) return;
+  quotaLoading.value = true;
+  try {
+    const result = await getCitizenQuotaBalance(cardNo.value);
+    quota.value = result || {};
+    quotaItems.value = Array.isArray(result?.quotas) ? result.quotas : [];
+  } catch {
+    quota.value = {};
+    quotaItems.value = [];
+  } finally {
+    quotaLoading.value = false;
+  }
+}
+
 onMounted(async () => {
   await ensureFamily();
-  await loadRecords();
+  await Promise.all([loadQuota(), loadRecords()]);
 });
 </script>
 

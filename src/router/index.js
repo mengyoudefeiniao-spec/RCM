@@ -120,10 +120,10 @@ const routes = [
         ]
       },
       {
-        path: 'family-agent',
-        name: 'FamilyAgent',
-        component: () => import('../views/citizen/FamilyAgentView.vue'),
-        meta: { title: '家庭代理', roles: ['citizen'] }
+        path: 'citizen/applications',
+        name: 'CitizenApplications',
+        component: () => import('../views/citizen/CitizenApplicationsView.vue'),
+        meta: { title: '申请记录', titleKey: 'my.applicationRecords.title', roles: ['citizen'] }
       },
       {
         path: 'warehouse',
@@ -254,7 +254,13 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta?.title || to.meta?.titleKey) {
-    const pageTitle = to.meta.titleKey ? i18n.global.t(to.meta.titleKey) : (to.path === '/warehouse' && (currentRole === 'citizen' || currentRole === 'agent')) ? '配给管理' : to.meta.title;
+    const pageTitle = to.meta.titleKey
+      ? i18n.global.t(to.meta.titleKey)
+      : to.path === '/warehouse' && currentRole === 'citizen'
+        ? i18n.global.t('citizenPurchase.moduleTitle')
+        : to.path === '/warehouse' && currentRole === 'agent'
+          ? '配给管理'
+          : to.meta.title;
     document.title = `${pageTitle} - Ration Card Management (RCM)`;
   }
 

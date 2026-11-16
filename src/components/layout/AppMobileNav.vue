@@ -18,7 +18,7 @@
       <router-link
         :to="getNavTarget('/citizen')"
         class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
-        :class="$route.path.startsWith('/citizen') ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+        :class="$route.path === '/citizen' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><User /></el-icon>
         <span>{{ $t('nav.citizen') || '公民服务' }}</span>
@@ -34,14 +34,14 @@
         <span>{{ $t('citizenPurchase.moduleTitle') || '配给份额' }}</span>
       </router-link>
 
-      <!-- 3. 家庭代理 (本人家庭签约代理与月度物资配送额度) -->
+      <!-- 3. 申请记录 (本人全部申请历史) -->
       <router-link
-        :to="getNavTarget('/family-agent')"
+        :to="getNavTarget('/citizen/applications')"
         class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
-        :class="$route.path === '/family-agent' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+        :class="$route.path === '/citizen/applications' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
-        <el-icon :size="20"><House /></el-icon>
-        <span>{{ $t('warehouse.familyAgent') || '家庭代理' }}</span>
+        <el-icon :size="20"><DocumentChecked /></el-icon>
+        <span>{{ $t('my.applicationRecords.title') || '申请记录' }}</span>
       </router-link>
       <router-link
         :to="getNavTarget('/my')"
@@ -192,7 +192,7 @@ import {
   ShoppingCart,
   Van,
   FullScreen,
-  House,
+  DocumentChecked,
   Tickets
 } from '@element-plus/icons-vue';
 

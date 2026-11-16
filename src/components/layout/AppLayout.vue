@@ -90,7 +90,7 @@ const isAppMode = computed(() => {
 });
 
 const isWideLayout = computed(() => {
-  return ['/admin', '/dashboard', '/stats', '/warehouse', '/family-agent', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
+  return ['/admin', '/dashboard', '/stats', '/warehouse', '/agent', '/complaint', '/review'].some(p => route.path.startsWith(p));
 });
 </script>
 
