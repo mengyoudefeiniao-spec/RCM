@@ -12,7 +12,8 @@ export default {
       retry: '重新加载',
       noData: '暂无数据',
       mapTitle: '全国配给覆盖地图',
-      mapHint: '按省份查看指标分布，点击省份查看明细。',
+      mapHint: '按省份查看指标分布，悬停点位查看数据，点击省份查看明细。',
+      pointHint: '点位大小代表代理网点数量',
       mapMetricLabel: '地图指标',
       legendTitle: '图例',
       legendLow: '低',
@@ -53,22 +54,16 @@ export default {
       'create_org-units': '新增组织机构',
       'edit_org-units': '编辑组织机构',
       orgDetails: '机构信息',
-      orgAssignments: '关联用户与角色',
       orgName: '机构名称',
       orgCode: '机构编码',
       orgType: '机构类型',
       orgParent: '上级机构',
-      orgUsers: '关联用户',
-      orgRoles: '关联角色',
-      orgLinks: '关联配置',
-      orgUsersHint: '仅列出已有管理员账号，可按需多选。',
       orgParentHint: '留空表示顶级机构。'
     },
     systemExtras: {
       orgTypeMinistry: '部委机关', orgTypeDirectorate: '直属司局', orgTypeBranch: '省级分局', orgTypeCenter: '配给中心',
-      entityOrgUnit: '组织机构', orgUnitCodeTaken: '机构编码已存在',
-      orgUnitUserCount: '{count} 个用户', orgUnitRoleCount: '{count} 个角色',
-      orgUnitNoUsers: '未关联用户', orgUnitNoRoles: '未关联角色', orgUnitParentNone: '顶级机构'
+      entityOrgUnit: '组织机构', orgUnitCodeTaken: '机构编码已存在', orgUnitNone: '未关联', orgUnitInUse: '该组织机构已被系统用户或角色关联，无法删除。',
+      orgUnitParentNone: '顶级机构'
     }
   },
   en: {
@@ -82,7 +77,8 @@ export default {
       retry: 'Reload',
       noData: 'No data available',
       mapTitle: 'National ration coverage',
-      mapHint: 'Explore indicator distribution by province. Select a province for details.',
+      mapHint: 'Explore indicators by province. Hover a point for data, select a province for details.',
+      pointHint: 'Point size reflects agent outlet count',
       mapMetricLabel: 'Map indicator',
       legendTitle: 'Legend',
       legendLow: 'Low',
@@ -123,22 +119,16 @@ export default {
       'create_org-units': 'Create organization unit',
       'edit_org-units': 'Edit organization unit',
       orgDetails: 'Unit details',
-      orgAssignments: 'Linked users and roles',
       orgName: 'Unit name',
       orgCode: 'Unit code',
       orgType: 'Unit type',
       orgParent: 'Parent unit',
-      orgUsers: 'Linked users',
-      orgRoles: 'Linked roles',
-      orgLinks: 'Assignments',
-      orgUsersHint: 'Only existing administrator accounts are listed. Select one or more.',
       orgParentHint: 'Leave blank for a top-level unit.'
     },
     systemExtras: {
       orgTypeMinistry: 'Ministry', orgTypeDirectorate: 'Directorate', orgTypeBranch: 'Provincial branch', orgTypeCenter: 'Ration center',
-      entityOrgUnit: 'organization unit', orgUnitCodeTaken: 'This unit code already exists',
-      orgUnitUserCount: '{count} users', orgUnitRoleCount: '{count} roles',
-      orgUnitNoUsers: 'No users linked', orgUnitNoRoles: 'No roles linked', orgUnitParentNone: 'Top-level unit'
+      entityOrgUnit: 'organization unit', orgUnitCodeTaken: 'This unit code already exists', orgUnitNone: 'Not linked', orgUnitInUse: 'This organization unit is still linked to a system user or role and cannot be deleted.',
+      orgUnitParentNone: 'Top-level unit'
     }
   },
   ar: {
@@ -152,7 +142,8 @@ export default {
       retry: 'إعادة التحميل',
       noData: 'لا توجد بيانات',
       mapTitle: 'خريطة تغطية التموين الوطنية',
-      mapHint: 'استعرض توزيع المؤشرات حسب المحافظة. اختر محافظة لعرض التفاصيل.',
+      mapHint: 'استعرض المؤشرات حسب المحافظة. مرّر فوق نقطة لعرض البيانات واختر محافظة للتفاصيل.',
+      pointHint: 'حجم النقطة يعكس عدد منافذ الوكلاء',
       mapMetricLabel: 'مؤشر الخريطة',
       legendTitle: 'المفتاح',
       legendLow: 'منخفض',
@@ -193,22 +184,17 @@ export default {
       'create_org-units': 'إضافة وحدة تنظيمية',
       'edit_org-units': 'تعديل وحدة تنظيمية',
       orgDetails: 'بيانات الوحدة',
-      orgAssignments: 'المستخدمون والأدوار المرتبطة',
+
       orgName: 'اسم الوحدة',
       orgCode: 'رمز الوحدة',
       orgType: 'نوع الوحدة',
       orgParent: 'الوحدة الأعلى',
-      orgUsers: 'المستخدمون المرتبطون',
-      orgRoles: 'الأدوار المرتبطة',
-      orgLinks: 'الارتباطات',
-      orgUsersHint: 'تُعرض حسابات المسؤولين الموجودة فقط. اختر حساباً أو أكثر.',
       orgParentHint: 'اتركه فارغاً للوحدة العليا.'
     },
     systemExtras: {
       orgTypeMinistry: 'وزارة', orgTypeDirectorate: 'مصلحة مركزية', orgTypeBranch: 'فرع محافظة', orgTypeCenter: 'مركز تموين',
-      entityOrgUnit: 'وحدة تنظيمية', orgUnitCodeTaken: 'رمز الوحدة موجود بالفعل',
-      orgUnitUserCount: '{count} مستخدم', orgUnitRoleCount: '{count} دور',
-      orgUnitNoUsers: 'لا مستخدمين مرتبطين', orgUnitNoRoles: 'لا أدوار مرتبطة', orgUnitParentNone: 'الوحدة العليا'
+      entityOrgUnit: 'وحدة تنظيمية', orgUnitCodeTaken: 'رمز الوحدة موجود بالفعل', orgUnitNone: 'غير مرتبط', orgUnitInUse: 'الوحدة التنظيمية مرتبطة بمستخدم نظام أو دور ولا يمكن حذفها.',
+      orgUnitParentNone: 'الوحدة العليا'
     }
   },
   ckb: {
@@ -222,7 +208,8 @@ export default {
       retry: 'دووبارە بارکردنەوە',
       noData: 'داتا نییە',
       mapTitle: 'داپۆشینی بەشەخۆراکی نیشتمانی',
-      mapHint: 'دابەشبوونی ئاماژەکان بەپێی پارێزگا ببینە. پارێزگایەک هەڵبژێرە بۆ وردەکاری.',
+      mapHint: 'ئاماژەکان بەپێی پارێزگا ببینە. لەسەر خاڵێک بمێنەوە بۆ داتا و پارێزگایەک هەڵبژێرە بۆ وردەکاری.',
+      pointHint: 'قەبارەی خاڵ ڕەنگیژمارەی بنکەی بریکارەکانە',
       mapMetricLabel: 'ئاماژەی نەخشە',
       legendTitle: 'ڕوونکردنەوە',
       legendLow: 'کەم',
@@ -263,22 +250,17 @@ export default {
       'create_org-units': 'زیادکردنی یەکەی دامەزراوەیی',
       'edit_org-units': 'دەستکاریکردنی یەکەی دامەزراوەیی',
       orgDetails: 'زانیاری یەکە',
-      orgAssignments: 'بەکارهێنەر و ڕۆڵە پەیوەندیدارەکان',
+
       orgName: 'ناوی یەکە',
       orgCode: 'کۆدی یەکە',
       orgType: 'جۆری یەکە',
       orgParent: 'یەکەی سەرەوە',
-      orgUsers: 'بەکارهێنەرانی پەیوەندیدار',
-      orgRoles: 'ڕۆڵە پەیوەندیدارەکان',
-      orgLinks: 'پەیوەندییەکان',
-      orgUsersHint: 'تەنها هەژمارەکانی بەڕێوەبەری هەنووکەیی نیشان دەدرێن. یەک یان زیاتر هەڵبژێرە.',
       orgParentHint: 'بەتاڵی بهێڵەوە بۆ یەکەی سەرەوە.'
     },
     systemExtras: {
       orgTypeMinistry: 'وەزارەت', orgTypeDirectorate: 'بەڕێوەبەرایەتیی گشتی', orgTypeBranch: 'لقى پارێزگا', orgTypeCenter: 'ناوەندی بەشەخۆراک',
-      entityOrgUnit: 'یەکەی دامەزراوەیی', orgUnitCodeTaken: 'کۆدی یەکە پێشتر هەیە',
-      orgUnitUserCount: '{count} بەکارهێنەر', orgUnitRoleCount: '{count} ڕۆڵ',
-      orgUnitNoUsers: 'هیچ بەکارهێنەرێک پەیوەست نییە', orgUnitNoRoles: 'هیچ ڕۆڵێک پەیوەست نییە', orgUnitParentNone: 'یەکەی سەرەوە'
+      entityOrgUnit: 'یەکەی دامەزراوەیی', orgUnitCodeTaken: 'کۆدی یەکە پێشتر هەیە', orgUnitNone: 'پەیوەست نییە', orgUnitInUse: 'ئەم یەکەی دامەزراوەیییە پەیوەستە بە بەکارهێنەرێکی سیستەم یان ڕۆڵ و ناتوانرێت بسڕدرێتەوە.',
+      orgUnitParentNone: 'یەکەی سەرەوە'
     }
   }
 };

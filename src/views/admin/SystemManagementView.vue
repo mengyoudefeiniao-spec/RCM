@@ -26,6 +26,7 @@
         <el-table-column v-for="column in columns" :key="column.key" :prop="column.key" :label="columnLabel(column)" :min-width="column.width || 145" :show-overflow-tooltip="!['name', 'permissionCodes', 'status'].includes(column.key)">
           <template v-if="column.key === 'status'" #default="{ row }"><el-tag :type="row.status === 'disabled' ? 'info' : 'success'">{{ row.status === 'disabled' ? t('system.disabled') : t('system.active') }}</el-tag></template>
           <template v-else-if="column.key === 'roleId'" #default="{ row }">{{ roleLabel(row) }}</template>
+          <template v-else-if="column.key === 'orgUnitId'" #default="{ row }">{{ orgUnitNameById(row.orgUnitId) }}</template>
           <template v-else-if="column.key === 'name' && section === 'roles'" #default="{ row }"><div class="system-identity"><span class="system-row-icon"><el-icon><Key /></el-icon></span><span class="font-semibold">{{ localizedRoleName(row) }}</span></div></template>
           <template v-else-if="column.key === 'name' && section === 'users'" #default="{ row }"><div class="system-identity"><span class="system-avatar">{{ (row.name || row.username || '?').slice(0, 1).toUpperCase() }}</span><span class="font-semibold">{{ row.name }}</span></div></template>
           <template v-else-if="column.key === 'description' && section === 'roles'" #default="{ row }">{{ localizedRoleDescription(row) }}</template>
@@ -35,15 +36,6 @@
           <template v-else-if="column.key === 'name' && section === 'org-units'" #default="{ row }"><div class="system-identity"><span class="system-row-icon"><el-icon><Management /></el-icon></span><div class="min-w-0"><div class="truncate font-semibold">{{ orgUnitName(row) }}</div><div class="system-code truncate" dir="ltr">{{ row.code }}</div></div></div></template>
           <template v-else-if="column.key === 'type' && section === 'org-units'" #default="{ row }"><el-tag size="small" effect="plain">{{ orgUnitTypeLabel(row.type) }}</el-tag></template>
           <template v-else-if="column.key === 'parent' && section === 'org-units'" #default="{ row }">{{ orgUnitParentLabel(row) }}</template>
-          <template v-else-if="column.key === 'links' && section === 'org-units'" #default="{ row }">
-            <el-popover placement="top" :width="300" trigger="hover">
-              <div class="system-link-popover">
-                <div class="system-link-popover__group"><span class="system-link-popover__title">{{ t('systemUi.orgUsers') }}</span><el-tag v-for="user in orgUnitUsers(row)" :key="user.id" size="small" effect="plain">{{ user.name || user.username }}</el-tag><span v-if="!orgUnitUsers(row).length" class="system-link-popover__empty">{{ t('systemExtras.orgUnitNoUsers') }}</span></div>
-                <div class="system-link-popover__group"><span class="system-link-popover__title">{{ t('systemUi.orgRoles') }}</span><el-tag v-for="role in orgUnitRoles(row)" :key="role.id" size="small" effect="plain">{{ localizedRoleName(role) }}</el-tag><span v-if="!orgUnitRoles(row).length" class="system-link-popover__empty">{{ t('systemExtras.orgUnitNoRoles') }}</span></div>
-              </div>
-              <template #reference><el-tag size="small" type="info">{{ orgUnitLinkSummary(row) }}</el-tag></template>
-            </el-popover>
-          </template>
           <template v-else-if="column.key === 'permissionCodes'" #default="{ row }"><div class="system-permission-summary"><el-tag v-for="code in (row.permissionCodes || []).slice(0, 2)" :key="code" size="small" effect="plain">{{ permissionLabel(code) }}</el-tag><el-popover v-if="row.permissionCodes?.length > 2" placement="top" :width="360" trigger="hover"><div class="system-permission-popover"><el-tag v-for="code in row.permissionCodes" :key="code" size="small" effect="plain">{{ permissionLabel(code) }}</el-tag></div><template #reference><el-tag size="small" type="info" :aria-label="t('systemUi.permissionCount', { count: row.permissionCodes.length })">+{{ row.permissionCodes.length - 2 }}</el-tag></template></el-popover><span v-if="!row.permissionCodes?.length" class="text-xs text-[#89978E]">{{ t('systemExtras.noPermissions') }}</span></div></template>
           <template v-else-if="['username', 'code', 'ip'].includes(column.key)" #default="{ row }"><span class="system-code" dir="ltr">{{ row[column.key] || '—' }}</span></template>
           <template v-else-if="column.key === 'reviewScope'" #default="{ row }"><span class="text-xs leading-5">{{ reviewScopeSummary(row) }}</span></template>
@@ -96,7 +88,8 @@
           <h3 class="system-form-heading"><el-icon><Key /></el-icon>{{ t('systemUi.assignments') }}</h3>
           <div class="system-form-grid">
             <el-form-item prop="roleId" :label="t('system.role')"><el-select v-model="form.roleId" class="w-full" filterable :placeholder="fieldPlaceholder('system.role', true)"><el-option v-for="role in roleRows" :key="role.id" :value="role.id" :label="localizedRoleName(role) + ' (' + role.code + ')'" /></el-select></el-form-item>
-            <el-form-item :label="t('system.rationCenter')"><el-select v-model="form.organization" class="w-full" filterable clearable :placeholder="fieldPlaceholder('system.rationCenter', true)"><el-option v-for="center in centerRows" :key="center.id" :value="center.name" :label="rationCenterOptionLabel(center)" /></el-select></el-form-item>
+            <el-form-item prop="orgUnitId" :label="t('systemUi.orgUnit')"><el-select v-model="form.orgUnitId" class="w-full" filterable :placeholder="fieldPlaceholder('systemUi.orgUnit', true)"><el-option v-for="unit in orgUnitRows" :key="unit.id" :value="unit.id" :label="orgUnitName(unit)" /></el-select></el-form-item>
+            <el-form-item :label="t('system.rationCenter')" class="system-form-wide"><el-select v-model="form.organization" class="w-full" filterable clearable :placeholder="fieldPlaceholder('system.rationCenter', true)"><el-option v-for="center in centerRows" :key="center.id" :value="center.name" :label="rationCenterOptionLabel(center)" /></el-select></el-form-item>
           </div>
           <h3 class="system-form-heading"><el-icon><Lock /></el-icon>{{ t('systemUi.security') }}</h3>
           <p class="system-form-hint">{{ t(editing ? 'systemUi.editPasswordHint' : 'systemUi.passwordHint') }}</p>
@@ -110,6 +103,7 @@
           <div class="system-form-grid">
             <el-form-item prop="name" :label="t('system.roleName')"><el-input v-model="formRoleName" :placeholder="fieldPlaceholder('system.roleName')" /></el-form-item>
             <el-form-item prop="code" :label="t('system.roleCode')"><el-input v-model="form.code" :placeholder="fieldPlaceholder('system.roleCode')" /></el-form-item>
+            <el-form-item prop="orgUnitId" :label="t('systemUi.orgUnit')"><el-select v-model="form.orgUnitId" class="w-full" filterable :placeholder="fieldPlaceholder('systemUi.orgUnit', true)"><el-option v-for="unit in orgUnitRows" :key="unit.id" :value="unit.id" :label="orgUnitName(unit)" /></el-select></el-form-item>
             <el-form-item :label="t('system.description')" class="system-form-wide"><el-input v-model="formRoleDescription" type="textarea" :rows="2" :placeholder="fieldPlaceholder('system.description')" /></el-form-item>
           </div>
           <div class="system-form-heading flex-wrap"><el-icon><Checked /></el-icon><h3>{{ t('systemExtras.rolePermissions') }}</h3><el-tag size="small" effect="plain">{{ t('systemUi.permissionCount', { count: (form.permissionCodes || []).length }) }}</el-tag></div>
@@ -247,12 +241,6 @@
             <el-form-item :label="t('systemUi.orgParent')"><el-select v-model="form.parentId" class="w-full" clearable filterable :placeholder="t('systemUi.orgParentHint')"><el-option v-for="unit in parentOrgUnitOptions" :key="unit.value" :value="unit.value" :label="unit.label" /></el-select></el-form-item>
             <el-form-item :label="t('system.province')" class="system-form-wide"><el-select v-model="form.province" class="w-full" clearable filterable :placeholder="fieldPlaceholder('system.province', true)"><el-option v-for="province in provinceOptions" :key="province.code" :value="province.code" :label="t('systemExtras.' + province.labelKey)" /></el-select></el-form-item>
           </div>
-          <h3 class="system-form-heading"><el-icon><User /></el-icon>{{ t('systemUi.orgAssignments') }}</h3>
-          <p class="system-form-hint">{{ t('systemUi.orgUsersHint') }}</p>
-          <div class="system-form-grid">
-            <el-form-item :label="t('systemUi.orgUsers')"><el-select v-model="form.userIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('systemUi.orgUsers')"><el-option v-for="user in adminUserRows" :key="user.id" :value="user.id" :label="(user.name || user.username) + ' (' + user.username + ')'" /></el-select></el-form-item>
-            <el-form-item :label="t('systemUi.orgRoles')"><el-select v-model="form.roleIds" class="w-full" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="t('systemUi.orgRoles')"><el-option v-for="role in roleRows" :key="role.id" :value="role.id" :label="localizedRoleName(role)" /></el-select></el-form-item>
-          </div>
         </template>
         <template v-else-if="section === 'organizations'">
           <h3 class="system-form-heading"><el-icon><OfficeBuilding /></el-icon>{{ t('systemUi.centerDetails') }}</h3>
@@ -318,7 +306,7 @@ const formRules = computed(() => {
   const required = (key, select = false) => ({ required: true, whitespace: !select, message: fieldPlaceholder(key, select), trigger: select ? 'change' : 'blur' });
   if (section.value === 'users') return {
     username: [required('system.username'), { validator: (_rule, value, callback) => callback(adminUserRows.value.some((row) => row.id !== form.value.id && String(row.username || '').toLowerCase() === String(value || '').trim().toLowerCase()) ? new Error(t('systemUi.usernameTaken')) : undefined), trigger: 'blur' }],
-    name: [required('system.name')], roleId: [required('system.role', true)],
+    name: [required('system.name')], roleId: [required('system.role', true)], orgUnitId: [required('systemUi.orgUnit', true)],
     email: [{ type: 'email', message: t('systemUi.invalidEmail'), trigger: 'blur' }],
     password: [{ required: !editing.value, validator: (_rule, value, callback) => callback((!editing.value || form.value.passwordConfirm) && !value ? new Error(t('systemUi.passwordRequired')) : undefined), trigger: 'blur' }],
     passwordConfirm: [{ required: !editing.value, validator: (_rule, value, callback) => {
@@ -332,7 +320,12 @@ const formRules = computed(() => {
     code: [required('systemUi.orgCode'), { validator: (_rule, value, callback) => callback(rows.value.some((row) => row.id !== form.value.id && String(row.code || '').trim().toUpperCase() === String(value || '').trim().toUpperCase()) ? new Error(t('systemExtras.orgUnitCodeTaken')) : undefined), trigger: 'blur' }],
     type: [required('systemUi.orgType', true)]
   };
-  return { name: [required(section.value === 'roles' ? 'system.roleName' : 'systemUi.centerName')], code: [required(section.value === 'roles' ? 'system.roleCode' : 'systemUi.centerCode')], ...(section.value === 'organizations' ? { province: [required('system.province', true)] } : {}) };
+  return {
+    name: [required(section.value === 'roles' ? 'system.roleName' : 'systemUi.centerName')],
+    code: [required(section.value === 'roles' ? 'system.roleCode' : 'systemUi.centerCode')],
+    ...(section.value === 'roles' ? { orgUnitId: [required('systemUi.orgUnit', true)] } : {}),
+    ...(section.value === 'organizations' ? { province: [required('system.province', true)] } : {})
+  };
 });
 const auditDetailFields = computed(() => {
   const row = selectedAudit.value || {};
@@ -409,14 +402,14 @@ const permissionCatalog = computed(() => {
   return [...base.filter((item) => !dynamicCodes.has(item.code)), ...dynamic];
 });
 const bySection = {
-  users: [['username','username'],['name','name'],['email','email'],['roleId','role'],['organization','organization'],['status','status']],
-  roles: [['name','name'],['code','code'],['reviewScope','reviewPermission'],['permissionCodes','assignedPermissions'],['description','description']],
-  'org-units': [['name','orgName'],['type','orgType'],['parent','orgParent'],['province','province'],['links','orgLinks']],
+  users: [['username','username'],['name','name'],['email','email'],['roleId','role'],['orgUnitId','orgUnit'],['status','status']],
+  roles: [['name','name'],['code','code'],['orgUnitId','orgUnit'],['reviewScope','reviewPermission'],['permissionCodes','assignedPermissions'],['description','description']],
+  'org-units': [['name','orgName'],['type','orgType'],['parent','orgParent'],['province','province']],
   permissions: [['moduleKey','permissionModule'],['featureKey','permissionFeature'],['code','code']],
   organizations: [['name','name'],['code','code'],['province','province'],['address','address'],['contact','contact'],['phone','phone']],
   'audit-logs': [['actor','auditActor'],['time','time'],['type','auditType'],['object','auditObject'],['businessNo','auditBusinessNo'],['ip','auditIp'],['details','auditDetails']]
 };
-const columns = computed(() => bySection[section.value].map(([key,label]) => ({ key,label, width: ({ name: section.value === 'organizations' ? 260 : section.value === 'org-units' ? 300 : 210, username: 160, email: 215, permissionCodes: 340, reviewScope: 180, description: 250, address: 230, organization: 230, actor: 170, time: 180, type: 150, parent: 200, links: 230, object: 200, businessNo: 165, details: 300 })[key] })));
+const columns = computed(() => bySection[section.value].map(([key,label]) => ({ key,label, width: ({ name: section.value === 'organizations' ? 260 : section.value === 'org-units' ? 300 : 180, username: 140, email: 190, roleId: 120, status: 95, permissionCodes: 300, reviewScope: 170, description: 230, address: 230, organization: 230, actor: 170, time: 180, type: 150, parent: 200, orgUnitId: 170, object: 200, businessNo: 165, details: 300 })[key] })));
 const showPagination = computed(() => ['users', 'roles', 'org-units', 'organizations', 'audit-logs'].includes(section.value));
 const searchPlaceholder = computed(() => section.value === 'users' ? t('system.adminAccountKeyword') : section.value === 'roles' ? t('system.roleKeyword') : section.value === 'org-units' ? t('system.orgUnitKeyword') : section.value === 'organizations' ? t('system.centerKeyword') : t('systemExtras.keyword'));
 const pagedRows = computed(() => {
@@ -439,7 +432,7 @@ const filteredRows = computed(() => {
   return rows.value.filter((row) => {
     if (section.value === 'users' && statusFilter.value && (row.status || 'active') !== statusFilter.value) return false;
     if (!appliedQuery.value) return true;
-    const extra = section.value === 'org-units' ? [orgUnitName(row), orgUnitTypeLabel(row.type), orgUnitParentLabel(row), ...orgUnitUsers(row).map((user) => user.name || user.username), ...orgUnitRoles(row).map(localizedRoleName)] : section.value === 'organizations' ? [provinceLabel(row.province), localizedCenterName(row.name)] : section.value === 'users' ? [roleLabel(row), localizedCenterName(row.organization)] : section.value === 'roles' ? [localizedRoleName(row), localizedRoleDescription(row)] : [];
+    const extra = section.value === 'org-units' ? [orgUnitName(row), orgUnitTypeLabel(row.type), orgUnitParentLabel(row), provinceLabel(row.province)] : section.value === 'organizations' ? [provinceLabel(row.province), localizedCenterName(row.name)] : section.value === 'users' ? [roleLabel(row), orgUnitNameById(row.orgUnitId), localizedCenterName(row.organization)] : section.value === 'roles' ? [localizedRoleName(row), orgUnitNameById(row.orgUnitId), localizedRoleDescription(row)] : [];
     return [...Object.values(row), ...extra].some((value) => String(JSON.stringify(value) ?? value ?? '').toLowerCase().includes(appliedQuery.value.toLowerCase()));
   });
 });
@@ -541,10 +534,10 @@ function columnLabel(column) {
   if (column.key === 'code' && section.value === 'organizations') return t('systemUi.centerCode');
   if (column.key === 'organization') return t('system.rationCenter');
   if (column.key === 'province') return t('system.province');
+  if (column.key === 'orgUnitId') return t('systemUi.orgUnit');
   if (section.value === 'org-units') {
     if (column.key === 'type') return t('systemUi.orgType');
     if (column.key === 'parent') return t('systemUi.orgParent');
-    if (column.key === 'links') return t('systemUi.orgLinks');
   }
   return column.key === 'permissionCodes' || column.key === 'reviewScope' || column.key === 'details' || column.key === 'ip' || column.key === 'moduleKey' || column.key === 'featureKey' || column.key === 'address' || column.key === 'contact' || column.key === 'phone' ? t('systemExtras.' + column.label) : t('system.' + column.label);
 }
@@ -626,9 +619,11 @@ function orgUnitParentLabel(row) {
   const parent = allOrgUnits.value.find((unit) => unit.id === row.parentId);
   return parent ? orgUnitName(parent) : t('systemExtras.orgUnitParentNone');
 }
-function orgUnitUsers(row) { const ids = new Set(row?.userIds || []); return adminUserRows.value.filter((user) => ids.has(user.id)); }
-function orgUnitRoles(row) { const ids = new Set(row?.roleIds || []); return roleRows.value.filter((role) => ids.has(role.id)); }
-function orgUnitLinkSummary(row) { return t('systemExtras.orgUnitUserCount', { count: orgUnitUsers(row).length }) + ' · ' + t('systemExtras.orgUnitRoleCount', { count: orgUnitRoles(row).length }); }
+function orgUnitNameById(id) {
+  if (!id) return t('systemExtras.orgUnitNone');
+  const unit = orgUnitRows.value.find((item) => item.id === id);
+  return unit ? orgUnitName(unit) : t('systemExtras.orgUnitNone');
+}
 function formatTime(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(date); }
 async function load() { loading.value = true; currentPage.value = 1; try { rows.value = section.value === 'permissions' ? permissionCatalog.value : await getSystemRecords(section.value, section.value === 'audit-logs' ? { actor: auditFilters.value.actor || undefined, type: auditFilters.value.type || undefined, businessNo: auditFilters.value.businessNo || undefined, from: auditFilters.value.range?.[0], to: auditFilters.value.range?.[1] } : undefined); } finally { loading.value = false; } }
 async function loadReferences() { [roleRows.value, permissionRows.value, centerRows.value, orgUnitRows.value, adminUserRows.value, messageRecipientTree.value] = await Promise.all([getSystemRecords('roles'), getSystemRecords('permissions'), getSystemRecords('organizations'), getSystemRecords('org-units').catch(() => []), getSystemRecords('users').catch(() => []), getMessageRecipientTree().catch(() => [])]); if (!permissionRows.value.length) permissionRows.value = catalog; if (!roleRows.value.length) roleRows.value = [{ id: 'role-admin', code: 'admin', name: t('system.adminRole'), permissionCodes: catalog.map((p) => p.code), reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: {} } }]; }
@@ -648,7 +643,7 @@ async function exportAuditLogs() {
 function runSearch() { appliedQuery.value = keyword.value.trim(); currentPage.value = 1; }
 function resetSearch() { keyword.value = ''; appliedQuery.value = ''; statusFilter.value = ''; currentPage.value = 1; }
 function clearEditor() { editorForm.value?.clearValidate(); form.value = {}; }
-function openCreate() { editing.value = false; roleNameEdited.value = true; roleDescriptionEdited.value = true; form.value = section.value === 'roles' ? { name: '', code: '', permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { username: '', name: '', email: '', password: '', passwordConfirm: '', status: 'active' } : section.value === 'org-units' ? { name: '', code: '', type: 'center', parentId: '', province: '', userIds: [], roleIds: [] } : section.value === 'organizations' ? { name: '', code: '', province: '', latitude: '', longitude: '' } : {}; dialog.value = true; }
+function openCreate() { editing.value = false; roleNameEdited.value = true; roleDescriptionEdited.value = true; form.value = section.value === 'roles' ? { name: '', code: '', orgUnitId: '', permissionCodes: [], reviewScope: emptyReviewScope() } : section.value === 'users' ? { username: '', name: '', email: '', orgUnitId: '', password: '', passwordConfirm: '', status: 'active' } : section.value === 'org-units' ? { name: '', code: '', type: 'center', parentId: '', province: '' } : section.value === 'organizations' ? { name: '', code: '', province: '', latitude: '', longitude: '' } : {}; dialog.value = true; }
 function openEdit(row) {
   editing.value = true;
   roleNameEdited.value = false;
@@ -658,7 +653,7 @@ function openEdit(row) {
     // Seeded units carry a nameKey; edit the localized name and store it as a plain name on save.
     source.name = orgUnitName(source);
     delete source.nameKey;
-    form.value = { ...source, userIds: [...(source.userIds || [])], roleIds: [...(source.roleIds || [])] };
+    form.value = { ...source };
   } else {
     const permissionCodes = resolveRolePermissionCodes(source.permissionCodes || []);
     form.value = { ...source, password: '', passwordConfirm: '', permissionCodes, reviewScope: normalizeReviewScope(source.reviewScope || {}, permissionCodes, source.code) };
@@ -675,11 +670,7 @@ async function save() {
     const value = { ...form.value, status: form.value.status || 'active' };
     if (section.value !== 'users' || (editing.value && !value.password)) { delete value.password; delete value.passwordConfirm; }
     if (section.value === 'users') { const role = roleRows.value.find((item) => item.id === value.roleId); value.role = role?.code || value.role; value.permissionCodes = role?.permissionCodes || []; value.reviewScope = role?.reviewScope || null; }
-    if (section.value === 'org-units') {
-      value.userIds = [...new Set((value.userIds || []).filter(Boolean))];
-      value.roleIds = [...new Set((value.roleIds || []).filter(Boolean))];
-      if (value.parentId === value.id) value.parentId = '';
-    }
+    if (section.value === 'org-units' && value.parentId === value.id) value.parentId = '';
     const entityKey = section.value === 'users' ? 'entityUser' : section.value === 'roles' ? 'entityRole' : section.value === 'org-units' ? 'entityOrgUnit' : section.value === 'permissions' ? 'entityPermission' : 'entityOrganization';
     const isRename = editing.value && oldName && oldName !== value.name;
     value.auditDetails = isRename ? auditMessage('auditRenamed', entityKey, value.name, { oldName, newName: value.name }) : auditMessage(editing.value ? 'auditUpdated' : 'auditCreated', entityKey, name);
@@ -767,10 +758,6 @@ onBeforeUnmount(() => { mapInstance?.remove(); mapInstance = undefined; });
 .system-permission-summary :deep(.el-tag) { max-width: 100%; }
 .system-permission-summary :deep(.el-tag__content) { overflow: hidden; text-overflow: ellipsis; }
 .system-permission-popover { display: flex; max-height: 280px; flex-wrap: wrap; gap: .375rem; overflow: auto; }
-.system-link-popover { display: grid; gap: .625rem; }
-.system-link-popover__group { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
-.system-link-popover__title { width: 100%; color: #52675a; font-size: .75rem; font-weight: 600; }
-.system-link-popover__empty { color: #89978e; font-size: .75rem; }
 .system-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: .75rem 0; }
 .system-dialog-heading { display: flex; align-items: center; gap: .75rem; }
 .system-dialog-heading .system-row-icon { width: 2.5rem; height: 2.5rem; font-size: 1.25rem; }

@@ -960,21 +960,21 @@ export async function mockDispatch(config) {
     return combinedMessages;
   };
   const systemSeed = {
-    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', organization: 'Baghdad Karkh Ration Center', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', organization: 'Baghdad Karkh Ration Center', status: 'active' }],
+    users: [{ id: 'web-001', username: 'admin', name: 'System Administrator', email: 'admin@example.com', roleId: 'role-admin', role: 'admin', orgUnitId: 'ou-001', organization: 'Baghdad Karkh Ration Center', status: 'active' }, { id: 'web-002', username: 'operator', name: 'Operations User', email: 'operator@example.com', roleId: 'role-operator', role: 'operator', orgUnitId: 'ou-002', organization: 'Baghdad Karkh Ration Center', status: 'active' }],
     roles: [
-      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch',...WAREHOUSE_PERMISSION_CODES,'review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send','messages.review'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries([...REVIEW_TYPE_CODES, ...WAREHOUSE_PERMISSION_CODES].map((code) => [code, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
-      { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], regionsByType: { 'review.process.unfreeze': ['巴格达省'], 'review.process.split': ['巴格达省'] } } },
-      { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], regionsByType: {} } }
+      { id: 'role-admin', name: 'System Administrator', code: 'admin', description: 'Manage system settings and access', orgUnitId: 'ou-001', permissionCodes: ['dashboard.view','agents.view','agents.create','agents.edit','agents.delete','ration.view','ration.dispatch',...WAREHOUSE_PERMISSION_CODES,'review.view','review.process','complaints.view','complaints.process','system.users','system.roles','system.permissions','system.organizations','system.audit','messages.view','messages.send','messages.review'], reviewScope: { types: [...REVIEW_TYPE_CODES], regionsByType: Object.fromEntries([...REVIEW_TYPE_CODES, ...WAREHOUSE_PERMISSION_CODES].map((code) => [code, REVIEW_SCOPE_REGIONS.map((region) => region.value)])) } },
+      { id: 'role-operator', name: 'Business Operator', code: 'operator', description: 'Manage daily operations', orgUnitId: 'ou-002', permissionCodes: ['dashboard.view','agents.view','ration.view','review.view','review.process','messages.view'], reviewScope: { types: ['review.process.unfreeze','review.process.split'], regionsByType: { 'review.process.unfreeze': ['巴格达省'], 'review.process.split': ['巴格达省'] } } },
+      { id: 'role-auditor', name: 'Auditor', code: 'auditor', description: 'Read audit records', orgUnitId: 'ou-003', permissionCodes: ['dashboard.view','review.view','system.audit'], reviewScope: { types: [], regionsByType: {} } }
     ],
     permissions: PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' })),
     organizations: [{ id: 'org-001', name: 'Baghdad Karkh Ration Center', code: 'BG-KRK-01', province: 'baghdad', address: 'Karkh, Baghdad, Iraq', latitude: '33.315200', longitude: '44.366100', contact: 'Baghdad Center Office', phone: '+964 1 000 0001' }, { id: 'org-002', name: 'Basra Central Ration Center', code: 'BS-CTR-01', province: 'basra', address: 'Basra, Iraq', latitude: '30.508500', longitude: '47.780400', contact: 'Basra Center Office', phone: '+964 1 000 0002' }],
     // Organization units link administrators and roles into one hierarchy.
     // Demo names resolve through nameKey so the four locales stay in sync.
     'org-units': [
-      { id: 'ou-001', name: 'Ministry of Trade', nameKey: 'system.orgUnitDemoMinistry', code: 'MOT-HQ', type: 'ministry', parentId: '', province: 'baghdad', userIds: ['web-001'], roleIds: ['role-admin'] },
-      { id: 'ou-002', name: 'General Ration Directorate', nameKey: 'system.orgUnitDemoDirectorate', code: 'MOT-RAT', type: 'directorate', parentId: 'ou-001', province: 'baghdad', userIds: ['web-002'], roleIds: ['role-operator'] },
-      { id: 'ou-003', name: 'Baghdad Branch', nameKey: 'system.orgUnitDemoBaghdadBranch', code: 'MOT-BGD', type: 'branch', parentId: 'ou-002', province: 'baghdad', userIds: [], roleIds: ['role-auditor'] },
-      { id: 'ou-004', name: 'Baghdad Karkh Ration Center', nameKey: 'system.demoBaghdadCenter', code: 'BG-KRK-01', type: 'center', parentId: 'ou-003', province: 'baghdad', userIds: ['web-001', 'web-002'], roleIds: [] }
+      { id: 'ou-001', name: 'Ministry of Trade', nameKey: 'system.orgUnitDemoMinistry', code: 'MOT-HQ', type: 'ministry', parentId: '', province: 'baghdad' },
+      { id: 'ou-002', name: 'General Ration Directorate', nameKey: 'system.orgUnitDemoDirectorate', code: 'MOT-RAT', type: 'directorate', parentId: 'ou-001', province: 'baghdad' },
+      { id: 'ou-003', name: 'Baghdad Branch', nameKey: 'system.orgUnitDemoBaghdadBranch', code: 'MOT-BGD', type: 'branch', parentId: 'ou-002', province: 'baghdad' },
+      { id: 'ou-004', name: 'Baghdad Karkh Ration Center', nameKey: 'system.demoBaghdadCenter', code: 'BG-KRK-01', type: 'center', parentId: 'ou-003', province: 'baghdad' }
     ],
     'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', type: 'login', businessNo: 'admin', terminal: 'Web console', ip: '127.0.0.1', before: null, after: { result: 'success' }, time: new Date().toISOString() }]
   };
@@ -999,7 +999,7 @@ export async function mockDispatch(config) {
     const averageCompliance = Number((PROVINCE_STATS.reduce((sum, province) => sum + province.complianceRate, 0) / PROVINCE_STATS.length).toFixed(1));
     const cockpitRecord = {
       id: 'cockpit-national',
-      version: 3,
+      version: 4,
       generatedAt: new Date().toISOString(),
       indicators: [
         { key: 'population', value: NATIONAL_SUMMARY.population, unit: 'people', trend: 0.8, tone: 'good' },
@@ -1022,7 +1022,9 @@ export async function mockDispatch(config) {
         fulfillment: province.fulfillmentRate,
         agents: province.agentCount,
         sites: province.warehouseTotal,
-        ration: province.monthlyDistributedTon
+        ration: province.monthlyDistributedTon,
+        lat: province.lat,
+        lng: province.lng
       })),
       // Chart series are locale-neutral: month indexes and commodity keys only.
       charts: (() => {
@@ -1041,7 +1043,7 @@ export async function mockDispatch(config) {
     let cockpitStored = readCenter('cockpit_overview', null);
     if (!cockpitStored || cockpitStored.version !== cockpitRecord.version
       || cockpitStored.provinces?.length !== cockpitRecord.provinces.length
-      || cockpitStored.provinces.some((province) => !province.provinceCode)
+      || cockpitStored.provinces.some((province) => !province.provinceCode || !Number.isFinite(Number(province.lat)) || !Number.isFinite(Number(province.lng)))
       || !cockpitStored.charts) {
       cockpitStored = cockpitRecord;
       writeCenter('cockpit_overview', cockpitStored);
@@ -1102,12 +1104,13 @@ export async function mockDispatch(config) {
         return {
           ...row,
           permissionCodes: row.permissionCodes || seed?.permissionCodes || [],
+          orgUnitId: row.orgUnitId || seed?.orgUnitId || '',
           reviewScope: row.reviewScope || seed?.reviewScope || { types: [], mode: 'role', roles: [], regions: [] }
         };
       });
       writeCenter(`system_${section}`, records);
     } else if (section === 'users') {
-      records = records.map((row) => ({ ...row, roleId: row.roleId || systemSeed.roles.find((role) => role.code === row.role)?.id }));
+      records = records.map((row) => ({ ...row, roleId: row.roleId || systemSeed.roles.find((role) => role.code === row.role)?.id, orgUnitId: row.orgUnitId || systemSeed.users.find((user) => user.id === row.id)?.orgUnitId || '' }));
       writeCenter(`system_${section}`, records);
     } else if (section === 'organizations') {
       records = records.map((row) => ({ ...row, province: row.province || (/baghdad|بغداد/i.test(row.address || '') ? 'baghdad' : /basra|بصرة/i.test(row.address || '') ? 'basra' : ''), address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
@@ -1142,6 +1145,11 @@ export async function mockDispatch(config) {
       return createResponse(filteredLogs);
     }
     if (method === 'DELETE' && recordId) {
+      if (section === 'org-units') {
+        const unitId = decodeURIComponent(recordId);
+        const referenced = [...readCenter('system_users', systemSeed.users), ...readCenter('system_roles', systemSeed.roles)].some((row) => row.orgUnitId === unitId);
+        if (referenced) return createResponse({}, 400, i18n.global.t('systemExtras.orgUnitInUse'));
+      }
       const index = records.findIndex((row) => row.id === decodeURIComponent(recordId));
       if (index < 0) return createResponse({}, 404, i18n.global.t('api.notFound'));
       const [removed] = records.splice(index, 1); writeCenter(`system_${section}`, records);
@@ -1167,6 +1175,11 @@ export async function mockDispatch(config) {
         else delete next.passwordCredential;
         delete next.password;
         delete next.passwordConfirm;
+      }
+      if (section === 'users' || section === 'roles') {
+        const unitIds = new Set(readCenter('system_org-units', systemSeed['org-units']).map((unit) => unit.id));
+        next.orgUnitId = String(data.orgUnitId || '');
+        if (next.orgUnitId && !unitIds.has(next.orgUnitId)) return createResponse({}, 400, i18n.global.t('api.businessError'));
       }
       if (section === 'org-units') {
         next.code = String(data.code || '').trim().toUpperCase();

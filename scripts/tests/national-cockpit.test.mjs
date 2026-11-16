@@ -2,10 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import messages from '../../src/locales/nationalCockpit.js';
 import {
-  COCKPIT_MAP_METRICS, COCKPIT_SCALE, cockpitColor, cockpitMetricRange, cockpitProvinceTop,
-  cockpitRadarSeries, compactCockpitNumber, formatCockpitValue, normalizeCockpitOverview
+  COCKPIT_FULFILLMENT_SCALE, COCKPIT_MAP_METRICS, COCKPIT_SCALE, cockpitColor, cockpitColorForMetric,
+  cockpitFulfillmentColor, cockpitMetricRange, cockpitProvinceTop, cockpitRadarSeries, compactCockpitNumber, formatCockpitValue,
+  normalizeCockpitOverview
 } from '../../src/utils/nationalCockpit.js';
 import { ORG_UNIT_TYPES, normalizeOrgUnitRow, orgUnitDisplayName, orgUnitTypeKey } from '../../src/utils/orgUnits.js';
+import systemLabels from '../../src/locales/systemManagementLabels.js';
+import systemUi from '../../src/locales/systemManagementUi.js';
 
 function flattenKeys(value, prefix = '') {
   if (value === null || typeof value !== 'object') return [prefix];
@@ -49,8 +52,8 @@ test('normalizes the PocketBase cockpit record and clamps map colors', () => {
     updatedAt: '2026-11-16T10:00:00.000Z',
     indicators: [{ key: 'population', value: '8126755', unit: 'people', trend: '0.8', tone: 'good' }, { key: '', value: 1 }],
     provinces: [
-      { provinceCode: 'BAG', population: '8126755', households: '2000000', fulfillment: '99.4', agents: '9800', sites: '400', ration: '12000' },
-      { provinceCode: 'BAS', households: '700000', fulfillment: '98.9', ration: '8000' }
+      { provinceCode: 'BAG', population: '8126755', households: '2000000', fulfillment: '99.4', agents: '9800', sites: '400', ration: '12000', lat: '33.3152', lng: '44.3661' },
+      { provinceCode: 'BAS', households: '700000', fulfillment: '98.9', ration: '8000', lat: '30.5085', lng: '47.7804' }
     ],
     charts: {
       months: ['5', '6', '7'],
@@ -66,6 +69,8 @@ test('normalizes the PocketBase cockpit record and clamps map colors', () => {
   assert.deepEqual(cockpitMetricRange(overview.provinces, 'households'), [700000, 2000000]);
   assert.equal(formatCockpitValue(overview.provinces[0].population, 'people', 'en'), '8,126,755');
   assert.equal(overview.provinces[0].ration, 12000);
+  assert.equal(overview.provinces[0].lat, 33.3152);
+  assert.equal(overview.provinces[1].lng, 47.7804);
   assert.deepEqual(overview.charts.months, [5, 6, 7]);
   assert.deepEqual(overview.charts.quota, [100, 200]);
   assert.deepEqual(overview.charts.actual, [90, 180]);
@@ -76,21 +81,38 @@ test('normalizes the PocketBase cockpit record and clamps map colors', () => {
   assert.equal(cockpitColor(-1), COCKPIT_SCALE[0]);
   assert.equal(cockpitColor(2), COCKPIT_SCALE[COCKPIT_SCALE.length - 1]);
   assert.equal(cockpitColor(0.5).length, 7);
+  assert.equal(cockpitColorForMetric(0, 'fulfillment'), COCKPIT_FULFILLMENT_SCALE[0]);
+  assert.equal(cockpitColorForMetric(1, 'fulfillment'), COCKPIT_FULFILLMENT_SCALE[COCKPIT_FULFILLMENT_SCALE.length - 1]);
+  assert.equal(cockpitColorForMetric(0.5, 'households'), cockpitColor(0.5));
+  assert.equal(cockpitFulfillmentColor(99.4), '#007A3D');
+  assert.equal(cockpitFulfillmentColor(98.2), '#9CC9A8');
+  assert.equal(cockpitFulfillmentColor(97.4), '#CE1126');
 });
 
-test('organization units keep user and role links while demo names stay localizable', () => {
+test('organization units keep their hierarchy while demo names stay localizable', () => {
   assert.deepEqual(ORG_UNIT_TYPES, ['ministry', 'directorate', 'branch', 'center']);
   assert.equal(orgUnitTypeKey('branch'), 'orgTypeBranch');
   assert.equal(orgUnitTypeKey('unknown'), 'orgTypeCenter');
   for (const lang of ['zh', 'en', 'ar', 'ckb']) {
     assert.ok(messages[lang].systemExtras[orgUnitTypeKey('ministry')]);
   }
-  const normalized = normalizeOrgUnitRow({ id: 'ou-9', code: ' mot-x ', type: 'division', userIds: ['web-1', 'web-1', ''], roleIds: 'role-admin' });
+  const normalized = normalizeOrgUnitRow({ id: 'ou-9', code: ' mot-x ', type: 'division', userIds: ['web-1'], roleIds: ['role-admin'] });
   assert.equal(normalized.code, 'MOT-X');
   assert.equal(normalized.type, 'center');
-  assert.deepEqual(normalized.userIds, ['web-1']);
-  assert.deepEqual(normalized.roleIds, []);
+  assert.equal('userIds' in normalized, false);
+  assert.equal('roleIds' in normalized, false);
   assert.equal(orgUnitDisplayName({ nameKey: 'system.orgUnitDemoMinistry' }, (key) => key), 'system.orgUnitDemoMinistry');
   assert.equal(orgUnitDisplayName({ name: 'Custom Unit' }, (key) => key), 'Custom Unit');
   assert.equal(orgUnitDisplayName({}, (key) => key), '—');
+});
+
+test('system management names system users and links users and roles to one organization unit', () => {
+  assert.equal(systemLabels.zh.system.adminAccounts, '系统用户');
+  assert.equal(systemLabels.en.system.adminAccounts, 'System Users');
+  assert.equal(systemUi.zh.orgUnit, '所属组织机构');
+  for (const lang of ['zh', 'en', 'ar', 'ckb']) {
+    assert.ok(systemLabels[lang].system.adminAccounts);
+    assert.ok(systemUi[lang].orgUnit);
+    assert.ok(!/管理员账号/.test(systemLabels[lang].system.adminAccounts));
+  }
 });

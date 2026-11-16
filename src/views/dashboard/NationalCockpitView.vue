@@ -64,6 +64,7 @@
             <span class="cockpit-legend__label">{{ t('cockpit.legendTitle') }} · {{ t('cockpit.mapMetrics.' + activeMetric) }}</span>
             <span class="cockpit-legend__scale" :style="{ background: legendGradient }"></span>
             <span class="cockpit-legend__range"><bdi dir="ltr">{{ legendRange[0] }}</bdi> – <bdi dir="ltr">{{ legendRange[1] }}</bdi></span>
+            <span class="cockpit-point-hint"><i></i>{{ t('cockpit.pointHint') }}</span>
           </div>
           <div v-if="selectedProvince" class="cockpit-province">
             <div class="cockpit-province__head">
@@ -86,11 +87,11 @@
 
       <aside class="cockpit-rail cockpit-rail--right">
         <article class="cockpit-chart">
-          <header class="cockpit-chart__head"><span class="cockpit-chart__dot"></span><h3>{{ t('cockpit.charts.rationTop') }}</h3></header>
+          <header class="cockpit-chart__head"><span class="cockpit-chart__dot is-red"></span><h3>{{ t('cockpit.charts.rationTop') }}</h3></header>
           <div ref="rationEl" class="bidi-ltr cockpit-chart__body"></div>
         </article>
         <article class="cockpit-chart">
-          <header class="cockpit-chart__head"><span class="cockpit-chart__dot is-navy"></span><h3>{{ t('cockpit.charts.systemRadar') }}</h3></header>
+          <header class="cockpit-chart__head"><span class="cockpit-chart__dot is-black"></span><h3>{{ t('cockpit.charts.systemRadar') }}</h3></header>
           <div ref="radarEl" class="bidi-ltr cockpit-chart__body"></div>
         </article>
       </aside>
@@ -118,12 +119,13 @@ import { getCockpitOverview } from '../../api/cockpit.js';
 import { REVIEW_SCOPE_REGIONS } from '../../utils/reviewPermission.js';
 import Cockpit25DMap from './components/Cockpit25DMap.vue';
 import {
-  COCKPIT_MAP_METRICS, COCKPIT_SCALE, cockpitIndicatorValue, cockpitMetricRange,
+  COCKPIT_FULFILLMENT_SCALE, COCKPIT_MAP_METRICS, COCKPIT_SCALE, cockpitIndicatorValue, cockpitMetricRange,
   cockpitNumberLocale, cockpitProvinceTop, cockpitRadarSeries,
   compactCockpitNumber, formatCockpitValue, normalizeCockpitOverview
 } from '../../utils/nationalCockpit.js';
 
 const { t, te, locale } = useI18n();
+const IRAQ = Object.freeze({ green: '#007A3D', deepGreen: '#0B4D2B', red: '#CE1126', gold: '#C9A13B', black: '#141414', cream: '#F4E9D2' });
 
 const overview = ref({ updatedAt: '', indicators: [], provinces: [], charts: { months: [], quota: [], actual: [], items: [] } });
 const loading = ref(true);
@@ -142,7 +144,7 @@ let resizeObserver;
 
 const indicators = computed(() => overview.value.indicators);
 const metricOptions = computed(() => COCKPIT_MAP_METRICS.map((key) => ({ key, label: t('cockpit.mapMetrics.' + key) })));
-const legendGradient = computed(() => 'linear-gradient(90deg, ' + COCKPIT_SCALE.join(', ') + ')');
+const legendGradient = computed(() => 'linear-gradient(90deg, ' + (activeMetric.value === 'fulfillment' ? COCKPIT_FULFILLMENT_SCALE : COCKPIT_SCALE).join(', ') + ')');
 const legendRange = computed(() => cockpitMetricRange(overview.value.provinces, activeMetric.value)
   .map((value) => formatCockpitValue(value, activeMetric.value === 'fulfillment' ? 'percent' : 'int', locale.value)));
 const selectedProvince = computed(() => overview.value.provinces.find((province) => province.provinceCode === selectedProvinceCode.value) || null);
@@ -191,8 +193,8 @@ function renderTrendChart() {
       splitLine: { lineStyle: { type: 'dashed', color: '#EDF3EE' } }
     },
     series: [
-      { name: t('cockpit.charts.quota'), type: 'bar', barMaxWidth: 14, itemStyle: { color: '#A8C8B0', borderRadius: [3, 3, 0, 0] }, data: quota },
-      { name: t('cockpit.charts.actual'), type: 'line', smooth: true, symbol: 'circle', symbolSize: 5, lineStyle: { width: 2, color: '#2F7A50' }, itemStyle: { color: '#2F7A50' }, areaStyle: { color: 'rgba(47,122,80,.12)' }, data: actual }
+      { name: t('cockpit.charts.quota'), type: 'bar', barMaxWidth: 14, itemStyle: { color: '#E4CD9E', borderRadius: [3, 3, 0, 0] }, data: quota },
+      { name: t('cockpit.charts.actual'), type: 'line', smooth: true, symbol: 'circle', symbolSize: 5, lineStyle: { width: 2, color: IRAQ.green }, itemStyle: { color: IRAQ.green }, areaStyle: { color: 'rgba(0,122,61,.10)' }, data: actual }
     ]
   }, true);
 }
@@ -207,7 +209,7 @@ function renderMixChart() {
   chart.setOption({
     tooltip: { trigger: 'item', valueFormatter: (value) => formatCockpitValue(value, 'int', locale.value) },
     legend: { bottom: 0, left: 'center', itemWidth: 8, itemHeight: 8, textStyle: { fontSize: 9, color: '#58685D' } },
-    color: ['#326445', '#5C8A6B', '#8FBFA3', '#C9A13B', '#7FA48C', '#B7D3C1'],
+    color: [IRAQ.deepGreen, IRAQ.green, IRAQ.gold, IRAQ.red, '#8A9A8F', '#E4CD9E'],
     series: [{
       type: 'pie', radius: ['42%', '64%'], center: ['50%', '42%'],
       itemStyle: { borderColor: '#fff', borderWidth: 1 }, label: { show: false }, emphasis: { label: { show: false } }, data: items
@@ -229,8 +231,8 @@ function renderRationChart() {
     yAxis: { type: 'category', data: list.map((province) => provinceLabel(province.provinceCode)), axisTick: { show: false }, axisLine: { show: false }, axisLabel: { fontSize: 9, color: '#58685D' } },
     series: [{
       type: 'bar', barWidth: 10, data: list.map((province) => province.ration),
-      itemStyle: { color: '#326445', borderRadius: [0, 3, 3, 0] },
-      showBackground: true, backgroundStyle: { color: '#F0F6F1', borderRadius: [0, 3, 3, 0] },
+      itemStyle: { color: IRAQ.deepGreen, borderRadius: [0, 3, 3, 0] },
+      showBackground: true, backgroundStyle: { color: '#F6F1E4', borderRadius: [0, 3, 3, 0] },
       label: { show: true, position: 'right', fontSize: 9, color: '#52675a', formatter: ({ value }) => compactCockpitNumber(value, locale.value) }
     }]
   }, true);
@@ -251,8 +253,8 @@ function renderRadarChart() {
       indicator: radar.map((item) => ({ name: t('cockpit.charts.' + RADAR_LABEL_KEYS[item.key]), max: 100 }))
     },
     series: [{
-      type: 'radar', symbolSize: 4, lineStyle: { color: '#2F7A50', width: 2 }, itemStyle: { color: '#2F7A50' },
-      areaStyle: { color: 'rgba(47,122,80,.18)' },
+      type: 'radar', symbolSize: 4, lineStyle: { color: IRAQ.green, width: 2 }, itemStyle: { color: IRAQ.green },
+      areaStyle: { color: 'rgba(0,122,61,.16)' },
       data: [{ value: radar.map((item) => item.value), name: t('cockpit.charts.systemRadar') }]
     }]
   }, true);
@@ -276,7 +278,7 @@ function renderAgentsChart() {
     },
     series: [{
       type: 'bar', barMaxWidth: 26, data: list.map((province) => province.agents),
-      itemStyle: { borderRadius: [3, 3, 0, 0], color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: '#2F7A50' }, { offset: 1, color: '#A8C8B0' }]) }
+      itemStyle: { borderRadius: [3, 3, 0, 0], color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: IRAQ.green }, { offset: 1, color: '#9CC9A8' }]) }
     }]
   }, true);
 }
@@ -304,11 +306,11 @@ function renderFulfillmentChart() {
       type: 'bar', barMaxWidth: 26,
       data: list.map((province) => ({
         value: province.fulfillment,
-        itemStyle: { color: province.fulfillment >= 99 ? '#2F7A50' : province.fulfillment >= 98 ? '#5C8A6B' : '#C9A13B', borderRadius: [3, 3, 0, 0] }
+        itemStyle: { color: province.fulfillment >= 99 ? IRAQ.green : province.fulfillment >= 98 ? IRAQ.gold : IRAQ.red, borderRadius: [3, 3, 0, 0] }
       })),
       markLine: {
         silent: true, symbol: 'none',
-        lineStyle: { color: '#C04442', type: 'dashed', width: 1 },
+        lineStyle: { color: IRAQ.red, type: 'dashed', width: 1 },
         label: { show: false },
         data: [{ yAxis: nationalFulfillment.value }]
       }
@@ -361,42 +363,44 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.cockpit { color: #1f3326; }
-.cockpit-hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; border: 1px solid #d9e5db; border-radius: .75rem; padding: .75rem 1rem; background: linear-gradient(120deg, #1f3326, #2f5240 58%, #326445); color: #fff; box-shadow: 0 8px 22px -16px rgba(31, 51, 38, .7); }
+.cockpit { position: relative; color: #141414; background: radial-gradient(1100px 420px at 50% -8%, rgba(201, 161, 59, .12), rgba(201, 161, 59, 0) 70%); }
+.cockpit-hero { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; overflow: hidden; border: 1px solid rgba(201, 161, 59, .55); border-radius: .75rem; padding: .75rem 1rem; background: linear-gradient(120deg, #141414 0%, #0b3a22 56%, #007a3d 100%); color: #fff; box-shadow: 0 10px 24px -18px rgba(20, 20, 20, .75); }
+.cockpit-hero::after { content: ''; position: absolute; inset-block-end: 0; inset-inline-end: 1rem; width: 72px; height: 2px; background: linear-gradient(90deg, #ce1126 0 25%, #ffffff 25% 50%, #141414 50% 75%, #007a3d 75% 100%); }
 .cockpit-hero__icon { display: inline-flex; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; align-items: center; justify-content: center; border: 1px solid rgba(229, 206, 161, .55); border-radius: .625rem; background: rgba(255, 255, 255, .12); color: #f3d9a4; font-size: 1.25rem; }
 .cockpit-hero h1 { margin: 0; font-size: 1.0625rem; font-weight: 800; }
-.cockpit-hero__subtitle { margin: .125rem 0 0; color: rgba(255, 255, 255, .72); font-size: .75rem; }
-.cockpit-updated { color: rgba(255, 255, 255, .72); font-size: .6875rem; }
+.cockpit-hero__subtitle { margin: .125rem 0 0; color: rgba(244, 233, 210, .78); font-size: .75rem; }
+.cockpit-updated { color: rgba(244, 233, 210, .8); font-size: .6875rem; }
 .cockpit-error { display: flex; flex-direction: column; align-items: center; gap: .5rem; border: 1px solid #f0d9c0; border-radius: .75rem; background: #fffaf3; padding: 2rem 1rem; color: #a9752a; text-align: center; }
 .cockpit-error p { margin: 0; font-size: .8125rem; }
 .cockpit-layout { display: grid; grid-template-areas: 'left center right' 'bottom bottom bottom'; grid-template-columns: minmax(250px, 288px) minmax(0, 1fr) minmax(250px, 288px); gap: .75rem; align-items: stretch; }
 .cockpit-rail { display: flex; flex-direction: column; gap: .75rem; min-width: 0; }
 .cockpit-rail--left { grid-area: left; }
 .cockpit-rail--right { grid-area: right; }
-.cockpit-chart { display: flex; flex: 1; min-width: 0; flex-direction: column; border: 1px solid rgba(217, 229, 219, .8); border-radius: .6rem; background: #fff; padding: .55rem .65rem .5rem; box-shadow: 0 2px 6px rgba(31, 51, 38, .03); }
+.cockpit-chart { display: flex; flex: 1; min-width: 0; flex-direction: column; border: 1px solid rgba(201, 161, 59, .26); border-radius: .6rem; background: #fffdf8; padding: .55rem .65rem .5rem; box-shadow: 0 4px 12px -10px rgba(90, 70, 30, .35); }
 .cockpit-chart__head { display: flex; align-items: center; gap: .4rem; margin-bottom: .25rem; }
-.cockpit-chart__dot { width: .4rem; height: .4rem; flex: 0 0 auto; border-radius: 50%; background: #326445; }
+.cockpit-chart__dot { width: .4rem; height: .4rem; flex: 0 0 auto; border-radius: 50%; background: #007a3d; }
 .cockpit-chart__dot.is-gold { background: #c9a13b; }
-.cockpit-chart__dot.is-navy { background: #3d5a73; }
-.cockpit-chart__head h3 { margin: 0; color: #1f3326; font-size: .6875rem; font-weight: 700; }
-.cockpit-chart__meta { margin-inline-start: auto; color: #8a9a8f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .5625rem; font-weight: 600; }
+.cockpit-chart__dot.is-red { background: #ce1126; }
+.cockpit-chart__dot.is-black { background: #141414; }
+.cockpit-chart__head h3 { margin: 0; color: #141414; font-size: .6875rem; font-weight: 700; }
+.cockpit-chart__meta { margin-inline-start: auto; color: #a9752a; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .5625rem; font-weight: 600; }
 .cockpit-chart__body { flex: 1; min-height: 176px; }
 .cockpit-center { display: flex; grid-area: center; min-width: 0; flex-direction: column; }
 .cockpit-map-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .5rem; padding: 0 .25rem .15rem; }
-.cockpit-map-head h2 { margin: 0; color: #24483a; font-size: .9375rem; font-weight: 700; }
+.cockpit-map-head h2 { margin: 0; color: #141414; font-size: .9375rem; font-weight: 700; }
 .cockpit-map-head p { margin: .125rem 0 0; color: #8a9a8f; font-size: .6875rem; }
 .cockpit-metrics { display: flex; flex-wrap: wrap; gap: .25rem; }
-.cockpit-metric { border: 1px solid #d9e5db; border-radius: 999px; padding: .2rem .55rem; background: #f6faf7; color: #52675a; font-size: .6875rem; font-weight: 600; cursor: pointer; transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
-.cockpit-metric:hover { border-color: #b9d4c1; color: #2f7a50; }
-.cockpit-metric.is-active { border-color: #2f7a50; background: #2f7a50; color: #fff; }
+.cockpit-metric { border: 1px solid rgba(201, 161, 59, .35); border-radius: 999px; padding: .2rem .55rem; background: #fbf7ee; color: #5a4a24; font-size: .6875rem; font-weight: 600; cursor: pointer; transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+.cockpit-metric:hover { border-color: #c9a13b; color: #0b4d2b; }
+.cockpit-metric.is-active { border-color: #0b4d2b; background: #0b4d2b; color: #f4e9d2; }
 .cockpit-map-canvas { position: relative; flex: 1; min-height: 0; }
 .cockpit-map-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: .4rem; color: #52675a; font-size: .75rem; }
 .cockpit-map-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: .25rem .25rem 0; }
 .cockpit-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-.cockpit-legend__label { color: #52675a; font-size: .625rem; font-weight: 600; }
+.cockpit-legend__label { color: #5a4a24; font-size: .625rem; font-weight: 600; }
 .cockpit-legend__scale { width: 120px; height: 6px; border-radius: 999px; }
 .cockpit-legend__range { color: #8a9a8f; font-size: .625rem; }
-.cockpit-province { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; border-radius: .5rem; background: #f4f8f5; padding: .4rem .6rem; }
+.cockpit-province { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; border: 1px solid rgba(201, 161, 59, .28); border-radius: .5rem; background: #fbf5e8; padding: .4rem .6rem; }
 .cockpit-province__head { display: flex; align-items: center; gap: .5rem; }
 .cockpit-province__eyebrow { margin: 0; color: #8a9a8f; font-size: .5625rem; font-weight: 600; }
 .cockpit-province h3 { margin: 0; color: #1f3326; font-size: .75rem; font-weight: 700; }
@@ -407,7 +411,8 @@ onBeforeUnmount(() => {
 .cockpit-province__grid dd { margin: 0; color: #24483a; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .6875rem; font-weight: 700; }
 .cockpit-bottom { display: grid; grid-area: bottom; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .cockpit-bottom .cockpit-chart__body { min-height: 190px; }
-.cockpit :deep(.leaflet-container) { background: #f4f8f5; font: inherit; }
+.cockpit-point-hint { display: inline-flex; align-items: center; gap: .3rem; color: #8a7a55; font-size: .5625rem; }
+.cockpit-point-hint i { width: .4rem; height: .4rem; border-radius: 50%; background: #c9a13b; box-shadow: 0 0 0 2px rgba(201, 161, 59, .2); }
 @media (max-width: 1279px) {
   .cockpit-layout { grid-template-columns: minmax(230px, 260px) minmax(0, 1fr) minmax(230px, 260px); }
 }

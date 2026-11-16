@@ -1,5 +1,5 @@
 <template>
-  <div ref="stageEl" class="cockpit-3d-stage" @mouseleave="hovered = ''">
+  <div ref="stageEl" class="cockpit-3d-stage" @mouseleave="clearHover">
     <div class="cockpit-3d-plane">
       <svg :viewBox="`0 0 ${width} ${height}`" class="cockpit-3d-svg" role="img" :aria-label="t('cockpit.mapTitle')">
         <defs>
@@ -8,14 +8,14 @@
         <g v-for="(layer, index) in extrusionLayers" :key="'layer-' + index" :transform="`translate(0 ${layer.offset})`" :fill="layer.color">
           <use v-for="shape in shapes" :key="'ext-' + index + '-' + shape.code" :href="'#ck-prov-' + shape.code" />
         </g>
-        <g fill="#C9DED0">
+        <g fill="#efe4cc">
           <use v-for="shape in shapes" :key="'base-' + shape.code" :href="'#ck-prov-' + shape.code" />
         </g>
         <g
           v-for="shape in shapes"
           :key="shape.code"
           class="cockpit-3d-province"
-          :class="{ 'is-hovered': hovered === shape.code, 'is-selected': selectedCode === shape.code }"
+          :class="{ 'is-hovered': hovered === shape.code || hoveredPoint === shape.code, 'is-selected': selectedCode === shape.code }"
           role="button"
           tabindex="0"
           :aria-label="provinceLabel(shape.code)"
@@ -28,11 +28,34 @@
         >
           <use :href="'#ck-prov-' + shape.code" :fill="shape.fill" />
         </g>
+        <g
+          v-for="marker in markers"
+          :key="'point-' + marker.code"
+          class="cockpit-3d-point"
+          :class="{ 'is-hovered': hoveredPoint === marker.code, 'is-selected': selectedCode === marker.code }"
+          :transform="`translate(${marker.x} ${marker.y})`"
+          role="button"
+          tabindex="0"
+          :aria-label="provinceLabel(marker.code)"
+          @mouseenter="hoveredPoint = marker.code"
+          @mousemove="moveTip($event)"
+          @focus="hoveredPoint = marker.code"
+          @blur="hoveredPoint = ''"
+          @click="$emit('select', marker.code)"
+          @keydown.enter.prevent="$emit('select', marker.code)"
+        >
+          <circle v-if="marker.pulse" class="cockpit-3d-point__pulse" :r="marker.r + 4" />
+          <circle class="cockpit-3d-point__halo" :r="marker.r + 2" />
+          <circle class="cockpit-3d-point__dot" :r="marker.r" />
+          <circle class="cockpit-3d-point__core" :r="Math.max(1.2, marker.r * 0.32)" />
+        </g>
       </svg>
     </div>
-    <div v-if="hoveredShape" class="cockpit-3d-tip" :style="tipStyle">
-      <strong>{{ provinceLabel(hoveredShape.code) }}</strong>
-      <span>{{ t('cockpit.mapMetrics.' + metric) }}: {{ hoveredValue }}</span>
+    <div v-if="activeProvince" class="cockpit-3d-tip" :style="tipStyle">
+      <strong>{{ provinceLabel(activeProvince.provinceCode) }}</strong>
+      <span>{{ t('cockpit.fieldFulfillment') }}: {{ formatValue(activeProvince.fulfillment, 'percent') }}%</span>
+      <span>{{ t('cockpit.fieldAgents') }}: {{ formatValue(activeProvince.agents, 'int') }}</span>
+      <span>{{ t('cockpit.fieldSites') }}: {{ formatValue(activeProvince.sites, 'int') }}</span>
     </div>
   </div>
 </template>
@@ -43,7 +66,7 @@ import { useI18n } from 'vue-i18n';
 import { getIraqGeoFeatures } from '../../../mock/data/geoStatsData.js';
 import { REVIEW_SCOPE_REGIONS } from '../../../utils/reviewPermission.js';
 import {
-  cockpitColor, cockpitMetricRange, cockpitProvinceValue, formatCockpitValue
+  cockpitColorForMetric, cockpitFulfillmentColor, cockpitMetricRange, cockpitProvinceValue, formatCockpitValue
 } from '../../../utils/nationalCockpit.js';
 
 const props = defineProps({
@@ -60,6 +83,7 @@ const LAYERS = 10;
 const TILT_Y = 0.92;
 
 const hovered = ref('');
+const hoveredPoint = ref('');
 const stageEl = ref(null);
 const tip = ref({ x: 0, y: 0 });
 
@@ -74,6 +98,10 @@ function codeForName(name) {
 function provinceLabel(code) {
   const region = REVIEW_SCOPE_REGIONS.find((item) => item.code === code);
   return region ? t('systemExtras.' + region.labelKey) : code;
+}
+
+function formatValue(value, unit) {
+  return formatCockpitValue(value, unit, locale.value);
 }
 
 function ringsForGeometry(geometry) {
@@ -127,9 +155,20 @@ const shapes = computed(() => {
     return {
       code,
       path: ringsForGeometry(feature.geometry).map(pathForRing).join(' '),
-      fill: cockpitColor(ratio)
+      fill: props.metric === 'fulfillment' ? cockpitFulfillmentColor(value) : cockpitColorForMetric(ratio, props.metric)
     };
   }).filter((shape) => shape.code && shape.path);
+});
+
+const markers = computed(() => {
+  const maxAgents = Math.max(...props.provinces.map((province) => Number(province.agents) || 0), 1);
+  return props.provinces
+    .filter((province) => province.provinceCode && Number.isFinite(Number(province.lat)) && Number.isFinite(Number(province.lng)) && Number(province.lat) !== 0 && Number(province.lng) !== 0)
+    .map((province) => {
+      const [x, y] = project([Number(province.lng), Number(province.lat)]);
+      const ratio = Math.sqrt(Math.min(1, (Number(province.agents) || 0) / maxAgents));
+      return { code: province.provinceCode, x, y, r: 4 + ratio * 6, pulse: ratio > 0.66 };
+    });
 });
 
 const extrusionLayers = Array.from({ length: LAYERS }, (_, index) => {
@@ -141,13 +180,16 @@ const extrusionLayers = Array.from({ length: LAYERS }, (_, index) => {
   return { offset, color: `rgb(${color.join(' ')})` };
 });
 
-const hoveredShape = computed(() => shapes.value.find((shape) => shape.code === hovered.value) || null);
-const hoveredValue = computed(() => {
-  const province = props.provinces.find((item) => item.provinceCode === hovered.value);
-  const value = province ? cockpitProvinceValue(province, props.metric) : 0;
-  return formatCockpitValue(value, props.metric === 'fulfillment' ? 'percent' : 'int', locale.value) + (props.metric === 'fulfillment' ? '%' : '');
+const activeProvince = computed(() => {
+  const code = hoveredPoint.value || hovered.value;
+  return props.provinces.find((province) => province.provinceCode === code) || null;
 });
 const tipStyle = computed(() => ({ left: tip.value.x + 'px', top: tip.value.y + 'px' }));
+
+function clearHover() {
+  hovered.value = '';
+  hoveredPoint.value = '';
+}
 
 function moveTip(event) {
   const rect = stageEl.value?.getBoundingClientRect();
@@ -158,16 +200,24 @@ function moveTip(event) {
 
 <style scoped>
 .cockpit-3d-stage { position: relative; display: flex; min-height: clamp(320px, 40vh, 430px); align-items: center; justify-content: center; perspective: 1500px; perspective-origin: 50% 42%; user-select: none; }
-.cockpit-3d-stage::before { content: ''; position: absolute; inset: 10% 9%; border-radius: 50%; background: radial-gradient(closest-side, rgba(47, 122, 80, .2), rgba(47, 122, 80, 0) 72%); filter: blur(14px); pointer-events: none; }
-.cockpit-3d-plane { position: relative; width: 100%; max-width: 780px; transform: rotateX(46deg) rotateZ(-9deg); transform-style: preserve-3d; filter: drop-shadow(0 26px 26px rgba(31, 51, 38, .22)); will-change: transform; }
+.cockpit-3d-stage::before { content: ''; position: absolute; inset: 8% 8%; border-radius: 50%; background: radial-gradient(closest-side, rgba(201, 161, 59, .2), rgba(0, 122, 61, .08) 55%, rgba(0, 122, 61, 0) 74%); filter: blur(14px); pointer-events: none; }
+.cockpit-3d-plane { position: relative; width: 100%; max-width: 780px; transform: rotateX(46deg) rotateZ(-9deg); transform-style: preserve-3d; filter: drop-shadow(0 26px 26px rgba(20, 20, 20, .24)); will-change: transform; }
 .cockpit-3d-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .cockpit-3d-province { cursor: pointer; outline: none; }
 .cockpit-3d-province use { stroke: rgba(255, 255, 255, .82); stroke-width: .9; transition: filter .15s ease; vector-effect: non-scaling-stroke; }
-.cockpit-3d-province.is-hovered use { stroke: #f3d9a4; stroke-width: 1.7; filter: brightness(1.07); }
-.cockpit-3d-province.is-selected use { stroke: #1f3326; stroke-width: 2.2; }
-.cockpit-3d-tip { position: absolute; z-index: 6; min-width: 120px; transform: translate(-50%, calc(-100% - 10px)); border: 1px solid #d9e5db; border-radius: .5rem; background: rgba(255, 255, 255, .97); padding: .4rem .55rem; box-shadow: 0 10px 24px -18px rgba(31, 51, 38, .9); color: #1f3326; font-size: .6875rem; pointer-events: none; text-align: center; }
-.cockpit-3d-tip strong { display: block; font-size: .75rem; }
-.cockpit-3d-tip span { color: #52675a; }
+.cockpit-3d-province.is-hovered use { stroke: #c9a13b; stroke-width: 1.7; filter: brightness(1.06); }
+.cockpit-3d-province.is-selected use { stroke: #ce1126; stroke-width: 2.2; }
+.cockpit-3d-point { cursor: pointer; outline: none; }
+.cockpit-3d-point__halo { fill: rgba(201, 161, 59, .28); }
+.cockpit-3d-point__dot { fill: #c9a13b; stroke: #fff8ea; stroke-width: 1.1; }
+.cockpit-3d-point__core { fill: #fff8ea; }
+.cockpit-3d-point__pulse { fill: none; stroke: #ce1126; stroke-width: 1; opacity: .5; transform-box: fill-box; transform-origin: center; animation: cockpitPointPulse 2.4s ease-out infinite; pointer-events: none; }
+.cockpit-3d-point.is-hovered .cockpit-3d-point__dot, .cockpit-3d-point.is-selected .cockpit-3d-point__dot { fill: #ce1126; }
+.cockpit-3d-point.is-hovered .cockpit-3d-point__halo { fill: rgba(206, 17, 38, .25); }
+.cockpit-3d-tip { position: absolute; z-index: 6; min-width: 150px; transform: translate(-50%, calc(-100% - 12px)); border: 1px solid rgba(201, 161, 59, .55); border-radius: .5rem; background: rgba(255, 251, 243, .98); padding: .4rem .55rem; box-shadow: 0 12px 26px -18px rgba(20, 20, 20, .9); color: #141414; font-size: .6875rem; pointer-events: none; text-align: start; }
+.cockpit-3d-tip strong { display: block; margin-bottom: .1rem; color: #141414; font-size: .75rem; }
+.cockpit-3d-tip span { display: block; color: #52675a; line-height: 1.45; }
+@keyframes cockpitPointPulse { 0% { transform: scale(.8); opacity: .5; } 100% { transform: scale(1.9); opacity: 0; } }
 @media (max-width: 1023px) {
   .cockpit-3d-stage { min-height: clamp(280px, 36vh, 380px); }
 }

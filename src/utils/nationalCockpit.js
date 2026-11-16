@@ -7,7 +7,14 @@ export const COCKPIT_MAP_METRICS = ['fulfillment', 'households', 'agents', 'site
 
 export const COCKPIT_RADAR_KEYS = ['fulfillment', 'compliance', 'uptime', 'sync'];
 
+// Iraq-inspired palette: flag green / red / black with the gold of the national emblem.
+export const IRAQ_PALETTE = Object.freeze({
+  green: '#007A3D', deepGreen: '#0B4D2B', red: '#CE1126', black: '#141414', gold: '#C9A13B', cream: '#F4E9D2', sand: '#EFE4CC'
+});
+
 export const COCKPIT_SCALE = ['#DCEADF', '#B9D6C2', '#86B99B', '#4E8D69', '#2B5D45'];
+
+export const COCKPIT_FULFILLMENT_SCALE = ['#CE1126', '#D9694A', '#E3B36A', '#8FBF9F', '#007A3D'];
 
 export const COCKPIT_NUMBER_LOCALES = { zh: 'zh-CN', en: 'en-GB', ar: 'ar-IQ', ckb: 'ckb-IQ' };
 
@@ -56,7 +63,9 @@ function normalizeCockpitProvince(province = {}) {
     fulfillment: numeric(province.fulfillment),
     agents: numeric(province.agents),
     sites: numeric(province.sites),
-    ration: numeric(province.ration)
+    ration: numeric(province.ration),
+    lat: numeric(province.lat),
+    lng: numeric(province.lng)
   };
 }
 
@@ -118,4 +127,22 @@ export function cockpitColor(ratio) {
   const clamped = Math.min(1, Math.max(0, Number(ratio) || 0));
   const index = Math.min(COCKPIT_SCALE.length - 1, Math.floor(clamped * COCKPIT_SCALE.length));
   return COCKPIT_SCALE[index];
+}
+
+/** Fulfillment thresholds keep most provinces green/gold with red only for laggards. */
+export function cockpitFulfillmentColor(value) {
+  const numeric = Number(value) || 0;
+  if (numeric >= 99) return '#007A3D';
+  if (numeric >= 98.5) return '#4E8D69';
+  if (numeric >= 98) return '#9CC9A8';
+  if (numeric >= 97.5) return '#E3B36A';
+  return '#CE1126';
+}
+
+/** Fulfillment uses the flag palette (low red → gold → high green). */
+export function cockpitColorForMetric(ratio, metric = '') {
+  const clamped = Math.min(1, Math.max(0, Number(ratio) || 0));
+  const scale = metric === 'fulfillment' ? COCKPIT_FULFILLMENT_SCALE : COCKPIT_SCALE;
+  const index = Math.min(scale.length - 1, Math.floor(clamped * scale.length));
+  return scale[index];
 }

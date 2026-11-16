@@ -17,17 +17,15 @@ export function orgUnitTypeKey(type) {
 }
 
 export function normalizeOrgUnitRow(row = {}) {
-  const ids = (value) => (Array.isArray(value) ? [...new Set(value.filter(Boolean))] : []);
+  const { userIds, roleIds, ...rest } = row;
   return {
-    ...row,
+    ...rest,
     name: String(row.name || '').trim(),
     nameKey: String(row.nameKey || ''),
     code: String(row.code || '').trim().toUpperCase(),
     type: ORG_UNIT_TYPES.includes(row.type) ? row.type : 'center',
     parentId: String(row.parentId || ''),
-    province: String(row.province || ''),
-    userIds: ids(row.userIds),
-    roleIds: ids(row.roleIds)
+    province: String(row.province || '')
   };
 }
 
