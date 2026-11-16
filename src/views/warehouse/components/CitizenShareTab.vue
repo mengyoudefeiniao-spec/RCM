@@ -1,5 +1,5 @@
 <template>
-  <div class="ration-share-tab" :class="[isAppMode ? 'space-y-2.5' : 'space-y-3', isAppMode && !recordsVisible ? 'ration-share-intro' : '']">
+  <div ref="rootRef" class="ration-share-tab" :class="[isAppMode ? 'space-y-2.5' : 'space-y-3', isAppMode ? 'ration-share-app' : '']">
     <div class="grid" :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'gap-3 lg:grid-cols-5'">
       <!-- 家庭代理签约网点 -->
       <section
@@ -73,16 +73,22 @@
       </section>
     </div>
 
-    <!-- APP 默认只显示签约网点与本批配额；半透明双箭头提示下滑后再展开申领记录 -->
-    <button v-if="isAppMode && !recordsVisible" type="button" class="records-reveal !mt-auto" :aria-label="$t('rationShare.recordsTitle')" @click="revealRecords">
+    <!-- APP 默认只显示签约网点与本批配额；点击半透明双箭头下滑到申领记录 -->
+    <button v-if="isAppMode" type="button" class="records-reveal records-reveal-down !mt-auto" :aria-label="$t('rationShare.recordsTitle')" @click="goToRecords">
       <span class="records-chevron" aria-hidden="true">
         <el-icon><ArrowDown /></el-icon>
         <el-icon><ArrowDown /></el-icon>
       </span>
     </button>
 
-    <!-- 申领记录：按历史批次查询 -->
-    <section v-show="!isAppMode || recordsVisible" class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" aria-labelledby="ration-share-records-title">
+    <!-- 申领记录：按历史批次查询；顶部双箭头返回签约网点与本批配额 -->
+    <section ref="recordsSection" class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" :class="isAppMode ? 'records-panel' : ''" aria-labelledby="ration-share-records-title">
+      <button v-if="isAppMode" type="button" class="records-reveal records-reveal-up" :aria-label="$t('rationShare.backToOverview')" @click="goToOverview">
+        <span class="records-chevron is-up" aria-hidden="true">
+          <el-icon><ArrowUp /></el-icon>
+          <el-icon><ArrowUp /></el-icon>
+        </span>
+      </button>
       <header class="flex flex-wrap items-center justify-between gap-2 border-b border-[#E9F1EB] p-3">
         <h2 id="ration-share-records-title" class="flex min-w-0 items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
           <el-icon class="shrink-0 text-[#326445]"><Tickets /></el-icon>
@@ -180,10 +186,10 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Shop, Tickets, Refresh, CircleCheckFilled, GoodsFilled, ArrowDown } from '@element-plus/icons-vue';
+import { Shop, Tickets, Refresh, CircleCheckFilled, GoodsFilled, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { useCitizenStore } from '../../../stores/citizen.js';
 import { getCitizenQuotaBalance } from '../../../api/citizen.js';
 import { getCitizenClaimRecords } from '../../../api/warehouse.js';
@@ -195,9 +201,10 @@ const { formatRationItem, formatQuotaPeriod } = useRationI18n();
 const { isCompact, dialogWidth } = useCompactDialog(480);
 const isAppMode = useAppMode();
 const citizenStore = useCitizenStore();
+const rootRef = ref(null);
+const recordsSection = ref(null);
 
 const loading = ref(false);
-const recordsLoaded = ref(false);
 const records = ref([]);
 const selectedBatch = ref('');
 const detailVisible = ref(false);
@@ -309,7 +316,6 @@ async function loadRecords() {
     ElMessage.error(t('rationShare.loadFailed'));
   } finally {
     loading.value = false;
-    recordsLoaded.value = true;
   }
 }
 
@@ -329,45 +335,18 @@ async function loadQuota() {
   }
 }
 
-// APP 视图先只呈现签约网点与本批配额，下滑动作或点击提示后再加载并展开申领记录。
-const recordsVisible = ref(!isAppMode.value);
-let revealTouchY = 0;
-
-function revealRecords() {
-  if (!isAppMode.value || recordsVisible.value) return;
-  recordsVisible.value = true;
-  if (!recordsLoaded.value) void loadRecords();
+// 双箭头负责在两屏之间平滑滑动：下箭头到申领记录，上箭头回到网点与本批配额。
+function goToRecords() {
+  recordsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function handleRevealWheel(event) {
-  if (event.deltaY > 4) revealRecords();
-}
-
-function handleRevealTouchStart(event) {
-  revealTouchY = event.touches?.[0]?.clientY || 0;
-}
-
-function handleRevealTouchMove(event) {
-  const currentY = event.touches?.[0]?.clientY;
-  if (typeof currentY === 'number' && revealTouchY - currentY > 16) revealRecords();
+function goToOverview() {
+  rootRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 onMounted(async () => {
   await ensureFamily();
-  await loadQuota();
-  if (isAppMode.value) {
-    window.addEventListener('wheel', handleRevealWheel, { passive: true });
-    window.addEventListener('touchstart', handleRevealTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleRevealTouchMove, { passive: true });
-  } else {
-    await loadRecords();
-  }
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('wheel', handleRevealWheel);
-  window.removeEventListener('touchstart', handleRevealTouchStart);
-  window.removeEventListener('touchmove', handleRevealTouchMove);
+  await Promise.all([loadQuota(), loadRecords()]);
 });
 </script>
 
@@ -406,36 +385,36 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* APP 首屏由签约网点与本批配额撑满，申领记录留到下滑后再展开 */
-.ration-share-intro {
+/* APP 两屏布局：签约网点+本批配额占满首屏，申领记录占满下一屏 */
+.ration-share-app {
   display: flex;
   flex-direction: column;
   /* Fill the APP viewport (also capped for the desktop phone-frame preview). */
-  min-height: calc(min(100dvh, 924px) - 170px);
+  min-height: calc(min(100dvh, 924px) - 122px);
 }
-.ration-share-intro > .grid {
+.ration-share-app > .grid {
   flex: 1 1 auto;
   grid-template-rows: minmax(0, 0.85fr) minmax(0, 1.15fr);
 }
-.ration-share-intro .ration-share-station,
-.ration-share-intro .ration-share-quota {
+.ration-share-app .ration-share-station,
+.ration-share-app .ration-share-quota {
   display: flex;
   flex-direction: column;
 }
-.ration-share-intro .ration-share-station > div {
+.ration-share-app .ration-share-station > div {
   flex: 1 1 auto;
   align-items: center;
 }
-.ration-share-intro .quota-grid {
+.ration-share-app .quota-grid {
   flex: 1 1 auto;
   grid-auto-rows: 1fr;
 }
-.ration-share-intro .quota-grid > div {
+.ration-share-app .quota-grid > div {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-.ration-share-intro .quota-empty {
+.ration-share-app .quota-empty {
   flex: 1 1 auto;
   display: flex;
   align-items: center;
@@ -452,8 +431,23 @@ onBeforeUnmount(() => {
   color: #326445;
   cursor: pointer;
 }
-.ration-share-intro > .records-reveal {
+.ration-share-app > .records-reveal {
   margin-top: auto !important;
+}
+.records-panel {
+  display: flex;
+  flex-direction: column;
+  /* The records screen also fills the viewport, so only records are visible after the slide. */
+  min-height: calc(min(100dvh, 924px) - 122px);
+}
+.records-panel > header {
+  flex: 0 0 auto;
+}
+.records-reveal-up {
+  padding: 8px 0 2px;
+}
+.records-reveal-up .records-chevron {
+  animation-name: records-chevron-bounce-up;
 }
 /* 半透明双箭头暗示可下滑，不用文字提示 */
 .records-chevron {
@@ -481,6 +475,10 @@ onBeforeUnmount(() => {
 @keyframes records-chevron-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(4px); }
+}
+@keyframes records-chevron-bounce-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .records-chevron { animation: none; }
