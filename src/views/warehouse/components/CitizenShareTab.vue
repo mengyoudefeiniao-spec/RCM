@@ -1,8 +1,12 @@
 <template>
-  <div class="ration-share-tab space-y-3">
-    <div class="grid gap-3 lg:grid-cols-5">
+  <div class="ration-share-tab" :class="isAppMode ? 'space-y-2.5' : 'space-y-3'">
+    <div class="grid" :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'gap-3 lg:grid-cols-5'">
       <!-- 家庭代理签约网点 -->
-      <section class="rounded-lg border border-[#C7DED0] bg-white p-3 shadow-xs lg:col-span-2" aria-labelledby="ration-share-station-title">
+      <section
+        class="rounded-lg border border-[#C7DED0] bg-white p-3 shadow-xs"
+        :class="isAppMode ? '' : 'lg:col-span-2'"
+        aria-labelledby="ration-share-station-title"
+      >
         <div class="flex items-start gap-2.5">
           <div class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#C7DED0] bg-[#EFF5F1] text-[#326445]">
             <el-icon :size="16"><Shop /></el-icon>
@@ -31,7 +35,11 @@
       </section>
 
       <!-- 本批配额 -->
-      <section class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3 shadow-xs lg:col-span-3" aria-labelledby="ration-share-quota-title">
+      <section
+        class="rounded-lg border border-[#D9E5DB]/80 bg-white p-3 shadow-xs"
+        :class="isAppMode ? '' : 'lg:col-span-3'"
+        aria-labelledby="ration-share-quota-title"
+      >
         <div class="flex items-start justify-between gap-2">
           <div class="min-w-0">
             <h2 id="ration-share-quota-title" class="flex items-center gap-1.5 text-[13px] font-bold text-[#1B3123]">
@@ -48,10 +56,10 @@
           </el-button>
         </div>
 
-        <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div v-if="quotaLoading && !quotaItems.length" class="mt-2 grid grid-cols-2 gap-2" :class="isAppMode ? '' : 'sm:grid-cols-4'">
           <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-md border border-[#E1F4E4] bg-[#F8FBF9]" />
         </div>
-        <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div v-else-if="quotaItems.length" class="mt-2 grid grid-cols-2 gap-2" :class="isAppMode ? '' : 'sm:grid-cols-4'">
           <div v-for="item in quotaItems" :key="item.itemCode" class="rounded-md border border-[#E1F4E4] bg-[#F8FBF9] px-2 py-1.5">
             <div class="truncate text-[11px] font-semibold text-[#43554B]">{{ formatRationItem(item) }}</div>
             <div class="mt-0.5 flex items-baseline gap-1 text-xs">
@@ -84,11 +92,11 @@
         </div>
       </header>
 
-      <div v-if="loading" class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div v-if="loading" class="grid gap-2 p-3" :class="isAppMode ? 'grid-cols-1' : 'sm:grid-cols-2 xl:grid-cols-3'">
         <div v-for="i in 2" :key="i" class="h-20 animate-pulse rounded-lg border border-[#E9F1EB] bg-[#F3F8F4]" />
       </div>
       <p v-else-if="!filteredRecords.length" class="px-3 py-10 text-center text-xs text-[#8A9A8F]">{{ $t('rationShare.empty') }}</p>
-      <div v-else class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div v-else class="grid gap-2 p-3" :class="isAppMode ? 'grid-cols-1' : 'sm:grid-cols-2 xl:grid-cols-3'">
         <button
           v-for="record in filteredRecords"
           :key="record.id || record.claimVoucherNo"
@@ -172,11 +180,12 @@ import { useCitizenStore } from '../../../stores/citizen.js';
 import { getCitizenQuotaBalance } from '../../../api/citizen.js';
 import { getCitizenClaimRecords } from '../../../api/warehouse.js';
 import { useRationI18n } from '../../../utils/rationI18n.js';
-import { useCompactDialog } from '../../../composables/useCompactDialog.js';
+import { useAppMode, useCompactDialog } from '../../../composables/useCompactDialog.js';
 
 const { t, locale } = useI18n();
 const { formatRationItem, formatQuotaPeriod } = useRationI18n();
 const { isCompact, dialogWidth } = useCompactDialog(480);
+const isAppMode = useAppMode();
 const citizenStore = useCitizenStore();
 
 const loading = ref(false);
