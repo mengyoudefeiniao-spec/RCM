@@ -592,7 +592,9 @@ export function getSharedFamilies(langOverride) {
         if (cleaned.length !== parsed.length || localizedFreezeStatusChanged || legacyVerificationChanged || localized.some((family, index) => family !== cleaned[index])) {
           localStorage.setItem(storageKey, JSON.stringify(localized));
         }
-        if (localized.length > 0) return localized;
+        // An emptied catalogue is a deliberate reset (re-registration), so only a
+        // missing key seeds the demo household again.
+        return localized;
       }
     }
   } catch (e) {
@@ -650,6 +652,30 @@ export function updateSharedFamily(cardNo, updater, langOverride) {
   }
 
   return currentResult;
+}
+
+// Registration resets remove the household from every language catalog so a
+// re-registered national ID or card number starts from an empty state; the
+// rewritten lists sync back to PocketBase through the normal storage bridge.
+export function removeSharedFamilies({ cardNos = [], nationalIds = [] } = {}) {
+  const cards = new Set(cardNos.filter(Boolean).map(String));
+  const ids = new Set(nationalIds.filter(Boolean).map(String));
+  if (!cards.size && !ids.size) return 0;
+  let removed = 0;
+  FAMILY_LANGUAGES.forEach((lang) => {
+    const storageKey = `${STORAGE_KEY_FAMILIES}_${lang}`;
+    const list = getSharedFamilies(lang);
+    const next = list.filter(family => !cards.has(String(family.rationCardNo || '')) && !ids.has(String(family.ownerNationalId || '')));
+    if (next.length === list.length) return;
+    removed += list.length - next.length;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch (e) {
+      // ignore
+    }
+  });
+  if (removed) safeBroadcast('FAMILY_REMOVED', { cardNos: [...cards], nationalIds: [...ids] });
+  return removed;
 }
 
 export function addSharedFamily(newFamily, langOverride) {

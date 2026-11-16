@@ -16,13 +16,14 @@ import {
 } from '../utils/businessRules.js';
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
-import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword } from '../utils/citizenAccounts.js';
+import { findCitizenAccount, getCitizenAccounts, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword, removeCitizenAccounts } from '../utils/citizenAccounts.js';
 import { findAgentAccount, createAgentAccount, updateAgentAccount, verifyAgentAccountPassword } from '../utils/agentAccounts.js';
 import { findAgentDirectoryEntry, claimAgentDirectoryEntry, getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo } from '../utils/agentDirectory.js';
 import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
 import { saveRegistrationArchive } from '../utils/memberRegistration.js';
 import { loadRegistrationCatalog, findRegistrationProvince, findRegistrationAgency, localizeCatalogNames } from '../utils/registrationCatalog.js';
 import { isIdentityImage, chipMatchPassed } from '../utils/registrationIdentity.js';
+import { collectRegistrationConflicts } from '../utils/registrationReset.js';
 import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
 import { SIMULATED_IDENTITY_NAME } from '../utils/simulatedIdentity.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
@@ -94,7 +95,8 @@ import {
   addSharedFamily,
   getSharedFamily,
   localizeDemoFamilyNames,
-  updateSharedFamily
+  updateSharedFamily,
+  removeSharedFamilies
 } from '../utils/sharedSession.js';
 
 // 跨标签页高可靠事件总线
@@ -1802,13 +1804,32 @@ export async function mockDispatch(config) {
     if (!isValidRationCardNo(rationCardNo)) {
       return createResponse({}, 400, i18n.global.t('registerWizard.cardNoRequired'));
     }
-    const cardRegistered = Boolean(await findCitizenAccount(rationCardNo))
-      || ['zh', 'en', 'ar', 'ku'].some(language => getSharedFamilies(language).some(family => family.rationCardNo === rationCardNo));
-    if (cardRegistered) return createResponse({}, 400, i18n.global.t('registerWizard.cardNumberTaken'));
     const reservedNames = [...MOCK_USERS.map(user => user.username), ...readCenter('system_users', systemSeed.users).map(user => user.username)];
     if ([data.phone, data.nationalId].some(identifier => reservedNames.includes(identifier))) {
       return createResponse({}, 400, i18n.global.t('registerWizard.duplicate'));
     }
+    // A repeated national ID / phone / ration card number no longer blocks the
+    // registration: the previous account and its household are reset (the shared
+    // lists are rewritten, so PocketBase receives the cleaned records) and the new
+    // registration continues with fresh data.
+    const nationalIdValue = String(data.nationalId).trim();
+    const { conflicts: conflictingAccounts, cardNos: resetCardNos, nationalIds: resetNationalIds } = collectRegistrationConflicts(
+      await getCitizenAccounts(),
+      { nationalId: nationalIdValue, phone: data.phone, rationCardNo }
+    );
+    const cardAlreadyHeld = ['zh', 'en', 'ar', 'ku'].some(language => getSharedFamilies(language).some(family => family.rationCardNo === rationCardNo));
+    let resetExistingData = false;
+    if (conflictingAccounts.length || cardAlreadyHeld) {
+      const resetCards = new Set(resetCardNos);
+      const resetIds = new Set(resetNationalIds);
+      await removeCitizenAccounts(account => resetIds.has(account.nationalId)
+        || resetCards.has(account.rationCardNo) || resetCards.has(account.paperCardNo));
+      await removeSharedFamilies({ cardNos: [...resetCards], nationalIds: [...resetIds] });
+      resetExistingData = true;
+    }
+    const cardRegistered = Boolean(await findCitizenAccount(rationCardNo))
+      || ['zh', 'en', 'ar', 'ku'].some(language => getSharedFamilies(language).some(family => family.rationCardNo === rationCardNo));
+    if (cardRegistered) return createResponse({}, 400, i18n.global.t('registerWizard.cardNumberTaken'));
     const catalog = await loadRegistrationCatalog();
     const provinceEntry = findRegistrationProvince(catalog, provinceCode);
     const agencyEntry = findRegistrationAgency(catalog, provinceCode, agencyCode);
@@ -1893,7 +1914,7 @@ export async function mockDispatch(config) {
     sessionStorage.removeItem(REGISTRATION_IDENTITY_PROOF_KEY);
     sessionStorage.removeItem(REGISTRATION_CHIP_READ_KEY);
     await flushPocketBaseWrites();
-    return createResponse({ success: true, identityVerificationRequired: false, nationalId }, 200, i18n.global.t('registerWizard.registered'));
+    return createResponse({ success: true, identityVerificationRequired: false, nationalId, resetExistingData }, 200, i18n.global.t('registerWizard.registered'));
   }
 
   // Agent registration: simulated NFC read. The branch + agent number pair is

@@ -54,6 +54,24 @@ export async function createCitizenAccount(fields) {
   await persistAccounts([...accounts, account]);
   return account;
 }
+// Repeated national IDs / phone numbers / ration cards no longer block
+// registration: the previous account rows are removed so the new registration
+// starts from a clean state (the shared store rewrites the PocketBase record).
+export async function removeCitizenAccounts(predicate) {
+  if (typeof predicate !== 'function') return 0;
+  const accounts = await getCitizenAccounts();
+  const remaining = accounts.filter(account => !predicate(account));
+  const removed = accounts.length - remaining.length;
+  if (removed) await persistAccounts(remaining);
+  const legacyList = localAccounts(sessionStorage, legacyKey);
+  const keptLegacy = legacyList.filter(account => !predicate(account));
+  if (keptLegacy.length !== legacyList.length) {
+    if (keptLegacy.length) sessionStorage.setItem(legacyKey, JSON.stringify(keptLegacy));
+    else sessionStorage.removeItem(legacyKey);
+  }
+  return removed;
+}
+
 export async function updateCitizenAccount(nationalId, updates) {
   const accounts = await getCitizenAccounts();
   const index = accounts.findIndex(account => account.nationalId === nationalId);
