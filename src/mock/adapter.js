@@ -1715,10 +1715,14 @@ export async function mockDispatch(config) {
     if (!faceImage || data.livenessCompleted !== true || data.simulated !== true || !chipMatchPassed(chipMatchScore)) {
       return createResponse({}, 400, i18n.global.t('registerWizard.livenessRequired'));
     }
-    const scannedCardNo = normalizeRationCardNo(data.ocrCardNo);
-    let rationCardNo = normalizeRationCardNo(data.rationCardNo);
-    if (!rationCardNo) {
-      if (cardTypeNeedsScan(cardType)) return createResponse({}, 400, i18n.global.t('registerWizard.cardNoRequired'));
+    // Card holders register their own number; cardless applicants always receive a
+    // provisional number from the center and never inherit a stale card or agent number.
+    const scannedCardNo = needsCardDetails ? normalizeRationCardNo(data.ocrCardNo) : '';
+    let rationCardNo;
+    if (needsCardDetails) {
+      rationCardNo = normalizeRationCardNo(data.rationCardNo);
+      if (!rationCardNo) return createResponse({}, 400, i18n.global.t('registerWizard.cardNoRequired'));
+    } else {
       rationCardNo = provisionalRationCardNo(center.centerId);
     }
     if (!isValidRationCardNo(rationCardNo)) {

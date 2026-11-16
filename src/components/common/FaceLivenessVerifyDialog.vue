@@ -23,11 +23,11 @@
       <a v-if="result?.image" :href="result.image" download="face-capture.jpg" class="block text-sm text-[#326445] underline">{{ $t('faceCompareDemo.download') }}</a>
       <el-alert v-if="result" :title="$t(result.passed ? 'faceCompareDemo.passed' : 'faceCompareDemo.failed')" :type="result.passed ? 'success' : 'warning'" :closable="false" show-icon />
       <p v-if="result?.score != null" class="text-sm">{{ $t('faceCompareDemo.score') }}: {{ (result.score * 100).toFixed(1) }}%</p>
-      <p v-if="isMock && allowQuickPass" class="text-xs text-[#5A4718]">{{ $t('faceCompareDemo.quickPassNotice') }}</p>
+      <p v-if="isMock && allowQuickPass && showDemoHints" class="text-xs text-[#5A4718]">{{ $t('faceCompareDemo.quickPassNotice') }}</p>
     </div>
     <template #footer>
       <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
-      <el-button v-if="isMock && allowQuickPass" type="warning" plain @click="quickPass">{{ $t('faceCompareDemo.quickPass') }}</el-button>
+      <el-button v-if="isMock && allowQuickPass" type="warning" plain @click="quickPass">{{ $t(showDemoHints ? 'faceCompareDemo.quickPass' : 'faceCompareDemo.quickPassPlain') }}</el-button>
       <el-button type="primary" :loading="busy" :disabled="!token || !projectId || !referenceFile || !videoBlob || recording || authenticating" @click="compare">{{ $t('faceCompareDemo.compare') }}</el-button>
       <el-button v-if="result?.passed && isMock" type="success" @click="confirm">{{ $t('faceCompareDemo.confirm') }}</el-button>
     </template>
@@ -40,7 +40,7 @@ import { ElMessage } from 'element-plus';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
 import { compareLiveFace } from '../../utils/liveFaceCompare.js';
 import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
-const props = defineProps({ modelValue:Boolean, title:{ type:String, default:'' }, targetName:{ type:String, default:'' }, targetNationalId:{ type:String, default:'' }, allowQuickPass:Boolean, notice:{ type:String, default:'' }, preparedReference:{ type:Object, default:null }, preparedToken:{ type:Object, default:null }, autoStart:Boolean });
+const props = defineProps({ modelValue:Boolean, title:{ type:String, default:'' }, targetName:{ type:String, default:'' }, targetNationalId:{ type:String, default:'' }, allowQuickPass:Boolean, showDemoHints:{ type:Boolean, default:true }, notice:{ type:String, default:'' }, preparedReference:{ type:Object, default:null }, preparedToken:{ type:Object, default:null }, autoStart:Boolean });
 const emit = defineEmits(['update:modelValue', 'success', 'cancel']);
 const { t } = useI18n();
 const { dialogWidth } = useCompactDialog(520);

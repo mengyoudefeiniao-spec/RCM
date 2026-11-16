@@ -1,61 +1,62 @@
 <template>
   <el-dialog v-model="visible" :title="$t('registerWizard.title')" :width="dialogWidth" align-center :class="{ 'rcm-compact-dialog': isCompact, 'register-wizard-dialog': true }" :before-close="close">
-    <el-alert :title="$t(isMock ? 'registerWizard.demoNotice' : 'registerWizard.liveNotice')" type="warning" :closable="false" show-icon class="mb-3" />
+    <el-alert v-if="!isMock" :title="$t('registerWizard.serviceNotice')" type="warning" :closable="false" show-icon class="mb-3" />
 
-    <!-- 第一步：配给卡持有情况 -->
-    <div v-if="step === 'cardType'" class="card-type-list">
-      <button
-        v-for="option in cardTypeOptions"
-        :key="option.value"
-        type="button"
-        class="card-type-option"
-        :class="{ 'is-active': form.cardType === option.value }"
-        :aria-pressed="form.cardType === option.value"
-        @click="form.cardType = option.value"
-      >
-        <span class="card-type-dot" aria-hidden="true" />
-        <span class="card-type-label">{{ $t(`registerWizard.${option.title}`) }}</span>
-      </button>
-    </div>
-
-    <!-- 第二步：拍照与 OCR 识别 -->
-    <div v-else-if="step === 'scan'" class="space-y-3">
-      <input ref="photoInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handlePhotoSelected" />
-      <div v-if="!photo" class="border-2 border-dashed border-[#C4D6C8] rounded-lg p-6 text-center bg-[#F3F8F4]">
-        <div class="flex flex-col items-center gap-2">
-          <div class="p-2 bg-white rounded-full text-[#D3AF62] border border-[#D9E5DB]">
-            <el-icon :size="22"><Camera /></el-icon>
-          </div>
-          <el-button type="primary" size="small" data-demo-target="btn-capture" @click="triggerPhotoSelect">{{ $t('registerWizard.captureBtn') }}</el-button>
-        </div>
+    <!-- 第一步：配给卡情况；持卡者直接在本步展开拍照识别模块 -->
+    <div v-if="step === 'cardType'" class="space-y-4">
+      <div class="card-type-list">
+        <button
+          v-for="option in cardTypeOptions"
+          :key="option.value"
+          type="button"
+          class="card-type-option"
+          :class="{ 'is-active': form.cardType === option.value }"
+          :aria-pressed="form.cardType === option.value"
+          @click="selectCardType(option.value)"
+        >
+          <span class="card-type-dot" aria-hidden="true" />
+          <span class="card-type-label">{{ $t(`registerWizard.${option.title}`) }}</span>
+        </button>
       </div>
-      <template v-else>
-        <div class="relative rounded-lg overflow-hidden border border-[#D9E5DB] bg-[#F3F8F4]">
-          <img :src="photo" :alt="$t('registerWizard.previewAlt')" class="block w-full max-h-56 object-contain" />
-          <el-button size="small" class="absolute top-2 end-2" :loading="scanning" @click="triggerPhotoSelect">{{ $t('registerWizard.retakeBtn') }}</el-button>
+
+      <section v-if="needsCardDetails" class="scan-module">
+        <div class="scan-head">
+          <span class="scan-title">{{ $t('registerWizard.cardPhoto') }}</span>
+          <span class="scan-tip">{{ $t('registerWizard.cardPhotoHint') }}</span>
         </div>
-        <div v-if="scanning" class="flex items-center gap-2 text-xs text-[#326445]">
-          <el-icon class="is-loading"><Loading /></el-icon>
-          <span>{{ $t('registerWizard.scanning') }}</span>
-        </div>
+        <input ref="photoInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handlePhotoSelected" />
+        <button v-if="!photo" type="button" class="scan-empty" data-demo-target="btn-capture" @click="triggerPhotoSelect">
+          <span class="scan-empty-icon"><el-icon :size="22"><Camera /></el-icon></span>
+          <span class="scan-empty-text">{{ $t('registerWizard.captureBtn') }}</span>
+        </button>
         <template v-else>
-          <el-form label-position="top">
-            <el-form-item :label="$t('registerWizard.ocrCardNo')" required class="!mb-2">
-              <el-input v-model.trim="form.cardNo" class="bidi-ltr" data-demo-target="input-card-no" :placeholder="$t('registerWizard.cardNoRequired')" />
-            </el-form-item>
-          </el-form>
-          <div v-if="ocr" class="flex items-center justify-between gap-2 text-[11px] text-[#58685D]">
-            <span class="truncate">{{ $t('registerWizard.ocrHeadName') }}：{{ ocr.headName || '-' }}</span>
-            <el-tag v-if="ocr.confidenceScore" size="small" type="success" effect="light">
-              {{ Math.round(ocr.confidenceScore * 100) }}%
-            </el-tag>
+          <button type="button" class="scan-preview" @click="triggerPhotoSelect">
+            <img :src="photo" :alt="$t('registerWizard.previewAlt')" />
+            <span class="scan-retake">{{ $t('registerWizard.retakeBtn') }}</span>
+          </button>
+          <div v-if="scanning" class="scan-status">
+            <el-icon class="is-loading"><Loading /></el-icon>
+            <span>{{ $t('registerWizard.scanning') }}</span>
           </div>
-          <p v-if="scanFailed" class="text-[11px] text-[#B54A4A] leading-relaxed">{{ $t('registerWizard.ocrFailed') }}</p>
+          <template v-else>
+            <el-form label-position="top">
+              <el-form-item :label="$t('registerWizard.ocrCardNo')" required class="!mb-2">
+                <el-input v-model.trim="form.cardNo" class="bidi-ltr" data-demo-target="input-card-no" :placeholder="$t('registerWizard.cardNoRequired')" />
+              </el-form-item>
+            </el-form>
+            <div v-if="ocr" class="scan-ocr">
+              <span class="truncate">{{ $t('registerWizard.ocrHeadName') }}：{{ ocr.headName || '-' }}</span>
+              <el-tag v-if="ocr.confidenceScore" size="small" type="success" effect="light">
+                {{ Math.round(ocr.confidenceScore * 100) }}%
+              </el-tag>
+            </div>
+            <p v-if="scanFailed" class="scan-error">{{ $t('registerWizard.ocrFailed') }}</p>
+          </template>
         </template>
-      </template>
+      </section>
     </div>
 
-    <!-- 第三步：省份、代理机构、配给中心与卡号/代理编号 -->
+    <!-- 第二步：省份、代理机构、配给中心与持卡者的代理编号 -->
     <div v-else-if="step === 'cardSelect'" class="space-y-3">
       <div v-if="optionsError" class="p-3 rounded-lg border border-[#F2E3C6] bg-[#FDF3E0] text-[11px] text-[#5A4718] flex items-center justify-between gap-2 flex-wrap">
         <span>{{ $t('registerWizard.optionsFailed') }}</span>
@@ -120,65 +121,59 @@
           </el-select>
         </el-form-item>
 
-        <template v-if="needsCardDetails">
-          <el-form-item :label="$t('registerWizard.rationCardNo')" required class="!mb-3">
-            <el-input v-model.trim="form.cardNo" class="bidi-ltr" :placeholder="$t('registerWizard.rationCardNoPlaceholder')" />
+        <div v-if="needsCardDetails" class="grid gap-3" :class="isCompact ? 'grid-cols-1' : 'grid-cols-2'">
+          <el-form-item :label="$t('registerWizard.foodAgent')" required class="!mb-3 min-w-0">
+            <el-select v-model="form.foodAgentId" class="w-full" :disabled="!selectedCenter" :placeholder="$t('registerWizard.foodAgentPlaceholder')">
+              <el-option
+                v-for="agent in selectedCenter?.foodAgents || []"
+                :key="agent.id"
+                :value="agent.id"
+                :label="`${agent.id} · ${agent.name}`"
+                :disabled="isAgentFull(agent)"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span class="truncate">{{ agent.name }}</span>
+                  <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
+                    {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
+                  </span>
+                </div>
+              </el-option>
+            </el-select>
           </el-form-item>
 
-          <div class="grid gap-3" :class="isCompact ? 'grid-cols-1' : 'grid-cols-2'">
-            <el-form-item :label="$t('registerWizard.foodAgent')" required class="!mb-3 min-w-0">
-              <el-select v-model="form.foodAgentId" class="w-full" :disabled="!selectedCenter" :placeholder="$t('registerWizard.foodAgentPlaceholder')">
-                <el-option
-                  v-for="agent in selectedCenter?.foodAgents || []"
-                  :key="agent.id"
-                  :value="agent.id"
-                  :label="`${agent.id} · ${agent.name}`"
-                  :disabled="isAgentFull(agent)"
-                >
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="truncate">{{ agent.name }}</span>
-                    <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
-                      {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
-                    </span>
-                  </div>
-                </el-option>
-              </el-select>
-            </el-form-item>
-
-            <el-form-item class="!mb-3 min-w-0">
-              <template #label>
-                <span>{{ $t('registerWizard.flourAgent') }}<span class="text-[10px] text-[#8A9A8F] font-normal ms-1">{{ $t('registerWizard.optional') }}</span></span>
-              </template>
-              <el-select
-                v-model="form.flourAgentId"
-                class="w-full"
-                clearable
-                :disabled="!selectedCenter"
-                :placeholder="$t('registerWizard.flourAgentPlaceholder')"
+          <el-form-item class="!mb-3 min-w-0">
+            <template #label>
+              <span>{{ $t('registerWizard.flourAgent') }}<span class="text-[10px] text-[#8A9A8F] font-normal ms-1">{{ $t('registerWizard.optional') }}</span></span>
+            </template>
+            <el-select
+              v-model="form.flourAgentId"
+              class="w-full"
+              clearable
+              :disabled="!selectedCenter"
+              :placeholder="$t('registerWizard.flourAgentPlaceholder')"
+            >
+              <el-option
+                v-for="agent in selectedCenter?.flourAgents || []"
+                :key="agent.id"
+                :value="agent.id"
+                :label="`${agent.id} · ${agent.name}`"
+                :disabled="isAgentFull(agent)"
               >
-                <el-option
-                  v-for="agent in selectedCenter?.flourAgents || []"
-                  :key="agent.id"
-                  :value="agent.id"
-                  :label="`${agent.id} · ${agent.name}`"
-                  :disabled="isAgentFull(agent)"
-                >
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="truncate">{{ agent.name }}</span>
-                    <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
-                      {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
-                    </span>
-                  </div>
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </div>
-        </template>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="truncate">{{ agent.name }}</span>
+                  <span class="text-[11px] shrink-0" :class="isAgentFull(agent) ? 'text-[#B54A4A]' : 'text-[#8A9A8F]'">
+                    {{ isAgentFull(agent) ? $t('registerWizard.agentFull') : agent.id }}
+                  </span>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
         <el-alert v-else :title="$t('registerWizard.noCardNotice')" type="info" :closable="false" show-icon class="mt-1" />
       </el-form>
     </div>
 
-    <!-- 第四步：身份证与短信验证 -->
+    <!-- 第三步：身份证与短信验证 -->
     <div v-else-if="step === 'account'" class="space-y-3">
       <el-button v-if="isMock && !smsVerified" size="small" plain @click="fillExample">{{ $t('registerWizard.fillExample') }}</el-button>
       <el-form label-position="top">
@@ -218,77 +213,104 @@
       </template>
     </div>
 
-    <!-- 第五步：身份证正面、背面、NFC 芯片读取与人脸活体核验 -->
+    <!-- 第四步：身份证正面、背面、NFC 芯片读取与人脸活体核验（整卡点击触发） -->
     <div v-else class="identity-step">
+      <input ref="frontInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'front')" />
+      <input ref="backInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'back')" />
       <p class="identity-intro">{{ $t('registerWizard.identityStepHint') }}</p>
       <div class="identity-list">
-        <section class="identity-card" :class="{ 'is-done': Boolean(frontImage) }">
-          <div class="identity-body">
-            <h3 class="identity-title">{{ $t('registerWizard.identityFront') }}</h3>
-            <p class="identity-hint">{{ $t('registerWizard.identityFrontHint') }}</p>
-            <input ref="frontInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'front')" />
-            <el-button size="small" type="primary" plain :disabled="registering" @click="pickIdentityImage('front')">
-              {{ frontImage ? $t('registerWizard.identityReplace') : $t('registerWizard.identityUpload') }}
-            </el-button>
-            <p v-if="frontImage" class="identity-status is-ok">{{ $t('registerWizard.identityImageReady') }}</p>
-          </div>
-          <div class="identity-thumb">
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(frontImage) }"
+          :disabled="registering"
+          :aria-label="$t('registerWizard.identityFront')"
+          @click="pickIdentityImage('front')"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('registerWizard.identityFront') }}</span>
+            <span class="identity-hint">{{ $t('registerWizard.identityFrontHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(frontImage) }">
+              {{ frontImage ? $t('registerWizard.identityImageReady') : $t('registerWizard.identityTap') }}
+            </span>
+          </span>
+          <span class="identity-thumb">
             <img v-if="frontImage" :src="frontImage" :alt="$t('registerWizard.identityFront')" />
             <el-icon v-else :size="26"><Postcard /></el-icon>
-          </div>
-        </section>
+            <span v-if="frontImage" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
 
-        <section class="identity-card" :class="{ 'is-done': Boolean(backImage) }">
-          <div class="identity-body">
-            <h3 class="identity-title">{{ $t('registerWizard.identityBack') }}</h3>
-            <p class="identity-hint">{{ $t('registerWizard.identityBackHint') }}</p>
-            <input ref="backInputRef" type="file" accept="image/*" capture="environment" class="hidden" @change="handleIdentityImage($event, 'back')" />
-            <el-button size="small" type="primary" plain :disabled="registering" @click="pickIdentityImage('back')">
-              {{ backImage ? $t('registerWizard.identityReplace') : $t('registerWizard.identityUpload') }}
-            </el-button>
-            <p v-if="backImage" class="identity-status is-ok">{{ $t('registerWizard.identityImageReady') }}</p>
-          </div>
-          <div class="identity-thumb">
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(backImage) }"
+          :disabled="registering"
+          :aria-label="$t('registerWizard.identityBack')"
+          @click="pickIdentityImage('back')"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('registerWizard.identityBack') }}</span>
+            <span class="identity-hint">{{ $t('registerWizard.identityBackHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(backImage) }">
+              {{ backImage ? $t('registerWizard.identityImageReady') : $t('registerWizard.identityTap') }}
+            </span>
+          </span>
+          <span class="identity-thumb">
             <img v-if="backImage" :src="backImage" :alt="$t('registerWizard.identityBack')" />
             <el-icon v-else :size="26"><Postcard /></el-icon>
-          </div>
-        </section>
+            <span v-if="backImage" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
 
-        <section class="identity-card" :class="{ 'is-done': Boolean(chipIdentity) }">
-          <div class="identity-body">
-            <h3 class="identity-title">{{ $t('registerWizard.nfcTitle') }}</h3>
-            <p class="identity-hint">{{ $t('registerWizard.nfcHint') }}</p>
-            <el-button size="small" type="primary" plain :loading="chipReading" :disabled="!isMock || !smsVerified || registering" @click="readChip">
-              {{ chipIdentity ? $t('registerWizard.nfcReread') : $t('registerWizard.nfcRead') }}
-            </el-button>
-            <p v-if="chipReading" class="identity-status" role="status">{{ $t('registerWizard.nfcReading') }}</p>
-            <template v-else-if="chipIdentity">
-              <p class="identity-status is-ok">{{ $t('registerWizard.nfcDone') }}</p>
-              <p class="identity-meta">{{ $t('registerWizard.chipName') }}: {{ chipIdentity.name }} · <span dir="ltr">{{ chipIdentity.nationalId }}</span></p>
-              <p class="identity-hint">{{ $t(chipPhotoFallback ? 'registerWizard.nfcChipPhotoFallback' : 'registerWizard.nfcChipPhotoReady') }}</p>
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(chipIdentity), 'is-busy': chipReading }"
+          :disabled="!isMock || !smsVerified || chipReading || registering"
+          :aria-label="$t('registerWizard.nfcTitle')"
+          @click="readChip"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('registerWizard.nfcTitle') }}</span>
+            <span class="identity-hint">{{ $t('registerWizard.nfcHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(chipIdentity) && !chipReading }">
+              {{ chipReading ? $t('registerWizard.nfcReading') : chipIdentity ? $t('registerWizard.nfcDone') : $t('registerWizard.identityTap') }}
+            </span>
+            <template v-if="chipIdentity && !chipReading">
+              <span class="identity-meta">{{ $t('registerWizard.chipName') }}: {{ chipIdentity.name }} · <span dir="ltr">{{ chipIdentity.nationalId }}</span></span>
+              <span class="identity-hint">{{ $t(chipPhotoFallback ? 'registerWizard.nfcChipPhotoFallback' : 'registerWizard.nfcChipPhotoReady') }}</span>
             </template>
-          </div>
-          <div class="identity-thumb">
+          </span>
+          <span class="identity-thumb">
             <img v-if="chipPhoto" :src="chipPhoto" :alt="$t('registerWizard.nfcChipPhoto')" />
             <el-icon v-else :size="26"><Cpu /></el-icon>
-          </div>
-        </section>
+            <span v-if="chipIdentity" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
 
-        <section class="identity-card" :class="{ 'is-done': Boolean(faceCapture) }">
-          <div class="identity-body">
-            <h3 class="identity-title">{{ $t('registerWizard.livenessTitle') }}</h3>
-            <p class="identity-hint">{{ $t('registerWizard.livenessHint') }}</p>
-            <el-button size="small" type="primary" plain :disabled="!isMock || !chipIdentity || !frontImage || registering || chipReading" @click="startLiveness">
-              {{ faceCapture ? $t('registerWizard.livenessRedo') : $t('registerWizard.livenessStart') }}
-            </el-button>
-            <p v-if="faceCapture" class="identity-status is-ok">{{ $t('registerWizard.livenessDone') }}</p>
-            <p v-if="faceScoreText" class="identity-meta">{{ $t('registerWizard.livenessMatch', { score: faceScoreText }) }}</p>
-          </div>
-          <div class="identity-thumb">
+        <button
+          type="button"
+          class="identity-card"
+          :class="{ 'is-done': Boolean(faceCapture) }"
+          :disabled="!isMock || !chipIdentity || !frontImage || registering || chipReading"
+          :aria-label="$t('registerWizard.livenessTitle')"
+          @click="startLiveness"
+        >
+          <span class="identity-body">
+            <span class="identity-title">{{ $t('registerWizard.livenessTitle') }}</span>
+            <span class="identity-hint">{{ $t('registerWizard.livenessHint') }}</span>
+            <span class="identity-status" :class="{ 'is-ok': Boolean(faceCapture) }">
+              {{ faceCapture ? $t('registerWizard.livenessDone') : $t('registerWizard.identityTap') }}
+            </span>
+            <span v-if="faceScoreText" class="identity-meta">{{ $t('registerWizard.livenessMatch', { score: faceScoreText }) }}</span>
+          </span>
+          <span class="identity-thumb">
             <img v-if="faceCapture?.image" :src="faceCapture.image" :alt="$t('registerWizard.livenessTitle')" />
             <el-icon v-else :size="26"><Camera /></el-icon>
-          </div>
-        </section>
+            <span v-if="faceCapture" class="identity-badge"><el-icon :size="12"><CircleCheck /></el-icon></span>
+          </span>
+        </button>
       </div>
     </div>
 
@@ -298,15 +320,9 @@
         <el-button
           v-if="step === 'cardType'"
           type="primary"
-          :disabled="!isMock || optionsLoading"
+          :disabled="!isMock"
           @click="next"
         >{{ $t('registerWizard.next') }}</el-button>
-        <el-button
-          v-else-if="step === 'scan'"
-          type="primary"
-          :disabled="!isMock || optionsLoading"
-          @click="next"
-        >{{ $t('registerWizard.confirmCardNo') }}</el-button>
         <el-button
           v-else-if="step === 'cardSelect'"
           type="primary"
@@ -344,6 +360,7 @@
     :target-name="chipIdentity?.name || form.nationalId"
     :target-national-id="form.nationalId.trim()"
     :allow-quick-pass="isMock"
+    :show-demo-hints="false"
     :prepared-reference="referenceFile"
     :prepared-token="cloudToken"
     auto-start
@@ -545,6 +562,33 @@ async function loadOptions() {
   }
 }
 
+// Switching card status clears only the data that no longer applies, so the
+// photo already taken for a paper/electronic card survives a card-type change.
+function selectCardType(value) {
+  if (form.cardType === value) return;
+  const previous = form.cardType;
+  form.cardType = value;
+  form.foodAgentId = '';
+  form.flourAgentId = '';
+  if (value === CARD_TYPES.NONE) {
+    form.cardNo = '';
+    photo.value = '';
+    ocr.value = null;
+    scanFailed.value = false;
+    scanning.value = false;
+    if (photoInputRef.value) photoInputRef.value.value = '';
+    return;
+  }
+  // Paper and previous-version electronic cards use different number formats, so
+  // the recognised number is re-read under the newly selected type.
+  if (previous && cardTypeNeedsScan(previous)) {
+    form.cardNo = '';
+    ocr.value = null;
+    scanFailed.value = false;
+    if (photo.value) void runOcr();
+  }
+}
+
 function handleProvinceChange() {
   form.agencyCode = '';
   handleAgencyChange();
@@ -721,12 +765,10 @@ function onFaceCaptured(payload) {
 function next() {
   if (step.value === 'cardType') {
     if (!form.cardType) return ElMessage.warning(t('registerWizard.required'));
-    step.value = cardTypeNeedsScan(form.cardType) ? 'scan' : 'cardSelect';
-    return;
-  }
-  if (step.value === 'scan') {
-    if (!photo.value) return ElMessage.warning(t('registerWizard.photoRequired'));
-    if (!form.cardNo) return ElMessage.warning(t('registerWizard.cardNoRequired'));
+    if (needsCardDetails.value) {
+      if (!photo.value) return ElMessage.warning(t('registerWizard.photoRequired'));
+      if (!form.cardNo) return ElMessage.warning(t('registerWizard.cardNoRequired'));
+    }
     step.value = 'cardSelect';
     return;
   }
@@ -734,9 +776,8 @@ function next() {
     if (!form.provinceCode || !form.agencyCode || !form.centerId) {
       return ElMessage.warning(t('registerWizard.provinceRequired'));
     }
-    if (needsCardDetails.value) {
-      if (!form.foodAgentId) return ElMessage.warning(t('registerWizard.selectCardRequired'));
-      if (!form.cardNo) return ElMessage.warning(t('registerWizard.cardNoRequired'));
+    if (needsCardDetails.value && !form.foodAgentId) {
+      return ElMessage.warning(t('registerWizard.selectCardRequired'));
     }
     step.value = 'account';
     return;
@@ -753,8 +794,7 @@ function next() {
 function back() {
   if (step.value === 'identity') { step.value = 'account'; return; }
   if (step.value === 'account') { resetVerification(); step.value = 'cardSelect'; return; }
-  if (step.value === 'cardSelect') { step.value = cardTypeNeedsScan(form.cardType) ? 'scan' : 'cardType'; return; }
-  if (step.value === 'scan') step.value = 'cardType';
+  if (step.value === 'cardSelect') { step.value = 'cardType'; }
 }
 
 function fillExample() {
@@ -823,7 +863,7 @@ async function submit() {
       cardType: form.cardType,
       provinceCode: form.provinceCode,
       agencyCode: form.agencyCode,
-      ocrCardNo: normalizeRationCardNo(ocr.value?.cardNo || (cardTypeNeedsScan(form.cardType) ? form.cardNo : '')),
+      ocrCardNo: cardTypeNeedsScan(form.cardType) ? normalizeRationCardNo(ocr.value?.cardNo || form.cardNo) : '',
       rationCardNo: normalizeRationCardNo(form.cardNo),
       centerId: form.centerId,
       foodAgentId: form.foodAgentId,
@@ -928,7 +968,119 @@ async function submit() {
   overflow-wrap: anywhere;
 }
 
-/* 身份核验：与手机截图一致的四张纵向卡片，随弹窗上下滚动 */
+/* 配给卡照片识别：与“配给卡情况”同屏展开，点击整块区域即可拍照或重拍 */
+.scan-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #D9E5DB;
+  border-radius: 12px;
+  background: #F8FBF9;
+}
+.scan-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.scan-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1F3326;
+}
+.scan-tip {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #58685D;
+}
+.scan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 12px;
+  border: 2px dashed #C4D6C8;
+  border-radius: 10px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.scan-empty:hover,
+.scan-empty:focus-visible {
+  border-color: #D3AF62;
+  background: #FDF9F0;
+  outline: none;
+}
+.scan-empty-icon {
+  display: flex;
+  padding: 8px;
+  border: 1px solid #D9E5DB;
+  border-radius: 999px;
+  background: #F3F8F4;
+  color: #D3AF62;
+}
+.scan-empty-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #326445;
+}
+.scan-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid #D9E5DB;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #F3F8F4;
+  cursor: pointer;
+}
+.scan-preview:focus-visible {
+  outline: 2px solid #D3AF62;
+  outline-offset: 2px;
+}
+.scan-preview img {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+}
+.scan-retake {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .92);
+  font-size: 11px;
+  font-weight: 700;
+  color: #326445;
+}
+.scan-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #326445;
+}
+.scan-ocr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: #58685D;
+}
+.scan-error {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #B54A4A;
+}
+
+/* 身份核验：与手机截图一致的四张纵向卡片，点击整卡触发，随弹窗上下滚动 */
 .identity-step {
   display: flex;
   flex-direction: column;
@@ -951,24 +1103,43 @@ async function submit() {
   grid-template-columns: minmax(0, 1fr) 96px;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  margin: 0;
   padding: 12px;
   border: 1px solid #D9E5DB;
   border-radius: 12px;
   background: #FFFFFF;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.identity-card:hover:not(:disabled) {
+  border-color: #C9DBCE;
+  background: #F8FBF9;
+}
+.identity-card:focus-visible {
+  outline: none;
+  border-color: #D3AF62;
+  box-shadow: 0 0 0 2px rgba(211, 175, 98, .25);
 }
 .identity-card.is-done {
   border-color: #C7E0CE;
   background: #F8FBF9;
 }
+.identity-card:disabled {
+  cursor: not-allowed;
+  opacity: .62;
+}
 .identity-body {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
+  min-width: 0;
 }
 .identity-title {
-  margin: 0;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
@@ -976,14 +1147,12 @@ async function submit() {
   overflow-wrap: anywhere;
 }
 .identity-hint {
-  margin: 0;
   font-size: 11px;
   line-height: 1.6;
   color: #58685D;
   overflow-wrap: anywhere;
 }
 .identity-status {
-  margin: 0;
   font-size: 11px;
   line-height: 1.5;
   color: #8A9A8F;
@@ -993,28 +1162,41 @@ async function submit() {
   font-weight: 700;
 }
 .identity-meta {
-  margin: 0;
   font-size: 11px;
   line-height: 1.5;
   color: #43554B;
   overflow-wrap: anywhere;
 }
 .identity-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 96px;
   height: 64px;
   border: 1px solid #D9E5DB;
   border-radius: 8px;
   background: #F3F8F4;
   color: #8A9A8F;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 .identity-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.identity-badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #326445;
+  color: #FFFFFF;
 }
 @media (max-width: 420px) {
   .identity-card { grid-template-columns: minmax(0, 1fr) 84px; }
