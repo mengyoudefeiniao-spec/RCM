@@ -54,6 +54,12 @@ const routes = [
         meta: { title: '数据看板', roles: ['admin', 'agent'], permissionCode: 'dashboard.view' }
       },
       {
+        path: 'cockpit',
+        name: 'NationalCockpit',
+        component: () => import('../views/dashboard/NationalCockpitView.vue'),
+        meta: { titleKey: 'cockpit.title', roles: ['admin', 'agent'], permissionCode: 'dashboard.view' }
+      },
+      {
         path: 'stats',
         name: 'GeoStats',
         component: () => import('../views/stats/RationGeoStatsView.vue'),

@@ -45,7 +45,18 @@
             <span>{{ $t('nav.dashboard') }}</span>
           </router-link>
 
-          <!-- 2. 公民服务：仅 Citizen 可见 -->
+          <!-- 2. 国家驾驶舱：紧接数据看板的全国态势模块 -->
+          <router-link
+            v-if="canViewDashboard && authStore.hasPermission('dashboard.view')"
+            to="/cockpit"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/cockpit' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
+          >
+            <el-icon><Monitor /></el-icon>
+            <span>{{ $t('nav.cockpit') }}</span>
+          </router-link>
+
+          <!-- 3. 公民服务：仅 Citizen 可见 -->
           <router-link
             v-if="authStore.currentRole === 'citizen'"
             to="/citizen"
@@ -244,6 +255,7 @@ import {
   Box,
   Shop,
   Setting,
+  Monitor,
   ArrowDown,
   SwitchButton,
   Service,

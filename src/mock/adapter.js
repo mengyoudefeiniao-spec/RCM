@@ -38,6 +38,8 @@ import { createAdminCredential, publicAdminAccount } from '../utils/adminCredent
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
 import { readProcurementOrders, writeProcurementOrder, presentProcurementOrder, normalizeProcurementItems, readAgentStockBase, writeAgentStockBase, projectProcurementStocks } from '../utils/agentProcurement.js';
 import { DEMO_CENTER_WAREHOUSE_LOCATIONS } from './data/centerWarehouseLocations.js';
+import { NATIONAL_SUMMARY, PROVINCE_STATS } from './data/geoStatsData.js';
+import { normalizeOrgUnitRow } from '../utils/orgUnits.js';
 import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
 import chatComplaintMessages from '../locales/chatComplaint.js';
 import { ownsCustomerOrder, customerOrderSnapshot, customerOrderAnswer, validComplaintPhoto } from '../utils/customerOrders.js';
@@ -964,6 +966,14 @@ export async function mockDispatch(config) {
     ],
     permissions: PERMISSION_CATALOG.map((item) => ({ id: 'perm-' + item.code, moduleKey: item.moduleKey, code: item.code, featureKey: item.featureKey, parentCode: item.parentCode || '' })),
     organizations: [{ id: 'org-001', name: 'Baghdad Karkh Ration Center', code: 'BG-KRK-01', province: 'baghdad', address: 'Karkh, Baghdad, Iraq', latitude: '33.315200', longitude: '44.366100', contact: 'Baghdad Center Office', phone: '+964 1 000 0001' }, { id: 'org-002', name: 'Basra Central Ration Center', code: 'BS-CTR-01', province: 'basra', address: 'Basra, Iraq', latitude: '30.508500', longitude: '47.780400', contact: 'Basra Center Office', phone: '+964 1 000 0002' }],
+    // Organization units link administrators and roles into one hierarchy.
+    // Demo names resolve through nameKey so the four locales stay in sync.
+    'org-units': [
+      { id: 'ou-001', name: 'Ministry of Trade', nameKey: 'system.orgUnitDemoMinistry', code: 'MOT-HQ', type: 'ministry', parentId: '', province: 'baghdad', userIds: ['web-001'], roleIds: ['role-admin'] },
+      { id: 'ou-002', name: 'General Ration Directorate', nameKey: 'system.orgUnitDemoDirectorate', code: 'MOT-RAT', type: 'directorate', parentId: 'ou-001', province: 'baghdad', userIds: ['web-002'], roleIds: ['role-operator'] },
+      { id: 'ou-003', name: 'Baghdad Branch', nameKey: 'system.orgUnitDemoBaghdadBranch', code: 'MOT-BGD', type: 'branch', parentId: 'ou-002', province: 'baghdad', userIds: [], roleIds: ['role-auditor'] },
+      { id: 'ou-004', name: 'Baghdad Karkh Ration Center', nameKey: 'system.demoBaghdadCenter', code: 'BG-KRK-01', type: 'center', parentId: 'ou-003', province: 'baghdad', userIds: ['web-001', 'web-002'], roleIds: [] }
+    ],
     'audit-logs': [{ id: 'log-001', actor: 'System Administrator', details: 'System Administrator signed in to Web console', type: 'login', businessNo: 'admin', terminal: 'Web console', ip: '127.0.0.1', before: null, after: { result: 'success' }, time: new Date().toISOString() }]
   };
   const appendSystemAudit = ({ actor = 'System', type, details, businessNo = '', object = businessNo, before = null, after = null }) => {
@@ -971,6 +981,56 @@ export async function mockDispatch(config) {
     logs.unshift({ id: `log-${crypto.randomUUID()}`, actor, time: new Date().toISOString(), terminal: navigator.userAgent, ip: '127.0.0.1', type, details, businessNo, object, before, after });
     writeCenter('system_audit-logs', logs);
   };
+  // 国家驾驶舱：动态指标只存 key / 数值 / 省份编码，文案由四语词条在渲染期解析，
+  // 记录写入 rcm_center_cockpit_overview_v1，随 PocketBase 业务缓存跨设备同步。
+  if (url.includes('/cockpit/overview')) {
+    if (method !== 'GET') return createResponse({}, 405, i18n.global.t('api.businessError'));
+    const cockpitProfile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
+    const cockpitRole = cockpitProfile.role || currentRole;
+    const cockpitAllowed = ['admin', 'minister_center', 'deputy_minister', 'director_planning', 'agent'].includes(cockpitRole)
+      || (Array.isArray(cockpitProfile.permissionCodes) && cockpitProfile.permissionCodes.includes('dashboard.view'));
+    if (!cockpitAllowed) return createResponse({}, 403, i18n.global.t('api.forbidden'));
+    // GeoJSON/PROVINCE_STATS uses 哈拉卜贾省, the permission catalog uses 哈莱卜贾省.
+    const PROVINCE_CODE_ALIASES = { '哈拉卜贾省': '哈莱卜杰省' };
+    const provinceCode = (name) => REVIEW_SCOPE_REGIONS.find((region) => region.value === (PROVINCE_CODE_ALIASES[name] || name))?.code || '';
+    const averageCompliance = Number((PROVINCE_STATS.reduce((sum, province) => sum + province.complianceRate, 0) / PROVINCE_STATS.length).toFixed(1));
+    const cockpitRecord = {
+      id: 'cockpit-national',
+      version: 2,
+      generatedAt: new Date().toISOString(),
+      indicators: [
+        { key: 'population', value: NATIONAL_SUMMARY.population, unit: 'people', trend: 0.8, tone: 'good' },
+        { key: 'households', value: NATIONAL_SUMMARY.households, unit: 'households', trend: 1.2, tone: 'good' },
+        { key: 'provinces', value: PROVINCE_STATS.length, unit: 'provinces', trend: 0, tone: 'good' },
+        { key: 'agents', value: NATIONAL_SUMMARY.agentCount, unit: 'outlets', trend: 0.6, tone: 'good' },
+        { key: 'sites', value: NATIONAL_SUMMARY.warehouseTotal, unit: 'sites', trend: 0, tone: 'good' },
+        { key: 'inventory', value: Math.round(NATIONAL_SUMMARY.monthlyDistributedTon * 0.38), unit: 'tons', trend: 0.9, tone: 'good' },
+        { key: 'fulfillment', value: NATIONAL_SUMMARY.fulfillmentRate, unit: 'percent', trend: 0.3, tone: 'good' },
+        { key: 'compliance', value: averageCompliance, unit: 'percent', trend: -0.2, tone: 'watch' },
+        { key: 'reviews', value: 128, unit: 'cases', trend: -6.4, tone: 'watch' },
+        { key: 'messages', value: 18420, unit: 'messages', trend: 3.1, tone: 'good' },
+        { key: 'uptime', value: 99.86, unit: 'percent', trend: 0.02, tone: 'good' },
+        { key: 'sync', value: 99.4, unit: 'percent', trend: 0.1, tone: 'good' }
+      ],
+      provinces: PROVINCE_STATS.map((province) => ({
+        provinceCode: provinceCode(province.name),
+        population: province.population,
+        households: province.households,
+        fulfillment: province.fulfillmentRate,
+        agents: province.agentCount,
+        sites: province.warehouseTotal
+      }))
+    };
+    let cockpitStored = readCenter('cockpit_overview', null);
+    if (!cockpitStored || cockpitStored.version !== cockpitRecord.version
+      || cockpitStored.provinces?.length !== cockpitRecord.provinces.length
+      || cockpitStored.provinces.some((province) => !province.provinceCode)) {
+      cockpitStored = cockpitRecord;
+      writeCenter('cockpit_overview', cockpitStored);
+    }
+    // Expose a fresh presentation timestamp without rewriting PocketBase on every poll.
+    return createResponse({ ...cockpitStored, updatedAt: new Date().toISOString() });
+  }
   // 业务规则配置（版本化）：每次发布生成新版本号，历史版本保留全量快照
   if (url.includes('/admin/business-rules')) {
     const profile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
@@ -1034,6 +1094,9 @@ export async function mockDispatch(config) {
     } else if (section === 'organizations') {
       records = records.map((row) => ({ ...row, province: row.province || (/baghdad|بغداد/i.test(row.address || '') ? 'baghdad' : /basra|بصرة/i.test(row.address || '') ? 'basra' : ''), address: row.address || '', latitude: row.latitude || '', longitude: row.longitude || '', contact: row.contact || '', phone: row.phone || '' }));
       writeCenter(`system_${section}`, records);
+    } else if (section === 'org-units') {
+      records = records.map(normalizeOrgUnitRow);
+      writeCenter(`system_${section}`, records);
     }
     if (method === 'GET' && section !== 'audit-logs') return createResponse(section === 'users' ? records.map(publicAdminAccount) : records);
     if (section === 'audit-logs' && (method === 'POST' || method === 'DELETE')) return createResponse({}, 405, i18n.global.t('api.businessError'));
@@ -1086,6 +1149,17 @@ export async function mockDispatch(config) {
         else delete next.passwordCredential;
         delete next.password;
         delete next.passwordConfirm;
+      }
+      if (section === 'org-units') {
+        next.code = String(data.code || '').trim().toUpperCase();
+        next.name = String(data.name || '').trim();
+        if (!next.name) return createResponse({}, 400, i18n.global.t('systemUi.requiredField', { field: i18n.global.t('systemUi.orgName') }));
+        if (!next.code) return createResponse({}, 400, i18n.global.t('systemUi.requiredField', { field: i18n.global.t('systemUi.orgCode') }));
+        if (records.some((row) => row.id !== next.id && String(row.code || '').toUpperCase() === next.code)) return createResponse({}, 400, i18n.global.t('systemExtras.orgUnitCodeTaken'));
+        Object.assign(next, normalizeOrgUnitRow(next));
+        if (next.parentId === next.id) next.parentId = '';
+        if (next.parentId && !records.some((row) => row.id === next.parentId)) next.parentId = '';
+        next.nameKey = '';
       }
       const auditDetails = next.auditDetails;
       const auditType = next.auditType || 'configuration';
