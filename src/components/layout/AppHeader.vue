@@ -104,6 +104,17 @@
             <span>{{ $t('nav.agent') }}</span>
           </router-link>
 
+          <!-- 6.1 代理家庭：代理端花名册（已代理家庭清单与检索） -->
+          <router-link
+            v-if="authStore.currentRole === 'agent' && authStore.hasPermission('agents.view')"
+            to="/agent-families"
+            class="px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-medium whitespace-nowrap"
+            :class="$route.path === '/agent-families' ? 'bg-[#E2F4E4] text-[#326445] font-semibold border border-[#E5CEA1] shadow-sm' : 'text-[#58685D] border border-transparent hover:text-[#326445] hover:bg-[#E2F4E4]'"
+          >
+            <el-icon><House /></el-icon>
+            <span>{{ $t('nav.agentFamilies') }}</span>
+          </router-link>
+
           <!-- 7. 后台管理：仅 Admin 管理角色可见 -->
           <router-link
             v-if="authStore.isAdmin && authStore.hasPermission('system.users')"
@@ -240,7 +251,8 @@ import {
   Van,
   FullScreen,
   Bell,
-  Tools
+  Tools,
+  House
 } from '@element-plus/icons-vue';
 
 const router = useRouter();

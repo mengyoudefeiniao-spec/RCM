@@ -259,6 +259,18 @@ export function getAgentFamilies(agentId, params) {
 }
 
 /**
+ * 22.1 代理家庭花名册 (GET)
+ * 已代理家庭的在册清单，业务字段按当前语言返回，源数据存于 PocketBase
+ */
+export function getAgentFamilyRoster(params) {
+  return request({
+    url: '/agent/family-roster',
+    method: 'GET',
+    params
+  });
+}
+
+/**
  * 23. 代理端查询辖区公民配给购买订单列表 (GET)
  * 支撑查看自提/送货上门订单明细、履约状态及物资摘要
  */

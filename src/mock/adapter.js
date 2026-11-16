@@ -64,6 +64,7 @@ import * as enMemberTransfer from './data/en/memberTransferData.js';
 import * as enKB from './data/en/knowledgeBaseData.js';
 import * as enComplaint from './data/en/complaintData.js';
 import { MOCK_AGENT_HIERARCHY_TREE, MOCK_AGENT_FAMILIES_MAP, MESSAGE_RECIPIENT_TREE_STORAGE_KEY } from './data/agentHierarchyData.js';
+import { loadAgentFamilyRoster, localizeAgentFamily, searchAgentFamilies } from '../utils/agentFamilyRoster.js';
 
 // 智能客服多语言数据源与匹配工具
 import {
@@ -5096,6 +5097,14 @@ export async function mockDispatch(config) {
       list = MOCK_AGENT_FAMILIES_MAP[id] || MOCK_AGENT_FAMILIES_MAP['FA-00128'] || [];
     }
     return createResponse(list);
+  }
+
+  // 5.23 代理家庭花名册：已代理家庭的在册清单（业务字段以多语言对象存于 PocketBase）
+  if (url.includes('/agent/family-roster') && method === 'GET') {
+    const roster = await loadAgentFamilyRoster();
+    const scoped = roster.filter((record) => !params.agentId || record.agentId === params.agentId);
+    const matched = searchAgentFamilies(scoped, params.keyword || params.search);
+    return createResponse(matched.map((record) => localizeAgentFamily(record, reqLang)));
   }
 
   // ==========================================

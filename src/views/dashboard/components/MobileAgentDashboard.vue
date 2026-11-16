@@ -301,46 +301,6 @@
           </div>
         </div>
 
-        <!-- 公民统计子面板 -->
-        <div class="pt-3.5 border-t border-[#E9F1EB] space-y-2.5">
-          <div class="text-[11px] font-bold text-[#8A9A8F] uppercase tracking-wide">
-            {{ $t('mobileAgent.citizenStatsTitle') }}
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <!-- 服务辖区公民 -->
-            <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
-              <div class="text-base font-bold text-[#1F3326] font-mono">
-                1,480<span class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">{{ $t('mobileAgent.unitHousehold') }}</span>
-              </div>
-              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenServedHouseholds') }}</div>
-            </div>
-
-            <!-- 今日核销公民 -->
-            <div class="p-2.5 rounded-lg bg-[#F3F9F5] border border-[#E4EDE6] text-center space-y-0.5">
-              <div class="text-base font-bold text-[#326445] font-mono">
-                128<span v-if="$t('mobileAgent.unitPerson')" class="text-[10px] font-sans font-normal text-[#8A9A8F] ms-0.5">{{ $t('mobileAgent.unitPerson') }}</span>
-              </div>
-              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenVerifiedToday') }}</div>
-            </div>
-
-            <!-- 户均发放 -->
-            <div class="p-2.5 rounded-lg bg-[#F7FAF8] border border-[#E4EDE6] text-center space-y-0.5">
-              <div class="text-base font-bold text-[#B8934A] font-mono">
-                25.4<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ms-0.5">kg</span>
-              </div>
-              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenAvgPerHousehold') }}</div>
-            </div>
-
-            <!-- 公民满意度 -->
-            <div class="p-2.5 rounded-lg bg-[#FDF9EF] border border-[#EED9AE] text-center space-y-0.5">
-              <div class="text-base font-bold text-[#B8934A] font-mono">
-                98.2<span class="text-[10px] font-sans font-normal text-[#B8934A]/70 ms-0.5">%</span>
-              </div>
-              <div class="text-[10px] text-[#58685D] leading-tight">{{ $t('mobileAgent.citizenSatisfaction') }}</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 

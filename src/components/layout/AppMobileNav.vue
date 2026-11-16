@@ -4,7 +4,7 @@
     v-if="!authStore.isMobileVerificationActive"
     class="app-mobile-nav w-full z-50 bg-white border-t border-[#E5CEA1] px-2 py-1.5 items-center safe-area-bottom shadow-[0_-4px_20px_-2px_rgba(58,77,62,0.08)] transition-all duration-300 shrink-0"
     :class="[
-      authStore.currentRole === 'agent' ? 'grid grid-cols-5' : 'flex justify-around',
+      authStore.currentRole === 'agent' ? 'grid grid-cols-4' : 'flex justify-around',
       isAppMode
         ? 'rounded-b-[24px]'
         : 'fixed bottom-0 start-0 end-0 md:hidden'
@@ -57,7 +57,7 @@
     <!-- 模式 B: 代理端专属功能模块 (仅代理网点可见) -->
     <!-- ============================================== -->
     <template v-else-if="authStore.currentRole === 'agent'">
-      <!-- 1. 现场核销 (扫码核销作业看板) -->
+      <!-- 1. 运营概览 (现场核销作业看板) -->
       <router-link
         :to="getNavTarget('/dashboard')"
         class="w-full min-w-0 flex flex-col items-center gap-0.5 px-1 py-1 rounded-lg text-[10px] transition-all"
@@ -67,27 +67,17 @@
         <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentScanVerify') || '运营概览' }}</span>
       </router-link>
 
-      <!-- 2. 配给配送 (物资排程与计划) -->
+      <!-- 2. 代理家庭 (已代理家庭花名册与检索) -->
       <router-link
-        :to="getNavTarget('/warehouse')"
+        :to="getNavTarget('/agent-families')"
         class="w-full min-w-0 flex flex-col items-center gap-0.5 px-1 py-1 rounded-lg text-[10px] transition-all"
-        :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
+        :class="$route.path === '/agent-families' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
-        <el-icon :size="20"><Van /></el-icon>
-        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentDistribution') || '配给交货' }}</span>
+        <el-icon :size="20"><House /></el-icon>
+        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('nav.agentFamilies') || '代理家庭' }}</span>
       </router-link>
 
-      <!-- 3. 代理订单记录 (拆分后的代理端独立大模块：集中采购订货流水) -->
-      <router-link
-        :to="getNavTarget('/agent-orders')"
-        class="w-full min-w-0 flex flex-col items-center gap-0.5 px-1 py-1 rounded-lg text-[10px] transition-all"
-        :class="$route.path === '/agent-orders' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
-      >
-        <el-icon :size="20"><Tickets /></el-icon>
-        <span class="w-full min-h-[2.5em] flex items-center justify-center text-center leading-tight break-words">{{ $t('agent.tabAgentOrders') || '代理订单' }}</span>
-      </router-link>
-
-      <!-- 4. 代理订单统计分析 (拆分后的代理端独立大模块：订单分析图表) -->
+      <!-- 3. 库存台账 (代理端在库余量与盘盈盘亏统计) -->
       <router-link
         :to="getNavTarget('/agent-analytics')"
         class="w-full min-w-0 flex flex-col items-center gap-0.5 px-1 py-1 rounded-lg text-[10px] transition-all"
@@ -190,10 +180,9 @@ import {
   Setting,
   Service,
   ShoppingCart,
-  Van,
   FullScreen,
   DocumentChecked,
-  Tickets
+  House
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
