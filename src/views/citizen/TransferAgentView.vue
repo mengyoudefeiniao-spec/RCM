@@ -19,26 +19,6 @@
         </el-button>
       </div>
 
-      <!-- 当前家庭配给卡与原代理存根概览 -->
-      <div v-if="citizenStore.currentFamily" class="p-4 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-3 text-xs" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-4'">
-        <div>
-          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.rationCardNo') }}：</span>
-          <span class="font-mono font-bold text-[#326445]">{{ citizenStore.currentFamily.rationCardNo }}</span>
-        </div>
-        <div>
-          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizen.headName') }}：</span>
-          <span class="font-bold text-[#1F3326]">{{ citizenStore.currentFamily.headName }} ({{ citizenStore.currentFamily.memberCount }} {{ $t('common.person') }})</span>
-        </div>
-        <div>
-          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentProvince') }}：</span>
-          <span class="font-medium text-[#1F3326]">{{ locationLabel(currentFromProvince) }}</span>
-        </div>
-        <div>
-          <span class="text-[#8A9A8F] block text-[11px]">{{ $t('transfer.currentAgent') }}：</span>
-          <span class="font-medium text-[#7A5F21] truncate block">{{ citizenStore.currentFamily.agentName }}</span>
-        </div>
-      </div>
-
       <!-- 流程与表单联动容器：包含左侧流程节点时间线与右侧自适应业务内容 -->
       <div class="process-card-wrapper relative bg-white rounded-lg border border-[#D9E5DB] overflow-hidden shadow-xs">
         <div class="flex items-stretch" :class="isAppMode ? 'flex-col' : 'flex-col lg:flex-row'">
@@ -116,16 +96,14 @@
             </div>
 
             <!-- ======================================================== -->
-            <!-- 步骤 1: 选择目标分部、中心及代理 (带 1,500 户容量红线监控) -->
+            <!-- 步骤 1: 选择目标分部、中心及代理 -->
             <!-- ======================================================== -->
             <div v-show="currentStep === 1" class="space-y-4 animate-fade-in">
               <div class="flex items-center justify-between pb-2 border-b border-[#E9F1EB] flex-wrap gap-2">
                 <label class="text-sm font-bold text-[#1F3326] flex items-center gap-2 flex-wrap">
                   <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">1</span>
                   <span>{{ $t('transfer.step1TargetTitle') }}</span>
-                  <el-tag size="small" type="danger" effect="plain" class="scale-90">{{ $t('transfer.capacityAlert') }}</el-tag>
                 </label>
-                <span class="text-xs text-[#8A9A8F]">{{ $t('transfer.capacityNotice') }}</span>
               </div>
 
               <div class="grid gap-4" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'">
@@ -166,22 +144,6 @@
                 </div>
               </div>
 
-              <!-- 路径快速感知提示 -->
-              <div
-                class="p-3 rounded-lg border text-xs flex items-center justify-between"
-                :class="isSameProvince ? 'bg-[#EFF5F1] border-[#C7E0CE] text-[#12241A]' : 'bg-[#FDF3E0] border-[#F2E3C6] text-[#5A4718]'"
-              >
-                <div class="flex items-center gap-2">
-                  <el-icon><Compass /></el-icon>
-                  <span>
-                    {{ $t('transfer.routeNotice', { prov: locationLabel(targetProvince), route: isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute'), approval: isSameProvince ? $t('transfer.autoPathNotice') : $t('transfer.reviewPathNotice') }) }}
-                  </span>
-                </div>
-                <el-tag :type="isSameProvince ? 'success' : 'warning'" size="small">
-                  {{ isSameProvince ? $t('transfer.autoRoute') : $t('transfer.reviewRoute') }}
-                </el-tag>
-              </div>
-
               <!-- 双代理选择：面粉代理 & 食品代理 -->
               <div v-if="selectedCenter" class="grid gap-4 pt-2" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'">
                 <!-- 面粉代理网点选择 -->
@@ -189,7 +151,6 @@
                   <div class="flex items-center justify-between flex-wrap gap-1.5 pb-2 border-b border-[#D9E5DB]/80">
                     <span class="text-xs font-bold text-[#5A4718] flex items-center gap-1.5">
                       <span>{{ $t('transfer.flourAgent') }}</span>
-                      <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
                     </span>
                     <el-tag size="small" type="warning" effect="dark">{{ $t('transfer.flourSupply') }}</el-tag>
                   </div>
@@ -237,7 +198,6 @@
                   <div class="flex items-center justify-between flex-wrap gap-1.5 pb-2 border-b border-[#D9E5DB]/80">
                     <span class="text-xs font-bold text-[#1F3326] flex items-center gap-1.5">
                       <span>{{ $t('transfer.foodAgent') }}</span>
-                      <span class="text-[11px] text-[#8A9A8F] font-normal">({{ $t('transfer.limit1500') }})</span>
                     </span>
                     <el-tag size="small" type="primary" effect="dark">{{ $t('transfer.foodSupply') }}</el-tag>
                   </div>
@@ -291,7 +251,6 @@
                   <span class="w-6 h-6 rounded-full bg-[#E1F4E4] text-[#326445] text-xs flex items-center justify-center font-bold">2</span>
                   <span>{{ $t('transfer.step2Title') }}</span>
                 </label>
-                <span class="text-xs text-[#C04442]">{{ $t('transfer.mandatoryNotice') }}</span>
               </div>
 
               <div class="grid gap-4" :class="isAppMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'">
@@ -309,13 +268,14 @@
                 </div>
               </div>
 
-              <!-- 居住证明文件上传模块 (必需材料) -->
+              <!-- 居住证明文件上传模块 -->
               <div class="pt-2">
                 <DocumentUploader
                   v-model="residenceProofUploaded"
                   :title="$t('transfer.residenceProofTitle')"
                   :subtitle="$t('transfer.residenceProofSubtitle')"
                   is-required
+                  :show-requirement-badge="false"
                   :category-badge="$t('transfer.residenceProofBadge')"
                   :issuer="$t('transfer.residenceProofIssuer')"
                   :default-file-name="$t('transfer.residenceFileName')"
@@ -361,6 +321,7 @@
                   :title="$t('transfer.art140DocTitle')"
                   :subtitle="$t('transfer.art140DocSubtitle')"
                   is-required
+                  :show-requirement-badge="false"
                   :category-badge="$t('transfer.art140DocBadge')"
                   :issuer="$t('transfer.art140DocIssuer')"
                   :default-file-name="$t('transfer.article140FileName')"
@@ -563,7 +524,6 @@ import {
   Switch,
   Back,
   Right,
-  Compass,
   WarningFilled,
   CircleCheckFilled,
   CreditCard,

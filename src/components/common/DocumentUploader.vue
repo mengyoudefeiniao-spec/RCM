@@ -42,12 +42,14 @@
             </div>
           </div>
         </el-popover>
-        <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-90 origin-left rtl:origin-right">
-          {{ $t('uploader.required') }}
-        </el-tag>
-        <el-tag v-else type="info" size="small" effect="plain" class="scale-90 origin-left rtl:origin-right">
-          {{ $t('uploader.optional') }}
-        </el-tag>
+        <template v-if="showRequirementBadge">
+          <el-tag v-if="isRequired" type="danger" size="small" effect="plain" class="font-bold scale-90 origin-left rtl:origin-right">
+            {{ $t('uploader.required') }}
+          </el-tag>
+          <el-tag v-else type="info" size="small" effect="plain" class="scale-90 origin-left rtl:origin-right">
+            {{ $t('uploader.optional') }}
+          </el-tag>
+        </template>
         <el-tag v-if="categoryBadge" size="small" effect="light" class="scale-90 origin-left rtl:origin-right">
           {{ categoryBadge }}
         </el-tag>
@@ -236,6 +238,10 @@ const props = defineProps({
   isRequired: {
     type: Boolean,
     default: false
+  },
+  showRequirementBadge: {
+    type: Boolean,
+    default: true
   },
   categoryBadge: {
     type: String,
