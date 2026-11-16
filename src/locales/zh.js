@@ -2605,7 +2605,12 @@ export default {
     "relation": "与户主关系",
     "gender": "性别",
     "birthDate": "出生日期",
-    "monthlyIncome": "月收入水平 (IQD)"
+    "monthlyIncome": "月收入水平 (IQD)",
+    "specialStatusTitle": "人员特殊状态登记",
+    "specialStatusPlaceholder": "请选择特殊状态（可多选）",
+    "specialStatusDisplaced": "流离失所",
+    "specialStatusSocialHealth": "社会救助与健康",
+    "specialStatusHint": "仅用于配给保障与社会救助协同，可随时更新。",
   },
   "mobileAgent": {
     "defaultHeadName": "公民户主",

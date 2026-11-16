@@ -131,3 +131,7 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 - 未持有配给卡的用户由配给中心核发临时卡号 `RC-<中心编号>-<6 位随机数>`，可在后续核发环节更新；已存在的配给卡号不允许重复注册。
 - 短信验证码先经 `/auth/verify-sms` 校验通过，界面才展示登录密码输入框，因此密码输入错误不需要重新接收短信验证码；注册仍由 `/auth/register-citizen` 复核验证码后写入账号。
 - 找回密码通过 `/auth/send-sms`（`purpose: citizen-password-reset`）、`/auth/verify-sms` 与 `/auth/reset-password` 更新同一账号记录的密码摘要和 `passwordUpdatedAt`，旧密码随即失效。上述凭据沿用现有账号记录同步，不新增集合。
+
+### 家庭成员特殊状态
+
+“在册家庭成员清单 → 更新”新增的人员特殊状态以语言无关编码保存在 `rcm_shared_families_<语言>` 的成员记录 `specialStatus` 字段中（`displaced` 流离失所、`social_health` 社会救助与健康），随成员资料一并同步到 PocketBase 的 `app_data`。列表与弹窗按当前语言渲染标签，四种语言共享同一份状态编码，不需要为每种语言重复维护文案。

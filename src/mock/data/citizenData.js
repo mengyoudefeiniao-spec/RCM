@@ -44,6 +44,7 @@ export const MOCK_FAMILIES = [
         residenceInfo: '巴格达市卡尔赫区曼苏尔街区14号',
         monthlyIncome: 0,
         isUpdatedInSystem: true,
+        specialStatus: ['social_health'],
         faceVerified: false
       },
       {
@@ -59,6 +60,7 @@ export const MOCK_FAMILIES = [
         residenceInfo: '巴格达市卡尔赫区曼苏尔街区14号',
         monthlyIncome: 300000,
         isUpdatedInSystem: true,
+        specialStatus: ['displaced'],
         faceVerified: false
       },
       {

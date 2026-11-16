@@ -148,6 +148,15 @@
                 <div class="text-[11px] font-mono text-[#8A9A8F] break-words">
                   UID: {{ member.nationalId }} · {{ formatGender(member.gender) }}
                 </div>
+                <div v-if="memberSpecialStatusLabels(member).length" class="flex flex-wrap gap-1 pt-0.5">
+                  <span
+                    v-for="label in memberSpecialStatusLabels(member)"
+                    :key="label"
+                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#E9F1EB] text-[#326445] border border-[#D9E5DB]"
+                  >
+                    {{ label }}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -288,11 +297,22 @@
           border
           stripe
         >
-          <el-table-column prop="name" :label="$t('citizen.headName')" min-width="140" fixed>
+          <el-table-column prop="name" :label="$t('citizenCard.memberName')" min-width="160" fixed>
             <template #default="{ row }">
-              <div class="flex items-center gap-2">
-                <span v-if="verificationStatus(row) !== 'passed'" class="text-[#C04442] font-bold" role="img" :aria-label="$t('memberVerification.needsVerification')" :title="$t('memberVerification.needsVerification')">!</span>
-                <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span v-if="verificationStatus(row) !== 'passed'" class="text-[#C04442] font-bold" role="img" :aria-label="$t('memberVerification.needsVerification')" :title="$t('memberVerification.needsVerification')">!</span>
+                  <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
+                </div>
+                <div v-if="memberSpecialStatusLabels(row).length" class="flex flex-wrap gap-1">
+                  <span
+                    v-for="label in memberSpecialStatusLabels(row)"
+                    :key="label"
+                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#E9F1EB] text-[#326445] border border-[#D9E5DB]"
+                  >
+                    {{ label }}
+                  </span>
+                </div>
               </div>
             </template>
           </el-table-column>
@@ -511,7 +531,7 @@
           <!-- 申报信息摘要 -->
           <div class="p-3 bg-[#F3F8F4] rounded-lg border border-[#D9E5DB] grid gap-2 text-[11px]" :class="isAppMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'">
             <div>
-              <span class="text-[#8A9A8F] block">{{ $t('citizen.headName') }}：</span>
+              <span class="text-[#8A9A8F] block">{{ $t('citizenCard.memberName') }}：</span>
               <span class="font-bold text-[#1F3326]">{{ newMemberForm.name }}</span>
             </div>
             <div>
@@ -634,7 +654,7 @@
       align-center
     >
       <el-form :model="editForm" label-position="top">
-        <el-form-item :label="$t('citizen.headName')">
+        <el-form-item :label="$t('citizenCard.memberName')">
           <el-input v-model="editForm.name" disabled />
         </el-form-item>
         <el-form-item :label="$t('citizen.contactPhone')">
@@ -642,6 +662,25 @@
         </el-form-item>
         <el-form-item :label="$t('citizen.residenceAddress')">
           <el-input v-model="editForm.residenceInfo" :placeholder="$t('citizen.inputAddressPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('citizenCard.specialStatusTitle')">
+          <el-select
+            v-model="editForm.specialStatus"
+            multiple
+            clearable
+            collapse-tags
+            collapse-tags-tooltip
+            class="w-full"
+            :placeholder="$t('citizenCard.specialStatusPlaceholder')"
+          >
+            <el-option
+              v-for="option in specialStatusOptions"
+              :key="option.code"
+              :value="option.code"
+              :label="option.label"
+            />
+          </el-select>
+          <div class="text-[10px] text-[#8A9A8F] leading-relaxed pt-1">{{ $t('citizenCard.specialStatusHint') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -845,6 +884,7 @@ const citizenServices = [
 ];
 import { localizeFreezeReason } from '../../utils/freezeReason.js';
 import { createCitizenCardQrPayload } from '../../utils/qrPayload.js';
+import { MEMBER_SPECIAL_STATUS_CODES, normalizeSpecialStatus, specialStatusLabels } from '../../utils/memberSpecialStatus.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -1000,6 +1040,16 @@ function formatFreezeReason(reason) {
   return localizeFreezeReason(reason, t);
 }
 
+// 特殊状态以稳定编码保存，展示时按当前语言渲染
+function memberSpecialStatusLabels(member) {
+  return specialStatusLabels(t, member?.specialStatus);
+}
+
+const specialStatusOptions = computed(() => MEMBER_SPECIAL_STATUS_CODES.map(code => ({
+  code,
+  label: specialStatusLabels(t, [code])[0]
+})));
+
 function isMemberActive(status) {
   if (!status) return true;
   const s = String(status).trim().toLowerCase();
@@ -1018,7 +1068,8 @@ const editForm = reactive({
   id: '',
   name: '',
   phone: '',
-  residenceInfo: ''
+  residenceInfo: '',
+  specialStatus: []
 });
 
 function handleLanguageChange() {
@@ -1056,10 +1107,12 @@ onBeforeUnmount(() => {
 });
 
 function openEditModal(member) {
-  editForm.id = member.id;
-  editForm.name = member.name;
+  // 始终以被点击的成员为准，避免沿用上一次或户主姓名
+  editForm.id = member.id || member.nationalId;
+  editForm.name = member.name || '';
   editForm.phone = member.phone || '';
   editForm.residenceInfo = member.residenceInfo || '';
+  editForm.specialStatus = normalizeSpecialStatus(member.specialStatus);
   editModalVisible.value = true;
 }
 
@@ -1068,7 +1121,8 @@ async function handleSaveMember() {
   try {
     await citizenStore.updateMember(editForm.id, {
       phone: editForm.phone,
-      residenceInfo: editForm.residenceInfo
+      residenceInfo: editForm.residenceInfo,
+      specialStatus: normalizeSpecialStatus(editForm.specialStatus)
     });
     editModalVisible.value = false;
   } finally {

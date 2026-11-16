@@ -44,6 +44,7 @@ export const MOCK_FAMILIES = [
         residenceInfo: 'No. 14, Mansour St, Karkh District, Baghdad',
         monthlyIncome: 0,
         isUpdatedInSystem: true,
+        specialStatus: ['social_health'],
         faceVerified: false
       },
       {
@@ -59,6 +60,7 @@ export const MOCK_FAMILIES = [
         residenceInfo: 'No. 14, Mansour St, Karkh District, Baghdad',
         monthlyIncome: 300000,
         isUpdatedInSystem: true,
+        specialStatus: ['displaced'],
         faceVerified: false
       },
       {

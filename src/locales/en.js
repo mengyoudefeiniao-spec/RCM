@@ -2603,7 +2603,12 @@ export default {
     "relation": "Relation",
     "gender": "Gender",
     "birthDate": "Birth Date",
-    "monthlyIncome": "Income (IQD)"
+    "monthlyIncome": "Income (IQD)",
+    "specialStatusTitle": "Member special status registration",
+    "specialStatusPlaceholder": "Select special statuses (multiple allowed)",
+    "specialStatusDisplaced": "Displaced",
+    "specialStatusSocialHealth": "Social assistance and health",
+    "specialStatusHint": "Used only for ration coverage and social assistance coordination, and can be updated at any time.",
   },
   "mobileAgent": {
     "defaultHeadName": "Citizen Household Head",
