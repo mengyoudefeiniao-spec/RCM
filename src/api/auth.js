@@ -102,18 +102,7 @@ export function registerCitizen(data) {
 }
 
 /**
- * 代理注册：校验 Company Branch 与 Agent NO 是否匹配代理名录 (POST)
- */
-export function verifyAgentCredentials(data) {
-  return request({
-    url: '/auth/agent/verify-credentials',
-    method: 'POST',
-    data
-  });
-}
-
-/**
- * 代理注册：读取国民身份证芯片（演示环境为模拟读取） (POST)
+ * 代理注册：读取国民身份证芯片，同时核验 Company Branch 与 Agent NO 归属（演示环境为模拟读取） (POST)
  */
 export function readAgentRegistrationIdentity(data) {
   return request({

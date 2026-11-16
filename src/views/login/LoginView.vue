@@ -29,8 +29,8 @@
             <span>{{ $t('forgotPassword.entry') }}</span>
             <el-button type="primary" plain @click="forgotDialogVisible = true">{{ $t('forgotPassword.open') }}</el-button>
           </div>
-          <!-- Browser preview uses separate URLs; packaged apps never show the other role's entry. -->
-          <div v-if="!isPackagedApp" class="login-alt-entry">
+          <!-- Browser preview uses separate URLs; packaged apps and APP-mode layouts never show the other role's entry. -->
+          <div v-if="!isPackagedApp && !isAppMode" class="login-alt-entry">
             <router-link :to="isAgentLogin ? { path: '/login', query: { layout: 'web' } } : { path: '/login/agent', query: { layout: 'web' } }">
               {{ isAgentLogin ? $t('agentAuth.citizenEntry') : $t('agentAuth.agentEntry') }}
             </router-link>

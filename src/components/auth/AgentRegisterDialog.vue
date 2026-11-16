@@ -10,13 +10,12 @@
     <el-alert :title="$t(isMock ? 'agentAuth.demoNotice' : 'agentAuth.liveNotice')" type="warning" :closable="false" show-icon class="mb-3" />
 
     <el-steps :active="stepIndex" finish-status="success" simple class="mb-4">
-      <el-step :title="$t('agentAuth.companyStep')" />
       <el-step :title="$t('agentAuth.identityStep')" />
       <el-step :title="$t('agentAuth.accountStep')" />
     </el-steps>
 
-    <!-- 第一步：Company Branch + Agent NO 身份认证 -->
-    <div v-if="step === 'company'" class="agent-step">
+    <!-- 第一步：公司分部与代理编号、NFC 芯片读取与人脸活体核验（归属自动核验，不设独立验证步骤） -->
+    <div v-if="step === 'identity'" class="agent-step">
       <el-form label-position="top">
         <el-form-item :label="$t('agentAuth.companyBranch')" required class="!mb-3">
           <el-select
@@ -25,7 +24,7 @@
             filterable
             :loading="directoryLoading"
             :placeholder="$t('agentAuth.companyBranchPlaceholder')"
-            @change="resetCompanyVerification"
+            @change="resetIdentity"
           >
             <el-option
               v-for="branch in branches"
@@ -40,39 +39,10 @@
             v-model.trim="form.agentNo"
             class="bidi-ltr"
             :placeholder="$t('agentAuth.agentNoPlaceholder')"
-            @input="resetCompanyVerification"
+            @input="resetIdentity"
           />
         </el-form-item>
       </el-form>
-
-      <div class="agent-verify-row">
-        <el-button type="primary" plain :loading="verifyingCompany" :disabled="!isMock" @click="verifyCompany">
-          {{ $t('agentAuth.verifyCompany') }}
-        </el-button>
-        <span v-if="verification" class="agent-verified">
-          <el-icon><CircleCheck /></el-icon>
-          {{ $t('agentAuth.companyVerified') }}
-        </span>
-      </div>
-
-      <dl v-if="verification" class="agent-summary">
-        <div>
-          <dt>{{ $t('agentAuth.shopName') }}</dt>
-          <dd>{{ verification.shopName || '-' }}</dd>
-        </div>
-        <div>
-          <dt>{{ $t('agentAuth.ownerName') }}</dt>
-          <dd>{{ verification.ownerName || '-' }}</dd>
-        </div>
-        <div>
-          <dt>{{ $t('agentAuth.companyBranch') }}</dt>
-          <dd>{{ verification.branchName || verification.companyBranchCode }}</dd>
-        </div>
-      </dl>
-    </div>
-
-    <!-- 第二步：NFC 读取国民身份证芯片 + 人脸活体核验 -->
-    <div v-else-if="step === 'identity'" class="agent-step">
       <div :class="isCompact ? 'space-y-4' : 'grid grid-cols-2 gap-4'">
         <section class="minimal-card">
           <h3 class="minimal-card-title">{{ $t('agentAuth.chipTitle') }}</h3>
@@ -101,9 +71,30 @@
           </div>
           <p v-if="referenceChecking" class="minimal-status" role="status">{{ $t('agentAuth.referenceChecking') }}</p>
           <p v-else-if="referenceReady" class="minimal-status is-ok">{{ $t('agentAuth.referenceReady') }}</p>
-          <el-button class="w-full" type="primary" plain :loading="reading || referenceChecking" :disabled="!isMock || !verification" @click="readChip">
+          <el-button class="w-full" type="primary" plain :loading="reading || referenceChecking" :disabled="!isMock" @click="readChip">
             {{ $t(identity ? 'agentAuth.chipRead' : 'agentAuth.chipButton') }}
           </el-button>
+          <div v-if="identity" class="space-y-1">
+            <span v-if="identity.directoryMatched" class="agent-verified">
+              <el-icon><CircleCheck /></el-icon>
+              {{ $t('agentAuth.companyVerified') }}
+            </span>
+            <p v-else class="minimal-status">{{ $t('agentAuth.directoryPending') }}</p>
+            <dl v-if="identity.branchName || identity.shopName || identity.ownerName" class="agent-summary">
+              <div v-if="identity.branchName">
+                <dt>{{ $t('agentAuth.companyBranch') }}</dt>
+                <dd>{{ identity.branchName }}</dd>
+              </div>
+              <div v-if="identity.shopName">
+                <dt>{{ $t('agentAuth.shopName') }}</dt>
+                <dd>{{ identity.shopName }}</dd>
+              </div>
+              <div v-if="identity.ownerName">
+                <dt>{{ $t('agentAuth.ownerName') }}</dt>
+                <dd>{{ identity.ownerName }}</dd>
+              </div>
+            </dl>
+          </div>
         </section>
 
         <section class="minimal-card">
@@ -121,7 +112,7 @@
       </div>
     </div>
 
-    <!-- 第三步：手机号、短信验证与登录密码 -->
+    <!-- 第二步：手机号、短信验证与登录密码 -->
     <div v-else class="agent-step">
       <el-button v-if="isMock && !smsVerified" size="small" plain class="mb-2" @click="fillExample">{{ $t('agentAuth.fillExample') }}</el-button>
       <el-form label-position="top">
@@ -160,11 +151,10 @@
 
     <template #footer>
       <div class="flex items-center justify-between gap-2 w-full">
-        <el-button :disabled="step === 'company'" @click="back">{{ $t('agentAuth.back') }}</el-button>
+        <el-button :disabled="step === 'identity'" @click="back">{{ $t('agentAuth.back') }}</el-button>
         <el-button
-          v-if="step !== 'account'"
+          v-if="step === 'identity'"
           type="primary"
-          :disabled="!isMock || (step === 'company' ? !verification : !identity || !face)"
           @click="next"
         >{{ $t('agentAuth.next') }}</el-button>
         <el-button
@@ -203,7 +193,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Camera, CircleCheck, CreditCard } from '@element-plus/icons-vue';
 import { useCompactDialog } from '../../composables/useCompactDialog.js';
-import { verifyAgentCredentials, readAgentRegistrationIdentity, registerAgent, sendSmsCode, verifySmsCode } from '../../api/auth.js';
+import { readAgentRegistrationIdentity, registerAgent, sendSmsCode, verifySmsCode } from '../../api/auth.js';
 import FaceLivenessVerifyDialog from '../common/FaceLivenessVerifyDialog.vue';
 import { getDefaultHuaweiIamToken } from '../../utils/huaweiIam.js';
 import { checkReferenceImage } from '../../utils/liveFaceCompare.js';
@@ -226,13 +216,11 @@ const form = reactive({
   confirmPassword: '',
   smsCode: ''
 });
-const step = ref('company');
-const stepIndex = computed(() => (step.value === 'account' ? 2 : step.value === 'identity' ? 1 : 0));
+const step = ref('identity');
+const stepIndex = computed(() => (step.value === 'account' ? 1 : 0));
 
 const branches = ref([]);
 const directoryLoading = ref(false);
-const verifyingCompany = ref(false);
-const verification = ref(null);
 const identity = ref(null);
 const face = ref(null);
 const reading = ref(false);
@@ -296,8 +284,7 @@ function resetWizard() {
     companyBranchCode: '', agentNo: '', nationalId: '',
     phone: '', password: '', confirmPassword: '', smsCode: ''
   });
-  step.value = 'company';
-  verification.value = null;
+  step.value = 'identity';
   identity.value = null;
   face.value = null;
   showFace.value = false;
@@ -325,39 +312,10 @@ function clearPrepared() {
   reading.value = false;
 }
 
-function resetCompanyVerification() {
-  verification.value = null;
-  resetIdentity();
-}
-
 function resetIdentity() {
   identity.value = null;
   face.value = null;
   clearPrepared();
-}
-
-async function verifyCompany() {
-  if (verifyingCompany.value) return;
-  if (!form.companyBranchCode || !form.agentNo.trim()) {
-    ElMessage.warning(t('agentAuth.companyRequired'));
-    return;
-  }
-  if (!isValidAgentNo(form.agentNo)) {
-    ElMessage.warning(t('agentAuth.agentNoInvalid'));
-    return;
-  }
-  verifyingCompany.value = true;
-  try {
-    verification.value = await verifyAgentCredentials({
-      companyBranchCode: form.companyBranchCode,
-      agentNo: normalizeAgentNo(form.agentNo)
-    });
-    ElMessage.success(t('agentAuth.companyVerified'));
-  } catch {
-    verification.value = null;
-  } finally {
-    verifyingCompany.value = false;
-  }
 }
 
 function chooseReference() {
@@ -384,8 +342,12 @@ function selectReference(event) {
 
 async function readChip() {
   if (reading.value || referenceChecking.value) return;
-  if (!verification.value) {
+  if (!form.companyBranchCode || !form.agentNo.trim()) {
     ElMessage.warning(t('agentAuth.companyRequired'));
+    return;
+  }
+  if (!isValidAgentNo(form.agentNo)) {
+    ElMessage.warning(t('agentAuth.agentNoInvalid'));
     return;
   }
   const nationalId = form.nationalId.trim();
@@ -401,9 +363,10 @@ async function readChip() {
   const activeTokenController = new AbortController();
   tokenController = activeTokenController;
   try {
+    // The registry lookup runs inside the chip read, so the wizard needs no
+    // separate company branch / agent number verification step.
     identity.value = await readAgentRegistrationIdentity({
-      verificationToken: verification.value.verificationToken,
-      agentNo: verification.value.agentNo,
+      agentNo: normalizeAgentNo(form.agentNo),
       companyBranchCode: form.companyBranchCode,
       nationalId
     });
@@ -455,20 +418,21 @@ function onFaceCaptured(payload) {
 }
 
 function next() {
-  if (step.value === 'company') {
-    if (!verification.value) return ElMessage.warning(t('agentAuth.companyRequired'));
-    step.value = 'identity';
-    return;
+  if (step.value !== 'identity') return;
+  if (!form.companyBranchCode || !form.agentNo.trim()) {
+    return ElMessage.warning(t('agentAuth.companyRequired'));
   }
-  if (step.value === 'identity') {
-    if (!identity.value || !face.value) return ElMessage.warning(t('agentAuth.identityRequired'));
-    step.value = 'account';
+  if (!isValidAgentNo(form.agentNo)) {
+    return ElMessage.warning(t('agentAuth.agentNoInvalid'));
   }
+  if (!identity.value || !face.value) {
+    return ElMessage.warning(t('agentAuth.identityRequired'));
+  }
+  step.value = 'account';
 }
 
 function back() {
-  if (step.value === 'account') { step.value = 'identity'; return; }
-  if (step.value === 'identity') { step.value = 'company'; }
+  if (step.value === 'account') step.value = 'identity';
 }
 
 function fillExample() {
@@ -523,7 +487,7 @@ async function submit() {
   registering.value = true;
   try {
     const result = await registerAgent({
-      verificationToken: verification.value.verificationToken,
+      verificationToken: identity.value.verificationToken,
       companyBranchCode: form.companyBranchCode,
       agentNo: normalizeAgentNo(form.agentNo),
       nationalId: form.nationalId.trim(),
@@ -551,21 +515,17 @@ async function submit() {
 
 <style scoped>
 .agent-register-dialog :deep(.el-dialog__body) {
-  max-height: calc(100dvh - 260px);
+  max-height: calc(100dvh - 240px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
+  scrollbar-color: #32644533 transparent;
 }
 .agent-step {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-}
-.agent-verify-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 .agent-verified {
   display: inline-flex;

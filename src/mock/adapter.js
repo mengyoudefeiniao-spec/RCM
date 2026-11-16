@@ -18,7 +18,7 @@ import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword } from '../utils/citizenAccounts.js';
 import { findAgentAccount, createAgentAccount, updateAgentAccount, verifyAgentAccountPassword } from '../utils/agentAccounts.js';
-import { findAgentDirectoryEntry, claimAgentDirectoryEntry, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../utils/agentDirectory.js';
+import { findAgentDirectoryEntry, claimAgentDirectoryEntry, getAgentCompanyBranches, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../utils/agentDirectory.js';
 import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
 import { saveRegistrationArchive } from '../utils/memberRegistration.js';
 import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
@@ -1715,53 +1715,43 @@ export async function mockDispatch(config) {
     return createResponse({ success: true, identityVerificationRequired: true });
   }
 
-  // Agent registration: Company Branch + Agent NO must match the shared agent directory.
-  if (url.includes('/auth/agent/verify-credentials') && method === 'POST') {
+  // Agent registration: simulated NFC read. The branch + agent number pair is
+  // looked up in the shared registry here, so the wizard needs no separate
+  // "verify company branch / agent number" step. A pair that is not in the
+  // registry yet still proceeds; the company branch reviews it after registration.
+  if (url === '/auth/agent/read-identity' && method === 'POST') {
     const agentNo = normalizeAgentNo(data.agentNo);
     const companyBranchCode = String(data.companyBranchCode || '').trim();
     if (!isValidAgentNo(agentNo)) return createResponse({}, 400, i18n.global.t('agentAuth.agentNoInvalid'));
-    if (!companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
-    const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
-    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
-    if (entry.claimed || await findAgentAccount(agentNo)) {
-      return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
-    }
-    const proof = { token: demoVerificationToken(), agentNo, companyBranchCode, expiresAt: Date.now() + 600000 };
-    sessionStorage.setItem(AGENT_COMPANY_PROOF_KEY, JSON.stringify(proof));
-    return createResponse({
-      verified: true,
-      verificationToken: proof.token,
-      agentNo,
-      companyBranchCode,
-      branchName: localizeAgentNames(entry.branchNames, reqLang),
-      shopName: localizeAgentNames(entry.shopNames, reqLang),
-      ownerName: localizeAgentNames(entry.ownerNames, reqLang),
-      centerId: entry.centerId
-    });
-  }
-
-  // Agent registration: simulated NFC read after the branch/agent pair was verified.
-  if (url === '/auth/agent/read-identity' && method === 'POST') {
-    const proof = JSON.parse(sessionStorage.getItem(AGENT_COMPANY_PROOF_KEY) || 'null');
-    const agentNo = normalizeAgentNo(data.agentNo);
-    const companyBranchCode = String(data.companyBranchCode || '').trim();
-    if (!proof || proof.expiresAt < Date.now() || proof.token !== data.verificationToken
-      || proof.agentNo !== agentNo || proof.companyBranchCode !== companyBranchCode) {
-      return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
-    }
+    if (!companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
     if (!isValidNationalId(data.nationalId)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidNationalId'));
     const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
-    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
+    if (entry?.claimed || await findAgentAccount(agentNo)) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
+    }
+    const branch = (await getAgentCompanyBranches()).find(item => item.code === companyBranchCode) || null;
+    const branchNames = entry?.branchNames || branch?.names || {};
+    const proof = { token: demoVerificationToken(), agentNo, companyBranchCode, expiresAt: Date.now() + 600000 };
+    sessionStorage.setItem(AGENT_COMPANY_PROOF_KEY, JSON.stringify(proof));
     const reading = {
       token: demoVerificationToken(), agentNo, companyBranchCode,
-      nationalId: String(data.nationalId).trim(), expiresAt: Date.now() + 600000
+      nationalId: String(data.nationalId).trim(),
+      directoryMatched: Boolean(entry),
+      expiresAt: Date.now() + 600000
     };
     sessionStorage.setItem(AGENT_READ_IDENTITY_KEY, JSON.stringify(reading));
+    // Outlet names stay multilingual objects in PocketBase and are localized per request.
     return createResponse({
-      name: localizeAgentNames(entry.ownerNames, reqLang),
+      name: localizeAgentNames(entry?.ownerNames, reqLang) || SIMULATED_IDENTITY_NAME,
       nationalId: reading.nationalId,
       agentNo,
       readToken: reading.token,
+      verificationToken: proof.token,
+      branchName: localizeAgentNames(branchNames, reqLang),
+      shopName: localizeAgentNames(entry?.shopNames, reqLang),
+      ownerName: localizeAgentNames(entry?.ownerNames, reqLang),
+      centerId: entry?.centerId || branch?.centerId || null,
+      directoryMatched: Boolean(entry),
       simulated: true,
       chipPhotoAvailable: false
     });
@@ -1798,25 +1788,30 @@ export async function mockDispatch(config) {
       || sms.code !== String(data.smsCode || '') || sms.expires < Date.now()) {
       return createResponse({}, 400, i18n.global.t('agentAuth.invalidCode'));
     }
+    // A registry match enriches the account with the outlet details. When the pair
+    // is not in the registry the account is still created and marked for the
+    // company branch to review, so the wizard never dead-ends on this lookup.
     const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
-    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
-    if (entry.claimed) return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
+    if (entry?.claimed) return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
+    const branch = (await getAgentCompanyBranches()).find(item => item.code === companyBranchCode) || null;
+    const branchNames = entry?.branchNames || branch?.names || {};
     const registeredAt = new Date().toISOString();
     const registrationFields = {
       agentNo,
       companyBranchCode,
-      companyBranchNames: entry.branchNames,
-      shopNames: entry.shopNames,
-      ownerNames: entry.ownerNames,
-      centerId: entry.centerId || null,
+      companyBranchNames: branchNames,
+      shopNames: entry?.shopNames || {},
+      ownerNames: entry?.ownerNames || {},
+      centerId: entry?.centerId || branch?.centerId || null,
       nationalId: String(data.nationalId).trim(),
       phone: normalizeAgentPhone(data.phone),
       password: data.password,
       registeredAt,
-      // Registration confirms the company branch + agent number; the first
+      // Registration keeps the entered company branch + agent number; the first
       // sign-in still runs the NFC chip + live face gate, mirroring the citizen app.
       identityVerification: {
-        status: 'registered', method: 'nfc-face', simulated: true, verifiedAt: registeredAt
+        status: 'registered', method: 'nfc-face', simulated: true, verifiedAt: registeredAt,
+        directoryMatched: Boolean(entry)
       }
     };
     let account;
@@ -1826,17 +1821,18 @@ export async function mockDispatch(config) {
       return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500,
         i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'agentAuth.duplicate' : 'agentAuth.saveFailed'));
     }
-    await claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone });
+    if (entry) await claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone });
     // Registration archive mirrors the citizen flow but stores no biometric image data.
     localStorage.setItem(`rcm_registration_agent_${agentNo}`, JSON.stringify({
       agentNo,
       companyBranchCode,
-      companyBranchNames: entry.branchNames,
-      shopNames: entry.shopNames,
-      ownerNames: entry.ownerNames,
-      centerId: entry.centerId || null,
+      companyBranchNames: branchNames,
+      shopNames: entry?.shopNames || {},
+      ownerNames: entry?.ownerNames || {},
+      centerId: entry?.centerId || branch?.centerId || null,
       nationalId: account.nationalId,
       phone: account.phone,
+      directoryMatched: Boolean(entry),
       registeredAt,
       identityVerification: account.identityVerification
     }));
@@ -1847,7 +1843,8 @@ export async function mockDispatch(config) {
     return createResponse({
       success: true,
       agentNo,
-      companyBranchName: localizeAgentNames(entry.branchNames, reqLang),
+      companyBranchName: localizeAgentNames(branchNames, reqLang),
+      directoryMatched: Boolean(entry),
       identityVerificationRequired: true
     }, 200, i18n.global.t('agentAuth.registered'));
   }
