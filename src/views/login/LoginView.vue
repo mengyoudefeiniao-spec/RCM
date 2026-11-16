@@ -23,11 +23,18 @@
             <span>{{ $t('loginPage.noAccount') }}</span>
             <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
           </div>
+          <div class="login-register login-forgot">
+            <span>{{ $t('forgotPassword.entry') }}</span>
+            <el-button type="primary" plain @click="forgotDialogVisible = true">{{ $t('forgotPassword.open') }}</el-button>
+          </div>
         </section>
       </div>
     </main>
 
-    <!-- 弹窗 1: 用户全流程注册弹窗 (OCR扫描 -> 补充公民信息 -> 人脸/远程认证) -->
+    <!-- 弹窗 0: 短信验证码找回登录密码 -->
+    <ForgotPasswordDialog v-model="forgotDialogVisible" @done="handlePasswordReset" />
+
+    <!-- 弹窗 1: 公民注册向导 (卡片类型 -> OCR 识别 -> 配给中心与代理 -> 身份与账户验证) -->
     <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" @registered="handleRegistered" />
     <IdentityVerifyDialog
       v-if="authStore.pendingIdentityVerification"
@@ -96,6 +103,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
+import ForgotPasswordDialog from '../../components/auth/ForgotPasswordDialog.vue';
 import IdentityVerifyDialog from '../../components/auth/IdentityVerifyDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
@@ -159,6 +167,7 @@ const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true
 
 // 弹窗控制
 const registerDialogVisible = ref(false);
+const forgotDialogVisible = ref(false);
 const firstLoginVerifyVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
@@ -170,6 +179,11 @@ const loginForm = reactive({
 
 function handleRegistered(result) {
   loginForm.username = result.username;
+  loginForm.password = '';
+}
+
+function handlePasswordReset(result) {
+  loginForm.username = result.identifier;
   loginForm.password = '';
 }
 
@@ -362,6 +376,7 @@ async function handleSecondaryVerifySuccess() {
   color: #58685d;
   font-size: .75rem;
 }
+.login-forgot { margin-top: 12px; }
 .login-app-mode {
   height: 100dvh;
   min-height: 0;

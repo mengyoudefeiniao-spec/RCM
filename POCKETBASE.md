@@ -119,3 +119,15 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 代理扫码后的确认单以两列卡片展示物资，四种物资为两行。物资名称和单位按稳定编码及当前语言显示；已知演示姓名、完整地址使用对应翻译，自定义姓名和地址保留原文，不替换街道或门牌。库存预览读取订单所属网点的库存接口，缺少数据时显示提示并禁用确认按钮。数字交接签收展示已移除，原交付核销和库存扣减流程继续使用现有接口与存储。
 
 单元回归：`node --test scripts/tests/scan-handover.test.mjs`。先运行 `node scripts/tests/prepare-scan-handover.mjs` 生成测试二维码，再通过 `playwright-cli run-code --filename scripts/tests/scan-handover.e2e.cjs` 执行浏览器回归。需要在仓库根目录运行，使用关闭 PocketBase 同步的隔离本地环境；脚本会重置该测试浏览器的订单缓存并执行测试交付。
+
+## 公民注册向导与找回密码
+
+公民 APP 登录页的注册向导按“配给卡情况 → 拍照 OCR 确认卡号 → 配给中心与代理编号 → 身份证与短信验证 → 设置登录密码”收集数据，沿用现有集合，无需新建：
+
+- `rcm_shared_citizen_accounts`：在原有 `phone`、`nationalId`、`rationCardNo`、`paperCardNo` 之外新增 `cardType`（`paper`/`electronic`/`none`）、`ocrCardNo`、`centerId`、`centerName`、`foodAgentId`、`foodAgentName`、`flourAgentId`、`flourAgentName`、`passwordUpdatedAt`。四种语言的界面读取同一条账号记录。
+- `rcm_registration_<身份证号>`：注册档案，包含卡类型、OCR 卡号、配给中心与代理编号及卡片照片（Data URL）。卡片照片仅在小于 3 MB 时写入，避免超出 JSON 字段容量。
+- 配给中心与代理网点名称按请求 `Accept-Language` 返回；账号和家庭记录保存与语言无关的 `centerId`、`agentId`（`FD-…`/`FA-…`），切换中文、英文、阿拉伯语或库尔德语时按当前语言显示同一网点的名称。
+- 食品代理编号必填，面粉代理编号选填；未选择时 `flourAgentId`、`flourAgentName` 为空字符串，由配给中心在核发环节补充。
+- 未持有配给卡的用户由配给中心核发临时卡号 `RC-<中心编号>-<6 位随机数>`，可在后续核发环节更新；已存在的配给卡号不允许重复注册。
+- 短信验证码先经 `/auth/verify-sms` 校验通过，界面才展示登录密码输入框，因此密码输入错误不需要重新接收短信验证码；注册仍由 `/auth/register-citizen` 复核验证码后写入账号。
+- 找回密码通过 `/auth/send-sms`（`purpose: citizen-password-reset`）、`/auth/verify-sms` 与 `/auth/reset-password` 更新同一账号记录的密码摘要和 `passwordUpdatedAt`，旧密码随即失效。上述凭据沿用现有账号记录同步，不新增集合。

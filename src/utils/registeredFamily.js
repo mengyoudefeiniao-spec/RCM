@@ -48,6 +48,8 @@ export function getRegisteredFamily(account, lang) {
   const requestedCard = String(account.rationCardNo || '').trim();
   const cardTaken = requestedCard && languages.some(language => getSharedFamilies(language).some(family => family.rationCardNo === requestedCard));
   const rationCardNo = requestedCard && !cardTaken ? requestedCard : `RC-TMP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  // Agent codes stay language independent so each catalog can label the same assignment.
+  const agentId = [account.foodAgentId, account.flourAgentId].filter(Boolean).join(',');
   for (const language of languages) {
     const pool = getSharedFamilies(language);
     if (pool.some(family => family.rationCardNo === rationCardNo)) continue;
@@ -57,7 +59,9 @@ export function getRegisteredFamily(account, lang) {
       cardUnconfirmed: true,
       simulatedFamilyNumber: account.simulatedFamilyNumber || null,
       headName: '', familyCode: '', oldPaperCardNo: account.paperCardNo || '',
-      provinceCode: account.province || '', district: '', agentName: '', address: '',
+      provinceCode: account.province || '', district: account.centerName || '',
+      agentId, agentName: account.foodAgentName || '', address: '',
+      cardType: account.cardType || '', centerId: account.centerId || '',
       status: '', memberCount: 1,
       members: [applyRegisteredAccount({
         id: `registered-${account.nationalId}`, name: account.name || account.nationalId, nationalId: account.nationalId,

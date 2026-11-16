@@ -33,12 +33,23 @@ export function logoutUser() {
 }
 
 /**
- * 纸质配给卡 OCR 智能扫描识别 (POST)
- * 提取旧版纸卡中的卡号、户主姓名、省份、人数等核心存根
+ * 纸质配给卡 / 旧版电子配给卡 OCR 智能扫描识别 (POST)
+ * 提取旧版卡片中的卡号、户主姓名、省份、人数等核心存根
  */
 export function ocrScanPaperCard(data = {}) {
   return request({
     url: '/auth/ocr-paper-card',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 短信验证码找回并重置公民登录密码 (POST)
+ */
+export function resetCitizenPassword(data) {
+  return request({
+    url: '/auth/reset-password',
     method: 'POST',
     data
   });
@@ -50,6 +61,19 @@ export function ocrScanPaperCard(data = {}) {
 export function sendSmsCode(data) {
   return request({
     url: '/auth/send-sms',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 单独校验手机短信验证码 (POST)
+ * 注册与找回密码流程先校验验证码，通过后再让用户设置密码，
+ * 避免密码输入错误导致重复接收短信验证码。
+ */
+export function verifySmsCode(data) {
+  return request({
+    url: '/auth/verify-sms',
     method: 'POST',
     data
   });

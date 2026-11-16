@@ -16,7 +16,9 @@ import {
 } from '../utils/businessRules.js';
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
-import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword } from '../utils/citizenAccounts.js';
+import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword } from '../utils/citizenAccounts.js';
+import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
+import { saveRegistrationArchive } from '../utils/memberRegistration.js';
 import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
 import { SIMULATED_IDENTITY_NAME } from '../utils/simulatedIdentity.js';
 import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
@@ -835,13 +837,20 @@ export async function mockDispatch(config) {
   const localizeFamilyAgentNames = (familyList) => {
     if (!Array.isArray(familyList)) return familyList;
     const agentNames = new Map();
+    const centerNames = new Map();
     TRANSFER_BRANCH_OPTIONS.forEach((province) => province.branches.forEach((branch) => branch.centers.forEach((center) => {
+      centerNames.set(String(center.centerId), center.centerName);
       [...center.flourAgents, ...center.foodAgents].forEach((agent) => agentNames.set(agent.id, agent.name));
     })));
     return familyList.map((family) => {
       const ids = String(family.agentId || '').match(/(?:FA|FD)-[A-Z]+-\d+/g) || [];
       const names = ids.map((id) => agentNames.get(id)).filter(Boolean);
-      return names.length ? { ...family, agentName: names.join(' ＆ ') } : family;
+      // Registration stores the center by code so every catalog can show its own label.
+      const centerName = family.centerId ? centerNames.get(String(family.centerId)) : '';
+      const changes = {};
+      if (names.length) changes.agentName = names.join(' ＆ ');
+      if (centerName) changes.district = centerName;
+      return Object.keys(changes).length ? { ...family, ...changes } : family;
     });
   };
   const MOCK_DASHBOARD_STATS = isEn ? enDashboard.MOCK_DASHBOARD_STATS : zhDashboard.MOCK_DASHBOARD_STATS;
@@ -1430,12 +1439,17 @@ export async function mockDispatch(config) {
     }
   }
 
-  // 1.1 纸质配给卡 OCR 扫描识别与有效性比对校验 (返回信息按当前语言国际化)
+  // 1.1 纸质配给卡 / 旧版电子配给卡 OCR 扫描识别与有效性比对校验 (返回信息按当前语言国际化)
   if (url.includes('/auth/ocr-paper-card') && method === 'POST') {
     const rt = (key, params) => i18n.global.t(`register.api.${key}`, params);
+    const cardType = normalizeCardType(data.cardType);
+    const isPaper = cardType === CARD_TYPES.PAPER;
     if (data.mockInvalid) {
+      const invalidCardNo = isPaper ? 'IQ-P-1988-001928' : 'RC-1988-001928';
       return createResponse({
-        paperCardNo: 'IQ-P-1988-001928',
+        cardNo: invalidCardNo,
+        cardType,
+        paperCardNo: isPaper ? invalidCardNo : '',
         headName: rt('ocrInvalidHeadName'),
         province: rt('ocrProvince'),
         district: rt('ocrInvalidDistrict'),
@@ -1446,13 +1460,16 @@ export async function mockDispatch(config) {
       }, 400, rt('ocrInvalidMsg'));
     }
 
+    const cardNo = isPaper ? 'IQ-P-1994-082194' : 'RC-77120458';
     return createResponse({
-      paperCardNo: 'IQ-P-1994-082194',
+      cardNo,
+      cardType,
+      paperCardNo: isPaper ? cardNo : '',
       headName: data.headName || i18n.global.t('register.defaultUserName'),
       province: rt('ocrProvince'),
       district: rt('ocrDistrict'),
       memberCount: 5,
-      issueYear: '1994',
+      issueYear: isPaper ? '1994' : '2019',
       branchCode: 'BAG-KARKH-01',
       confidenceScore: 0.985,
       isValid: true,
@@ -1461,9 +1478,16 @@ export async function mockDispatch(config) {
     }, 200, rt('ocrValidMsg'));
   }
 
-  // 1.2 发送手机短信验证码
+  // 1.2 发送手机短信验证码（注册 / 找回密码共用，按用途分别保存校验）
   if (url.includes('/auth/send-sms') && method === 'POST') {
     const code = '839201'; // 固化演示验证码便于一键填入
+    if (data.purpose === 'citizen-password-reset') {
+      const identifier = String(data.identifier || data.phone || '').trim();
+      const account = identifier ? await findCitizenAccount(identifier) : null;
+      if (!account) return createResponse({}, 404, i18n.global.t('forgotPassword.notFound'));
+      sessionStorage.setItem('rcm_demo_password_reset_sms', JSON.stringify({ identifier, code, expires: Date.now() + 300000 }));
+      return createResponse({ smsCode: code, identifier, expireSeconds: 300 }, 200, i18n.global.t('forgotPassword.smsSent'));
+    }
     if (data.purpose === 'citizen-registration') sessionStorage.setItem('rcm_demo_registration_sms', JSON.stringify({ phone: data.phone, code, expires: Date.now() + 300000 }));
     return createResponse({
       smsCode: code,
@@ -1472,27 +1496,132 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
+  // 1.3 单独校验短信验证码（注册 / 找回密码）：先校验通过再允许设置密码
+  if (url.includes('/auth/verify-sms') && method === 'POST') {
+    const isReset = data.purpose === 'citizen-password-reset';
+    const sms = JSON.parse(sessionStorage.getItem(isReset ? 'rcm_demo_password_reset_sms' : 'rcm_demo_registration_sms') || 'null');
+    const normalize = value => String(value || '').replace(/[\s-]/g, '').trim();
+    const subject = normalize(isReset ? data.identifier : data.phone);
+    const stored = normalize(isReset ? sms?.identifier : sms?.phone);
+    const valid = Boolean(sms) && Boolean(subject) && stored === subject
+      && String(sms.code) === String(data.smsCode || '') && sms.expires > Date.now();
+    if (!valid) return createResponse({}, 400, i18n.global.t(isReset ? 'forgotPassword.invalidCode' : 'registerWizard.invalidCode'));
+    return createResponse({ verified: true, expiresAt: sms.expires }, 200, i18n.global.t(isReset ? 'forgotPassword.codeVerified' : 'registerWizard.codeVerified'));
+  }
+
+  // 1.4 短信验证码找回登录密码（凭据写入共享公民账号记录）
+  if (url.includes('/auth/reset-password') && method === 'POST') {
+    if (typeof data.password !== 'string' || data.password.length < 8) {
+      return createResponse({}, 400, i18n.global.t('forgotPassword.passwordTooShort'));
+    }
+    if (data.password !== data.confirmPassword) {
+      return createResponse({}, 400, i18n.global.t('forgotPassword.passwordMismatch'));
+    }
+    const identifier = String(data.identifier || '').trim();
+    const sms = JSON.parse(sessionStorage.getItem('rcm_demo_password_reset_sms') || 'null');
+    if (!identifier || !sms || sms.identifier !== identifier || sms.code !== String(data.smsCode || '') || sms.expires < Date.now()) {
+      return createResponse({}, 400, i18n.global.t('forgotPassword.invalidCode'));
+    }
+    const account = await resetCitizenPassword(identifier, data.password);
+    if (!account) return createResponse({}, 404, i18n.global.t('forgotPassword.notFound'));
+    sessionStorage.removeItem('rcm_demo_password_reset_sms');
+    await flushPocketBaseWrites();
+    return createResponse({ success: true, nationalId: account.nationalId }, 200, i18n.global.t('forgotPassword.success'));
+  }
+
   // Demonstration accounts and results use shared storage; these are not production identities.
   if (url.includes('/auth/register-citizen') && method === 'POST') {
     if (typeof data.password !== 'string' || data.password.length < 8) {
-      return createResponse({}, 400, i18n.global.t('registrationFlow.passwordPlaceholder'));
+      return createResponse({}, 400, i18n.global.t('registerWizard.passwordTooShort'));
     }
     if (data.password !== data.confirmPassword) {
-      return createResponse({}, 400, i18n.global.t('register.msgPwdMismatch'));
+      return createResponse({}, 400, i18n.global.t('registerWizard.passwordMismatch'));
     }
+    if (!isValidNationalId(data.nationalId)) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.invalidNationalId'));
+    }
+    if (!isValidPhone(data.phone)) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.invalidPhone'));
+    }
+    const cardType = normalizeCardType(data.cardType);
+    const center = TRANSFER_BRANCH_OPTIONS
+      .flatMap((province, provinceIndex) => province.branches.flatMap(branch => branch.centers.map(entry => ({ ...entry, provinceCode: provinceCodeAt(provinceIndex) }))))
+      .find(entry => entry.centerId === String(data.centerId || ''));
+    const foodAgent = center?.foodAgents.find(agent => agent.id === data.foodAgentId);
+    // The flour agent is optional at registration; the center can assign it later.
+    const flourAgent = center?.flourAgents.find(agent => agent.id === data.flourAgentId) || null;
+    if (!center || !foodAgent) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.selectCardRequired'));
+    }
+    const normalizePhone = value => String(value || '').replace(/[\s-]/g, '').trim();
     const sms = JSON.parse(sessionStorage.getItem('rcm_demo_registration_sms') || 'null');
-    if (!data.province || !data.nationalId || !data.phone || !sms || sms.phone !== data.phone || sms.code !== data.smsCode || sms.expires < Date.now()) {
-      return createResponse({}, 400, i18n.global.t('registrationFlow.invalidCode'));
+    if (!sms || normalizePhone(sms.phone) !== normalizePhone(data.phone) || sms.code !== data.smsCode || sms.expires < Date.now()) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.invalidCode'));
     }
+    const scannedCardNo = normalizeRationCardNo(data.ocrCardNo);
+    let rationCardNo = normalizeRationCardNo(data.rationCardNo);
+    if (!rationCardNo) {
+      if (cardTypeNeedsScan(cardType)) return createResponse({}, 400, i18n.global.t('registerWizard.cardNoRequired'));
+      rationCardNo = provisionalRationCardNo(center.centerId);
+    }
+    if (!isValidRationCardNo(rationCardNo)) {
+      return createResponse({}, 400, i18n.global.t('registerWizard.cardNoRequired'));
+    }
+    const cardRegistered = Boolean(await findCitizenAccount(rationCardNo))
+      || ['zh', 'en', 'ar', 'ku'].some(language => getSharedFamilies(language).some(family => family.rationCardNo === rationCardNo));
+    if (cardRegistered) return createResponse({}, 400, i18n.global.t('registerWizard.cardNumberTaken'));
     const reservedNames = [...MOCK_USERS.map(user => user.username), ...readCenter('system_users', systemSeed.users).map(user => user.username)];
     if ([data.phone, data.nationalId].some(identifier => reservedNames.includes(identifier))) {
-      return createResponse({}, 400, i18n.global.t('registrationFlow.duplicateAccount'));
+      return createResponse({}, 400, i18n.global.t('registerWizard.duplicate'));
     }
-    try { await createCitizenAccount(data); }
+    const registrationFields = {
+      ...data,
+      cardType,
+      province: center.provinceCode,
+      rationCardNo,
+      paperCardNo: cardType === CARD_TYPES.PAPER ? (scannedCardNo || rationCardNo) : '',
+      ocrCardNo: scannedCardNo,
+      centerId: center.centerId,
+      centerName: center.centerName,
+      foodAgentId: foodAgent.id,
+      foodAgentName: foodAgent.name,
+      flourAgentId: flourAgent?.id || '',
+      flourAgentName: flourAgent?.name || '',
+      registeredAt: new Date().toISOString()
+    };
+    let account;
+    try { account = await createCitizenAccount(registrationFields); }
     catch (error) {
-      return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500, i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'registrationFlow.duplicateAccount' : 'registrationFlow.sharedSaveFailed'));
+      return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500, i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'registerWizard.duplicate' : 'registerWizard.saveFailed'));
+    }
+    // Registration materials belong to the shared archive; a failed archive write must not lose the account.
+    const cardPhoto = typeof data.cardPhoto === 'string' && data.cardPhoto.length < 3_000_000 ? data.cardPhoto : '';
+    try {
+      await saveRegistrationArchive({
+        nationalId: registrationFields.nationalId,
+        name: registrationFields.name || '',
+        phone: registrationFields.phone,
+        identityInfo: {
+          name: registrationFields.name || '', nationalId: registrationFields.nationalId, phone: registrationFields.phone
+        },
+        cardType,
+        rationCardNo,
+        ocrCardNo: scannedCardNo,
+        paperCardNo: registrationFields.paperCardNo,
+        paperCardImage: cardPhoto,
+        centerId: center.centerId,
+        centerName: center.centerName,
+        foodAgentId: foodAgent.id,
+        foodAgentName: foodAgent.name,
+        flourAgentId: flourAgent?.id || '',
+        flourAgentName: flourAgent?.name || '',
+        registeredAt: registrationFields.registeredAt
+      });
+    } catch (error) {
+      console.warn('[Registration] Archive write failed; the account and card assignment are still saved.', error);
     }
     sessionStorage.removeItem('rcm_demo_registration_sms');
+    await flushPocketBaseWrites();
     return createResponse({ success: true, identityVerificationRequired: true });
   }
 

@@ -29,10 +29,15 @@ function sharedAccount(fields, passwordCredential) {
   return {
     id: `registered-${fields.nationalId}`, province: fields.province,
     phone: fields.phone, nationalId: fields.nationalId, name: fields.name || '',
-    passwordCredential, registeredAt: fields.registeredAt || new Date().toISOString(),
+    passwordCredential, passwordUpdatedAt: fields.passwordUpdatedAt || null,
+    registeredAt: fields.registeredAt || new Date().toISOString(),
     identityVerification: fields.identityVerification || null, simulatedFamilyNumber: fields.simulatedFamilyNumber || null,
     familyId: fields.familyId || null, familyNumber: fields.familyNumber || null,
-    rationCardNo: fields.rationCardNo || null, paperCardNo: fields.paperCardNo || null
+    rationCardNo: fields.rationCardNo || null, paperCardNo: fields.paperCardNo || null,
+    cardType: fields.cardType || null, ocrCardNo: fields.ocrCardNo || null,
+    centerId: fields.centerId || null, centerName: fields.centerName || null,
+    foodAgentId: fields.foodAgentId || null, foodAgentName: fields.foodAgentName || null,
+    flourAgentId: fields.flourAgentId || null, flourAgentName: fields.flourAgentName || null
   };
 }
 export async function createCitizenAccount(fields) {
@@ -54,6 +59,21 @@ export async function updateCitizenAccount(nationalId, updates) {
   await persistAccounts(accounts);
   return accounts[index];
 }
+// Password recovery replaces the stored credential and records when it changed.
+export async function resetCitizenPassword(identifier, password) {
+  const accounts = await getCitizenAccounts();
+  const index = accounts.findIndex(account => matches(account, identifier));
+  if (index < 0) return null;
+  const passwordCredential = await createPasswordCredential(password);
+  const passwordUpdatedAt = new Date().toISOString();
+  accounts[index] = sharedAccount({ ...accounts[index], passwordCredential, passwordUpdatedAt }, passwordCredential);
+  await persistAccounts(accounts);
+  // Remove any tab-only legacy copy so the previous password stops working.
+  const remaining = localAccounts(sessionStorage, legacyKey).filter(entry => entry.nationalId !== accounts[index].nationalId);
+  if (remaining.length) sessionStorage.setItem(legacyKey, JSON.stringify(remaining)); else sessionStorage.removeItem(legacyKey);
+  return accounts[index];
+}
+
 export async function verifyCitizenAccountPassword(account, password) {
   if (account.passwordCredential) return await verifyPasswordCredential(password, account.passwordCredential) ? account : null;
   // Upgrade the previous tab-only accounts after their original password has been checked.
