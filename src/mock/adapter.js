@@ -39,7 +39,7 @@ import { createAdminCredential, publicAdminAccount } from '../utils/adminCredent
 import { readSharedComplaints, writeSharedComplaint, presentComplaint, complaintStatusCode, complaintOwnerId, ownsComplaint } from '../utils/complaints.js';
 import { readProcurementOrders, writeProcurementOrder, presentProcurementOrder, normalizeProcurementItems, readAgentStockBase, writeAgentStockBase, projectProcurementStocks } from '../utils/agentProcurement.js';
 import { DEMO_CENTER_WAREHOUSE_LOCATIONS } from './data/centerWarehouseLocations.js';
-import { NATIONAL_SUMMARY, PROVINCE_STATS } from './data/geoStatsData.js';
+import { GEO_MONTHS, NATIONAL_SUMMARY, PROVINCE_STATS, RATION_ITEM_STANDARDS } from './data/geoStatsData.js';
 import { normalizeOrgUnitRow } from '../utils/orgUnits.js';
 import { analyzeCustomerMessage } from '../utils/customerMessageAnalysis.js';
 import chatComplaintMessages from '../locales/chatComplaint.js';
@@ -995,10 +995,11 @@ export async function mockDispatch(config) {
     // GeoJSON/PROVINCE_STATS uses 哈拉卜贾省, the permission catalog uses 哈莱卜贾省.
     const PROVINCE_CODE_ALIASES = { '哈拉卜贾省': '哈莱卜杰省' };
     const provinceCode = (name) => REVIEW_SCOPE_REGIONS.find((region) => region.value === (PROVINCE_CODE_ALIASES[name] || name))?.code || '';
+    const COMMODITY_KEYS = { '小麦粉': 'flour', '大米': 'rice', '食用油': 'oil', '白糖': 'sugar', '奶粉': 'milkPowder', '食盐': 'salt' };
     const averageCompliance = Number((PROVINCE_STATS.reduce((sum, province) => sum + province.complianceRate, 0) / PROVINCE_STATS.length).toFixed(1));
     const cockpitRecord = {
       id: 'cockpit-national',
-      version: 2,
+      version: 3,
       generatedAt: new Date().toISOString(),
       indicators: [
         { key: 'population', value: NATIONAL_SUMMARY.population, unit: 'people', trend: 0.8, tone: 'good' },
@@ -1020,13 +1021,28 @@ export async function mockDispatch(config) {
         households: province.households,
         fulfillment: province.fulfillmentRate,
         agents: province.agentCount,
-        sites: province.warehouseTotal
-      }))
+        sites: province.warehouseTotal,
+        ration: province.monthlyDistributedTon
+      })),
+      // Chart series are locale-neutral: month indexes and commodity keys only.
+      charts: (() => {
+        const months = GEO_MONTHS.map((_, index) => index + 5);
+        return {
+          months,
+          quota: months.map((_, index) => PROVINCE_STATS.reduce((sum, province) => sum + province.monthlyTrend[index].quotaTon, 0)),
+          actual: months.map((_, index) => PROVINCE_STATS.reduce((sum, province) => sum + province.monthlyTrend[index].actualTon, 0)),
+          items: RATION_ITEM_STANDARDS.map((standard, index) => ({
+            key: COMMODITY_KEYS[standard.name] || standard.name,
+            value: PROVINCE_STATS.reduce((sum, province) => sum + province.itemQuotas[index].provinceTon, 0)
+          }))
+        };
+      })()
     };
     let cockpitStored = readCenter('cockpit_overview', null);
     if (!cockpitStored || cockpitStored.version !== cockpitRecord.version
       || cockpitStored.provinces?.length !== cockpitRecord.provinces.length
-      || cockpitStored.provinces.some((province) => !province.provinceCode)) {
+      || cockpitStored.provinces.some((province) => !province.provinceCode)
+      || !cockpitStored.charts) {
       cockpitStored = cockpitRecord;
       writeCenter('cockpit_overview', cockpitStored);
     }

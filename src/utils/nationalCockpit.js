@@ -1,11 +1,13 @@
 /**
  * National cockpit helpers. The backend stores locale-neutral indicator keys,
- * units and province codes; every label is resolved through i18n at render time.
+ * units, province codes and chart series; every label is resolved through i18n.
  */
 
 export const COCKPIT_MAP_METRICS = ['fulfillment', 'households', 'agents', 'sites'];
 
-export const COCKPIT_SCALE = ['#EDF4EF', '#C9DFD0', '#96C2A8', '#5E9B74', '#2F6B4C'];
+export const COCKPIT_RADAR_KEYS = ['fulfillment', 'compliance', 'uptime', 'sync'];
+
+export const COCKPIT_SCALE = ['#DCEADF', '#B9D6C2', '#86B99B', '#4E8D69', '#2B5D45'];
 
 export const COCKPIT_NUMBER_LOCALES = { zh: 'zh-CN', en: 'en-GB', ar: 'ar-IQ', ckb: 'ckb-IQ' };
 
@@ -19,6 +21,14 @@ export function formatCockpitValue(value, unit, locale) {
   if (value === null || value === undefined || value === '' || !Number.isFinite(numeric)) return '—';
   const maximumFractionDigits = unit === 'percent' ? 1 : 0;
   return new Intl.NumberFormat(cockpitNumberLocale(locale), { maximumFractionDigits }).format(numeric);
+}
+
+/** Compact axis labels: 12.4万 for zh, 12k for the other locales. */
+export function compactCockpitNumber(value, locale) {
+  const numeric = Number(value) || 0;
+  if (locale === 'zh') return numeric >= 10000 ? (numeric / 10000).toFixed(numeric >= 100000 ? 0 : 1) + '万' : String(Math.round(numeric));
+  if (numeric >= 1000) return (numeric / 1000).toFixed(numeric >= 10000 ? 0 : 1) + 'k';
+  return String(Math.round(numeric));
 }
 
 export function normalizeCockpitIndicator(indicator = {}) {
@@ -45,7 +55,23 @@ function normalizeCockpitProvince(province = {}) {
     households: numeric(province.households),
     fulfillment: numeric(province.fulfillment),
     agents: numeric(province.agents),
-    sites: numeric(province.sites)
+    sites: numeric(province.sites),
+    ration: numeric(province.ration)
+  };
+}
+
+function normalizeCockpitCharts(charts = {}) {
+  const numeric = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  };
+  return {
+    months: Array.isArray(charts.months) ? charts.months.map(numeric) : [],
+    quota: Array.isArray(charts.quota) ? charts.quota.map(numeric) : [],
+    actual: Array.isArray(charts.actual) ? charts.actual.map(numeric) : [],
+    items: Array.isArray(charts.items)
+      ? charts.items.filter((item) => item && item.key).map((item) => ({ key: String(item.key), value: numeric(item.value) }))
+      : []
   };
 }
 
@@ -54,12 +80,13 @@ export function normalizeCockpitOverview(payload = {}) {
   return {
     updatedAt: payload.updatedAt || '',
     indicators: Array.isArray(payload.indicators) ? payload.indicators.map(normalizeCockpitIndicator).filter((item) => item.key) : [],
-    provinces: Array.isArray(payload.provinces) ? payload.provinces.map(normalizeCockpitProvince).filter((item) => item.provinceCode || item.name) : []
+    provinces: Array.isArray(payload.provinces) ? payload.provinces.map(normalizeCockpitProvince).filter((item) => item.provinceCode || item.name) : [],
+    charts: normalizeCockpitCharts(payload.charts)
   };
 }
 
 export function cockpitProvinceValue(province, metric) {
-  if (!province || !COCKPIT_MAP_METRICS.includes(metric)) return 0;
+  if (!province) return 0;
   return Number(province[metric]) || 0;
 }
 
@@ -67,6 +94,23 @@ export function cockpitMetricRange(provinces = [], metric) {
   const values = provinces.map((province) => cockpitProvinceValue(province, metric));
   if (!values.length) return [0, 0];
   return [Math.min(...values), Math.max(...values)];
+}
+
+/** Ranked province list for the bar charts (locale-neutral, highest first). */
+export function cockpitProvinceTop(provinces = [], metric, limit = 8) {
+  return provinces
+    .filter((province) => province.provinceCode)
+    .sort((a, b) => cockpitProvinceValue(b, metric) - cockpitProvinceValue(a, metric))
+    .slice(0, limit);
+}
+
+export function cockpitIndicatorValue(indicators = [], key) {
+  return Number(indicators.find((indicator) => indicator.key === key)?.value) || 0;
+}
+
+/** Radar series around system operations (0–100 scale). */
+export function cockpitRadarSeries(indicators = []) {
+  return COCKPIT_RADAR_KEYS.map((key) => ({ key, value: cockpitIndicatorValue(indicators, key) }));
 }
 
 /** Maps a 0–1 ratio onto the sequential green scale used by the map. */

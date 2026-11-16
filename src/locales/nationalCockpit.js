@@ -8,11 +8,6 @@ export default {
       subtitle: '伊拉克全国配给运行态势与系统健康度总览',
       updatedAt: '数据更新于 {time}',
       refresh: '刷新',
-      live: '实时',
-      healthy: '运行正常',
-      watch: '需关注',
-      systemHealth: '系统运行指标',
-      source: '数据源：PocketBase 业务缓存',
       loadFailed: '国家驾驶舱数据加载失败，请稍后重试。',
       retry: '重新加载',
       noData: '暂无数据',
@@ -36,9 +31,13 @@ export default {
         reviews: '待办审核', messages: '消息触达', uptime: '系统可用率', sync: '数据同步完整度'
       },
       units: { people: '人', households: '户', provinces: '省', outlets: '个', sites: '座', tons: '吨', cases: '项', messages: '条', percent: '%' },
-      trendUp: '较上期 +{value}%',
-      trendDown: '较上期 -{value}%',
-      trendFlat: '与上期持平'
+      charts: {
+        fulfillmentTrend: '月度配给履约', quota: '月度额度', actual: '实际配发',
+        itemMix: '品类配给结构', rationTop: '省级配给量 Top 6',
+        agentTop: '代理网点 Top 8', fulfillmentRank: '省级履约率 Top 8',
+        systemRadar: '系统运行指标', nationalAverage: '全国均值',
+        radarFulfillment: '履约率', radarCompliance: '合规率', radarUptime: '可用率', radarSync: '同步完整度'
+      }
     },
     system: {
       orgUnits: '组织机构',
@@ -79,11 +78,6 @@ export default {
       subtitle: 'National ration operations and system health across Iraq',
       updatedAt: 'Updated {time}',
       refresh: 'Refresh',
-      live: 'Live',
-      healthy: 'Operational',
-      watch: 'Needs attention',
-      systemHealth: 'System operations',
-      source: 'Source: PocketBase business cache',
       loadFailed: 'The national cockpit could not be loaded. Try again shortly.',
       retry: 'Reload',
       noData: 'No data available',
@@ -107,9 +101,13 @@ export default {
         reviews: 'Pending reviews', messages: 'Messages delivered', uptime: 'System uptime', sync: 'Data sync completeness'
       },
       units: { people: 'people', households: 'households', provinces: 'provinces', outlets: 'outlets', sites: 'sites', tons: 't', cases: 'cases', messages: 'messages', percent: '%' },
-      trendUp: '+{value}% vs last period',
-      trendDown: '-{value}% vs last period',
-      trendFlat: 'Flat vs last period'
+      charts: {
+        fulfillmentTrend: 'Monthly fulfillment', quota: 'Monthly quota', actual: 'Distributed',
+        itemMix: 'Commodity mix', rationTop: 'Top 6 provinces by ration',
+        agentTop: 'Top 8 agent outlets', fulfillmentRank: 'Top 8 provinces by fulfillment',
+        systemRadar: 'System operations', nationalAverage: 'National average',
+        radarFulfillment: 'Fulfillment', radarCompliance: 'Compliance', radarUptime: 'Uptime', radarSync: 'Data sync'
+      }
     },
     system: {
       orgUnits: 'Organization Units',
@@ -150,11 +148,6 @@ export default {
       subtitle: 'نظرة وطنية على عمليات التموين وصحة النظام في العراق',
       updatedAt: 'آخر تحديث {time}',
       refresh: 'تحديث',
-      live: 'مباشر',
-      healthy: 'يعمل بشكل طبيعي',
-      watch: 'يحتاج إلى متابعة',
-      systemHealth: 'مؤشرات تشغيل النظام',
-      source: 'المصدر: ذاكرة PocketBase للأعمال',
       loadFailed: 'تعذر تحميل قمرة القيادة الوطنية. أعد المحاولة بعد قليل.',
       retry: 'إعادة التحميل',
       noData: 'لا توجد بيانات',
@@ -178,9 +171,13 @@ export default {
         reviews: 'مراجعات معلقة', messages: 'الرسائل المرسلة', uptime: 'جهوزية النظام', sync: 'اكتمال مزامنة البيانات'
       },
       units: { people: 'شخص', households: 'أسرة', provinces: 'محافظة', outlets: 'منفذ', sites: 'موقع', tons: 'طن', cases: 'حالة', messages: 'رسالة', percent: '%' },
-      trendUp: 'بزيادة {value}% عن الفترة السابقة',
-      trendDown: 'بانخفاض {value}% عن الفترة السابقة',
-      trendFlat: 'مستقر مقارنة بالفترة السابقة'
+      charts: {
+        fulfillmentTrend: 'الإنجاز الشهري للتموين', quota: 'الحصة الشهرية', actual: 'الموزع فعلياً',
+        itemMix: 'تركيبة السلع', rationTop: 'أعلى 6 محافظات في التموين',
+        agentTop: 'أعلى 8 منافذ وكلاء', fulfillmentRank: 'أعلى 8 محافظات في الإنجاز',
+        systemRadar: 'مؤشرات تشغيل النظام', nationalAverage: 'المتوسط الوطني',
+        radarFulfillment: 'الإنجاز', radarCompliance: 'الالتزام', radarUptime: 'الجهوزية', radarSync: 'المزامنة'
+      }
     },
     system: {
       orgUnits: 'الوحدات التنظيمية',
@@ -221,11 +218,6 @@ export default {
       subtitle: 'بارودۆخی دابەشکردنی بەشەخۆراک و تەندروستیی سیستەم لە سەرتاسەری عێراق',
       updatedAt: 'دوایین نوێکردنەوە {time}',
       refresh: 'نوێکردنەوە',
-      live: 'ڕاستەوخۆ',
-      healthy: 'بەردەوامە',
-      watch: 'پێویستی بە چاودێری هەیە',
-      systemHealth: 'ئاماژەکانی کارکردنی سیستەم',
-      source: 'سەرچاوە: کاشی کاروباری PocketBase',
       loadFailed: 'بارکردنی کابینەی نیشتمانی سەرکەوتوو نەبوو. دواتر هەوڵ بدەوە.',
       retry: 'دووبارە بارکردنەوە',
       noData: 'داتا نییە',
@@ -249,9 +241,13 @@ export default {
         reviews: 'پشکنینە چاوەڕوانەکان', messages: 'پەیامە گەیشتووەکان', uptime: 'بەردەستبوونی سیستەم', sync: 'تەواوی هاوکاتکردنی داتا'
       },
       units: { people: 'کەس', households: 'خێزان', provinces: 'پارێزگا', outlets: 'بنکە', sites: 'شوێن', tons: 'تۆن', cases: 'حاڵەت', messages: 'پەیام', percent: '%' },
-      trendUp: 'زیاتر بە {value}% لە ماوەی پێشوو',
-      trendDown: 'کەمتر بە {value}% لە ماوەی پێشوو',
-      trendFlat: 'بەراورد بە ماوەی پێشوو گۆڕانکاری نییە'
+      charts: {
+        fulfillmentTrend: 'جێبەجێکردنی مانگانەی بەشەخۆراک', quota: 'ڕێژەی مانگانە', actual: 'دابەشکراوی ڕاستەقینە',
+        itemMix: 'پێکهاتەی کاڵا', rationTop: '٦ پارێزگای سەرەوە لە بەشەخۆراک',
+        agentTop: '٨ بنکەی سەرەوەی بریکار', fulfillmentRank: '٨ پارێزگای سەرەوە لە جێبەجێکردن',
+        systemRadar: 'ئاماژەکانی کارکردنی سیستەم', nationalAverage: 'ناوەندی نیشتمانی',
+        radarFulfillment: 'جێبەجێکردن', radarCompliance: 'پابەندبوون', radarUptime: 'بەردەستبوون', radarSync: 'هاوکاتکردن'
+      }
     },
     system: {
       orgUnits: 'یەکەی دامەزراوەیی',
