@@ -8,6 +8,19 @@ export function submitMemberDeregistration(fields, file) {
 }
 
 /**
+ * 人员特殊状态登记：附证明材料提交电子审核工单 (POST, multipart)
+ */
+export function submitMemberUpdateReview(fields, proofFile) {
+  const data = new FormData();
+  Object.entries(fields).forEach(([key, value]) => {
+    if (Array.isArray(value)) data.append(key, value.join(','));
+    else data.append(key, String(value ?? ''));
+  });
+  data.append('proof', proofFile);
+  return request({ url: '/citizen/member-update-review', method: 'POST', data, headers: { 'Content-Type': 'multipart/form-data' } });
+}
+
+/**
  * 分页与条件查询家庭配给卡档案列表 (GET)
  */
 export function getFamilyList(params) {

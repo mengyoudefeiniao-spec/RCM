@@ -25,6 +25,8 @@ import { flushPocketBaseWrites } from '../services/pocketBaseSync.js';
 import { saveMockMaterial } from '../utils/mockMaterialFiles.js';
 import { saveMockMessageAttachment, getMockMessageAttachment } from '../utils/mockMessageAttachments.js';
 import { isHouseholdHead, matchesDeregistrationMember, deregistrationSuccessors } from '../utils/memberDeregistration.js';
+import { MEMBER_UPDATE_SOURCE, MEMBER_UPDATE_SOURCE_CODE, headPhoneRequiresVerification, normalizePhoneNumber as normalizeMemberPhone, isMemberUpdateProofValid, matchesMemberUpdateTarget } from '../utils/memberUpdate.js';
+import { normalizeSpecialStatus, specialStatusLabels } from '../utils/memberSpecialStatus.js';
 import { isPendingReview } from '../utils/reviewPresentation.js';
 import { PERMISSION_CATALOG, REVIEW_SCOPE_REGIONS, REVIEW_TYPE_CODES, WAREHOUSE_PERMISSION_CODES } from '../utils/reviewPermission.js';
 import { isMessageInReviewScope, isMessageInSendScope, resolveMessageAccess } from '../utils/messagePermissions.js';
@@ -1478,7 +1480,7 @@ export async function mockDispatch(config) {
     }, 200, rt('ocrValidMsg'));
   }
 
-  // 1.2 发送手机短信验证码（注册 / 找回密码共用，按用途分别保存校验）
+  // 1.2 发送手机短信验证码（注册 / 找回密码 / 户主改号共用，按用途分别保存校验）
   if (url.includes('/auth/send-sms') && method === 'POST') {
     const code = '839201'; // 固化演示验证码便于一键填入
     if (data.purpose === 'citizen-password-reset') {
@@ -1488,6 +1490,12 @@ export async function mockDispatch(config) {
       sessionStorage.setItem('rcm_demo_password_reset_sms', JSON.stringify({ identifier, code, expires: Date.now() + 300000 }));
       return createResponse({ smsCode: code, identifier, expireSeconds: 300 }, 200, i18n.global.t('forgotPassword.smsSent'));
     }
+    if (data.purpose === 'member-phone-change') {
+      const phone = normalizeMemberPhone(data.phone);
+      if (!isValidPhone(phone)) return createResponse({}, 400, i18n.global.t('memberUpdate.phoneInvalid'));
+      sessionStorage.setItem('rcm_demo_member_phone_sms', JSON.stringify({ phone, code, expires: Date.now() + 300000 }));
+      return createResponse({ smsCode: code, phone, expireSeconds: 300 }, 200, i18n.global.t('memberUpdate.smsSent'));
+    }
     if (data.purpose === 'citizen-registration') sessionStorage.setItem('rcm_demo_registration_sms', JSON.stringify({ phone: data.phone, code, expires: Date.now() + 300000 }));
     return createResponse({
       smsCode: code,
@@ -1496,17 +1504,37 @@ export async function mockDispatch(config) {
     }, 200, i18n.global.t('register.api.smsSentMsg', { phone: data.phone || '', code }));
   }
 
-  // 1.3 单独校验短信验证码（注册 / 找回密码）：先校验通过再允许设置密码
+  // 1.3 单独校验短信验证码（注册 / 找回密码 / 户主改号）：先校验通过再允许设置密码或改号
   if (url.includes('/auth/verify-sms') && method === 'POST') {
     const isReset = data.purpose === 'citizen-password-reset';
-    const sms = JSON.parse(sessionStorage.getItem(isReset ? 'rcm_demo_password_reset_sms' : 'rcm_demo_registration_sms') || 'null');
+    const isMemberPhone = data.purpose === 'member-phone-change';
+    const storageKey = isReset ? 'rcm_demo_password_reset_sms' : isMemberPhone ? 'rcm_demo_member_phone_sms' : 'rcm_demo_registration_sms';
+    const sms = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
     const normalize = value => String(value || '').replace(/[\s-]/g, '').trim();
     const subject = normalize(isReset ? data.identifier : data.phone);
     const stored = normalize(isReset ? sms?.identifier : sms?.phone);
     const valid = Boolean(sms) && Boolean(subject) && stored === subject
       && String(sms.code) === String(data.smsCode || '') && sms.expires > Date.now();
-    if (!valid) return createResponse({}, 400, i18n.global.t(isReset ? 'forgotPassword.invalidCode' : 'registerWizard.invalidCode'));
-    return createResponse({ verified: true, expiresAt: sms.expires }, 200, i18n.global.t(isReset ? 'forgotPassword.codeVerified' : 'registerWizard.codeVerified'));
+    const invalidKey = isReset ? 'forgotPassword.invalidCode' : isMemberPhone ? 'memberUpdate.invalidCode' : 'registerWizard.invalidCode';
+    const verifiedKey = isReset ? 'forgotPassword.codeVerified' : isMemberPhone ? 'memberUpdate.codeVerified' : 'registerWizard.codeVerified';
+    if (!valid) return createResponse({}, 400, i18n.global.t(invalidKey));
+    return createResponse({ verified: true, expiresAt: sms.expires }, 200, i18n.global.t(verifiedKey));
+  }
+
+  // 1.3b 户主改号前的活体检测与人脸比对凭据（演示为模拟比对结果，服务端留存短时令牌）
+  if (url.includes('/auth/verify-member-phone-face') && method === 'POST') {
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === data.cardNo);
+    const member = family?.members?.find(item => String(item.id) === String(data.memberId)
+      || String(item.nationalId) === String(data.memberNationalId || data.nationalId));
+    if (!member || !isHouseholdHead(member)) return createResponse({}, 400, i18n.global.t('memberUpdate.memberNotFound'));
+    if (!data.image || data.simulated !== true || Number(data.similarity) < 0.8) {
+      return createResponse({}, 400, i18n.global.t('memberUpdate.faceFailed'));
+    }
+    const token = demoVerificationToken();
+    sessionStorage.setItem('rcm_member_phone_face', JSON.stringify({
+      token, cardNo: family.rationCardNo, memberId: member.id, nationalId: member.nationalId, expires: Date.now() + 600000
+    }));
+    return createResponse({ token, verifiedAt: Date.now() }, 200, i18n.global.t('memberUpdate.faceCheckDone'));
   }
 
   // 1.4 短信验证码找回登录密码（凭据写入共享公民账号记录）
@@ -1808,40 +1836,90 @@ export async function mockDispatch(config) {
   // 更新成员信息与状态（支持冻结/解冻/资料修改）(PUT)
   if (url.match(/\/citizen\/members\/([^/]+)/) && method === 'PUT') {
     const memberId = url.split('/').pop();
+    const { phoneVerification, ...memberUpdates } = data || {};
+    if (memberUpdates.phone !== undefined) {
+      memberUpdates.phone = normalizeMemberPhone(memberUpdates.phone) || String(memberUpdates.phone || '');
+    }
     const sharedFams = getSharedFamilies(reqLang);
+    const located = ['zh', 'en', 'ar', 'ku']
+      .map(language => getSharedFamilies(language))
+      .flat()
+      .map(family => ({ family, member: (family.members || []).find(m => m.id === memberId || m.nationalId === memberId) }))
+      .find(entry => entry.member);
+    if (!located) return createResponse({}, 404, i18n.global.t('memberUpdate.memberNotFound'));
+
+    // 户主联系电话同时作为登录账号：改号必须携带活体检测、人脸比对与新号码短信验证凭据。
+    const headPhoneChange = memberUpdates.phone !== undefined && headPhoneRequiresVerification(located.member, memberUpdates.phone);
+    let verifiedPhone = '';
+    if (headPhoneChange) {
+      verifiedPhone = normalizeMemberPhone(memberUpdates.phone);
+      const pendingSms = JSON.parse(sessionStorage.getItem('rcm_demo_member_phone_sms') || 'null');
+      const pendingFace = JSON.parse(sessionStorage.getItem('rcm_member_phone_face') || 'null');
+      const evidenceValid = Boolean(phoneVerification)
+        && phoneVerification.faceVerified === true
+        && phoneVerification.livenessVerified === true
+        && normalizeMemberPhone(phoneVerification.phone) === verifiedPhone
+        && Boolean(pendingFace)
+        && String(pendingFace.token) === String(phoneVerification.faceToken || '')
+        && String(pendingFace.nationalId) === String(located.member.nationalId)
+        && pendingFace.expires > Date.now()
+        && Boolean(pendingSms)
+        && normalizeMemberPhone(pendingSms.phone) === verifiedPhone
+        && String(pendingSms.code) === String(phoneVerification.smsCode || '')
+        && pendingSms.expires > Date.now();
+      if (!evidenceValid) return createResponse({}, 400, i18n.global.t('memberUpdate.verificationRequired'));
+      if (!isValidPhone(verifiedPhone)) return createResponse({}, 400, i18n.global.t('memberUpdate.phoneInvalid'));
+      sessionStorage.removeItem('rcm_demo_member_phone_sms');
+      sessionStorage.removeItem('rcm_member_phone_face');
+      memberUpdates.phone = verifiedPhone;
+      memberUpdates.phoneVerifiedAt = new Date().toISOString();
+    }
+
     sharedFams.forEach((f) => {
       const target = f.members.find((m) => m.id === memberId || m.nationalId === memberId);
       if (target) {
-        Object.assign(target, data, { isUpdatedInSystem: true });
-        updateSharedFamily(f.rationCardNo, { members: f.members }, reqLang);
+        Object.assign(target, memberUpdates, { isUpdatedInSystem: true });
+        updateSharedFamily(f.rationCardNo, {
+          members: f.members,
+          ...(headPhoneChange ? { phone: verifiedPhone } : {})
+        }, reqLang);
       }
     });
 
     familiesStore.forEach((f) => {
       const target = f.members.find((m) => m.id === memberId || m.nationalId === memberId);
       if (target) {
-        Object.assign(target, data, { isUpdatedInSystem: true });
+        Object.assign(target, memberUpdates, { isUpdatedInSystem: true });
       }
     });
 
     Object.values(multiLangStores).forEach((stores) => {
       (stores.adminCardsStore || []).forEach((c) => {
         const target = (c.members || []).find((m) => m.id === memberId || m.nationalId === memberId);
-        if (target) Object.assign(target, data);
+        if (target) Object.assign(target, memberUpdates);
       });
       (stores.adminFamiliesStore || []).forEach((fam) => {
         const target = (fam.members || []).find((m) => m.id === memberId || m.nationalId === memberId);
-        if (target) Object.assign(target, data);
+        if (target) Object.assign(target, memberUpdates);
       });
     });
 
-    const isFreezeAction = data.status === '已冻结' || data.status === 'Frozen' || data.status === '冻结';
-    const isUnfreezeAction = data.status === '正常' || data.status === 'Active';
-    let msg = (isEn ? 'Family member information updated successfully' : '家庭成员信息已成功更新');
+    // 户主改号后同步公民账号，确保新号码可直接作为登录账号。
+    if (headPhoneChange) {
+      const owner = await findCitizenAccount(located.member.nationalId);
+      if (owner) await updateCitizenAccount(owner.nationalId, { phone: verifiedPhone });
+      await flushPocketBaseWrites();
+    }
+
+    const isFreezeAction = memberUpdates.status === '已冻结' || memberUpdates.status === 'Frozen' || memberUpdates.status === '冻结';
+    const isUnfreezeAction = memberUpdates.status === '正常' || memberUpdates.status === 'Active';
+    let msg = i18n.global.t('memberUpdate.updateDone');
     if (isFreezeAction) {
-      msg = (isEn ? `Coverage qualification of the member frozen successfully (Reason: ${data.freezeReason || 'regulatory compliance freeze'})` : `已成功冻结该成员纳保资格 (原因: ${data.freezeReason || (isEn ? 'regulatory compliance freeze' : '监管合规冻结')})`);
+      msg = (isEn ? `Coverage qualification of the member frozen successfully (Reason: ${memberUpdates.freezeReason || 'regulatory compliance freeze'})` : `已成功冻结该成员纳保资格 (原因: ${memberUpdates.freezeReason || '监管合规冻结'})`);
     } else if (isUnfreezeAction) {
       msg = (isEn ? 'The member freeze has been lifted successfully; ration supply coverage restored' : '已成功解除该成员冻结状态，恢复口粮配给保障');
+    } else if (headPhoneChange) {
+      msg = i18n.global.t('memberUpdate.phoneUpdated');
     }
 
     return createResponse({ success: true, memberId }, 200, msg);
@@ -1891,6 +1969,57 @@ export async function mockDispatch(config) {
     // Publish this same business ticket to each so every review language sees it.
     for (const lang of ['zh', 'en', 'ar', 'ku']) addSharedTicket(ticket, lang);
     return createResponse({ ticketId }, 200, i18n.global.t('memberDeregistration.submitSuccess'));
+  }
+
+  // 人员特殊状态登记：必须附证明材料，提交后进入审核工作台（web 端可见）
+  if (url.endsWith('/citizen/member-update-review') && method === 'POST') {
+    if (!(data instanceof FormData)) return createResponse({}, 400, i18n.global.t('memberUpdate.proofRequired'));
+    const fields = Object.fromEntries(data.entries());
+    const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === fields.cardNo);
+    const member = family?.members?.find(item => matchesMemberUpdateTarget(item, {
+      targetMemberId: fields.memberId, targetNationalId: fields.memberNationalId
+    }));
+    if (!member) return createResponse({}, 400, i18n.global.t('memberUpdate.memberNotFound'));
+    const specialStatus = normalizeSpecialStatus(fields.specialStatus);
+    if (!specialStatus.length) return createResponse({}, 400, i18n.global.t('memberUpdate.specialStatusRequired'));
+    const file = data.get('proof');
+    if (!(file instanceof File) || !file.size) return createResponse({}, 400, i18n.global.t('memberUpdate.proofRequired'));
+    if (!isMemberUpdateProofValid(file)) return createResponse({}, 400, i18n.global.t('memberUpdate.proofTypeError'));
+    const duplicate = ['zh', 'en', 'ar', 'ku'].some(lang => getSharedTickets(lang).some(ticket => ticket.sourceCode === MEMBER_UPDATE_SOURCE_CODE
+      && ticket.cardNo === family.rationCardNo && matchesMemberUpdateTarget(member, ticket.payload) && isPendingReview(ticket)));
+    if (duplicate) return createResponse({}, 409, i18n.global.t('memberUpdate.duplicate'));
+    let fileId;
+    try {
+      fileId = await saveMockMessageAttachment(file, 'member-update-proof');
+    } catch {
+      return createResponse({}, 500, i18n.global.t('memberUpdate.proofUploadFailed'));
+    }
+    const statusLabels = specialStatusLabels(i18n.global.t, specialStatus).join(' / ');
+    const ticketId = `REV-MUP-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
+    const payload = {
+      type: 'memberUpdate',
+      cardNo: family.rationCardNo,
+      targetMemberId: member.id,
+      targetNationalId: member.nationalId,
+      targetMemberName: member.name,
+      specialStatus,
+      previousSpecialStatus: normalizeSpecialStatus(member.specialStatus),
+      proofReference: String(fields.proofReference || '').trim().slice(0, 100),
+      note: String(fields.note || '').trim().slice(0, 300)
+    };
+    const ticket = {
+      id: ticketId, sourceCode: MEMBER_UPDATE_SOURCE_CODE, source: MEMBER_UPDATE_SOURCE, reviewMode: 'manual',
+      categoryType: i18n.global.t('memberUpdate.categoryType'), appType: i18n.global.t('memberUpdate.applicationType'),
+      cardNo: family.rationCardNo, applicantName: family.headName, targetMemberName: member.name,
+      province: family.province, center: family.district,
+      reason: i18n.global.t('memberUpdate.reason', { statuses: statusLabels }),
+      payload,
+      attachments: [{ name: file.name, fileId, size: file.size, mimeType: file.type, type: 'required', verified: false }]
+    };
+    // Same ticket in every language cache so the review workbench shows it in any UI language.
+    for (const lang of ['zh', 'en', 'ar', 'ku']) addSharedTicket(ticket, lang);
+    await flushPocketBaseWrites();
+    return createResponse({ ticketId }, 200, i18n.global.t('memberUpdate.pendingReview', { ticketId }));
   }
 
   // 变更户主 (POST)
@@ -2782,6 +2911,15 @@ export async function mockDispatch(config) {
         if (isHouseholdHead(member) && !deregistrationSuccessors(family, member).some(item => item.id === ticket.payload.replacementHeadId)) return createResponse({}, 409, i18n.global.t('memberDeregistration.errorSuccessor'));
       }
     }
+    // 人员特殊状态登记：审核通过后才落到成员档案，且证明文件必须已留存。
+    if (ticket?.sourceCode === MEMBER_UPDATE_SOURCE_CODE) {
+      if (ticket.payload?.appliedAt) return createResponse({}, 409, i18n.global.t('memberUpdate.reviewStateError'));
+      if (!['待经理终审', 'Pending Manager Review'].includes(ticket.status)) return createResponse({}, 409, i18n.global.t('memberUpdate.reviewStateError'));
+      if (decision === '接受' || decision === 'Approved') {
+        if (!normalizeSpecialStatus(ticket.payload?.specialStatus).length) return createResponse({}, 400, i18n.global.t('memberUpdate.specialStatusRequired'));
+        if (!ticket.attachments?.some(file => file.fileId)) return createResponse({}, 400, i18n.global.t('memberUpdate.proofRequired'));
+      }
+    }
     if (ticket) {
       const isAccept = decision === '接受' || decision === 'Approved';
       ticket.status = isAccept ? (isEn ? 'Approved' : '已批准') : (isEn ? 'Rejected' : '已驳回');
@@ -2804,6 +2942,22 @@ export async function mockDispatch(config) {
         if (ticket.sourceCode === 'DRG' && ticket.payload.type === 'memberDeregistration') {
           ticket.attachments = ticket.attachments.map(file => ({ ...file, verified: true, verifiedAt: ticket.managerDecidedAt, verifiedBy: ticket.managerName }));
           applyApprovedMemberDeregistration(ticket);
+        } else if (ticket.payload.type === 'memberUpdate') {
+          // 人员特殊状态登记落地：写入成员档案并标注证明文件已核验。
+          const targetFamily = getSharedFamily(ticket.cardNo) || familiesStore.find(f => f.rationCardNo === ticket.cardNo);
+          const targetMember = targetFamily?.members?.find(m => matchesMemberUpdateTarget(m, ticket.payload));
+          if (targetFamily && targetMember) {
+            const specialStatus = normalizeSpecialStatus(ticket.payload.specialStatus);
+            updateSharedFamily(targetFamily.rationCardNo, current => ({
+              ...current,
+              members: (current.members || []).map(member => (matchesMemberUpdateTarget(member, ticket.payload)
+                ? { ...member, specialStatus, specialStatusUpdatedAt: ticket.managerDecidedAt, isUpdatedInSystem: true }
+                : member))
+            }), reqLang);
+            ticket.attachments = ticket.attachments.map(file => ({ ...file, verified: true, verifiedAt: ticket.managerDecidedAt, verifiedBy: ticket.managerName }));
+            ticket.payload.appliedAt = ticket.managerDecidedAt;
+            await flushPocketBaseWrites();
+          }
         } else if (ticket.payload.type === 'transferAgent') {
           // 跨省代理转移终审落地
           const targetFam = getSharedFamily(ticket.payload.cardNo) || familiesStore.find((f) => f.rationCardNo === ticket.payload.cardNo);
@@ -2875,7 +3029,9 @@ export async function mockDispatch(config) {
       managerNotes: notes,
       managerName: ticket?.managerName || managerName,
       managerDecidedAt: ticket?.managerDecidedAt || new Date().toISOString().replace('T', ' ').slice(0, 16),
-      ...(ticket?.sourceCode === 'DRG' ? { payload: ticket.payload, attachments: ticket.attachments } : {})
+      ...(ticket?.sourceCode === 'DRG' || ticket?.sourceCode === MEMBER_UPDATE_SOURCE_CODE
+        ? { payload: ticket.payload, attachments: ticket.attachments }
+        : {})
     });
 
     return createResponse(ticket, 200, (isEn ? `Final review adjudicated as [${decision}]!` : `终审已裁决为【${decision}】！`));

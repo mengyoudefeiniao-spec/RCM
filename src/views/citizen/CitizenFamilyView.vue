@@ -148,13 +148,19 @@
                 <div class="text-[11px] font-mono text-[#8A9A8F] break-words">
                   UID: {{ member.nationalId }} · {{ formatGender(member.gender) }}
                 </div>
-                <div v-if="memberSpecialStatusLabels(member).length" class="flex flex-wrap gap-1 pt-0.5">
+                <div v-if="memberSpecialStatusLabels(member).length || isMemberUpdatePending(member)" class="flex flex-wrap gap-1 pt-0.5">
                   <span
                     v-for="label in memberSpecialStatusLabels(member)"
                     :key="label"
                     class="px-1.5 py-0.5 rounded text-[10px] bg-[#E9F1EB] text-[#326445] border border-[#D9E5DB]"
                   >
                     {{ label }}
+                  </span>
+                  <span
+                    v-if="isMemberUpdatePending(member)"
+                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#FDF3E0] text-[#7A5F21] border border-[#F2E3C6]"
+                  >
+                    {{ $t('memberUpdate.pendingBadge') }}
                   </span>
                 </div>
               </div>
@@ -304,13 +310,19 @@
                   <span v-if="verificationStatus(row) !== 'passed'" class="text-[#C04442] font-bold" role="img" :aria-label="$t('memberVerification.needsVerification')" :title="$t('memberVerification.needsVerification')">!</span>
                   <span class="font-bold text-[#1F3326]">{{ row.name }}</span>
                 </div>
-                <div v-if="memberSpecialStatusLabels(row).length" class="flex flex-wrap gap-1">
+                <div v-if="memberSpecialStatusLabels(row).length || isMemberUpdatePending(row)" class="flex flex-wrap gap-1">
                   <span
                     v-for="label in memberSpecialStatusLabels(row)"
                     :key="label"
                     class="px-1.5 py-0.5 rounded text-[10px] bg-[#E9F1EB] text-[#326445] border border-[#D9E5DB]"
                   >
                     {{ label }}
+                  </span>
+                  <span
+                    v-if="isMemberUpdatePending(row)"
+                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#FDF3E0] text-[#7A5F21] border border-[#F2E3C6]"
+                  >
+                    {{ $t('memberUpdate.pendingBadge') }}
                   </span>
                 </div>
               </div>
@@ -652,6 +664,7 @@
       :title="$t('citizen.editMemberTitle')"
       :width="isAppMode ? '350px' : '480px'"
       align-center
+      class="member-edit-dialog"
     >
       <el-form :model="editForm" label-position="top">
         <el-form-item :label="$t('citizenCard.memberName')">
@@ -683,11 +696,91 @@
           <div class="text-[10px] text-[#8A9A8F] leading-relaxed pt-1">{{ $t('citizenCard.specialStatusHint') }}</div>
         </el-form-item>
       </el-form>
+
+      <!-- 户主联系电话同时作为登录账号：改号需活体+人脸比对+新号码短信验证 -->
+      <div v-if="headPhoneChange" class="mt-1 rounded-lg border border-[#EED9AE] bg-[#FFFBF2] p-3 space-y-2.5">
+        <div class="flex items-center gap-1.5 text-[11px] font-bold text-[#6B5321]">
+          <el-icon><WarningFilled /></el-icon>
+          <span>{{ $t('memberUpdate.headPhoneBadge') }}</span>
+        </div>
+        <p class="text-[11px] leading-relaxed text-[#8D713D]">{{ $t('memberUpdate.headPhoneHint') }}</p>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 rounded border border-[#F2E3C6] bg-white p-2">
+          <span class="text-[11px] font-semibold text-[#43554B]">{{ $t('memberUpdate.faceCheckTitle') }}</span>
+          <el-tag v-if="faceVerified" type="success" size="small">{{ $t('memberUpdate.faceCheckDone') }}</el-tag>
+          <el-button v-else size="small" type="primary" plain @click="faceDialogVisible = true">{{ $t('memberUpdate.faceCheckBtn') }}</el-button>
+        </div>
+
+        <div class="space-y-2 rounded border border-[#F2E3C6] bg-white p-2">
+          <div class="text-[11px] font-semibold text-[#43554B]">{{ $t('memberUpdate.smsTitle') }}</div>
+          <div class="flex flex-wrap gap-2">
+            <el-input
+              v-model.trim="smsCode"
+              class="bidi-ltr !w-28"
+              maxlength="6"
+              inputmode="numeric"
+              :disabled="smsVerified"
+              :placeholder="$t('memberUpdate.smsCodePlaceholder')"
+            />
+            <el-button size="small" :disabled="smsVerified || smsCountdown > 0 || smsSending" :loading="smsSending" @click="sendHeadPhoneCode">
+              {{ smsCountdown > 0 ? $t('memberUpdate.resendCountdown', { seconds: smsCountdown }) : $t('memberUpdate.sendCode') }}
+            </el-button>
+            <el-button size="small" type="primary" :disabled="smsVerified || !smsCode" :loading="smsVerifying" @click="verifyHeadPhoneCode">
+              {{ $t('memberUpdate.verifyCode') }}
+            </el-button>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <el-tag v-if="smsVerified" type="success" size="small">{{ $t('memberUpdate.smsVerified') }}</el-tag>
+            <div v-if="demoSmsCode" class="text-[10px] text-[#8A9A8F]">
+              {{ $t('memberUpdate.demoCode', { code: demoSmsCode }) }}
+              <el-button text type="primary" size="small" @click="smsCode = demoSmsCode">{{ $t('memberUpdate.fillIn') }}</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 人员特殊状态变更需附证明材料，提交后进入审核工作台 -->
+      <div v-if="specialStatusChanged" class="mt-2 rounded-lg border border-[#D9E5DB] bg-[#F3F8F4] p-3 space-y-2">
+        <div class="text-[11px] font-bold text-[#1F3326]">{{ $t('memberUpdate.proofTitle') }}</div>
+        <p class="text-[11px] leading-relaxed text-[#58685D]">{{ $t('memberUpdate.proofHint') }}</p>
+        <input
+          ref="proofInputRef"
+          type="file"
+          class="hidden"
+          accept="application/pdf,image/jpeg,image/png"
+          @change="handleProofSelected"
+        />
+        <div v-if="proofFile" class="flex items-center justify-between gap-2 rounded border border-[#D9E5DB] bg-white p-2 text-[11px]">
+          <span class="min-w-0 break-all font-mono text-[#1F3326]">{{ proofFile.name }}</span>
+          <el-button text size="small" @click="proofFile = null">{{ $t('memberUpdate.removeProof') }}</el-button>
+        </div>
+        <div v-else class="flex flex-wrap gap-2">
+          <el-button size="small" type="primary" plain @click="proofInputRef?.click()">{{ $t('memberUpdate.chooseProof') }}</el-button>
+          <el-button size="small" text @click="loadSampleProof">{{ $t('memberUpdate.loadSampleProof') }}</el-button>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('memberUpdate.proofReference') }}</div>
+          <el-input v-model.trim="proofReference" size="small" maxlength="100" :placeholder="$t('memberUpdate.proofReferencePlaceholder')" />
+        </div>
+        <div class="space-y-1">
+          <div class="text-[10px] text-[#8A9A8F]">{{ $t('memberUpdate.note') }}</div>
+          <el-input v-model="changeNote" size="small" maxlength="300" :placeholder="$t('memberUpdate.notePlaceholder')" />
+        </div>
+      </div>
       <template #footer>
         <el-button @click="editModalVisible = false">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSaveMember">{{ $t('citizen.confirmUpdate') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSaveMember">{{ specialStatusChanged ? $t('memberUpdate.submitReview') : $t('citizen.confirmUpdate') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 户主联系电话变更：活体检测与人脸比对 -->
+    <FaceLivenessVerifyDialog
+      v-model="faceDialogVisible"
+      :title="$t('memberUpdate.faceCheckTitle')"
+      :target-name="editTarget?.name || ''"
+      :target-national-id="editTarget?.nationalId || ''"
+      @success="handleEditFaceSuccess"
+    />
 
     <!-- 活体人脸动作核验弹窗 (添加新成员生物识别) -->
     <FaceLivenessVerifyDialog
@@ -868,7 +961,8 @@ import {
   Check,
   Loading,
   Camera,
-  Location
+  Location,
+  WarningFilled
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import QRCode from 'qrcode';
@@ -885,6 +979,11 @@ const citizenServices = [
 import { localizeFreezeReason } from '../../utils/freezeReason.js';
 import { createCitizenCardQrPayload } from '../../utils/qrPayload.js';
 import { MEMBER_SPECIAL_STATUS_CODES, normalizeSpecialStatus, specialStatusLabels } from '../../utils/memberSpecialStatus.js';
+import { memberUpdateChanges, normalizePhoneNumber, isMemberUpdateProofValid, createDefaultSpecialStatusProofFile } from '../../utils/memberUpdate.js';
+import { sendSmsCode, verifySmsCode, verifyMemberPhoneFace } from '../../api/auth.js';
+import { submitMemberUpdateReview } from '../../api/citizen.js';
+import { getSharedTickets } from '../../utils/sharedSession.js';
+import { isPendingReview } from '../../utils/reviewPresentation.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -1072,6 +1171,139 @@ const editForm = reactive({
   specialStatus: []
 });
 
+// 更新弹窗中与户主改号 / 特殊状态登记相关的状态
+const editTarget = ref(null);
+const faceDialogVisible = ref(false);
+const faceVerified = ref(false);
+const faceToken = ref('');
+const smsCode = ref('');
+const smsSending = ref(false);
+const smsVerifying = ref(false);
+const smsVerified = ref(false);
+const smsCountdown = ref(0);
+const demoSmsCode = ref('');
+const proofInputRef = ref(null);
+const proofFile = ref(null);
+const proofReference = ref('');
+const changeNote = ref('');
+const pendingMemberUpdates = ref([]);
+let smsCountdownTimer = null;
+
+const editChanges = computed(() => memberUpdateChanges(editTarget.value, editForm));
+const headPhoneChange = computed(() => editChanges.value.requiresHeadPhoneVerification);
+const specialStatusChanged = computed(() => editChanges.value.specialStatusChanged);
+
+function memberUpdateKey(member) {
+  return `${member?.id || ''}|${member?.nationalId || ''}`;
+}
+
+// 特殊状态登记提交后处于审核中：成员清单展示待审核标记，审核通过后才生效。
+function isMemberUpdatePending(member) {
+  return pendingMemberUpdates.value.includes(memberUpdateKey(member));
+}
+
+function refreshPendingMemberUpdates() {
+  pendingMemberUpdates.value = getSharedTickets()
+    .filter(ticket => ticket.sourceCode === 'MUPD' && isPendingReview(ticket))
+    .map(ticket => `${ticket.payload?.targetMemberId || ''}|${ticket.payload?.targetNationalId || ''}`);
+}
+
+function resetEditVerification() {
+  faceVerified.value = false;
+  faceToken.value = '';
+  smsCode.value = '';
+  smsVerified.value = false;
+  demoSmsCode.value = '';
+  smsCountdown.value = 0;
+  proofFile.value = null;
+  proofReference.value = '';
+  changeNote.value = '';
+}
+
+function updateSmsCountdown() {
+  if (smsCountdown.value > 0) smsCountdown.value -= 1;
+}
+
+async function sendHeadPhoneCode() {
+  const phone = normalizePhoneNumber(editForm.phone);
+  if (!phone || phone.length < 8) {
+    ElMessage.warning(t('memberUpdate.phoneInvalid'));
+    return;
+  }
+  smsSending.value = true;
+  try {
+    const result = await sendSmsCode({ phone, purpose: 'member-phone-change' });
+    demoSmsCode.value = result?.smsCode || '';
+    smsCountdown.value = 60;
+    ElMessage.success(t('memberUpdate.smsSent'));
+  } catch {
+    /* the request layer surfaces the localized failure */
+  } finally {
+    smsSending.value = false;
+  }
+}
+
+async function verifyHeadPhoneCode() {
+  if (!smsCode.value) return;
+  smsVerifying.value = true;
+  try {
+    await verifySmsCode({ phone: normalizePhoneNumber(editForm.phone), smsCode: smsCode.value, purpose: 'member-phone-change' });
+    smsVerified.value = true;
+    ElMessage.success(t('memberUpdate.smsVerified'));
+  } catch {
+    /* the request layer surfaces the localized failure */
+  } finally {
+    smsVerifying.value = false;
+  }
+}
+
+async function handleEditFaceSuccess(payload = {}) {
+  try {
+    const result = await verifyMemberPhoneFace({
+      cardNo: citizenStore.currentFamily?.rationCardNo || '',
+      memberId: editForm.id,
+      memberNationalId: editTarget.value?.nationalId || '',
+      nationalId: payload.nationalId || editTarget.value?.nationalId || '',
+      image: payload.image || '',
+      simulated: payload.simulated === true,
+      similarity: payload.similarity ?? 0.99
+    });
+    faceToken.value = result?.token || '';
+    faceVerified.value = Boolean(faceToken.value);
+    if (faceVerified.value) ElMessage.success(t('memberUpdate.faceCheckDone'));
+  } catch {
+    faceToken.value = '';
+    faceVerified.value = false;
+  }
+}
+
+function handleProofSelected(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file) return;
+  if (!isMemberUpdateProofValid(file)) {
+    ElMessage.warning(t('memberUpdate.proofTypeError'));
+    return;
+  }
+  proofFile.value = file;
+}
+
+async function loadSampleProof() {
+  try {
+    if (!proofReference.value) proofReference.value = t('memberUpdate.sampleProofReference');
+    proofFile.value = await createDefaultSpecialStatusProofFile({
+      t,
+      locale: locale.value,
+      member: editTarget.value,
+      cardNo: citizenStore.currentFamily?.rationCardNo || '',
+      statuses: specialStatusLabels(t, editForm.specialStatus),
+      reference: proofReference.value
+    });
+  } catch {
+    ElMessage.error(t('memberUpdate.proofRequired'));
+  }
+}
+
 function handleLanguageChange() {
   citizenStore.fetchFamilies();
 }
@@ -1080,14 +1312,25 @@ watch(locale, () => {
   citizenStore.fetchFamilies();
 });
 
+// 户主改号后旧验证码失效，需针对新号码重新验证
+watch(() => editForm.phone, () => {
+  smsVerified.value = false;
+  smsCode.value = '';
+  demoSmsCode.value = '';
+  smsCountdown.value = 0;
+});
+
 let offFamilyUpdated = null;
 
 function handleFamilyUpdatedSync() {
   citizenStore.fetchFamilies();
+  refreshPendingMemberUpdates();
 }
 
 onMounted(() => {
   citizenStore.fetchFamilies();
+  refreshPendingMemberUpdates();
+  smsCountdownTimer = setInterval(updateSmsCountdown, 1000);
   window.addEventListener('rcm-language-changed', handleLanguageChange);
   window.addEventListener('rcm-family-updated', handleFamilyUpdatedSync);
   offFamilyUpdated = onTabMessage('FAMILY_UPDATED', handleFamilyUpdatedSync);
@@ -1104,27 +1347,81 @@ onBeforeUnmount(() => {
     clearInterval(cardClockTimer);
     cardClockTimer = null;
   }
+  if (smsCountdownTimer) {
+    clearInterval(smsCountdownTimer);
+    smsCountdownTimer = null;
+  }
 });
 
 function openEditModal(member) {
   // 始终以被点击的成员为准，避免沿用上一次或户主姓名
+  editTarget.value = member;
   editForm.id = member.id || member.nationalId;
   editForm.name = member.name || '';
   editForm.phone = member.phone || '';
   editForm.residenceInfo = member.residenceInfo || '';
   editForm.specialStatus = normalizeSpecialStatus(member.specialStatus);
+  resetEditVerification();
+  faceDialogVisible.value = false;
   editModalVisible.value = true;
 }
 
 async function handleSaveMember() {
+  if (saving.value || !editTarget.value) return;
+  const changes = editChanges.value;
+  // 户主联系电话可作为登录账号：必须先完成活体+人脸比对与新号码短信验证
+  if (changes.requiresHeadPhoneVerification && !(faceVerified.value && smsVerified.value)) {
+    ElMessage.warning(t('memberUpdate.verificationRequired'));
+    return;
+  }
+  // 特殊状态变更需选择状态并附证明材料，提交后进入审核工作台
+  if (changes.specialStatusChanged && !normalizeSpecialStatus(editForm.specialStatus).length) {
+    ElMessage.warning(t('memberUpdate.specialStatusRequired'));
+    return;
+  }
+  if (changes.specialStatusChanged && !proofFile.value) {
+    ElMessage.warning(t('memberUpdate.proofRequired'));
+    return;
+  }
+  // 没有实际修改时直接关闭，避免产生无意义的写入与审核记录
+  if (!changes.phoneChanged && !changes.addressChanged && !changes.specialStatusChanged) {
+    editModalVisible.value = false;
+    return;
+  }
   saving.value = true;
   try {
-    await citizenStore.updateMember(editForm.id, {
-      phone: editForm.phone,
-      residenceInfo: editForm.residenceInfo,
-      specialStatus: normalizeSpecialStatus(editForm.specialStatus)
-    });
+    if (changes.phoneChanged || changes.addressChanged) {
+      await citizenStore.updateMember(editForm.id, {
+        phone: normalizePhoneNumber(editForm.phone) || editForm.phone,
+        residenceInfo: editForm.residenceInfo,
+        ...(changes.requiresHeadPhoneVerification
+          ? {
+              phoneVerification: {
+                phone: normalizePhoneNumber(editForm.phone),
+                smsCode: smsCode.value,
+                faceToken: faceToken.value,
+                faceVerified: true,
+                livenessVerified: true
+              }
+            }
+          : {})
+      });
+    }
+    if (changes.specialStatusChanged) {
+      const result = await submitMemberUpdateReview({
+        cardNo: citizenStore.currentFamily?.rationCardNo || '',
+        memberId: editForm.id,
+        memberNationalId: editTarget.value.nationalId || '',
+        specialStatus: normalizeSpecialStatus(editForm.specialStatus),
+        proofReference: proofReference.value,
+        note: changeNote.value
+      }, proofFile.value);
+      ElMessage.success(t('memberUpdate.pendingReview', { ticketId: result?.ticketId || '' }));
+      refreshPendingMemberUpdates();
+    }
     editModalVisible.value = false;
+  } catch {
+    /* the request layer surfaces the localized failure */
   } finally {
     saving.value = false;
   }
@@ -1372,6 +1669,11 @@ async function handleSubmitAddMember() {
 :deep(.citizen-card-verify-dialog .el-dialog__body) {
   padding: 12px 14px 16px !important;
   max-height: 86vh;
+  overflow-y: auto;
+}
+
+:deep(.member-edit-dialog .el-dialog__body) {
+  max-height: calc(100dvh - 260px);
   overflow-y: auto;
 }
 </style>

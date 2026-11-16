@@ -256,6 +256,10 @@
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('memberDeregistration.successor') }}</span>
                 <span class="font-bold text-[#1F3326]">{{ localizedTicketField(reviewStore.selectedTicket, 'replacementHeadName', reviewStore.selectedTicket.payload.replacementHeadName) }}</span>
               </div>
+              <div v-if="reviewStore.selectedTicket.sourceCode === 'MUPD'">
+                <span class="text-[#8A9A8F] block text-[11px]">{{ $t('citizenCard.specialStatusTitle') }}</span>
+                <span class="font-bold text-[#1F3326]">{{ memberUpdateStatusLabels(reviewStore.selectedTicket.payload?.specialStatus) }}</span>
+              </div>
               <!-- 受理时的业务规则版本：历史业务不随规则调整追溯改写 -->
               <div v-if="reviewStore.selectedTicket.rulesVersion">
                 <span class="text-[#8A9A8F] block text-[11px]">{{ $t('businessRules.appliedVersion') }}</span>
@@ -388,6 +392,7 @@ import { useReviewStore } from '../../stores/review.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { localizeUnfreezeCase, resolveUnfreezeCaseKey } from '../../utils/unfreezeCase.js';
 import { REVIEW_SOURCE_KEYS, reviewTicketField } from '../../utils/reviewPresentation.js';
+import { specialStatusLabels } from '../../utils/memberSpecialStatus.js';
 import { getReviewAttachment } from '../../api/review.js';
 import { Stamp, Refresh, Document, Check, Search, Back } from '@element-plus/icons-vue';
 import ModuleDescTip from '../../components/common/ModuleDescTip.vue';
@@ -420,7 +425,19 @@ function localizedTicketField(ticket, field, fallback) {
     if (field === 'appType') return t('review.unfreezeAppType', { type });
     return t('review.unfreezeCategoryType', { type });
   }
+  // 成员信息变更工单按当前语言渲染业务类型与登记内容
+  if (ticket?.payload?.type === 'memberUpdate') {
+    if (field === 'appType') return t('memberUpdate.applicationType');
+    if (field === 'categoryType') return t('memberUpdate.categoryType');
+    if (field === 'reason') {
+      return t('memberUpdate.reason', { statuses: memberUpdateStatusLabels(ticket.payload.specialStatus) });
+    }
+  }
   return reviewTicketField(ticket, field, locale.value, t, te, fallback);
+}
+
+function memberUpdateStatusLabels(codes) {
+  return specialStatusLabels(t, codes).join(' / ');
 }
 
 function localizedProvinceOption(province) {
@@ -457,7 +474,7 @@ function handleSelectTicket(tk) {
   mobileTab.value = 'detail';
 }
 
-const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '注销成员', '代理转移', '成员录入', '成员转移'];
+const sourceList = ['全部', '申请分户', '申请解冻', '变更户主', '注销成员', '代理转移', '成员录入', '成员转移', '成员信息变更'];
 
 const sourceKeyMap = REVIEW_SOURCE_KEYS;
 
@@ -701,6 +718,9 @@ function getSourceTagType(source) {
     case 'sourceMemberTransfer':
     case '成员转移':
       return 'info';
+    case 'sourceMemberUpdate':
+    case '成员信息变更':
+      return 'success';
     default:
       return 'info';
   }

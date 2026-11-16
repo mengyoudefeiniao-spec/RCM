@@ -135,3 +135,18 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 ### 家庭成员特殊状态
 
 “在册家庭成员清单 → 更新”新增的人员特殊状态以语言无关编码保存在 `rcm_shared_families_<语言>` 的成员记录 `specialStatus` 字段中（`displaced` 流离失所、`social_health` 社会救助与健康），随成员资料一并同步到 PocketBase 的 `app_data`。列表与弹窗按当前语言渲染标签，四种语言共享同一份状态编码，不需要为每种语言重复维护文案。
+
+### 户主联系电话变更与特殊状态审核
+
+户主联系电话同时可作为登录账号，因此改号必须完成三重校验后才生效，任何一步都不可跳过：
+
+- 活体检测与人脸比对：`POST /auth/verify-member-phone-face`（仅对户主成员生效）返回短时令牌，凭据保存于会话中，10 分钟内有效。
+- 新号码短信验证：`POST /auth/send-sms`（`purpose: member-phone-change`）向新号码下发验证码，`POST /auth/verify-sms` 校验通过后才允许提交。
+- 落地写入：`PUT /citizen/members/<成员编号>` 复核人脸令牌与新号码验证码，通过后更新成员、家庭 `phone` 字段；若该成员同时是注册账号本人，`rcm_shared_citizen_accounts` 中的 `phone` 一并更新，新号码即可作为登录账号。缺少任一步凭据时接口返回本地化提示并拒绝写入。
+- 其他成员资料（地址、非户主电话等）不需要上述校验，直接更新，一个家庭只需一名成员注册即可维护全户资料。
+
+人员特殊状态变更必须附证明材料并走电子审核：
+
+- `POST /citizen/member-update-review`（multipart，字段含 `cardNo`、`memberId`、`specialStatus`、`proofReference`、`note` 与 `proof` 文件）先校验成员存在、状态编码合法、文件为 PDF/JPG/PNG 且不超过 10 MB，再将证明文件写入 PocketBase 文件集合，并在 `rcm_shared_tickets_<语言>` 生成来源为“成员信息变更”、编号前缀 `REV-MUP-` 的工单；同一成员已有待审工单时返回重复提示。
+- Web 端“审核工作台”的来源页签新增“成员信息变更”，工单展示登记的特殊状态、变更说明与证明附件；初审与经理终审沿用现有两级流程，终审通过后才把 `specialStatus` 写入成员档案，并把附件标记为已核验。
+- 公民端成员清单对审核中的成员显示“特殊状态待审核”标记，审核结论在“我的申请”中按 `MUPD` 类型展示。

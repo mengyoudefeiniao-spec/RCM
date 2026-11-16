@@ -80,6 +80,17 @@ export function verifySmsCode(data) {
 }
 
 /**
+ * 户主联系电话变更前的活体/人脸比对凭据校验 (POST)
+ */
+export function verifyMemberPhoneFace(data) {
+  return request({
+    url: '/auth/verify-member-phone-face',
+    method: 'POST',
+    data
+  });
+}
+
+/**
  * 纸质卡升级换发与公民账号注册 (POST)
  */
 export function registerCitizen(data) {

@@ -35,6 +35,7 @@ import memberDeregistrationMessages from './memberDeregistration.js';
 import registrationFlowMessages from './registrationFlow.js';
 import registerWizardMessages from './registerWizard.js';
 import forgotPasswordMessages from './forgotPassword.js';
+import memberUpdateMessages from './memberUpdate.js';
 import loginPageMessages from './loginPage.js';
 import firstLoginVerificationMessages from './firstLoginVerification.js';
 import memberVerificationMessages from './memberVerification.js';
@@ -42,11 +43,12 @@ import faceCompareDemoMessages from './faceCompareDemo.js';
 import rationShareMessages from './rationShare.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], registerWizard: registerWizardMessages[lang], forgotPassword: forgotPasswordMessages[lang], rationShare: rationShareMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const merged = { ...messages, faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], registerWizard: registerWizardMessages[lang], forgotPassword: forgotPasswordMessages[lang], memberUpdate: memberUpdateMessages[lang], rationShare: rationShareMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   const deregistration = memberDeregistrationMessages[lang];
+  const memberUpdate = memberUpdateMessages[lang];
   merged.memberDeregistration = deregistration;
-  merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action } };
-  merged.review = { ...merged.review, sourceDeregistration: deregistration.action, subtitle: deregistration.reviewSubtitle };
+  merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action, MUPD: memberUpdate.applicationType } };
+  merged.review = { ...merged.review, sourceDeregistration: deregistration.action, sourceMemberUpdate: memberUpdate.sourceLabel, subtitle: deregistration.reviewSubtitle };
   merged.systemExtras = { ...merged.systemExtras, reviewTypeDeregistration: deregistration.reviewPermission };
   for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang]]) {
     for (const [scope, entries] of Object.entries(pack)) {

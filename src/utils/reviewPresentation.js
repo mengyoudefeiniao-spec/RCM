@@ -10,7 +10,8 @@ export const REVIEW_SOURCE_KEYS = {
   '注销成员': 'sourceDeregistration', 'Member Deregistration': 'sourceDeregistration',
   '代理转移': 'sourceTransferAgent', 'Transfer Agent': 'sourceTransferAgent',
   '成员录入': 'sourceMemberEntry', 'Member Entry': 'sourceMemberEntry',
-  '成员转移': 'sourceMemberTransfer', 'Transfer Member': 'sourceMemberTransfer'
+  '成员转移': 'sourceMemberTransfer', 'Transfer Member': 'sourceMemberTransfer',
+  '成员信息变更': 'sourceMemberUpdate', 'Member Update': 'sourceMemberUpdate'
 };
 
 const pendingStatuses = new Set([
