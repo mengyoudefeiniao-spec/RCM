@@ -26,6 +26,17 @@ export function isDedicatedApp() {
 }
 
 /**
+ * Builds the login destination for a logout. The role must be captured before
+ * the auth store is cleared, otherwise the user falls back to the citizen page.
+ */
+export function getLoginPathForRole(role, appMode = false) {
+  const query = { layout: appMode ? 'app' : 'web' };
+  if (role === APP_ROLE_AGENT) return { path: '/login/agent', query };
+  if (role === APP_ROLE_CITIZEN) return { path: '/login/citizen', query };
+  return { path: '/login', query };
+}
+
+/**
  * Resolves the only login/registration flow allowed for the current entry.
  * Native flavor wins; web previews use `/login/citizen` or `/login/agent`,
  * with `/login` remaining the citizen default for backwards compatibility.

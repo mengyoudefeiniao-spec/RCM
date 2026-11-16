@@ -250,6 +250,7 @@ import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
 import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl, notificationTitle, notificationBody } from '../../stores/myNotifications.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
+import { getNativeAppRole, getLoginPathForRole } from '../../utils/appRole.js';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -632,8 +633,10 @@ async function confirmDeviceRemoval() {
 }
 
 async function handleLogout() {
+  const appRole = getNativeAppRole() || authStore.currentRole;
+  const wasAppMode = isAppMode.value;
   await authStore.logout();
-  await router.replace('/login');
+  await router.replace(getLoginPathForRole(appRole, wasAppMode));
 }
 
 onMounted(async () => {

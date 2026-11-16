@@ -233,6 +233,7 @@ import { useReviewStore } from '../../stores/review.js';
 import { useMessageCenterStore } from '../../stores/messageCenter.js';
 import { resolveMessageAccess } from '../../utils/messagePermissions.js';
 import { getDefaultPathByRole } from '../../router/index.js';
+import { getNativeAppRole, getLoginPathForRole } from '../../utils/appRole.js';
 import LanguageSwitcher from '../common/LanguageSwitcher.vue';
 import AppLogo from '../common/AppLogo.vue';
 import {
@@ -380,6 +381,9 @@ function handleRoleCommand(role) {
 
 async function handleLogout() {
   const wasAppMode = isAppMode.value;
+  // Keep the app identity before the auth store is cleared; a portal-launched
+  // agent app must return to the agent login, not the citizen default.
+  const appRole = getNativeAppRole() || authStore.currentRole;
   await authStore.logout();
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('rcm_auth_token');
@@ -391,11 +395,10 @@ async function handleLogout() {
   }
   if (wasAppMode) {
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('rcm_layout_mode', 'app');
-    await router.replace({ path: '/login', query: { layout: 'app' } });
-  } else {
-    if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('rcm_layout_mode');
-    await router.replace('/login');
+  } else if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.removeItem('rcm_layout_mode');
   }
+  await router.replace(getLoginPathForRole(appRole, wasAppMode));
 }
 </script>
 
