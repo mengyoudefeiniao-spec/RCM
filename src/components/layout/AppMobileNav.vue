@@ -24,14 +24,14 @@
         <span>{{ $t('nav.citizen') || '公民服务' }}</span>
       </router-link>
 
-      <!-- 2. 配给购买 (配给购买与提货兑付) -->
+      <!-- 2. 配给份额 (签约网点与历史批次申领记录) -->
       <router-link
         :to="getNavTarget('/warehouse')"
         class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] min-w-[70px] transition-all"
         :class="$route.path === '/warehouse' ? 'text-[#326445] font-bold bg-[#E2F4E4] border-t-2 border-[#D3AF62]' : 'text-[#58685D] border-t-2 border-transparent active:scale-95'"
       >
         <el-icon :size="20"><ShoppingCart /></el-icon>
-        <span>{{ $t('citizenPurchase.moduleTitle') || '配给购买' }}</span>
+        <span>{{ $t('citizenPurchase.moduleTitle') || '配给份额' }}</span>
       </router-link>
 
       <!-- 3. 家庭代理 (本人家庭签约代理与月度物资配送额度) -->

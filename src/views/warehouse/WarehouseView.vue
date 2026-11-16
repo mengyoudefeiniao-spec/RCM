@@ -1,9 +1,9 @@
 <template>
   <div class="warehouse-view space-y-4">
     <!-- ============================================== -->
-    <!-- 公民端：配给购买 (拆分后独立大模块，直接呈现，无选项卡) -->
+    <!-- 公民端：配给份额 (签约网点与历史批次申领记录，直接呈现，无选项卡) -->
     <!-- ============================================== -->
-    <CitizenPurchaseTab v-if="isCitizen" />
+    <CitizenShareTab v-if="isCitizen" />
 
     <!-- ============================================== -->
     <!-- 代理端 APP 视口：配给配送 (仅呈现订单配送页，不显示选项卡与标题) -->
@@ -114,7 +114,7 @@ import {
 
 // 核心子模块
 import RationPlanTab from './components/RationPlanTab.vue';
-import CitizenPurchaseTab from './components/CitizenPurchaseTab.vue';
+import CitizenShareTab from './components/CitizenShareTab.vue';
 import OrderDispatchTab from './components/OrderDispatchTab.vue';
 import OrderStatsTab from './components/OrderStatsTab.vue';
 import InboundOutboundTab from './components/InboundOutboundTab.vue';

@@ -124,10 +124,9 @@ async function loadQuotaData() {
   }
 }
 
-// 跳转到「配给购买」模块下单 (保留 layout/role 等 APP 模式参数)
+// 跳转到「配给份额」模块查看签约网点与申领记录 (保留 layout/role 等 APP 模式参数)
 function goPurchase() {
-  const query = { ...route.query, tab: 'purchase' };
-  router.push({ path: '/warehouse', query });
+  router.push({ path: '/warehouse', query: { ...route.query } });
 }
 
 function goAgentTransfer() {

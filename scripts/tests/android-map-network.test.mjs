@@ -82,7 +82,6 @@ test('tile URLs from the affected screens pass the native policy', () => {
     'src/components/common/WarehouseLocationDialog.vue',
     'src/views/warehouse/AgentDeliveryOrderDetail.vue',
     'src/views/warehouse/components/RationPlanTab.vue',
-    'src/views/warehouse/CitizenOrderDetail.vue',
     'src/views/agent/components/AgentRealGISMap.vue'
   ];
   const cases = screens.map(screen => {
