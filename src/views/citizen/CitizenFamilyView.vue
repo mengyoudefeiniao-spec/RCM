@@ -418,16 +418,6 @@
 
         <!-- 步骤 1: 填写基本身份信息 -->
         <div v-show="addMemberStep === 1" class="space-y-3">
-          <!-- 简要指引提示 -->
-          <div class="bg-[#EFF5F1]/80 border border-[#C7DED0]/80 p-2.5 rounded-lg text-[#1F3326] flex items-center justify-between gap-2">
-            <div class="flex items-center gap-1.5 min-w-0 flex-1">
-              <el-icon class="text-[#326445] shrink-0"><InfoFilled /></el-icon>
-              <span class="text-[11px] leading-tight">{{ $t('citizen.fillRealIdentityNotice') }}</span>
-            </div>
-            <!-- 法定户主就绪小标签 -->
-            <el-tag size="small" type="success" effect="light" class="shrink-0 font-medium scale-95">{{ $t('citizen.headVerifiedBadge') }}</el-tag>
-          </div>
-
           <el-form label-position="top" class="space-y-2.5">
             <div :class="isAppMode ? 'space-y-2' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'">
               <el-form-item :label="$t('citizen.memberFullName')" required class="!mb-1">
@@ -467,26 +457,11 @@
               </el-select>
             </el-form-item>
 
-            <!-- 户主资质极简展示 -->
-            <div class="p-2.5 bg-[#F3F8F4] border border-[#D9E5DB] rounded-lg flex items-center justify-between text-[11px] text-[#58685D]">
-              <div class="flex items-center gap-1.5">
-                <el-icon class="text-[#3E9B68]"><CircleCheckFilled /></el-icon>
-                <span>{{ $t('citizen.headBioEnrolled') }}</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <el-icon class="text-[#3E9B68]"><CircleCheckFilled /></el-icon>
-                <span>{{ $t('citizen.qiCardBound') }}</span>
-              </div>
-            </div>
           </el-form>
         </div>
 
         <!-- 步骤 2: 三重资格核验 -->
         <div v-show="addMemberStep === 2" class="space-y-3">
-          <div class="bg-[#F3F8F4] p-3 rounded-lg border border-[#D9E5DB] text-xs text-[#58685D]">
-            {{ $t('citizen.verifyNotice') }}
-          </div>
-
           <div class="space-y-2.5">
             <!-- 条件 1: 系统更新 -->
             <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-[#D9E5DB] shadow-2xs">
@@ -951,7 +926,6 @@ import {
   Unlock,
   Switch,
   Plus,
-  InfoFilled,
   CircleCheckFilled,
   Tickets,
   Refresh,

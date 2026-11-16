@@ -18,9 +18,9 @@ export default {
     applicationStatuses: { approved: '审批通过', pending: '审批处理中', rejected: '未通过' },
     applicationFilterToggle: '筛选', applicationFilterType: '申请类型', applicationFilterStatus: '审核状态', applicationFilterMode: '审核方式', applicationAnyType: '全部类型', applicationAnyStatus: '全部状态', applicationAnyMode: '全部方式', applicationSearchNumber: '搜索申请编号', applicationClearFilters: '清除筛选', applicationNoMatches: '没有符合条件的申请记录', automaticReview: '系统自动审核', manualReview: '人工电子审核',
     noNotifications: '暂无通知', unread: '未读', viewRelated: '查看相关业务',
-    contactTitle: '联系资料', email: '邮箱', phone: '电话号码', address: '收货地址',
+    contactTitle: '联系资料', email: '邮箱', phone: '电话号码', address: '家庭地址',
     editContact: '编辑资料', saveContact: '保存资料', contactSaved: '资料已保存',
-    invalidProfile: '请填写有效的邮箱、电话号码和收货地址',
+    invalidProfile: '请填写有效的邮箱、电话号码和家庭地址',
     outletInfo: '代理网点信息', outletCode: '网点编号', center: '所属中心',
     outletStatus: '经营状态', outletActive: '正常营业', outletInactive: '停用',
     outletAddress: '网点地址', outletPhone: '联系电话', noOutlets: '暂无代理网点',
@@ -57,7 +57,7 @@ export default {
         review: { title: '审核结果', body: '您的配给业务申请已有新的审核结果，请查看办理进度。' },
         material: { title: '补充材料', body: '有一项申请需要补充证明材料，请及时提交。' },
         ration: { title: '待领取配给', body: '本月家庭配给已备妥，可前往指定网点领取。' },
-        system: { title: '系统通知', body: '请核对您的联系方式与收货地址，确保业务通知及时送达。' }
+        system: { title: '系统通知', body: '请核对您的联系方式与家庭地址，确保业务通知及时送达。' }
       },
       agent: {
         review: { title: '审核结果', body: '代理业务申请已更新审核状态，请查看办理记录。' },
@@ -87,9 +87,9 @@ export default {
     applicationStatuses: { approved: 'Approved', pending: 'In review', rejected: 'Not approved' },
     applicationFilterToggle: 'Filters', applicationFilterType: 'Application type', applicationFilterStatus: 'Review status', applicationFilterMode: 'Review method', applicationAnyType: 'All types', applicationAnyStatus: 'All statuses', applicationAnyMode: 'All methods', applicationSearchNumber: 'Search reference number', applicationClearFilters: 'Clear filters', applicationNoMatches: 'No applications match these filters', automaticReview: 'System review', manualReview: 'Manual electronic review',
     noNotifications: 'No notifications', unread: 'Unread', viewRelated: 'View related item',
-    contactTitle: 'Contact Details', email: 'Email', phone: 'Phone number', address: 'Delivery address',
+    contactTitle: 'Contact Details', email: 'Email', phone: 'Phone number', address: 'Home address',
     editContact: 'Edit details', saveContact: 'Save details', contactSaved: 'Details saved',
-    invalidProfile: 'Enter a valid email, phone number and delivery address',
+    invalidProfile: 'Enter a valid email, phone number and home address',
     outletInfo: 'Agent Outlet Information', outletCode: 'Outlet code', center: 'Ration center',
     outletStatus: 'Operating status', outletActive: 'Active', outletInactive: 'Inactive',
     outletAddress: 'Outlet address', outletPhone: 'Contact number', noOutlets: 'No outlets available',
@@ -126,7 +126,7 @@ export default {
         review: { title: 'Review result', body: 'A ration service request has a new review result. Check its progress.' },
         material: { title: 'Additional documents', body: 'A request needs supporting documents. Please submit them soon.' },
         ration: { title: 'Ration ready for collection', body: 'Your family ration is ready at the assigned outlet.' },
-        system: { title: 'System notice', body: 'Check your contact and delivery details to receive updates.' }
+        system: { title: 'System notice', body: 'Check your contact details and home address to receive updates.' }
       },
       agent: {
         review: { title: 'Review result', body: 'An agent application has a new review status. Check your records.' },
@@ -156,9 +156,9 @@ export default {
     applicationStatuses: { approved: 'تمت الموافقة', pending: 'قيد المراجعة', rejected: 'لم تتم الموافقة' },
     applicationFilterToggle: 'تصفية', applicationFilterType: 'نوع الطلب', applicationFilterStatus: 'حالة المراجعة', applicationFilterMode: 'طريقة المراجعة', applicationAnyType: 'كل الأنواع', applicationAnyStatus: 'كل الحالات', applicationAnyMode: 'كل الطرق', applicationSearchNumber: 'البحث برقم الطلب', applicationClearFilters: 'مسح عوامل التصفية', applicationNoMatches: 'لا توجد طلبات تطابق عوامل التصفية', automaticReview: 'مراجعة آلية من النظام', manualReview: 'مراجعة إلكترونية يدوية',
     noNotifications: 'لا توجد إشعارات', unread: 'غير مقروء', viewRelated: 'عرض المعاملة',
-    contactTitle: 'بيانات الاتصال', email: 'البريد الإلكتروني', phone: 'رقم الهاتف', address: 'عنوان التسليم',
+    contactTitle: 'بيانات الاتصال', email: 'البريد الإلكتروني', phone: 'رقم الهاتف', address: 'عنوان الأسرة',
     editContact: 'تعديل البيانات', saveContact: 'حفظ البيانات', contactSaved: 'حُفظت البيانات',
-    invalidProfile: 'أدخل بريداً إلكترونياً ورقم هاتف وعنوان تسليم صالحاً',
+    invalidProfile: 'أدخل بريداً إلكترونياً ورقم هاتف وعنوان أسرة صالحاً',
     outletInfo: 'معلومات منفذ الوكيل', outletCode: 'رمز المنفذ', center: 'مركز التموين',
     outletStatus: 'حالة التشغيل', outletActive: 'نشط', outletInactive: 'متوقف',
     outletAddress: 'عنوان المنفذ', outletPhone: 'هاتف الاتصال', noOutlets: 'لا توجد منافذ',
@@ -195,7 +195,7 @@ export default {
         review: { title: 'نتيجة التدقيق', body: 'صدرت نتيجة جديدة لتدقيق طلبك التمويني. راجع حالة المعاملة.' },
         material: { title: 'استكمال المستندات', body: 'يتطلب أحد طلباتك مستندات داعمة إضافية. يرجى تقديمها قريباً.' },
         ration: { title: 'حصة جاهزة للاستلام', body: 'حصة أسرتك لهذا الشهر جاهزة للاستلام من المنفذ المحدد.' },
-        system: { title: 'إشعار النظام', body: 'تحقق من بيانات الاتصال وعنوان التسليم لتصلك الإشعارات.' }
+        system: { title: 'إشعار النظام', body: 'تحقق من بيانات الاتصال وعنوان الأسرة لتصلك الإشعارات.' }
       },
       agent: {
         review: { title: 'نتيجة التدقيق', body: 'تغيرت حالة تدقيق طلب الوكالة. راجع سجل المعاملات.' },
@@ -225,9 +225,9 @@ export default {
     applicationStatuses: { approved: 'پەسەندکرا', pending: 'لە پشکنیندایە', rejected: 'پەسەند نەکرا' },
     applicationFilterToggle: 'فلتەر', applicationFilterType: 'جۆری داواکاری', applicationFilterStatus: 'دۆخی پشکنین', applicationFilterMode: 'شێوازی پشکنین', applicationAnyType: 'هەموو جۆرەکان', applicationAnyStatus: 'هەموو دۆخەکان', applicationAnyMode: 'هەموو شێوازەکان', applicationSearchNumber: 'گەڕان بە ژمارەی داواکاری', applicationClearFilters: 'پاککردنەوەی فلتەرەکان', applicationNoMatches: 'هیچ داواکارییەک لەگەڵ ئەم فلتەرانە ناگونجێت', automaticReview: 'پشکنیی خودکاری سیستەم', manualReview: 'پشکنیی ئەلیکترۆنیی دەستی',
     noNotifications: 'ئاگادارکردنەوە نییە', unread: 'نەخوێندراو', viewRelated: 'بینینی کاروباری پەیوەندیدار',
-    contactTitle: 'زانیاری پەیوەندی', email: 'ئیمەیڵ', phone: 'ژمارەی تەلەفۆن', address: 'ناونیشانی گەیاندن',
+    contactTitle: 'زانیاری پەیوەندی', email: 'ئیمەیڵ', phone: 'ژمارەی تەلەفۆن', address: 'ناونیشانی خێزان',
     editContact: 'دەستکاریکردنی زانیاری', saveContact: 'پاشەکەوتکردنی زانیاری', contactSaved: 'زانیاری پاشەکەوتکرا',
-    invalidProfile: 'ئیمەیڵ و ژمارەی تەلەفۆن و ناونیشانی گەیاندنی دروست بنووسە',
+    invalidProfile: 'ئیمەیڵ و ژمارەی تەلەفۆن و ناونیشانی خێزانی دروست بنووسە',
     outletInfo: 'زانیاری بنکەی بریکار', outletCode: 'کۆدی بنکە', center: 'ناوەندی بەشەخۆراک',
     outletStatus: 'دۆخی کارکردن', outletActive: 'چالاک', outletInactive: 'ناچالاک',
     outletAddress: 'ناونیشانی بنکە', outletPhone: 'ژمارەی پەیوەندی', noOutlets: 'بنکە نییە',
@@ -264,7 +264,7 @@ export default {
         review: { title: 'ئەنجامی وردبینی', body: 'ئەنجامێکی نوێ بۆ وردبینی داواکاریی بەشەخۆراکەکەت دەرچووە. دۆخی داواکارییەکە ببینە.' },
         material: { title: 'تەواوکردنی بەڵگەنامەکان', body: 'یەکێک لە داواکارییەکانت پێویستی بە بەڵگەنامەی زیاتر هەیە. تکایە بە زوویی پێشکەشی بکە.' },
         ration: { title: 'بەشەخۆراک ئامادەیە بۆ وەرگرتن', body: 'بەشەخۆراکی ئەم مانگەی خێزانەکەت لە بنکەی دیاریکراو ئامادەیە.' },
-        system: { title: 'ئاگادارکردنەوەی سیستەم', body: 'زانیاری پەیوەندی و ناونیشانی گەیاندنت بپشکنە بۆ گەیشتنی ئاگادارکردنەوەکان.' }
+        system: { title: 'ئاگادارکردنەوەی سیستەم', body: 'زانیاری پەیوەندی و ناونیشانی خێزانت بپشکنە بۆ گەیشتنی ئاگادارکردنەوەکان.' }
       },
       agent: {
         review: { title: 'ئەنجامی وردبینی', body: 'دۆخی وردبینی داواکاریی بریکاری نوێکرایەوە. تۆمارەکان ببینە.' },
