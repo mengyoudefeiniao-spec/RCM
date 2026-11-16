@@ -10,24 +10,6 @@
           <p>{{ $t('loginPage.ministry') }}</p>
         </header>
         <section class="login-content">
-          <div class="login-role-switch" role="tablist" :aria-label="$t('loginPage.title')">
-            <button
-              type="button"
-              role="tab"
-              class="login-role-tab"
-              :class="{ 'is-active': activeLoginRole === 'citizen' }"
-              :aria-selected="activeLoginRole === 'citizen'"
-              @click="activeLoginRole = 'citizen'"
-            >{{ $t('agentAuth.citizenTab') }}</button>
-            <button
-              type="button"
-              role="tab"
-              class="login-role-tab"
-              :class="{ 'is-active': activeLoginRole === 'agent' }"
-              :aria-selected="activeLoginRole === 'agent'"
-              @click="activeLoginRole = 'agent'"
-            >{{ $t('agentAuth.agentTab') }}</button>
-          </div>
           <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
             <el-form-item :label="loginIdentifierLabel" prop="username">
               <el-input v-model.trim="loginForm.username" :placeholder="loginIdentifierPlaceholder" size="large" :prefix-icon="User" clearable />
@@ -46,6 +28,12 @@
           <div class="login-register login-forgot">
             <span>{{ $t('forgotPassword.entry') }}</span>
             <el-button type="primary" plain @click="forgotDialogVisible = true">{{ $t('forgotPassword.open') }}</el-button>
+          </div>
+          <!-- Browser preview uses separate URLs; packaged apps never show the other role's entry. -->
+          <div v-if="!isPackagedApp" class="login-alt-entry">
+            <router-link :to="isAgentLogin ? { path: '/login', query: { layout: 'web' } } : { path: '/login/agent', query: { layout: 'web' } }">
+              {{ isAgentLogin ? $t('agentAuth.citizenEntry') : $t('agentAuth.agentEntry') }}
+            </router-link>
           </div>
         </section>
       </div>
@@ -128,7 +116,7 @@
 
 <script setup>
 import { i18n } from '../../locales/index.js';
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
@@ -142,6 +130,7 @@ import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.v
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
 import { isDemoActive, setDemoStep, activateDemo } from '../../utils/demoState.js';
+import { resolveAppRole, isDedicatedApp } from '../../utils/appRole.js';
 import {
   User,
   Lock,
@@ -156,15 +145,10 @@ const authStore = useAuthStore();
 const { t } = useI18n();
 const isMockMode = import.meta.env.VITE_APP_MOCK_MODE === 'true';
 
-// The same login page serves the citizen app and the agent app.
-// Agent registration uses a separate account store and a Company Branch + Agent NO gate.
-const savedLoginRole = typeof localStorage !== 'undefined' ? localStorage.getItem('rcm_login_role') : '';
-const activeLoginRole = ref(
-  route.query.role === 'agent' ? 'agent'
-    : route.query.role === 'citizen' ? 'citizen'
-      : savedLoginRole === 'agent' ? 'agent' : 'citizen'
-);
-watch(activeLoginRole, role => localStorage.setItem('rcm_login_role', role));
+// The role is fixed by the APK flavor; browser previews use dedicated routes.
+// There is no in-page switch between citizen and agent login/registration.
+const isPackagedApp = isDedicatedApp();
+const activeLoginRole = computed(() => resolveAppRole(route) || 'citizen');
 const isAgentLogin = computed(() => activeLoginRole.value === 'agent');
 const loginIdentifierLabel = computed(() => isAgentLogin.value ? t('agentAuth.loginIdentifier') : t('loginPage.username'));
 const loginIdentifierPlaceholder = computed(() => isAgentLogin.value ? t('agentAuth.loginIdentifierPlaceholder') : t('loginPage.usernamePlaceholder'));
@@ -190,7 +174,6 @@ function handleStartRegister() {
 }
 
 function handleAgentRegistered(result) {
-  activeLoginRole.value = 'agent';
   loginForm.username = result?.agentNo || result?.username || '';
   loginForm.password = '';
 }
@@ -233,7 +216,7 @@ const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
 
 const loginForm = reactive({
-  username: isMockMode ? 'RC-10029381' : '',
+  username: isMockMode ? (isAgentLogin.value ? 'FA-00128' : 'RC-10029381') : '',
   password: isMockMode ? 'iq-pass-2026' : ''
 });
 
@@ -426,39 +409,20 @@ async function handleSecondaryVerifySuccess() {
   font-size: .7rem;
   line-height: 1.6;
 }
-.login-role-switch {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  padding: 4px;
-  border: 1px solid #d9e5db;
-  border-radius: 8px;
-  background: #f3f8f4;
+.login-alt-entry {
+  margin-top: 16px;
+  text-align: center;
+  font-size: .75rem;
 }
-.login-role-tab {
-  flex: 1 1 0;
-  padding: 8px 12px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #58685d;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
-}
-.login-role-tab:hover { color: #326445; }
-.login-role-tab.is-active {
-  border-color: #d3af62;
-  background: #fff;
+.login-alt-entry a {
   color: #326445;
-  box-shadow: 0 1px 2px #12241a14;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid #d3af62;
+  padding-bottom: 2px;
 }
-.login-role-tab:focus-visible {
-  outline: 2px solid #d3af62;
-  outline-offset: 1px;
-}
+.login-alt-entry a:hover { color: #244c34; }
+.login-alt-entry a:focus-visible { outline: 2px solid #d3af62; outline-offset: 3px; }
 .login-content :deep(.el-form-item) { margin-bottom: 24px; }
 .login-content :deep(.el-form-item__error) {
   position: static;

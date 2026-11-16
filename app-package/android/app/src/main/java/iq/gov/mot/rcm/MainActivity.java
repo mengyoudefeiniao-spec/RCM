@@ -99,6 +99,8 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         appSupportBridge = new AppSupportBridge(this, webView);
+        // The build flavor decides which login/registration flow the bundled app uses.
+        webView.addJavascriptInterface(new AppRoleBridge(BuildConfig.APP_ROLE), "RcmAppRole");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -194,8 +196,8 @@ public class MainActivity extends Activity {
         });
 
         String startRoute = "citizen".equals(BuildConfig.APP_ROLE)
-                ? "citizen?layout=app&role=citizen"
-                : "dashboard?role=agent&mode=mobile&layout=app";
+                ? "login?role=citizen&layout=app"
+                : "login?role=agent&layout=app";
         Uri notificationTarget = getIntent().getData();
         webView.loadUrl(AppSupportBridge.isAppUrl(notificationTarget) ? notificationTarget.toString()
                 : "https://appassets.androidplatform.net/assets/index.html#/" + startRoute);

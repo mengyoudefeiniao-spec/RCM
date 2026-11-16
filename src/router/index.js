@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import AppLayout from '../components/layout/AppLayout.vue';
 import { createProfileByRole, useAuthStore } from '../stores/auth.js';
 import { i18n } from '../locales/index.js';
+import { getNativeAppRole } from '../utils/appRole.js';
 
 /**
  * 角色说明：
@@ -16,6 +17,18 @@ const routes = [
     name: 'Login',
     component: () => import('../views/login/LoginView.vue'),
     meta: { title: '用户登录', public: true }
+  },
+  {
+    path: '/login/citizen',
+    name: 'CitizenLogin',
+    component: () => import('../views/login/LoginView.vue'),
+    meta: { title: '公民登录', public: true, appRole: 'citizen' }
+  },
+  {
+    path: '/login/agent',
+    name: 'AgentLogin',
+    component: () => import('../views/login/LoginView.vue'),
+    meta: { title: '代理登录', public: true, appRole: 'agent' }
   },
   {
     path: '/portal',
@@ -230,12 +243,27 @@ router.beforeEach((to, from, next) => {
   let userProfile = JSON.parse(sessionStorage.getItem('rcm_user_profile') || localStorage.getItem('rcm_user_profile') || '{}');
   let currentRole = userProfile.role || 'citizen';
 
+  // A packaged APK always uses its own role; a stale session from the other app
+  // is discarded instead of being silently promoted by a `role=` URL parameter.
+  const nativeAppRole = getNativeAppRole();
+  if (nativeAppRole) {
+    if (userProfile?.role && userProfile.role !== nativeAppRole) {
+      sessionStorage.removeItem('rcm_auth_token');
+      sessionStorage.removeItem('rcm_user_profile');
+      localStorage.removeItem('rcm_auth_token');
+      localStorage.removeItem('rcm_user_profile');
+      token = null;
+      userProfile = {};
+    }
+    currentRole = nativeAppRole;
+  }
+
   // 0. 自动识别 URL 查询参数中的目标角色身份并无缝同步至当前标签页专属 sessionStorage (Portal 新开标签页直达)
   // A registered citizen/agent account keeps its own profile even when the URL
   // still carries demo `role=` parameters from the app shell.
   const registeredSession = userProfile.registeredAccount === true
     || (userProfile.role === 'citizen' && userProfile.needsFamilySetup && userProfile.nationalId);
-  if (to.query.role && to.path !== '/login' && (!registeredSession || to.query.demo === 'true')) {
+  if (!nativeAppRole && to.query.role && !to.path.startsWith('/login') && (!registeredSession || to.query.demo === 'true')) {
     const targetRole = String(to.query.role);
     const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
     if (validRoles.includes(targetRole)) {
@@ -255,7 +283,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 若明确要求进入演示模式或注册模式，清除旧 session 避免被已登录拦截
-  if (to.path === '/login' && (to.query.demo === 'true' || to.query.mode === 'register' || to.query.action === 'register')) {
+  if (to.path.startsWith('/login') && (to.query.demo === 'true' || to.query.mode === 'register' || to.query.action === 'register')) {
     sessionStorage.removeItem('rcm_auth_token');
     sessionStorage.removeItem('rcm_user_profile');
     localStorage.removeItem('rcm_auth_token');
@@ -275,16 +303,22 @@ router.beforeEach((to, from, next) => {
 
   // 1. 未登录拦截
   if (!token && !isPublic) {
+    if (nativeAppRole) return next({ path: '/login', query: { role: nativeAppRole, layout: 'app' } });
     return next('/login');
   }
 
   // 2. 已登录访问登录页，跳转对应角色首页
-  if (token && to.path === '/login') {
+  if (token && to.path.startsWith('/login')) {
     return next(getDefaultPathByRole(currentRole));
   }
 
   const requiredCodes = [to.meta?.permissionCode, ...(to.meta?.anyPermissionCodes || [])].filter(Boolean);
   const hasExplicitGrant = requiredCodes.length > 0 && (ALL_ADMIN_ROLES.includes(currentRole) || (Array.isArray(userProfile.permissionCodes) && userProfile.permissionCodes.some((code) => requiredCodes.some((requiredCode) => code === requiredCode || String(code).startsWith(`${requiredCode}.`)))));
+
+  // 3a. 打包 APP 的页面边界：公民包不进入代理页面，代理包不进入公民专属页面
+  if (nativeAppRole && to.meta?.roles && !to.meta.roles.includes(nativeAppRole)) {
+    return next(getDefaultPathByRole(nativeAppRole));
+  }
 
   // 3. 角色路由权限拦截 (支持拆分后的三种管理员自动继承 admin 权限)
   if (token && to.meta?.roles) {
