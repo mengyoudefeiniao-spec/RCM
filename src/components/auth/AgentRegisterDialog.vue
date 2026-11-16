@@ -145,13 +145,19 @@
       </div>
     </div>
 
-    <!-- 第二步：手机号、短信验证与登录密码 -->
+    <!-- 第二步：手机号、登录密码与短信验证；先设密码，再发送验证码 -->
     <div v-else class="agent-step">
       <el-form label-position="top">
         <el-form-item :label="$t('agentAuth.phone')" required class="!mb-3">
           <el-input v-model.trim="form.phone" class="bidi-ltr" inputmode="tel" :disabled="smsVerified" :placeholder="$t('agentAuth.phonePlaceholder')" />
         </el-form-item>
-        <el-form-item :label="$t('agentAuth.smsCode')" required :class="smsVerified ? '!mb-2' : '!mb-0'">
+        <el-form-item :label="$t('agentAuth.password')" required class="!mb-3">
+          <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('agentAuth.passwordPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('agentAuth.confirmPassword')" required class="!mb-3">
+          <el-input v-model="form.confirmPassword" type="password" show-password autocomplete="new-password" :placeholder="$t('agentAuth.confirmPasswordPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('agentAuth.smsCode')" required class="!mb-0">
           <div class="flex gap-2 w-full">
             <el-input v-model.trim="form.smsCode" class="bidi-ltr" maxlength="6" inputmode="numeric" :disabled="smsVerified" :placeholder="$t('agentAuth.smsPlaceholder')" />
             <el-button :loading="sending" :disabled="!isMock || smsVerified || cooldown > 0 || sending" @click="sendCode">
@@ -164,21 +170,10 @@
         <span>{{ $t('agentAuth.demoCode', { code: exampleCode }) }}</span>
         <el-button text type="primary" @click="form.smsCode = exampleCode">{{ $t('agentAuth.fillIn') }}</el-button>
       </div>
-
-      <template v-if="smsVerified">
-        <div class="flex items-center gap-1.5 text-[11px] text-[#326445]">
-          <el-icon><CircleCheck /></el-icon>
-          <span>{{ $t('agentAuth.codeVerified') }}</span>
-        </div>
-        <el-form label-position="top">
-          <el-form-item :label="$t('agentAuth.password')" required class="!mb-3">
-            <el-input v-model="form.password" type="password" show-password autocomplete="new-password" :placeholder="$t('agentAuth.passwordPlaceholder')" />
-          </el-form-item>
-          <el-form-item :label="$t('agentAuth.confirmPassword')" required class="!mb-0">
-            <el-input v-model="form.confirmPassword" type="password" show-password autocomplete="new-password" :placeholder="$t('agentAuth.confirmPasswordPlaceholder')" />
-          </el-form-item>
-        </el-form>
-      </template>
+      <div v-if="smsVerified" class="flex items-center gap-1.5 text-[11px] text-[#326445]">
+        <el-icon><CircleCheck /></el-icon>
+        <span>{{ $t('agentAuth.codeVerified') }}</span>
+      </div>
     </div>
 
     <template #footer>
@@ -450,6 +445,18 @@ function back() {
 
 async function sendCode() {
   if (!isMock || sending.value || cooldown.value > 0 || smsVerified.value) return;
+  if (!form.password || !form.confirmPassword) {
+    ElMessage.warning(t('agentAuth.accountRequired'));
+    return;
+  }
+  if (form.password.length < 8) {
+    ElMessage.warning(t('agentAuth.passwordTooShort'));
+    return;
+  }
+  if (form.password !== form.confirmPassword) {
+    ElMessage.warning(t('agentAuth.passwordMismatch'));
+    return;
+  }
   const phone = form.phone.replace(/[\s-]/g, '');
   if (!isValidPhone(phone)) {
     ElMessage.warning(t('agentAuth.invalidPhone'));

@@ -1327,7 +1327,9 @@ export async function mockDispatch(config) {
     if (registeredAgent) {
       const verifiedAgent = await verifyAgentAccountPassword(registeredAgent, data.password || '');
       if (!verifiedAgent) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
-      if (verifiedAgent.identityVerification?.status === 'passed') {
+      // Registration already ran the NFC chip read and the live face comparison,
+      // so agent sign-in continues without a second identity verification.
+      if (['passed', 'registered'].includes(verifiedAgent.identityVerification?.status)) {
         await flushPocketBaseWrites();
         return createResponse(registeredAgentSession(verifiedAgent, reqLang));
       }
@@ -2049,10 +2051,10 @@ export async function mockDispatch(config) {
       phone: normalizeAgentPhone(data.phone),
       password: data.password,
       registeredAt,
-      // Registration keeps the entered company branch + agent number; the first
-      // sign-in still runs the NFC chip + live face gate, mirroring the citizen app.
+      // Registration keeps the entered company branch + agent number. The chip read
+      // and the face comparison already passed here, so sign-in needs no repeat check.
       identityVerification: {
-        status: 'registered', method: 'nfc-face', simulated: true, verifiedAt: registeredAt,
+        status: 'passed', method: 'nfc-face', simulated: true, verifiedAt: registeredAt,
         directoryMatched: Boolean(entry), chipMatchScore
       }
     };
@@ -2102,7 +2104,8 @@ export async function mockDispatch(config) {
       agentNo,
       companyBranchName: localizeAgentNames(branchNames, reqLang),
       directoryMatched: Boolean(entry),
-      identityVerificationRequired: true
+      // Identity was verified during registration, so sign-in needs no extra check.
+      identityVerificationRequired: false
     }, 200, i18n.global.t('agentAuth.registered'));
   }
 

@@ -145,11 +145,11 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 
 流程约定：
 
-- 注册向导为两步：身份核验（Company Branch、Agent NO、身份证号 + 身份证正面/背面、NFC 芯片、人脸活体四张卡片）→ 手机与密码。界面不设步骤节点图，也不设独立的“验证公司分部与代理编号”按钮，靠卡片状态（待完成／读取中／已完成）引导操作。
+- 注册向导为两步：身份核验（Company Branch、Agent NO、身份证号 + 身份证正面/背面、NFC 芯片、人脸活体四张卡片）→ 手机号、密码与短信验证（先设置并确认密码，再发送短信验证码）。界面不设步骤节点图，也不设独立的“验证公司分部与代理编号”按钮，靠卡片状态（待完成／读取中／已完成）引导操作。
 - Company Branch 与 Agent NO 在 `POST /auth/agent/read-identity` 中一并核验：命中 `rcm_shared_agent_directory` 时回填代销网点与代理人名称并返回 `directoryMatched: true`；未命中时注册仍可继续，账号与档案标记 `directoryMatched: false`，由公司分部在注册后核对归属。
 - Agent NO 不做格式正则校验，仅要求非空，写入前统一去空格并转大写；与已有代理账户重复（编号／手机号／身份证号）时仍拒绝注册，`FA-00128` 为现有演示代理账号，其对应名录记录默认已占用。
 - `POST /auth/register-agent` 复核芯片读取凭据、身份证正反面照片、人脸图像与芯片比对分（`chipMatchPassed`），任一缺失返回本地化的身份核验提示。
-- 注册与首次登录均复用公民 APP 的核验链路：NFC 读取国民身份证芯片（演示为模拟读取，不返回芯片人像，读取失败时仅演示环境提供快速通过）与人脸活体核验（华为云 FRS）。首次登录通过 `POST /auth/agent-login/read-identity` 与 `POST /auth/agent-login/verify` 完成核验后签发代理会话。
+- 注册的身份核验步骤即完成芯片读取、活体采集与人像比对，账号写入 `identityVerification.status = 'passed'`；**代理首次登录不再重复身份核验**，按代理编号/手机号与密码直接签发会话。`POST /auth/agent-login/read-identity` 与 `POST /auth/agent-login/verify` 保留给真实身份服务需要补验的场景。
 - 动态业务数据（公司分部名称、代销网点名称、代理人姓名）以多语言对象存入 PocketBase，界面按当前语言和 RTL/LTR 方向渲染，不按语言重复保存整条记录；`rcm_shared_agent_accounts` 与注册档案共用同一份多语言名称对象。
 
 ### 家庭成员特殊状态
