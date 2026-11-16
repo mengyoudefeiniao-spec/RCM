@@ -1,5 +1,7 @@
 <template>
   <div ref="rootRef" class="ration-share-tab" :class="[isAppMode ? 'space-y-2.5' : 'space-y-3', isAppMode ? 'ration-share-app' : '']">
+    <!-- 第一屏：签约网点 + 本批配额，按视口铺满 -->
+    <div class="overview-panel">
     <div class="grid" :class="isAppMode ? 'grid-cols-1 gap-2.5' : 'gap-3 lg:grid-cols-5'">
       <!-- 家庭代理签约网点 -->
       <section
@@ -74,12 +76,13 @@
     </div>
 
     <!-- APP 默认只显示签约网点与本批配额；点击半透明双箭头下滑到申领记录 -->
-    <button v-if="isAppMode" type="button" class="records-reveal records-reveal-down !mt-auto" :aria-label="$t('rationShare.recordsTitle')" @click="goToRecords">
+    <button v-if="isAppMode" type="button" class="records-reveal records-reveal-down" :aria-label="$t('rationShare.recordsTitle')" @click="goToRecords">
       <span class="records-chevron" aria-hidden="true">
         <el-icon><ArrowDown /></el-icon>
         <el-icon><ArrowDown /></el-icon>
       </span>
     </button>
+    </div>
 
     <!-- 申领记录：按历史批次查询；顶部双箭头返回签约网点与本批配额 -->
     <section ref="recordsSection" class="overflow-hidden rounded-lg border border-[#D9E5DB]/80 bg-white shadow-xs" :class="isAppMode ? 'records-panel' : ''" aria-labelledby="ration-share-records-title">
@@ -389,10 +392,14 @@ onMounted(async () => {
 .ration-share-app {
   display: flex;
   flex-direction: column;
-  /* Fill the APP viewport (also capped for the desktop phone-frame preview). */
+}
+.ration-share-app .overview-panel {
+  display: flex;
+  flex-direction: column;
+  /* The first screen fills the APP viewport (also capped for the desktop phone-frame preview). */
   min-height: calc(min(100dvh, 924px) - 122px);
 }
-.ration-share-app > .grid {
+.ration-share-app .overview-panel > .grid {
   flex: 1 1 auto;
   grid-template-rows: minmax(0, 0.85fr) minmax(0, 1.15fr);
 }
@@ -431,7 +438,7 @@ onMounted(async () => {
   color: #326445;
   cursor: pointer;
 }
-.ration-share-app > .records-reveal {
+.ration-share-app .overview-panel > .records-reveal {
   margin-top: auto !important;
 }
 .records-panel {
