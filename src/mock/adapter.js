@@ -2176,7 +2176,7 @@ export async function mockDispatch(config) {
 
   // 申请分户：提交分部电子审核 (POST)
   if (url.includes('/citizen/split-household/submit-review') && method === 'POST') {
-    const { currentCardNo, memberIds, reason } = data;
+    const { currentCardNo, memberIds, reason, paymentInfo } = data;
     const ticketId = `REV-SPL-${Date.now().toString().slice(-4)}`;
     const splitApprovalLevel = getApprovalLevels('SPL');
 
@@ -2200,7 +2200,7 @@ export async function mockDispatch(config) {
       attachments: [
         { name: isEn ? 'Civil_Marriage_Certificate_or_Equivalent_Split_Judicial_Document.pdf' : '民事结婚证书或等效分户司法文件.pdf', type: 'required', verified: true }
       ],
-      payload: { splitMemberIds: memberIds }
+      payload: { splitMemberIds: memberIds, paymentInfo: paymentInfo || null }
     };
     ticketsStore.unshift(newTicket);
     addSharedTicket(newTicket);

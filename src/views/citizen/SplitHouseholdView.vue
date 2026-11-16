@@ -513,6 +513,8 @@ const splitResult = ref(null);
 const judging = ref(false);
 const reviewSubmitting = ref(false);
 const paymentDialogVisible = ref(false);
+// Kept so the application record can show the electronic payment receipt after submission.
+const lastPaymentInfo = ref(null);
 
 const handleLangChanged = async () => {
   await citizenStore.fetchFamilies();
@@ -613,6 +615,7 @@ function handleStartSplitPayment() {
  * 2. 扫码付款通过后，正式执行优先系统智能判别
  */
 async function handlePaymentSuccess(paymentInfo) {
+  lastPaymentInfo.value = paymentInfo;
   judging.value = true;
   try {
     const res = await citizenStore.judgeSplitHousehold({
@@ -635,7 +638,7 @@ async function handlePaymentSuccess(paymentInfo) {
         applicantName: citizenStore.currentFamily?.headName || '艾哈迈德·哈桑·萨利赫 (户主)',
         targetMemberName: t('split.peopleCount', { count: selectedMemberIds.value.length }),
         reason: splitResultDescription.value,
-        payload: { memberIds: selectedMemberIds.value, newCardNo: res.newCardNo || '' }
+        payload: { memberIds: selectedMemberIds.value, newCardNo: res.newCardNo || '', paymentInfo: lastPaymentInfo.value }
       });
     }
     await citizenStore.fetchFamilies();
@@ -659,7 +662,8 @@ async function handleTransferToElectronicReview() {
     const res = await citizenStore.submitSplitReview({
       currentCardNo: citizenStore.currentFamily?.rationCardNo,
       memberIds: selectedMemberIds.value,
-      reason: splitResultDescription.value
+      reason: splitResultDescription.value,
+      paymentInfo: lastPaymentInfo.value
     });
 
     // 跨标签页共享与广播新公文
@@ -675,7 +679,8 @@ async function handleTransferToElectronicReview() {
       reason: splitResultDescription.value,
       attachments: [
         { name: t('split.documents.marriage.fileName'), type: 'required', verified: true }
-      ]
+      ],
+      payload: { paymentInfo: lastPaymentInfo.value }
     });
 
     ElMessage.success(t('split.reviewSubmitted'));
