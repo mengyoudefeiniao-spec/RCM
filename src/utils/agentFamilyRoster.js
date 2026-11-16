@@ -6,6 +6,23 @@ import { isPocketBaseSyncEnabled, readPocketBaseValue, writePocketBaseValue } fr
 
 export const AGENT_FAMILY_ROSTER_KEY = 'rcm_shared_agent_family_roster';
 export const AGENT_FAMILY_DEMO_SITE_ID = 'FA-00128';
+export const AGENT_FAMILY_CURRENT_BATCH = '2026-11';
+
+// Language-neutral current-batch claim state, keyed by ration card number.
+const CLAIM_STATUS_BY_CARD = {
+  'RC-10029381': 'CLAIMED',
+  'RC-10029382': 'CLAIMED',
+  'RC-10029383': 'PENDING',
+  'RC-10029384': 'CLAIMED',
+  'RC-10029385': 'PENDING',
+  'RC-10029386': 'PARTIAL',
+  'RC-10029387': 'PENDING',
+  'RC-10029388': 'CLAIMED',
+  'RC-10029389': 'CLAIMED',
+  'RC-10029390': 'PENDING',
+  'RC-10029391': 'PARTIAL',
+  'RC-10029392': 'CLAIMED'
+};
 
 const ROSTER_SEED = [
   {
@@ -368,6 +385,18 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+/**
+ * Adds the current batch claim state to records created before this field
+ * existed. Existing values are kept so outlet updates are never overwritten.
+ */
+export function normalizeRosterClaims(records) {
+  return (Array.isArray(records) ? records : []).map((record) => ({
+    ...record,
+    currentBatch: record.currentBatch || AGENT_FAMILY_CURRENT_BATCH,
+    claimStatus: record.claimStatus || CLAIM_STATUS_BY_CARD[record.cardNo] || 'PENDING'
+  }));
+}
+
 function isValidRoster(value) {
   return Array.isArray(value) && value.length > 0
     && value.every((record) => record?.cardNo && record?.headNames && record?.addresses);
@@ -408,8 +437,14 @@ async function writeShared(key, value) {
  */
 export async function loadAgentFamilyRoster() {
   const stored = await readShared(AGENT_FAMILY_ROSTER_KEY);
-  if (isValidRoster(stored)) return stored;
-  const seeded = clone(ROSTER_SEED);
+  if (isValidRoster(stored)) {
+    const normalized = normalizeRosterClaims(stored);
+    const changed = normalized.some((record, index) =>
+      record.currentBatch !== stored[index]?.currentBatch || record.claimStatus !== stored[index]?.claimStatus);
+    if (changed) await writeShared(AGENT_FAMILY_ROSTER_KEY, normalized);
+    return normalized;
+  }
+  const seeded = normalizeRosterClaims(clone(ROSTER_SEED));
   await writeShared(AGENT_FAMILY_ROSTER_KEY, seeded);
   return seeded;
 }
