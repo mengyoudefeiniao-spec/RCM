@@ -23,9 +23,11 @@
       <a v-if="result?.image" :href="result.image" download="face-capture.jpg" class="block text-sm text-[#326445] underline">{{ $t('faceCompareDemo.download') }}</a>
       <el-alert v-if="result" :title="$t(result.passed ? 'faceCompareDemo.passed' : 'faceCompareDemo.failed')" :type="result.passed ? 'success' : 'warning'" :closable="false" show-icon />
       <p v-if="result?.score != null" class="text-sm">{{ $t('faceCompareDemo.score') }}: {{ (result.score * 100).toFixed(1) }}%</p>
+      <p v-if="isMock && allowQuickPass" class="text-xs text-[#5A4718]">{{ $t('faceCompareDemo.quickPassNotice') }}</p>
     </div>
     <template #footer>
       <el-button @click="cancel">{{ $t('common.cancel') }}</el-button>
+      <el-button v-if="isMock && allowQuickPass" type="warning" plain @click="quickPass">{{ $t('faceCompareDemo.quickPass') }}</el-button>
       <el-button type="primary" :loading="busy" :disabled="!token || !projectId || !referenceFile || !videoBlob || recording || authenticating" @click="compare">{{ $t('faceCompareDemo.compare') }}</el-button>
       <el-button v-if="result?.passed && isMock" type="success" @click="confirm">{{ $t('faceCompareDemo.confirm') }}</el-button>
     </template>
@@ -135,5 +137,32 @@ function confirm() {
   if (!isMock || !result.value?.passed || !result.value.image) return;
   const payload = { targetName:props.targetName, nationalId:props.targetNationalId, image:result.value.image, simulated:true, provider:'huawei', similarity:result.value.score };
   stopCamera(); emit('success', payload); emit('update:modelValue', false);
+}
+// Demo-only fallback for flows that expose `allowQuickPass` while the cloud
+// liveness service is not configured. The payload is explicitly simulated.
+const PLACEHOLDER_FACE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==';
+function captureFrame() {
+  if (!videoRef.value || !cameraActive.value) return PLACEHOLDER_FACE;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.value.videoWidth || 320;
+    canvas.height = videoRef.value.videoHeight || 240;
+    canvas.getContext('2d').drawImage(videoRef.value, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.8);
+  } catch {
+    return PLACEHOLDER_FACE;
+  }
+}
+function quickPass() {
+  if (!isMock || !props.allowQuickPass) return;
+  const image = captureFrame();
+  stopCamera();
+  const score = 0.99;
+  result.value = { passed: true, image, score, simulated: true };
+  emit('success', {
+    targetName: props.targetName, nationalId: props.targetNationalId,
+    image, simulated: true, provider: 'demo', similarity: score
+  });
+  emit('update:modelValue', false);
 }
 </script>

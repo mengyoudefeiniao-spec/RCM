@@ -10,9 +10,27 @@
           <p>{{ $t('loginPage.ministry') }}</p>
         </header>
         <section class="login-content">
+          <div class="login-role-switch" role="tablist" :aria-label="$t('loginPage.title')">
+            <button
+              type="button"
+              role="tab"
+              class="login-role-tab"
+              :class="{ 'is-active': activeLoginRole === 'citizen' }"
+              :aria-selected="activeLoginRole === 'citizen'"
+              @click="activeLoginRole = 'citizen'"
+            >{{ $t('agentAuth.citizenTab') }}</button>
+            <button
+              type="button"
+              role="tab"
+              class="login-role-tab"
+              :class="{ 'is-active': activeLoginRole === 'agent' }"
+              :aria-selected="activeLoginRole === 'agent'"
+              @click="activeLoginRole = 'agent'"
+            >{{ $t('agentAuth.agentTab') }}</button>
+          </div>
           <el-form ref="formRef" :model="loginForm" :rules="loginRules" label-position="top" @submit.prevent="handleLogin">
-            <el-form-item :label="$t('loginPage.username')" prop="username">
-              <el-input v-model.trim="loginForm.username" :placeholder="$t('loginPage.usernamePlaceholder')" size="large" :prefix-icon="User" clearable />
+            <el-form-item :label="loginIdentifierLabel" prop="username">
+              <el-input v-model.trim="loginForm.username" :placeholder="loginIdentifierPlaceholder" size="large" :prefix-icon="User" clearable />
             </el-form-item>
             <el-form-item :label="$t('login.passwordLabel')" prop="password">
               <el-input v-model="loginForm.password" type="password" :placeholder="$t('login.passwordPlaceholder')" size="large" :prefix-icon="Lock" show-password />
@@ -20,8 +38,10 @@
             <el-button type="primary" size="large" class="login-submit" :loading="loading" native-type="submit">{{ $t('login.loginBtn') }}</el-button>
           </el-form>
           <div class="login-register">
-            <span>{{ $t('loginPage.noAccount') }}</span>
-            <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">{{ $t('login.registerBtn') }}</el-button>
+            <span>{{ isAgentLogin ? $t('agentAuth.noAccount') : $t('loginPage.noAccount') }}</span>
+            <el-button type="primary" plain data-demo-target="btn-register" @click="handleStartRegister">
+              {{ isAgentLogin ? $t('agentAuth.registerEntry') : $t('login.registerBtn') }}
+            </el-button>
           </div>
           <div class="login-register login-forgot">
             <span>{{ $t('forgotPassword.entry') }}</span>
@@ -37,10 +57,20 @@
     <!-- 弹窗 1: 公民注册向导 (卡片类型 -> OCR 识别 -> 配给中心与代理 -> 身份与账户验证) -->
     <CitizenRegisterDialog v-model="registerDialogVisible" :demo-mode="isDemoActive" @registered="handleRegistered" />
     <IdentityVerifyDialog
-      v-if="authStore.pendingIdentityVerification"
+      v-if="authStore.pendingIdentityVerification && !authStore.pendingIdentityVerification.agentNo"
       v-model="firstLoginVerifyVisible"
       :verification="authStore.pendingIdentityVerification"
       @success="handleFirstLoginVerified"
+      @cancel="authStore.pendingIdentityVerification = null"
+    />
+
+    <!-- 代理注册向导 (Company Branch + Agent NO -> NFC 芯片 -> 人脸活体 -> 手机与密码) -->
+    <AgentRegisterDialog v-model="agentRegisterDialogVisible" @registered="handleAgentRegistered" />
+    <AgentIdentityVerifyDialog
+      v-if="authStore.pendingIdentityVerification?.agentNo"
+      v-model="agentVerifyVisible"
+      :verification="authStore.pendingIdentityVerification"
+      @success="handleAgentFirstLoginVerified"
       @cancel="authStore.pendingIdentityVerification = null"
     />
 
@@ -98,13 +128,16 @@
 
 <script setup>
 import { i18n } from '../../locales/index.js';
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { getDefaultPathByRole } from '../../router/index.js';
 import CitizenRegisterDialog from '../../components/auth/CitizenRegisterDialog.vue';
+import AgentRegisterDialog from '../../components/auth/AgentRegisterDialog.vue';
 import ForgotPasswordDialog from '../../components/auth/ForgotPasswordDialog.vue';
 import IdentityVerifyDialog from '../../components/auth/IdentityVerifyDialog.vue';
+import AgentIdentityVerifyDialog from '../../components/auth/AgentIdentityVerifyDialog.vue';
 import BiometricVerifyDialog from '../../components/auth/BiometricVerifyDialog.vue';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher.vue';
 import AppLogo from '../../components/common/AppLogo.vue';
@@ -120,7 +153,21 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const { t } = useI18n();
 const isMockMode = import.meta.env.VITE_APP_MOCK_MODE === 'true';
+
+// The same login page serves the citizen app and the agent app.
+// Agent registration uses a separate account store and a Company Branch + Agent NO gate.
+const savedLoginRole = typeof localStorage !== 'undefined' ? localStorage.getItem('rcm_login_role') : '';
+const activeLoginRole = ref(
+  route.query.role === 'agent' ? 'agent'
+    : route.query.role === 'citizen' ? 'citizen'
+      : savedLoginRole === 'agent' ? 'agent' : 'citizen'
+);
+watch(activeLoginRole, role => localStorage.setItem('rcm_login_role', role));
+const isAgentLogin = computed(() => activeLoginRole.value === 'agent');
+const loginIdentifierLabel = computed(() => isAgentLogin.value ? t('agentAuth.loginIdentifier') : t('loginPage.username'));
+const loginIdentifierPlaceholder = computed(() => isAgentLogin.value ? t('agentAuth.loginIdentifierPlaceholder') : t('loginPage.usernamePlaceholder'));
 
 const isAppMode = computed(() => {
   if (route.query.layout === 'app' || route.query.mode === 'mobile') return true;
@@ -132,17 +179,28 @@ const formRef = ref(null);
 const loading = ref(false);
 
 function handleStartRegister() {
+  if (isAgentLogin.value) {
+    agentRegisterDialogVisible.value = true;
+    return;
+  }
   if (isDemoActive.value) {
     setDemoStep('step1_2');
   }
   registerDialogVisible.value = true;
 }
 
+function handleAgentRegistered(result) {
+  activeLoginRole.value = 'agent';
+  loginForm.username = result?.agentNo || result?.username || '';
+  loginForm.password = '';
+}
+
 onMounted(() => {
   if (route.query.demo === 'true') {
     activateDemo(String(route.query.demoStep || 'step1_1'));
   } else if (route.query.mode === 'register' || route.query.action === 'register') {
-    registerDialogVisible.value = true;
+    if (activeLoginRole.value === 'agent') agentRegisterDialogVisible.value = true;
+    else registerDialogVisible.value = true;
   }
 });
 
@@ -167,8 +225,10 @@ const isTrustedDevice = ref(localStorage.getItem('rcm_trusted_device') === 'true
 
 // 弹窗控制
 const registerDialogVisible = ref(false);
+const agentRegisterDialogVisible = ref(false);
 const forgotDialogVisible = ref(false);
 const firstLoginVerifyVisible = ref(false);
+const agentVerifyVisible = ref(false);
 const newDeviceVerifyDialogVisible = ref(false);
 const biometricVerifyDialogVisible = ref(false);
 
@@ -259,9 +319,10 @@ async function handleLogin() {
 async function executeDirectLogin() {
   loading.value = true;
   try {
-    const ok = await authStore.login(loginForm.username, loginForm.password);
+    const ok = await authStore.login(loginForm.username, loginForm.password, { role: activeLoginRole.value });
     if (!ok && authStore.pendingIdentityVerification) {
-      firstLoginVerifyVisible.value = true;
+      if (authStore.pendingIdentityVerification.agentNo) agentVerifyVisible.value = true;
+      else firstLoginVerifyVisible.value = true;
       return;
     }
     if (ok) {
@@ -299,6 +360,17 @@ async function handleFirstLoginVerified(result) {
   isTrustedDevice.value = true;
   ElMessage.success(i18n.global.t('firstLoginVerification.success'));
   await router.push({ path: '/citizen', query: isAppMode.value ? { layout: 'app' } : {} });
+}
+
+async function handleAgentFirstLoginVerified(result) {
+  authStore.completeIdentityLogin(result);
+  agentVerifyVisible.value = false;
+  localStorage.setItem('rcm_trusted_device', 'true');
+  isTrustedDevice.value = true;
+  ElMessage.success(t('agentAuth.loginSuccess'));
+  await router.push(isAppMode.value
+    ? { path: '/dashboard', query: { role: 'agent', mode: 'mobile', layout: 'app' } }
+    : { path: '/dashboard' });
 }
 
 function openBiometricVerify() {
@@ -353,6 +425,39 @@ async function handleSecondaryVerifySuccess() {
   color: #8a9a8f;
   font-size: .7rem;
   line-height: 1.6;
+}
+.login-role-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 4px;
+  border: 1px solid #d9e5db;
+  border-radius: 8px;
+  background: #f3f8f4;
+}
+.login-role-tab {
+  flex: 1 1 0;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #58685d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.login-role-tab:hover { color: #326445; }
+.login-role-tab.is-active {
+  border-color: #d3af62;
+  background: #fff;
+  color: #326445;
+  box-shadow: 0 1px 2px #12241a14;
+}
+.login-role-tab:focus-visible {
+  outline: 2px solid #d3af62;
+  outline-offset: 1px;
 }
 .login-content :deep(.el-form-item) { margin-bottom: 24px; }
 .login-content :deep(.el-form-item__error) {

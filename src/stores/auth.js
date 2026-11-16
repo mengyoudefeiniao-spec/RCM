@@ -129,8 +129,11 @@ function getInitialProfile() {
     const hash = window.location.hash || '';
     const match = hash.match(/[\?&]role=([^&]+)/);
     const demoRequested = /[\?&]demo=true(?:&|$)/.test(hash);
-    const registeredCitizen = existingProfile?.role === 'citizen' && existingProfile?.needsFamilySetup && existingProfile?.nationalId;
-    if (match && match[1] && (!registeredCitizen || demoRequested)) {
+    // Registered citizen and agent sessions belong to a real account and must
+    // not be replaced by the demo profile carried in a `role=` query string.
+    const registeredSession = existingProfile?.registeredAccount === true
+      || (existingProfile?.role === 'citizen' && existingProfile?.needsFamilySetup && existingProfile?.nationalId);
+    if (match && match[1] && (!registeredSession || demoRequested)) {
       const urlRole = decodeURIComponent(match[1]);
       const profile = createProfileByRole(urlRole);
       sessionStorage.setItem('rcm_user_profile', JSON.stringify(profile));
@@ -210,13 +213,13 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 登录
    */
-  async function login(username, password) {
+  async function login(username, password, options = {}) {
     pendingIdentityVerification.value = null;
     try {
-      const res = await loginUser({ username, password });
+      const res = await loginUser({ username, password, role: options.role || undefined });
       completeIdentityLogin(res);
 
-      const demoNameKey = res.user.needsFamilySetup ? null : res.user.role === 'citizen'
+      const demoNameKey = res.user.needsFamilySetup || res.user.registeredAccount ? null : res.user.role === 'citizen'
         ? 'login.demoCitizenName'
         : res.user.role === 'agent'
           ? 'login.demoAgentName'

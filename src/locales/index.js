@@ -41,9 +41,10 @@ import firstLoginVerificationMessages from './firstLoginVerification.js';
 import memberVerificationMessages from './memberVerification.js';
 import faceCompareDemoMessages from './faceCompareDemo.js';
 import rationShareMessages from './rationShare.js';
+import agentAuthMessages from './agentAuth.js';
 
 function withCitizenApplications(messages, lang) {
-  const merged = { ...messages, faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], registerWizard: registerWizardMessages[lang], forgotPassword: forgotPasswordMessages[lang], memberUpdate: memberUpdateMessages[lang], rationShare: rationShareMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
+  const merged = { ...messages, agentAuth: agentAuthMessages[lang], faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], registerWizard: registerWizardMessages[lang], forgotPassword: forgotPasswordMessages[lang], memberUpdate: memberUpdateMessages[lang], rationShare: rationShareMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
   const deregistration = memberDeregistrationMessages[lang];
   const memberUpdate = memberUpdateMessages[lang];
   merged.memberDeregistration = deregistration;

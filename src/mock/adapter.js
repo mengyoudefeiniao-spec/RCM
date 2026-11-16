@@ -17,6 +17,8 @@ import {
 import { buildCitizenCardVerification } from '../utils/citizenCardScan.js';
 import { memberVerificationStatus, hasPendingRemoteVerification } from '../utils/memberVerification.js';
 import { findCitizenAccount, createCitizenAccount, updateCitizenAccount, verifyCitizenAccountPassword, resetCitizenPassword } from '../utils/citizenAccounts.js';
+import { findAgentAccount, createAgentAccount, updateAgentAccount, verifyAgentAccountPassword } from '../utils/agentAccounts.js';
+import { findAgentDirectoryEntry, claimAgentDirectoryEntry, localizeAgentNames, normalizeAgentNo, isValidAgentNo } from '../utils/agentDirectory.js';
 import { CARD_TYPES, normalizeCardType, normalizeRationCardNo, isValidRationCardNo, isValidNationalId, isValidPhone, cardTypeNeedsScan, provisionalRationCardNo, provinceCodeAt } from '../utils/registrationCard.js';
 import { saveRegistrationArchive } from '../utils/memberRegistration.js';
 import { getRegisteredFamily, isRegisteredFamilyOwner } from '../utils/registeredFamily.js';
@@ -744,20 +746,42 @@ export function createResponse(data = {}, code = 200, message = 'success') {
 }
 
 const FIRST_LOGIN_CHALLENGE_KEY = 'rcm_first_login_challenge';
+const AGENT_LOGIN_CHALLENGE_KEY = 'rcm_agent_login_challenge';
+const AGENT_COMPANY_PROOF_KEY = 'rcm_agent_company_proof';
+const AGENT_READ_IDENTITY_KEY = 'rcm_agent_read_identity';
+const AGENT_REGISTRATION_SMS_KEY = 'rcm_demo_agent_registration_sms';
 const demoVerificationToken = () => Array.from(crypto.getRandomValues(new Uint8Array(24)), byte => byte.toString(16).padStart(2, '0')).join('');
 function pendingFirstLogin(challenge) {
   const pending = JSON.parse(sessionStorage.getItem(FIRST_LOGIN_CHALLENGE_KEY) || 'null');
+  return pending && pending.challenge === challenge && pending.expiresAt > Date.now() ? pending : null;
+}
+function pendingAgentLogin(challenge) {
+  const pending = JSON.parse(sessionStorage.getItem(AGENT_LOGIN_CHALLENGE_KEY) || 'null');
   return pending && pending.challenge === challenge && pending.expiresAt > Date.now() ? pending : null;
 }
 function registeredCitizenSession(account) {
   const user = {
     id: `registered-${account.nationalId}`, username: account.phone,
     name: account.name || account.nationalId, nationalId: account.nationalId, phone: account.phone,
-    provinceCode: account.province, role: 'citizen', needsFamilySetup: true,
+    provinceCode: account.province, role: 'citizen', needsFamilySetup: true, registeredAccount: true,
     familyId: account.familyId || null, familyNumber: account.familyNumber || null, rationCardNo: account.rationCardNo || null, cardNo: account.rationCardNo || null, paperCardNo: account.paperCardNo || null,
     identityVerification: account.identityVerification
   };
   return { token: `mock-registered-${account.nationalId}`, user };
+}
+function registeredAgentSession(account, lang = 'ar') {
+  const branchName = localizeAgentNames(account.companyBranchNames, lang);
+  const agentName = localizeAgentNames(account.ownerNames, lang) || localizeAgentNames(account.shopNames, lang);
+  const user = {
+    id: `registered-agent-${account.agentNo}`, username: account.agentNo,
+    name: agentName || account.agentNo, role: 'agent', registeredAccount: true,
+    agentCode: account.agentNo, agentNo: account.agentNo,
+    companyBranchCode: account.companyBranchCode, companyBranchName: branchName,
+    centerId: account.centerId || null, department: branchName || 'Agent outlet',
+    phone: account.phone, nationalId: account.nationalId,
+    identityVerification: account.identityVerification || null
+  };
+  return { token: `mock-registered-agent-${account.agentNo}`, user };
 }
 
 /**
@@ -1182,11 +1206,30 @@ export async function mockDispatch(config) {
   // ==========================================
   if (url.includes('/auth/login') && method === 'POST') {
     const { username } = data;
+    const loginRole = data.role === 'agent' ? 'agent' : data.role === 'citizen' ? 'citizen' : '';
     const managedUsers = readCenter('system_users', systemSeed.users);
     const managedUser = managedUsers.find((entry) => entry.username === username);
     const presetUser = MOCK_USERS.find((user) => user.username === username || user.role === username || user.cardNo === username);
-    let registered = managedUser || presetUser ? null : await findCitizenAccount(username);
-    if (!registered && !managedUser && !presetUser) {
+    const canLookupRegistered = !managedUser && !presetUser;
+    // Agent accounts are a separate store from citizen accounts; the login tab decides which store is queried first.
+    const registeredAgent = canLookupRegistered && loginRole !== 'citizen' ? await findAgentAccount(username) : null;
+    if (registeredAgent) {
+      const verifiedAgent = await verifyAgentAccountPassword(registeredAgent, data.password || '');
+      if (!verifiedAgent) return createResponse({}, 400, i18n.global.t('my.invalidCredentials'));
+      if (verifiedAgent.identityVerification?.status === 'passed') {
+        await flushPocketBaseWrites();
+        return createResponse(registeredAgentSession(verifiedAgent, reqLang));
+      }
+      const pending = {
+        challenge: demoVerificationToken(), kind: 'agent',
+        agentNo: verifiedAgent.agentNo, nationalId: verifiedAgent.nationalId,
+        expiresAt: Date.now() + 300000
+      };
+      sessionStorage.setItem(AGENT_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
+      return createResponse(pending, 428, i18n.global.t('agentAuth.loginInstruction'));
+    }
+    let registered = canLookupRegistered && loginRole !== 'agent' ? await findCitizenAccount(username) : null;
+    if (!registered && !managedUser && !presetUser && loginRole !== 'agent') {
       const family = getSharedFamilies(reqLang).find(item => item.rationCardNo === username && item.cardUnconfirmed);
       const ownerId = family?.ownerNationalId || family?.members?.find(member => member.id === `registered-${member.nationalId}`)?.nationalId;
       const candidate = ownerId ? await findCitizenAccount(ownerId) : null;
@@ -1246,6 +1289,9 @@ export async function mockDispatch(config) {
 
   if (url.includes('/auth/logout') && method === 'POST') {
     sessionStorage.removeItem(FIRST_LOGIN_CHALLENGE_KEY);
+    sessionStorage.removeItem(AGENT_LOGIN_CHALLENGE_KEY);
+    sessionStorage.removeItem(AGENT_COMPANY_PROOF_KEY);
+    sessionStorage.removeItem(AGENT_READ_IDENTITY_KEY);
     return createResponse({ success: true }, 200, (isEn ? 'Signed out successfully' : '登出成功'));
   }
 
@@ -1497,6 +1543,11 @@ export async function mockDispatch(config) {
       return createResponse({ smsCode: code, phone, expireSeconds: 300 }, 200, i18n.global.t('memberUpdate.smsSent'));
     }
     if (data.purpose === 'citizen-registration') sessionStorage.setItem('rcm_demo_registration_sms', JSON.stringify({ phone: data.phone, code, expires: Date.now() + 300000 }));
+    if (data.purpose === 'agent-registration') {
+      if (!isValidPhone(data.phone)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidPhone'));
+      sessionStorage.setItem(AGENT_REGISTRATION_SMS_KEY, JSON.stringify({ phone: data.phone, code, expires: Date.now() + 300000 }));
+      return createResponse({ smsCode: code, phone: data.phone, expireSeconds: 300 }, 200, i18n.global.t('agentAuth.smsSent'));
+    }
     return createResponse({
       smsCode: code,
       phone: data.phone,
@@ -1508,15 +1559,25 @@ export async function mockDispatch(config) {
   if (url.includes('/auth/verify-sms') && method === 'POST') {
     const isReset = data.purpose === 'citizen-password-reset';
     const isMemberPhone = data.purpose === 'member-phone-change';
-    const storageKey = isReset ? 'rcm_demo_password_reset_sms' : isMemberPhone ? 'rcm_demo_member_phone_sms' : 'rcm_demo_registration_sms';
+    const isAgentRegistration = data.purpose === 'agent-registration';
+    const storageKey = isReset ? 'rcm_demo_password_reset_sms'
+      : isMemberPhone ? 'rcm_demo_member_phone_sms'
+        : isAgentRegistration ? AGENT_REGISTRATION_SMS_KEY
+          : 'rcm_demo_registration_sms';
     const sms = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
     const normalize = value => String(value || '').replace(/[\s-]/g, '').trim();
     const subject = normalize(isReset ? data.identifier : data.phone);
     const stored = normalize(isReset ? sms?.identifier : sms?.phone);
     const valid = Boolean(sms) && Boolean(subject) && stored === subject
       && String(sms.code) === String(data.smsCode || '') && sms.expires > Date.now();
-    const invalidKey = isReset ? 'forgotPassword.invalidCode' : isMemberPhone ? 'memberUpdate.invalidCode' : 'registerWizard.invalidCode';
-    const verifiedKey = isReset ? 'forgotPassword.codeVerified' : isMemberPhone ? 'memberUpdate.codeVerified' : 'registerWizard.codeVerified';
+    const invalidKey = isReset ? 'forgotPassword.invalidCode'
+      : isMemberPhone ? 'memberUpdate.invalidCode'
+        : isAgentRegistration ? 'agentAuth.invalidCode'
+          : 'registerWizard.invalidCode';
+    const verifiedKey = isReset ? 'forgotPassword.codeVerified'
+      : isMemberPhone ? 'memberUpdate.codeVerified'
+        : isAgentRegistration ? 'agentAuth.codeVerified'
+          : 'registerWizard.codeVerified';
     if (!valid) return createResponse({}, 400, i18n.global.t(invalidKey));
     return createResponse({ verified: true, expiresAt: sms.expires }, 200, i18n.global.t(verifiedKey));
   }
@@ -1651,6 +1712,182 @@ export async function mockDispatch(config) {
     sessionStorage.removeItem('rcm_demo_registration_sms');
     await flushPocketBaseWrites();
     return createResponse({ success: true, identityVerificationRequired: true });
+  }
+
+  // Agent registration: Company Branch + Agent NO must match the shared agent directory.
+  if (url.includes('/auth/agent/verify-credentials') && method === 'POST') {
+    const agentNo = normalizeAgentNo(data.agentNo);
+    const companyBranchCode = String(data.companyBranchCode || '').trim();
+    if (!isValidAgentNo(agentNo)) return createResponse({}, 400, i18n.global.t('agentAuth.agentNoInvalid'));
+    if (!companyBranchCode) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
+    const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
+    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
+    if (entry.claimed || await findAgentAccount(agentNo)) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
+    }
+    const proof = { token: demoVerificationToken(), agentNo, companyBranchCode, expiresAt: Date.now() + 600000 };
+    sessionStorage.setItem(AGENT_COMPANY_PROOF_KEY, JSON.stringify(proof));
+    return createResponse({
+      verified: true,
+      verificationToken: proof.token,
+      agentNo,
+      companyBranchCode,
+      branchName: localizeAgentNames(entry.branchNames, reqLang),
+      shopName: localizeAgentNames(entry.shopNames, reqLang),
+      ownerName: localizeAgentNames(entry.ownerNames, reqLang),
+      centerId: entry.centerId
+    });
+  }
+
+  // Agent registration: simulated NFC read after the branch/agent pair was verified.
+  if (url === '/auth/agent/read-identity' && method === 'POST') {
+    const proof = JSON.parse(sessionStorage.getItem(AGENT_COMPANY_PROOF_KEY) || 'null');
+    const agentNo = normalizeAgentNo(data.agentNo);
+    const companyBranchCode = String(data.companyBranchCode || '').trim();
+    if (!proof || proof.expiresAt < Date.now() || proof.token !== data.verificationToken
+      || proof.agentNo !== agentNo || proof.companyBranchCode !== companyBranchCode) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
+    }
+    if (!isValidNationalId(data.nationalId)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidNationalId'));
+    const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
+    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
+    const reading = {
+      token: demoVerificationToken(), agentNo, companyBranchCode,
+      nationalId: String(data.nationalId).trim(), expiresAt: Date.now() + 600000
+    };
+    sessionStorage.setItem(AGENT_READ_IDENTITY_KEY, JSON.stringify(reading));
+    return createResponse({
+      name: localizeAgentNames(entry.ownerNames, reqLang),
+      nationalId: reading.nationalId,
+      agentNo,
+      readToken: reading.token,
+      simulated: true,
+      chipPhotoAvailable: false
+    });
+  }
+
+  // Agent account registration (separate store from citizen accounts).
+  if (url.includes('/auth/register-agent') && method === 'POST') {
+    const agentNo = normalizeAgentNo(data.agentNo);
+    const companyBranchCode = String(data.companyBranchCode || '').trim();
+    if (!isValidAgentNo(agentNo)) return createResponse({}, 400, i18n.global.t('agentAuth.agentNoInvalid'));
+    if (typeof data.password !== 'string' || data.password.length < 8) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.passwordTooShort'));
+    }
+    if (data.password !== data.confirmPassword) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.passwordMismatch'));
+    }
+    if (!isValidNationalId(data.nationalId)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidNationalId'));
+    if (!isValidPhone(data.phone)) return createResponse({}, 400, i18n.global.t('agentAuth.invalidPhone'));
+    const proof = JSON.parse(sessionStorage.getItem(AGENT_COMPANY_PROOF_KEY) || 'null');
+    if (!proof || proof.expiresAt < Date.now() || proof.token !== data.verificationToken
+      || proof.agentNo !== agentNo || proof.companyBranchCode !== companyBranchCode) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.companyRequired'));
+    }
+    const reading = JSON.parse(sessionStorage.getItem(AGENT_READ_IDENTITY_KEY) || 'null');
+    if (!reading || reading.expiresAt < Date.now() || reading.agentNo !== agentNo
+      || reading.nationalId !== String(data.nationalId).trim() || reading.token !== data.readToken
+      || data.livenessCompleted !== true || data.simulated !== true
+      || typeof data.faceImage !== 'string' || !data.faceImage.startsWith('data:image/')) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.identityRequired'));
+    }
+    const normalizeAgentPhone = value => String(value || '').replace(/[\s-]/g, '').trim();
+    const sms = JSON.parse(sessionStorage.getItem(AGENT_REGISTRATION_SMS_KEY) || 'null');
+    if (!sms || normalizeAgentPhone(sms.phone) !== normalizeAgentPhone(data.phone)
+      || sms.code !== String(data.smsCode || '') || sms.expires < Date.now()) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.invalidCode'));
+    }
+    const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
+    if (!entry) return createResponse({}, 400, i18n.global.t('agentAuth.invalidCompanyAgent'));
+    if (entry.claimed) return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
+    const registeredAt = new Date().toISOString();
+    const registrationFields = {
+      agentNo,
+      companyBranchCode,
+      companyBranchNames: entry.branchNames,
+      shopNames: entry.shopNames,
+      ownerNames: entry.ownerNames,
+      centerId: entry.centerId || null,
+      nationalId: String(data.nationalId).trim(),
+      phone: normalizeAgentPhone(data.phone),
+      password: data.password,
+      registeredAt,
+      // Registration confirms the company branch + agent number; the first
+      // sign-in still runs the NFC chip + live face gate, mirroring the citizen app.
+      identityVerification: {
+        status: 'registered', method: 'nfc-face', simulated: true, verifiedAt: registeredAt
+      }
+    };
+    let account;
+    try {
+      account = await createAgentAccount(registrationFields);
+    } catch (error) {
+      return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500,
+        i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'agentAuth.duplicate' : 'agentAuth.saveFailed'));
+    }
+    await claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone });
+    // Registration archive mirrors the citizen flow but stores no biometric image data.
+    localStorage.setItem(`rcm_registration_agent_${agentNo}`, JSON.stringify({
+      agentNo,
+      companyBranchCode,
+      companyBranchNames: entry.branchNames,
+      shopNames: entry.shopNames,
+      ownerNames: entry.ownerNames,
+      centerId: entry.centerId || null,
+      nationalId: account.nationalId,
+      phone: account.phone,
+      registeredAt,
+      identityVerification: account.identityVerification
+    }));
+    sessionStorage.removeItem(AGENT_COMPANY_PROOF_KEY);
+    sessionStorage.removeItem(AGENT_READ_IDENTITY_KEY);
+    sessionStorage.removeItem(AGENT_REGISTRATION_SMS_KEY);
+    await flushPocketBaseWrites();
+    return createResponse({
+      success: true,
+      agentNo,
+      companyBranchName: localizeAgentNames(entry.branchNames, reqLang),
+      identityVerificationRequired: true
+    }, 200, i18n.global.t('agentAuth.registered'));
+  }
+
+  // Agent sign-in: read the national ID chip after the 428 identity gate.
+  if (url === '/auth/agent-login/read-identity' && method === 'POST') {
+    const pending = pendingAgentLogin(data.challenge);
+    if (!pending) return createResponse({}, 400, i18n.global.t('agentAuth.loginExpired'));
+    const account = await findAgentAccount(pending.agentNo);
+    if (!account) return createResponse({}, 400, i18n.global.t('agentAuth.loginExpired'));
+    pending.readToken = demoVerificationToken();
+    sessionStorage.setItem(AGENT_LOGIN_CHALLENGE_KEY, JSON.stringify(pending));
+    return createResponse({
+      name: localizeAgentNames(account.ownerNames, reqLang),
+      nationalId: pending.nationalId,
+      agentNo: pending.agentNo,
+      readToken: pending.readToken,
+      simulated: true,
+      chipPhotoAvailable: false
+    });
+  }
+
+  // Agent sign-in: complete chip + live face verification and issue the session.
+  if (url === '/auth/agent-login/verify' && method === 'POST') {
+    const pending = pendingAgentLogin(data.challenge);
+    if (!pending) return createResponse({}, 400, i18n.global.t('agentAuth.loginExpired'));
+    if (!pending.readToken || data.readToken !== pending.readToken
+      || data.nationalId !== pending.nationalId
+      || data.livenessCompleted !== true || data.simulated !== true) {
+      return createResponse({}, 400, i18n.global.t('agentAuth.loginStepsRequired'));
+    }
+    let account = await findAgentAccount(pending.agentNo);
+    if (!account) return createResponse({}, 400, i18n.global.t('agentAuth.loginExpired'));
+    account = await updateAgentAccount(pending.agentNo, {
+      identityVerification: {
+        status: 'passed', method: 'nfc-face', simulated: true, verifiedAt: new Date().toISOString()
+      }
+    });
+    await flushPocketBaseWrites();
+    sessionStorage.removeItem(AGENT_LOGIN_CHALLENGE_KEY);
+    return createResponse({ ...registeredAgentSession(account, reqLang), passed: true, simulated: true });
   }
 
   if (url === '/auth/first-login/read-identity' && method === 'POST') {

@@ -132,6 +132,22 @@ Vite 环境变量在构建时写入前端包；修改后需重新构建/打包�
 - 短信验证码先经 `/auth/verify-sms` 校验通过，界面才展示登录密码输入框，因此密码输入错误不需要重新接收短信验证码；注册仍由 `/auth/register-citizen` 复核验证码后写入账号。
 - 找回密码通过 `/auth/send-sms`（`purpose: citizen-password-reset`）、`/auth/verify-sms` 与 `/auth/reset-password` 更新同一账号记录的密码摘要和 `passwordUpdatedAt`，旧密码随即失效。上述凭据沿用现有账号记录同步，不新增集合。
 
+## 代理注册与登录身份核验
+
+代理 APP 的登录页新增“代理”入口，注册数据与公民账号完全分离，沿用 `app_data` 集合，无需新建集合：
+
+- `rcm_shared_agent_accounts`：代理账户记录，包含 `agentNo`、`companyBranchCode`、`companyBranchNames`、`shopNames`、`ownerNames`、`centerId`、`nationalId`、`phone`、`passwordCredential`、`registeredAt` 与 `identityVerification`。四种语言读取同一条记录。
+- `rcm_shared_agent_company_branches`：代理公司分部名录，`names` 为 `{ zh, en, ar, ckb }` 多语言对象，首次读取时按项目默认数据写入 PocketBase。
+- `rcm_shared_agent_directory`：公司分部与 Agent NO 的对应名录，含 `shopNames`、`ownerNames` 多语言名称及 `claimed`/`claimedNationalId` 占用标记。注册成功后写入占用信息，避免同一代理编号被重复认证。
+- `rcm_registration_agent_<代理编号>`：代理注册档案，保存公司分部、代理编号、身份编号与核验时间；不写入人脸图像或芯片照片。
+
+流程约定：
+
+- 注册第一步必须选择 Company Branch（公司分部）并输入 Agent NO（代理编号），`POST /auth/agent/verify-credentials` 依据上述两份共享名录校验匹配关系；该两项是代理身份认证的凭据。
+- 注册与首次登录均复用公民 APP 的核验链路：NFC 读取国民身份证芯片（演示为模拟读取，`POST /auth/agent/read-identity`）与人脸活体核验（华为云 FRS，失败时仅演示模式提供明确标注的模拟快速通过）。首次登录通过 `POST /auth/agent-login/read-identity` 与 `POST /auth/agent-login/verify` 完成核验后签发代理会话。
+- 代理编号、手机号或身份证号与已有代理账户重复时拒绝注册；`FA-00128` 为现有演示代理账号，其对应名录记录默认已占用。
+- 动态业务数据（公司分部名称、代销网点名称、代理人姓名）以多语言对象存入 PocketBase，界面按当前语言和 RTL/LTR 方向渲染，不按语言重复保存整条记录。
+
 ### 家庭成员特殊状态
 
 “在册家庭成员清单 → 更新”新增的人员特殊状态以语言无关编码保存在 `rcm_shared_families_<语言>` 的成员记录 `specialStatus` 字段中（`displaced` 流离失所、`social_health` 社会救助与健康），随成员资料一并同步到 PocketBase 的 `app_data`。列表与弹窗按当前语言渲染标签，四种语言共享同一份状态编码，不需要为每种语言重复维护文案。

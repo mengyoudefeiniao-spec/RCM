@@ -156,6 +156,12 @@ const routes = [
         meta: { title: '库存台账', roles: ['agent', 'admin'], permissionCode: 'agents.view' }
       },
       {
+        path: 'agent-families',
+        name: 'AgentFamilies',
+        component: () => import('../views/agent/AgentFamiliesView.vue'),
+        meta: { titleKey: 'agentFamilies.title', roles: ['agent', 'admin'], permissionCode: 'agents.view' }
+      },
+      {
         path: 'admin',
         name: 'AdminManagement',
         component: () => import('../views/admin/AdminManagementView.vue'),
@@ -225,8 +231,11 @@ router.beforeEach((to, from, next) => {
   let currentRole = userProfile.role || 'citizen';
 
   // 0. 自动识别 URL 查询参数中的目标角色身份并无缝同步至当前标签页专属 sessionStorage (Portal 新开标签页直达)
-  const registeredCitizen = userProfile.role === 'citizen' && userProfile.needsFamilySetup && userProfile.nationalId;
-  if (to.query.role && to.path !== '/login' && (!registeredCitizen || to.query.demo === 'true')) {
+  // A registered citizen/agent account keeps its own profile even when the URL
+  // still carries demo `role=` parameters from the app shell.
+  const registeredSession = userProfile.registeredAccount === true
+    || (userProfile.role === 'citizen' && userProfile.needsFamilySetup && userProfile.nationalId);
+  if (to.query.role && to.path !== '/login' && (!registeredSession || to.query.demo === 'true')) {
     const targetRole = String(to.query.role);
     const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
     if (validRoles.includes(targetRole)) {

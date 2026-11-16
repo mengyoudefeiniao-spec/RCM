@@ -102,6 +102,61 @@ export function registerCitizen(data) {
 }
 
 /**
+ * 代理注册：校验 Company Branch 与 Agent NO 是否匹配代理名录 (POST)
+ */
+export function verifyAgentCredentials(data) {
+  return request({
+    url: '/auth/agent/verify-credentials',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 代理注册：读取国民身份证芯片（演示环境为模拟读取） (POST)
+ */
+export function readAgentRegistrationIdentity(data) {
+  return request({
+    url: '/auth/agent/read-identity',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 代理账户注册 (POST)
+ */
+export function registerAgent(data) {
+  return request({
+    url: '/auth/register-agent',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 代理登录：读取国民身份证芯片 (POST)
+ */
+export function readAgentLoginIdentity(data) {
+  return request({
+    url: '/auth/agent-login/read-identity',
+    method: 'POST',
+    data
+  });
+}
+
+/**
+ * 代理登录：完成人脸活体核验并签发会话 (POST)
+ */
+export function completeAgentLoginVerification(data) {
+  return request({
+    url: '/auth/agent-login/verify',
+    method: 'POST',
+    data
+  });
+}
+
+/**
  * 活体人脸识别与统一国民卡双因子核验 (POST)
  */
 export function verifyBiometricFace(data) {
