@@ -90,7 +90,7 @@
             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-xl shadow-xs" :class="service.tone">
               <el-icon><component :is="service.icon" /></el-icon>
             </span>
-            <span class="w-full break-words text-xs font-medium leading-relaxed text-[#43554B]">{{ $t(service.label) }}</span>
+            <span class="w-full break-words text-xs font-medium leading-tight text-[#43554B] line-clamp-2">{{ $t(service.label) }}</span>
           </button>
         </div>
       </div>
@@ -974,7 +974,7 @@ const citizenServices = [
   { path: '/citizen/split-household', label: 'citizenCard.applySplitHousehold', icon: Share, tone: 'bg-[#EFF5F1] border-[#C9DBCE] text-[#326445]' },
   { path: '/citizen/change-head', label: 'citizenCard.applyChangeHead', icon: UserFilled, tone: 'bg-[#FDF3E0] border-[#EED9AE] text-[#B8934A]' },
   { path: '/citizen/unfreeze', label: 'citizenCard.applyUnfreeze', icon: Unlock, tone: 'bg-[#EFF5F1] border-[#C9DBCE] text-[#326445]' },
-  { path: '/citizen/member-deregistration', label: 'memberDeregistration.action', icon: Remove, tone: 'bg-[#FBEAE9] border-[#F2D5D4] text-[#A53A2D]' }
+  { path: '/citizen/member-deregistration', label: 'citizenCard.fastDeregister', icon: Remove, tone: 'bg-[#FBEAE9] border-[#F2D5D4] text-[#A53A2D]' }
 ];
 import { localizeFreezeReason } from '../../utils/freezeReason.js';
 import { createCitizenCardQrPayload } from '../../utils/qrPayload.js';
