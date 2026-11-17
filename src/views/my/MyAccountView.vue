@@ -6,26 +6,6 @@
       <div class="min-w-0"><h1 class="text-lg font-bold">{{ $t('my.notificationCenter') }}</h1><p class="text-xs text-[#8A9A8F]">{{ $t('my.listTotal', { count: listTotal }) }}</p></div>
     </header>
     <template v-if="!isListPage">
-    <header v-if="!isCitizen" class="space-y-1">
-      <h1 class="text-xl font-bold">{{ $t('my.agentTitle') }}</h1>
-      <p class="text-sm text-[#58685D]">{{ $t('my.agentSubtitle') }}</p>
-    </header>
-
-    <section v-if="!isCitizen" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm flex items-center gap-4">
-      <div class="size-14 shrink-0 rounded-xl bg-[#FDF3E0] text-[#7A5F21] flex items-center justify-center">
-        <el-icon :size="28"><User /></el-icon>
-      </div>
-      <div class="min-w-0 flex-1">
-        <div class="font-bold text-lg truncate">{{ displayName }}</div>
-        <div class="text-sm text-[#58685D] mt-0.5">
-          <bdi dir="ltr">{{ isCitizen ? profile.phone : agentProfile?.phone }}</bdi>
-        </div>
-      </div>
-      <span class="shrink-0 rounded-full bg-[#E2F4E4] px-2.5 py-1 text-xs font-semibold text-[#326445]">
-        ● {{ $t(isCitizen ? 'my.verified' : 'my.authorized') }}
-      </span>
-    </section>
-
     <template v-if="isCitizen">
       <section class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-3">
@@ -39,21 +19,9 @@
       </section>
     </template>
 
-    <template v-else>
-      <div class="grid grid-cols-3 gap-1 rounded-xl bg-[#EFF5F1] p-1.5">
-        <button v-for="tab in agentTabs" :key="tab.key" type="button"
-          class="min-w-0 rounded-lg px-1 py-2 text-xs sm:text-sm transition-colors flex flex-col items-center gap-1"
-          :class="currentTab === tab.key ? 'bg-white text-[#326445] font-bold shadow-sm' : 'text-[#58685D]'"
-          @click="selectTab(tab.key)">
-          <span class="relative"><el-icon :size="18"><component :is="tab.icon" /></el-icon><span v-if="notificationStore.hasUnread(tab.key)" class="absolute -top-1 -end-1 size-2 rounded-full bg-red-500 ring-2 ring-white" /></span>
-          <span class="truncate max-w-full">{{ $t(`my.${tab.key}`) }}</span>
-        </button>
-      </div>
     </template>
 
-    </template>
-
-    <section v-if="expandedList === 'notifications' || (!isListPage && (isCitizen || currentTab === 'notifications'))" data-my-list="notifications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
+    <section v-if="expandedList === 'notifications' || !isListPage" data-my-list="notifications" :class="{ 'my-swipe-list': isListPage }" class="rounded-xl border border-[#D9E5DB] bg-white p-4 sm:p-5 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2 min-w-0">
           <el-icon class="shrink-0 text-[#326445]"><Bell /></el-icon>
@@ -89,31 +57,6 @@
     </nav>
 
     <template v-if="!isListPage">
-    <section v-if="!isCitizen && currentTab === 'outlets'" class="space-y-3">
-      <h2 class="font-bold">{{ $t('my.outletInfo') }}</h2>
-      <div v-if="!outlets.length" class="rounded-xl bg-white p-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noOutlets') }}</div>
-      <article v-for="outlet in outlets" :key="outlet.id || outlet.centerId" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm space-y-3 text-sm">
-        <div class="flex items-start justify-between gap-3"><div class="font-bold">{{ displayOutletName(outlet) }}</div><el-tag size="small" type="success">{{ outletStatus(outlet) }}</el-tag></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div><div class="text-xs text-[#8A9A8F]">{{ $t('my.outletCode') }}</div><bdi dir="ltr" class="font-mono">{{ outlet.id || outlet.centerId }}</bdi></div>
-          <div><div class="text-xs text-[#8A9A8F]">{{ $t('my.center') }}</div><span>{{ displayCenter(outlet) }}</span></div>
-          <div><div class="text-xs text-[#8A9A8F]">{{ $t('my.outletPhone') }}</div><bdi dir="ltr">{{ outlet.phone || agentProfile?.phone }}</bdi></div>
-          <div><div class="text-xs text-[#8A9A8F]">{{ $t('my.outletAddress') }}</div><span>{{ displayOutletAddress(outlet) }}</span></div>
-        </div>
-      </article>
-    </section>
-
-    <section v-if="!isCitizen && currentTab === 'couriers'" class="rounded-xl border border-[#D9E5DB] bg-white p-5 shadow-sm">
-      <div class="flex items-center justify-between gap-2 mb-3"><h2 class="font-bold">{{ $t('my.courierManagement') }}</h2><el-button size="small" type="primary" @click="openCourierDialog()"><el-icon class="me-1"><Plus /></el-icon>{{ $t('my.addCourier') }}</el-button></div>
-      <div v-if="!couriers.length" class="py-8 text-center text-sm text-[#8A9A8F]">{{ $t('my.noCouriers') }}</div>
-      <article v-for="courier in couriers" :key="courier.id" class="border-t border-[#E9F1EB] py-3 flex items-center gap-3">
-        <div class="size-10 shrink-0 rounded-full bg-[#EFF5F1] flex items-center justify-center text-[#326445]"><el-icon><Van /></el-icon></div>
-        <div class="min-w-0 flex-1 text-sm"><div class="font-semibold">{{ courier.name }} <span class="ms-1 text-xs font-normal" :class="courier.active ? 'text-[#326445]' : 'text-[#8A9A8F]'">{{ $t(courier.active ? 'my.active' : 'my.inactive') }}</span></div><div class="text-xs text-[#58685D]"><bdi dir="ltr">{{ courier.phone }}</bdi> · <bdi dir="ltr">{{ courier.vehicleNo }}</bdi></div></div>
-        <el-button size="small" text @click="openCourierDialog(courier)"><el-icon><Edit /></el-icon></el-button>
-        <el-button size="small" text type="danger" @click="removeCourier(courier)"><el-icon><Delete /></el-icon></el-button>
-      </article>
-    </section>
-
     <section class="rounded-xl border border-[#D9E5DB] bg-white p-4 shadow-sm flex flex-col gap-1">
       <el-button class="w-full !m-0 !justify-start" text @click="openDeviceDialog"><el-icon class="me-2"><Iphone /></el-icon>{{ $t('my.trustedDevices') }}</el-button>
       <el-button class="w-full !m-0 !justify-start" text @click="passwordDialogOpen = true"><el-icon class="me-2"><Lock /></el-icon>{{ $t('my.changePassword') }}</el-button>
@@ -139,16 +82,6 @@
       @success="onFaceVerified"
       @cancel="contactDialogOpen = true"
     />
-
-    <el-dialog v-model="courierDialogOpen" :title="$t(courierForm.id ? 'my.editCourier' : 'my.addCourier')" width="min(92vw, 440px)" append-to-body>
-      <el-form label-position="top" @submit.prevent="saveCourier">
-        <el-form-item :label="$t('my.courierName')"><el-input v-model.trim="courierForm.name" /></el-form-item>
-        <el-form-item :label="$t('my.phone')"><el-input v-model.trim="courierForm.phone" type="tel" dir="ltr" /></el-form-item>
-        <el-form-item :label="$t('my.vehicleNo')"><el-input v-model.trim="courierForm.vehicleNo" dir="ltr" /></el-form-item>
-        <el-form-item :label="$t('my.active')"><el-switch v-model="courierForm.active" /></el-form-item>
-      </el-form>
-      <template #footer><el-button @click="courierDialogOpen = false">{{ $t('common.cancel') }}</el-button><el-button type="primary" :loading="saving" @click="saveCourier">{{ $t('my.saveCourier') }}</el-button></template>
-    </el-dialog>
 
     <el-dialog v-model="passwordDialogOpen" :title="$t('my.changePassword')" width="min(92vw, 440px)" append-to-body @closed="resetPasswordForm">
       <el-form label-position="top" @submit.prevent="savePassword">
@@ -240,12 +173,11 @@
 import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { User, Edit, Iphone, Location, Bell, ArrowLeft, ArrowRight, Van, Plus, Delete, Lock, SwitchButton, Shop, Camera, Monitor } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { Edit, Iphone, Location, Bell, ArrowLeft, ArrowRight, Delete, Lock, SwitchButton, Camera, Monitor } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCitizenStore } from '../../stores/citizen.js';
-import { getAgentProfile, getMyAgentCenters } from '../../api/agent.js';
-import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyCouriers, createMyCourier, updateMyCourier, deleteMyCourier, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
+import { getMyProfile, updateMyProfile, changeMyPassword, sendMyPasswordCode, verifyMyPhoneFace, getMyDevices, sendMyDeviceCode, verifyMyDeviceFace, deleteMyDevice } from '../../api/my.js';
 import { useMyNotificationsStore, notificationUrl, notificationTitle, notificationBody } from '../../stores/myNotifications.js';
 import FaceLivenessVerifyDialog from '../../components/common/FaceLivenessVerifyDialog.vue';
 import { getNativeAppRole, getLoginPathForRole } from '../../utils/appRole.js';
@@ -266,20 +198,11 @@ let previewScroll = 0;
 let openedFromPreview = false;
 const isAppMode = computed(() => route.query.layout === 'app' || sessionStorage.getItem('rcm_layout_mode') === 'app');
 const profile = ref({ phone: '', address: '' });
-const agentProfile = ref(null);
-const outlets = ref([]);
-const couriers = ref([]);
 const notifications = computed(() => [...notificationStore.items].sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0)));
 const unreadCount = computed(() => notificationStore.unreadCount);
-const currentTab = ref(['notifications', 'outlets', 'couriers'].includes(route.query.tab) ? route.query.tab : 'notifications');
-const agentTabs = [
-  { key: 'notifications', icon: Bell },
-  { key: 'outlets', icon: Shop }, { key: 'couriers', icon: User }
-];
 const demoIdentity = computed(() => ['usr-cit-01', 'usr-002', 'usr-agt-01', 'usr-003'].includes(authStore.userProfile?.id));
 const displayName = computed(() => demoIdentity.value ? t(isCitizen.value ? 'my.demoCitizenName' : 'my.demoAgentName') : (authStore.userProfile?.name || ''));
 const contactDialogOpen = ref(false);
-const courierDialogOpen = ref(false);
 const passwordDialogOpen = ref(false);
 const faceDialogOpen = ref(false);
 const faceToken = ref('');
@@ -288,7 +211,6 @@ const demoSmsCode = ref('');
 let smsTimer;
 const saving = ref(false);
 const contactForm = reactive({ phone: '', address: '' });
-const courierForm = reactive({ id: '', name: '', phone: '', vehicleNo: '', active: true });
 const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '', smsCode: '' });
 
 // 受信设备列表：当前账号已登录设备，删除前需手机号或人脸验证
@@ -309,12 +231,6 @@ async function loadData() {
   try {
     const [account] = await Promise.all([getMyProfile(), notificationStore.refresh(), isCitizen.value ? citizenStore.fetchFamilies() : Promise.resolve()]);
     profile.value = account;
-    if (!isCitizen.value) {
-      const [agent, sites, people] = await Promise.all([getAgentProfile(), getMyAgentCenters(), getMyCouriers()]);
-      agentProfile.value = agent;
-      outlets.value = sites;
-      couriers.value = people;
-    }
   } catch {
     ElMessage.error(t('my.loadFailed'));
   }
@@ -446,15 +362,6 @@ async function onFaceVerified(payload) {
   }
 }
 
-async function selectTab(key) {
-  currentTab.value = key;
-  try {
-    if (key === 'outlets') outlets.value = await getMyAgentCenters();
-    if (key === 'couriers') couriers.value = await getMyCouriers();
-    if (key === 'outlets' || key === 'couriers') await notificationStore.markSectionRead(key);
-  } catch { /* The request layer shows the error. */ }
-}
-
 async function markAllRead() {
   const ids = notifications.value.filter(item => !item.read).map(item => item.id);
   if (!ids.length) return;
@@ -469,62 +376,12 @@ async function openNotification(item) {
       await notificationStore.markRead([item.id]);
     } catch { /* 仍允许查看对应业务 */ }
   }
-  if (item.tab) await selectTab(item.tab);
   const target = notificationUrl(item);
   const [path, search] = target.split('?');
   const query = Object.fromEntries(new URLSearchParams(search || ''));
   if (isAppMode.value) query.layout = 'app';
   await router.push({ path, query });
   if (item.type === 'complaint') window.dispatchEvent(new CustomEvent('rcm-open-complaints', { detail: { id: item.complaintId } }));
-}
-
-function displayOutletName(outlet) {
-  return outlet.id === 'FA-00128' ? t('my.demoOutletName') : (outlet.name || outlet.centerName || '');
-}
-
-function displayCenter(outlet) {
-  return outlet.id === 'FA-00128' ? t('my.demoCenterName') : (outlet.centerName || '');
-}
-
-function displayOutletAddress(outlet) {
-  return outlet.id === 'FA-00128' ? t('my.demoAgentAddress') : (outlet.address || profile.value.address);
-}
-
-function outletStatus(outlet) {
-  return /注销|停用|Cancel|Inactive/i.test(outlet.status || '') ? t('my.outletInactive') : t('my.outletActive');
-}
-
-function openCourierDialog(courier) {
-  Object.assign(courierForm, courier || { id: '', name: '', phone: '', vehicleNo: '', active: true });
-  courierDialogOpen.value = true;
-}
-
-async function saveCourier() {
-  if (!courierForm.name.trim() || !/^\+?[\d\s-]{7,20}$/.test(courierForm.phone)) {
-    ElMessage.warning(t('my.invalidCourier'));
-    return;
-  }
-  saving.value = true;
-  try {
-    const payload = { name: courierForm.name, phone: courierForm.phone, vehicleNo: courierForm.vehicleNo, active: courierForm.active };
-    if (courierForm.id) await updateMyCourier(courierForm.id, payload);
-    else await createMyCourier(payload);
-    couriers.value = await getMyCouriers();
-    await notificationStore.refresh();
-    courierDialogOpen.value = false;
-    ElMessage.success(t('my.courierSaved'));
-  } catch { /* 请求层负责提示 */ }
-  finally { saving.value = false; }
-}
-
-async function removeCourier(courier) {
-  try {
-    await ElMessageBox.confirm(t('my.deleteCourierConfirm'), t('my.deleteCourier'), { type: 'warning' });
-    await deleteMyCourier(courier.id);
-    couriers.value = await getMyCouriers();
-    await notificationStore.refresh();
-    ElMessage.success(t('my.courierDeleted'));
-  } catch { /* 用户取消或请求层已提示 */ }
 }
 
 function resetPasswordForm() {
@@ -638,12 +495,8 @@ async function handleLogout() {
   await router.replace(getLoginPathForRole(appRole, wasAppMode));
 }
 
-onMounted(async () => {
-  await loadData();
-  if (route.query.tab === 'outlets' || route.query.tab === 'couriers') await selectTab(route.query.tab);
-});
+onMounted(loadData);
 watch(role, loadData);
-watch(() => route.query.tab, (tab) => { if (agentTabs.some(item => item.key === tab)) selectTab(tab); });
 onBeforeUnmount(() => {
   clearInterval(smsTimer);
   clearInterval(deviceSmsTimer);
