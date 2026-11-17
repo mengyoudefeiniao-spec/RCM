@@ -3,7 +3,7 @@
     <header class="workspace-overview">
       <div class="workspace-heading">
         <span class="workspace-icon"><el-icon><Service /></el-icon></span>
-        <ModuleDescTip :title="t('complaint.title')" :content="t('complaint.subtitle')" :badge="t('complaint.badgeDualTrack')" badge-type="warning" title-class="text-lg font-bold text-[#1B3123]" />
+        <ModuleDescTip :title="t('complaint.title')" :content="t('complaint.subtitle')" :badge="t('complaint.badgeAiChannel')" badge-type="warning" title-class="text-lg font-bold text-[#1B3123]" />
       </div>
       <el-tag type="warning" effect="plain">{{ t('complaint.supervision') }}</el-tag>
     </header>

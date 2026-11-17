@@ -11,7 +11,7 @@
         <label class="date-filter"><span>{{ t('complaintAnalytics.dateRange') }}</span>
           <el-date-picker v-model="filters.dates" type="daterange" value-format="YYYY-MM-DD" :start-placeholder="t('complaintAnalytics.start')" :end-placeholder="t('complaintAnalytics.end')" :aria-label="t('complaintAnalytics.dateRange')" unlink-panels />
         </label>
-        <label><span>{{ t('complaint.channelSource') }}</span><el-select v-model="filters.channel" :aria-label="t('complaint.channelSource')"><el-option :label="t('complaint.allChannels')" value="" /><el-option v-for="channel in ['AI', 'PHONE']" :key="channel" :label="channelLabel(channel)" :value="channel" /></el-select></label>
+        <label><span>{{ t('complaint.channelSource') }}</span><el-select v-model="filters.channel" :aria-label="t('complaint.channelSource')"><el-option :label="t('complaint.allChannels')" value="" /><el-option :label="t('complaint.aiOnline')" value="AI" /></el-select></label>
         <label><span>{{ t('complaintAnalytics.category') }}</span><el-select v-model="filters.type" :aria-label="t('complaintAnalytics.category')"><el-option :label="t('complaint.allTypes')" value="" /><el-option v-for="type in typeOptions" :key="type" :label="typeLabel(type)" :value="type" /></el-select></label>
         <label><span>{{ t('common.province') }}</span><el-select v-model="filters.province" :aria-label="t('common.province')"><el-option :label="t('complaint.allProvinces')" value="" /><el-option v-for="province in provinces" :key="province" :label="regionLabel(province)" :value="province" /></el-select></label>
         <el-button class="reset" @click="resetFilters">{{ t('complaintAnalytics.reset') }}</el-button>
@@ -131,7 +131,6 @@ const hoursLabel = value => value === null ? '—' : t('complaintAnalytics.hours
 const typeOptions = [...Object.keys(COMPLAINT_TYPES), 'UNKNOWN'];
 const typeLabel = code => COMPLAINT_TYPES[code] ? t(`complaint.${COMPLAINT_TYPES[code][2]}`) : t('complaintAnalytics.unknown');
 const statusLabel = code => COMPLAINT_STATUSES[code] ? t(`complaint.${COMPLAINT_STATUSES[code][2]}`) : t('complaintAnalytics.unknown');
-const channelLabel = code => t(code === 'AI' ? 'complaint.aiOnline' : 'complaint.phoneHotline');
 const regionLabel = province => {
   const region = REVIEW_SCOPE_REGIONS.find(item => item.code === province);
   return region ? t(`systemExtras.${region.labelKey}`) : provinceLabel(t, locale.value, province) || t('complaintAnalytics.unknown');

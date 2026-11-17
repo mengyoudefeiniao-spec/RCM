@@ -6,41 +6,30 @@
         {{ $t('complaint.ticketList') }}
       </h2>
 
-      <div class="flex items-center gap-2">
-        <el-button type="primary" size="small" @click="openCreateComplaintDialog">
-          <el-icon class="me-1"><Phone /></el-icon>
-          {{ $t('complaint.registerPhone') }}
-        </el-button>
-        <el-button size="small" @click="loadComplaints" :loading="loading">
-          <el-icon class="me-1"><Refresh /></el-icon>
-          {{ $t('common.refresh') }}
-        </el-button>
-      </div>
+      <el-button size="small" @click="loadComplaints" :loading="loading">
+        <el-icon class="me-1"><Refresh /></el-icon>
+        {{ $t('common.refresh') }}
+      </el-button>
     </div>
 
-    <!-- 顶部 KPI 卡片 (针对 Google Pixel 9 412px 视口优化: 前4项2列对称排列，第5项通栏展示) -->
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3 text-xs">
+    <!-- 顶部 KPI 卡片 (2×2 对称布局) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
       <div class="bg-white p-3 rounded-lg border border-[#D9E5DB] shadow-2xs space-y-1">
         <div class="text-[10px] sm:text-[11px] text-[#8A9A8F]">{{ $t('complaint.totalComplaints') }}</div>
         <div class="text-lg sm:text-xl font-bold font-mono text-[#1B3123]">{{ complaintsList.length }}</div>
-        <div class="text-[10px] text-[#58685D]">{{ $t('complaint.channelDual') }}</div>
+        <div class="text-[10px] text-[#58685D]">{{ $t('complaint.channelAiOnly') }}</div>
       </div>
       <div class="bg-white p-3 rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1">
         <div class="text-[10px] sm:text-[11px] text-[#2F7A50]">{{ $t('complaint.aiOnline') }}</div>
         <div class="text-lg sm:text-xl font-bold font-mono text-[#2F5B44]">{{ aiChannelCount }}</div>
         <div class="text-[10px] text-[#8A9A8F]">{{ $t('complaint.channelAiDesc') }}</div>
       </div>
-      <div class="bg-white p-3 rounded-lg border border-[#FDF3E0] shadow-2xs space-y-1">
-        <div class="text-[10px] sm:text-[11px] text-[#C9A13B]">{{ $t('complaint.phoneHotline') }}</div>
-        <div class="text-lg sm:text-xl font-bold font-mono text-[#7A5F21]">{{ phoneChannelCount }}</div>
-        <div class="text-[10px] text-[#8A9A8F]">{{ $t('complaint.channelPhoneDesc') }}</div>
-      </div>
       <div class="bg-white p-3 rounded-lg border border-[#F7E3E2] shadow-2xs space-y-1">
         <div class="text-[10px] sm:text-[11px] text-[#C04442]">{{ $t('complaint.pendingHandling') }}</div>
         <div class="text-lg sm:text-xl font-bold font-mono text-[#A93B39]">{{ pendingCount }}</div>
         <div class="text-[10px] text-[#C04442] font-medium">{{ $t('complaint.pendingFollowup') }}</div>
       </div>
-      <div class="col-span-2 sm:col-span-1 bg-white p-3 rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1">
+      <div class="bg-white p-3 rounded-lg border border-[#E1F4E4] shadow-2xs space-y-1">
         <div class="text-[10px] sm:text-[11px] text-[#2F7A50]">{{ $t('complaint.resolvedRate') }}</div>
         <div class="text-lg sm:text-xl font-bold font-mono text-[#2F5B44]">{{ resolvedRate }}%</div>
         <div class="text-[10px] text-[#2F7A50]">{{ $t('complaint.resolvedRateDesc') }}</div>
@@ -60,46 +49,37 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 items-center">
+      <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 gap-2 items-center">
         <!-- 移动端可折叠的高级下拉框 -->
         <div
-          class="contents sm:grid sm:grid-cols-2 md:col-span-4 xl:col-span-5 sm:gap-2"
+          class="contents sm:grid sm:grid-cols-2 sm:gap-2 sm:col-span-4 xl:contents"
           :class="showMobileFilter ? '' : 'hidden sm:grid'"
         >
-          <!-- 渠道来源 -->
-          <el-select v-model="query.channel" :placeholder="$t('complaint.channelSource')" class="w-full" size="small" @change="handleSearch">
-            <el-option v-for="opt in channelOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-          </el-select>
-
-          <!-- 诉求类型 -->
-          <el-select v-model="query.type" :placeholder="$t('complaint.appealType')" class="w-full" size="small" @change="handleSearch">
+          <el-select v-model="query.type" :placeholder="$t('complaint.appealType')" class="w-full min-w-0" size="small" @change="handleSearch">
             <el-option v-for="opt in typeFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
-          <!-- 办理状态 -->
-          <el-select v-model="query.status" :placeholder="$t('complaint.handleStatus')" class="w-full" size="small" @change="handleSearch">
+          <el-select v-model="query.status" :placeholder="$t('complaint.handleStatus')" class="w-full min-w-0" size="small" @change="handleSearch">
             <el-option v-for="opt in statusFilterOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
 
-          <!-- 省市 -->
-          <el-select v-model="query.province" :placeholder="$t('common.province')" class="w-full" size="small" @change="handleProvinceChange">
+          <el-select v-model="query.province" :placeholder="$t('common.province')" class="w-full min-w-0" size="small" @change="handleProvinceChange">
             <el-option :label="$t('complaint.allProvinces')" value="" />
             <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
           </el-select>
 
-          <!-- 中心 -->
-          <el-select v-model="query.center" :placeholder="$t('common.center')" class="w-full md:col-span-2 xl:col-span-1" size="small" @change="handleSearch">
+          <el-select v-model="query.center" :placeholder="$t('common.center')" class="w-full min-w-0" size="small" @change="handleSearch">
             <el-option :label="$t('complaint.allCenters')" value="" />
             <el-option v-for="c in currentCenterOptions" :key="c" :label="c" :value="c" />
           </el-select>
         </div>
 
-        <!-- 关键词搜索与按钮行 -->
-        <div class="flex items-center gap-2 md:col-span-4 xl:col-span-3">
+        <!-- 关键词搜索与按钮行：独立成行，避免与下拉框挤压 -->
+        <div class="col-span-2 sm:col-span-4 xl:col-span-2 flex flex-wrap items-center justify-end gap-2">
           <el-input
             v-model="query.keyword"
             :placeholder="$t('complaint.searchHint')"
-            class="flex-1"
+            class="flex-1 min-w-[9rem]"
             size="small"
             clearable
             @keyup.enter="handleSearch"
@@ -146,8 +126,8 @@
           <div class="flex items-center justify-between pb-1.5 border-b border-[#E9F1EB]">
             <div class="flex items-center gap-1.5">
               <span class="font-mono font-bold text-[#326445] text-xs">{{ item.id }}</span>
-              <el-tag size="small" :type="item.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="scale-90 origin-left rtl:origin-right">
-                {{ item.channel.includes('AI') ? $t('complaint.channelAiTag') : $t('complaint.channelPhoneTag') }}
+              <el-tag size="small" type="primary" effect="plain" class="scale-90 origin-left rtl:origin-right">
+                {{ $t('complaint.channelAiTag') }}
               </el-tag>
             </div>
             <el-tag size="small" :type="getStatusTag(item.status)" effect="light">
@@ -201,11 +181,11 @@
           </el-table-column>
 
         <el-table-column prop="channel" :label="$t('complaint.channelSource')" width="118">
-          <template #default="{ row }">
-            <el-tooltip :content="row.channel" placement="top">
-              <el-tag size="small" :type="row.channel.includes('AI') ? 'primary' : 'warning'" effect="plain" class="font-medium">
-                <el-icon class="me-1"><ChatDotRound v-if="row.channel.includes('AI')" /><Phone v-else /></el-icon>
-                {{ shortChannel(row.channel) }}
+          <template #default>
+            <el-tooltip :content="$t('complaint.aiOnline')" placement="top">
+              <el-tag size="small" type="primary" effect="plain" class="font-medium">
+                <el-icon class="me-1"><ChatDotRound /></el-icon>
+                {{ $t('complaint.channelAiShort') }}
               </el-tag>
             </el-tooltip>
           </template>
@@ -314,7 +294,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.channelSource') }}:</span>
-            <span class="ms-2 font-medium text-[#1F3326]">{{ currentDetail.channelCode === 'AI' || currentDetail.channel.includes('AI') ? t('complaint.aiOnline') : t('complaint.phoneHotline') }}</span>
+            <span class="ms-2 font-medium text-[#1F3326]">{{ $t('complaint.aiOnline') }}</span>
           </div>
           <div>
             <span class="text-[#8A9A8F]">{{ $t('complaint.appealType') }}:</span>
@@ -403,69 +383,17 @@
         </el-button>
       </template>
     </el-dialog>
-
-    <!-- 登记电话来电弹窗 -->
-    <el-dialog v-model="createVisible" :title="$t('complaint.phoneModalTitle')" width="580px" destroy-on-close>
-      <div class="space-y-3 text-xs">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.citizenName') }}：</label>
-            <el-input v-model="createForm.applicantName" :placeholder="$t('complaint.citizenNamePlaceholder')" size="small" />
-          </div>
-          <div>
-            <label class="block font-medium text-[#43554B] mb-1">{{ $t('common.phone') }}：</label>
-            <el-input class="bidi-ltr" v-model="createForm.callPhone" placeholder="+964 7XX XXX XXXX" size="small" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-medium text-[#43554B] mb-1">{{ $t('common.province') }}：</label>
-            <el-select v-model="createForm.province" class="w-full" size="small">
-              <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
-            </el-select>
-          </div>
-          <div>
-            <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.appealType') }}：</label>
-            <el-select v-model="createForm.type" class="w-full" size="small">
-              <el-option v-for="opt in typeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-            </el-select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.targetArea') }}：</label>
-          <el-input v-model="createForm.agentName" :placeholder="$t('complaint.outletNamePlaceholder')" size="small" />
-        </div>
-
-        <div>
-          <label class="block font-medium text-[#43554B] mb-1">{{ $t('complaint.mainContent') }}：</label>
-          <el-input
-            v-model="createForm.content"
-            type="textarea"
-            :rows="3"
-            :placeholder="$t('complaint.contentPlaceholder')"
-          />
-        </div>
-      </div>
-      <template #footer>
-        <el-button size="small" @click="createVisible = false">{{ $t('common.cancel') }}</el-button>
-        <el-button size="small" type="primary" :loading="createLoading" @click="submitCreateComplaint">
-          {{ $t('common.submit') }}
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, Refresh, Phone, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
+import { Search, Refresh, ChatDotRound, View, EditPen } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import ComplaintEvidence from '../../components/chat/ComplaintEvidence.vue';
 import ComplaintRating from '../../components/chat/ComplaintRating.vue';
-import { getComplaintList, createComplaintTicket, handleComplaintTicket } from '../../api/complaint.js';
+import { getComplaintList, handleComplaintTicket } from '../../api/complaint.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { COMPLAINT_STORAGE_PREFIX, COMPLAINT_STATUSES, COMPLAINT_TYPES, complaintStatusCode, complaintTypeCode } from '../../utils/complaints.js';
 import { onTabMessage } from '../../utils/crossTabBus.js';
@@ -513,13 +441,6 @@ const provinceOptions = computed(() => {
   ];
 });
 
-// 选项值按当前语言对齐数据源（en 数据为英文值，zh 数据为中文值），"全部" 使用空值
-const channelOptions = computed(() => [
-  { value: '', label: t('complaint.allChannels') },
-  { value: isEn.value ? 'AI Smart Assistant' : 'AI智能客服助手', label: t('complaint.aiOnline') },
-  { value: isEn.value ? '1919 Government Hotline' : '1919政务热线电话', label: t('complaint.phoneHotline') }
-]);
-
 const typeOptions = computed(() => [
   { value: isEn.value ? 'Unauthorized Overcharge / Illegal Fees' : '私自加价/违规收费', label: t('complaint.typeOvercharge') },
   { value: isEn.value ? 'Short Weight / Deductions' : '缺斤短两/克扣', label: t('complaint.typeShortage') },
@@ -562,7 +483,6 @@ const centerMap = {
 };
 
 const query = ref({
-  channel: '',
   type: '',
   status: '',
   province: '',
@@ -584,8 +504,9 @@ const currentCenterOptions = computed(() => {
   return relevantKeys.flatMap(k => centerMap[k] || []);
 });
 
-const aiChannelCount = computed(() => complaintsList.value.filter(c => c.channel.includes('AI')).length);
-const phoneChannelCount = computed(() => complaintsList.value.filter(c => c.channel.includes('1919')).length);
+// 投诉仅来自 APP 内 AI 智能助手，热线渠道工单不在列表中呈现
+const isAiComplaint = ticket => ticket?.channelCode === 'AI' || String(ticket?.channel || '').includes('AI');
+const aiChannelCount = computed(() => complaintsList.value.filter(isAiComplaint).length);
 const pendingCount = computed(() => complaintsList.value.filter(c => c.status !== '已办结' && c.status !== 'Resolved').length);
 const resolvedRate = computed(() => {
   if (!complaintsList.value.length) return 100;
@@ -596,9 +517,6 @@ const resolvedRate = computed(() => {
 // 前端联合多维筛选
 const filteredList = computed(() => {
   let list = [...complaintsList.value];
-  if (query.value.channel) {
-    list = list.filter(item => item.channel.includes(query.value.channel) || (query.value.channel.includes('AI') && item.channel.includes('AI')));
-  }
   if (query.value.type) {
     list = list.filter(item => item.type === query.value.type);
   }
@@ -641,7 +559,6 @@ function handleSearch() {
 
 function resetQuery() {
   query.value = {
-    channel: '',
     type: '',
     status: '',
     province: '',
@@ -660,10 +577,6 @@ function getTypeTag(type) {
 }
 
 // ===== 表格列短标签 (完整词条放 tooltip 悬停展示) =====
-function shortChannel(ch) {
-  return ch.includes('AI') ? t('complaint.channelAiShort') : t('complaint.channelPhoneShort');
-}
-
 function shortType(ty) {
   if (ty.includes('收费') || ty.includes('Fee')) return t('complaint.typeOverchargeShort');
   if (ty.includes('克扣') || ty.includes('Weight')) return t('complaint.typeShortageShort');
@@ -697,7 +610,7 @@ async function loadComplaints() {
   try {
     const res = await getComplaintList();
     if (version === loadVersion) {
-      complaintsList.value = res || [];
+      complaintsList.value = (res || []).filter(isAiComplaint);
       if (currentHandling.value) currentHandling.value = complaintsList.value.find(item => item.id === currentHandling.value.id) || currentHandling.value;
       if (currentDetail.value) currentDetail.value = complaintsList.value.find(item => item.id === currentDetail.value.id) || currentDetail.value;
     }
@@ -753,52 +666,6 @@ async function submitHandle() {
     await loadComplaints();
   } finally {
     handlingLoading.value = false;
-  }
-}
-
-// 登记电话投诉弹窗
-const createVisible = ref(false);
-const createLoading = ref(false);
-const createForm = ref({
-  applicantName: '',
-  callPhone: '',
-  province: '巴格达省',
-  agentName: '',
-  type: '私自加价/违规收费',
-  content: ''
-});
-
-function openCreateComplaintDialog() {
-  createForm.value = {
-    applicantName: '',
-    callPhone: '',
-    province: isEn.value ? 'Baghdad Province' : '巴格达省',
-    agentName: '',
-    type: isEn.value ? 'Unauthorized Overcharge / Illegal Fees' : '私自加价/违规收费',
-    content: ''
-  };
-  createVisible.value = true;
-}
-
-async function submitCreateComplaint() {
-  if (!createForm.value.applicantName || !createForm.value.content) {
-    ElMessage.warning(t('common.input'));
-    return;
-  }
-  createLoading.value = true;
-  try {
-    await createComplaintTicket({
-      ...createForm.value,
-      channel: isEn.value ? '1919 Government Hotline' : '1919政务热线电话',
-      title: `${createForm.value.applicantName} - ${createForm.value.type}`
-    });
-    ElMessage.success(t('common.success'));
-    createVisible.value = false;
-    await loadComplaints();
-  } catch (e) {
-    ElMessage.error(t('common.failed'));
-  } finally {
-    createLoading.value = false;
   }
 }
 
