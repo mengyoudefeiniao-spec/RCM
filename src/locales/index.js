@@ -43,6 +43,7 @@ import faceCompareDemoMessages from './faceCompareDemo.js';
 import rationShareMessages from './rationShare.js';
 import agentAuthMessages from './agentAuth.js';
 import nationalCockpitMessages from './nationalCockpit.js';
+import warehouseInventoryMessages from './warehouseInventory.js';
 
 function withCitizenApplications(messages, lang) {
   const merged = { ...messages, agentAuth: agentAuthMessages[lang], faceCompareDemo: faceCompareDemoMessages[lang], memberVerification: memberVerificationMessages[lang], registrationFlow: registrationFlowMessages[lang], registerWizard: registerWizardMessages[lang], forgotPassword: forgotPasswordMessages[lang], memberUpdate: memberUpdateMessages[lang], rationShare: rationShareMessages[lang], loginPage: loginPageMessages[lang], firstLoginVerification: firstLoginVerificationMessages[lang], chatComplaint: chatComplaintMessages[lang], chatOrders: chatOrderMessages[lang], agentProcurement: agentProcurementMessages[lang], warehouseLocation: warehouseLocationMessages[lang], scanHandover: scanHandoverMessages[lang] };
@@ -52,7 +53,7 @@ function withCitizenApplications(messages, lang) {
   merged.my = { ...merged.my, applicationTypes: { ...merged.my.applicationTypes, DRG: deregistration.action, MUPD: memberUpdate.applicationType } };
   merged.review = { ...merged.review, sourceDeregistration: deregistration.action, sourceMemberUpdate: memberUpdate.sourceLabel, subtitle: deregistration.reviewSubtitle };
   merged.systemExtras = { ...merged.systemExtras, reviewTypeDeregistration: deregistration.reviewPermission };
-  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang], nationalCockpitMessages[lang]]) {
+  for (const pack of [citizenApplicationMessages[lang], citizenTransferMessages[lang], { changeHead: changeHeadMessages[lang] }, systemManagementLabels[lang], { systemUi: systemManagementUiMessages[lang] }, complaintAnalyticsMessages[lang], nationalCockpitMessages[lang], warehouseInventoryMessages[lang]]) {
     for (const [scope, entries] of Object.entries(pack)) {
       merged[scope] = { ...merged[scope], ...entries };
     }
