@@ -1966,9 +1966,19 @@ export async function mockDispatch(config) {
     if (entry?.claimed || await findAgentAccount(agentNo)) {
       return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
     }
-    const branch = (await getAgentCompanyBranches()).find(item => item.code === companyBranchCode) || null;
+    const branch = entry ? null : (await getAgentCompanyBranches()).find(item => item.code === companyBranchCode) || null;
     const branchNames = entry?.branchNames || branch?.names || {};
-    const proof = { token: demoVerificationToken(), agentNo, companyBranchCode, expiresAt: Date.now() + 600000 };
+    // The resolved outlet data travels with the proof, so the final registration
+    // does not need another PocketBase registry lookup.
+    const proof = {
+      token: demoVerificationToken(), agentNo, companyBranchCode,
+      branchNames,
+      shopNames: entry?.shopNames || {},
+      ownerNames: entry?.ownerNames || {},
+      centerId: entry?.centerId || branch?.centerId || null,
+      directoryMatched: Boolean(entry),
+      expiresAt: Date.now() + 600000
+    };
     sessionStorage.setItem(AGENT_COMPANY_PROOF_KEY, JSON.stringify(proof));
     const reading = {
       token: demoVerificationToken(), agentNo, companyBranchCode,
@@ -2032,21 +2042,21 @@ export async function mockDispatch(config) {
       || sms.code !== String(data.smsCode || '') || sms.expires < Date.now()) {
       return createResponse({}, 400, i18n.global.t('agentAuth.invalidCode'));
     }
-    // A registry match enriches the account with the outlet details. When the pair
-    // is not in the registry the account is still created and marked for the
-    // company branch to review, so the wizard never dead-ends on this lookup.
-    const entry = await findAgentDirectoryEntry(agentNo, companyBranchCode);
-    if (entry?.claimed) return createResponse({}, 400, i18n.global.t('agentAuth.agentClaimed'));
-    const branch = (await getAgentCompanyBranches()).find(item => item.code === companyBranchCode) || null;
-    const branchNames = entry?.branchNames || branch?.names || {};
+    // The chip read already resolved and validated the outlet, so the account is
+    // built from the proof without another registry round trip.
+    const branchNames = proof.branchNames || {};
+    const shopNames = proof.shopNames || {};
+    const ownerNames = proof.ownerNames || {};
+    const centerId = proof.centerId || null;
+    const directoryMatched = proof.directoryMatched === true;
     const registeredAt = new Date().toISOString();
     const registrationFields = {
       agentNo,
       companyBranchCode,
       companyBranchNames: branchNames,
-      shopNames: entry?.shopNames || {},
-      ownerNames: entry?.ownerNames || {},
-      centerId: entry?.centerId || branch?.centerId || null,
+      shopNames,
+      ownerNames,
+      centerId,
       nationalId: String(data.nationalId).trim(),
       phone: normalizeAgentPhone(data.phone),
       password: data.password,
@@ -2055,7 +2065,7 @@ export async function mockDispatch(config) {
       // and the face comparison already passed here, so sign-in needs no repeat check.
       identityVerification: {
         status: 'passed', method: 'nfc-face', simulated: true, verifiedAt: registeredAt,
-        directoryMatched: Boolean(entry), chipMatchScore
+        directoryMatched, chipMatchScore
       }
     };
     let account;
@@ -2065,19 +2075,23 @@ export async function mockDispatch(config) {
       return createResponse({}, error.code === 'DUPLICATE_ACCOUNT' ? 400 : 500,
         i18n.global.t(error.code === 'DUPLICATE_ACCOUNT' ? 'agentAuth.duplicate' : 'agentAuth.saveFailed'));
     }
-    if (entry) await claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone });
+    if (directoryMatched) {
+      void claimAgentDirectoryEntry(agentNo, { nationalId: account.nationalId, phone: account.phone }).catch(() => {});
+    }
     // Registration archive mirrors the citizen flow, including the identity photos
-    // that the shared archive and the company branch review rely on.
+    // that the shared archive and the company branch review rely on. The write is
+    // local first; the shared PocketBase copy syncs in the background so the
+    // registration response is not held back by a multi-megabyte upload.
     const registrationArchive = {
       agentNo,
       companyBranchCode,
       companyBranchNames: branchNames,
-      shopNames: entry?.shopNames || {},
-      ownerNames: entry?.ownerNames || {},
-      centerId: entry?.centerId || branch?.centerId || null,
+      shopNames,
+      ownerNames,
+      centerId,
       nationalId: account.nationalId,
       phone: account.phone,
-      directoryMatched: Boolean(entry),
+      directoryMatched,
       identityFrontImage,
       identityBackImage,
       faceImage,
@@ -2098,12 +2112,11 @@ export async function mockDispatch(config) {
     sessionStorage.removeItem(AGENT_COMPANY_PROOF_KEY);
     sessionStorage.removeItem(AGENT_READ_IDENTITY_KEY);
     sessionStorage.removeItem(AGENT_REGISTRATION_SMS_KEY);
-    await flushPocketBaseWrites();
     return createResponse({
       success: true,
       agentNo,
       companyBranchName: localizeAgentNames(branchNames, reqLang),
-      directoryMatched: Boolean(entry),
+      directoryMatched,
       // Identity was verified during registration, so sign-in needs no extra check.
       identityVerificationRequired: false
     }, 200, i18n.global.t('agentAuth.registered'));

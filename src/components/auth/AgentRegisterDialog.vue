@@ -365,7 +365,7 @@ async function handleIdentityImage(event, side) {
     return;
   }
   try {
-    const dataUrl = await compressPhoto(await readPhoto(file), 1400, 0.78);
+    const dataUrl = await compressPhoto(await readPhoto(file), 1000, 0.7);
     const stored = await dataUrlToFile(dataUrl, side === 'front' ? 'agent-identity-front.jpg' : 'agent-identity-back.jpg');
     if (side === 'front') {
       frontImage.value = dataUrl;
