@@ -129,11 +129,12 @@ function getInitialProfile() {
     const hash = window.location.hash || '';
     const match = hash.match(/[\?&]role=([^&]+)/);
     const demoRequested = /[\?&]demo=true(?:&|$)/.test(hash);
+    const forceRoleRequested = /[\?&]forceRole=true(?:&|$)/.test(hash);
     // Registered citizen and agent sessions belong to a real account and must
     // not be replaced by the demo profile carried in a `role=` query string.
     const registeredSession = existingProfile?.registeredAccount === true
       || (existingProfile?.role === 'citizen' && existingProfile?.needsFamilySetup && existingProfile?.nationalId);
-    if (match && match[1] && (!registeredSession || demoRequested)) {
+    if (match && match[1] && (!registeredSession || demoRequested || forceRoleRequested)) {
       const urlRole = decodeURIComponent(match[1]);
       const profile = createProfileByRole(urlRole);
       sessionStorage.setItem('rcm_user_profile', JSON.stringify(profile));

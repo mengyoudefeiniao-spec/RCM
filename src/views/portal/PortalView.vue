@@ -461,19 +461,22 @@ function openTerminal(terminalType) {
   // 构建当前应用的基准 URL
   const baseUrl = window.location.origin + window.location.pathname;
 
+  // Portal launchers must force the selected terminal even when the browser has a
+  // registered agent/citizen session; otherwise the router keeps that session and
+  // redirects to its own home page (a registered agent lands on the management web).
   switch (terminalType) {
     case 'citizen':
-      targetPath = `${baseUrl}#/citizen?role=citizen&layout=app`;
+      targetPath = `${baseUrl}#/citizen?role=citizen&layout=app&forceRole=true`;
       roleTitle = t('portal.citizenApp.title');
       break;
 
     case 'agent':
-      targetPath = `${baseUrl}#/dashboard?role=agent&mode=mobile&layout=app`;
+      targetPath = `${baseUrl}#/dashboard?role=agent&mode=mobile&layout=app&forceRole=true`;
       roleTitle = t('portal.agentApp.title');
       break;
 
     case 'admin':
-      targetPath = `${baseUrl}#/dashboard?role=minister_center&mode=overview&layout=web`;
+      targetPath = `${baseUrl}#/dashboard?role=minister_center&mode=overview&layout=web&forceRole=true`;
       roleTitle = t('portal.adminWeb.title');
       break;
 

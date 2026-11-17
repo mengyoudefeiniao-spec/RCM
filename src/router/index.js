@@ -269,7 +269,10 @@ router.beforeEach((to, from, next) => {
   // still carries demo `role=` parameters from the app shell.
   const registeredSession = userProfile.registeredAccount === true
     || (userProfile.role === 'citizen' && userProfile.needsFamilySetup && userProfile.nationalId);
-  if (!nativeAppRole && to.query.role && !to.path.startsWith('/login') && (!registeredSession || to.query.demo === 'true')) {
+  // Portal terminal launchers pass forceRole=true so a registered session cannot
+  // override the requested role and bounce the new tab to its own home page.
+  const forceRole = to.query.forceRole === 'true' || to.query.demo === 'true';
+  if (!nativeAppRole && to.query.role && !to.path.startsWith('/login') && (!registeredSession || forceRole)) {
     const targetRole = String(to.query.role);
     const validRoles = ['citizen', 'agent', 'minister_center', 'deputy_minister', 'director_planning', 'admin'];
     if (validRoles.includes(targetRole)) {
